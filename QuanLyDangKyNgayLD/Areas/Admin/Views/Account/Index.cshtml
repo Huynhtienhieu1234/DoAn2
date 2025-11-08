@@ -1,0 +1,319 @@
+﻿@model IEnumerable<QuanLyDangKyNgayLD.Models.TaiKhoan>
+
+@{
+    Layout = "~/Areas/Admin/Views/Shared/ViewShare.cshtml";
+}
+
+<!-- THANH CÔNG CỤ -->
+<nav class="navbar navbar-expand-lg toolbar">
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <!-- BÊN TRÁI: Nút thêm -->
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <li class="nav-item">
+                <button class="btn btn-outline-primary btn-sm me-2" id="btnAdd">
+                    <i class="fa fa-plus me-1"></i> Thêm tài khoản
+                </button>
+            </li>
+        </ul>
+
+        <!-- BÊN PHẢI: Lọc + Tìm kiếm + Xuất Excel -->
+        <form class="d-flex align-items-center" role="search">
+            <select id="roleFilter" class="form-select form-select-sm me-2 shadow-sm" style="min-width: 140px;">
+                <option value="">-- Lọc theo vai trò --</option>
+                <option value="SinhVien">Sinh viên</option>
+                <option value="LopPhoLaoDong">Lớp phó lao động</option>
+                <option value="QuanLy">Quản lý</option>
+                <option value="Admin">Admin</option>
+            </select>
+
+            <div class="input-group input-group-sm shadow-sm me-2" style="min-width: 180px;">
+                <span class="input-group-text bg-white border-end-0">
+                    <i class="fa fa-search text-muted"></i>
+                </span>
+                <input type="text" id="searchBox" class="form-control border-start-0" placeholder="Tìm kiếm...">
+            </div>
+
+            <button class="btn btn-outline-success btn-sm shadow-sm" id="btnExportExcel" type="button">
+                <i class="fa fa-file-excel me-1"></i> Xuất Excel
+            </button>
+        </form>
+    </div>
+</nav>
+
+<!-- BẢNG DỮ LIỆU -->
+<div class="table-responsive shadow-sm rounded-3 bg-white p-2 mt-3">
+    <table class="table table-bordered table-hover align-middle text-center mb-0">
+        <thead class="table-light">
+            <tr>
+                <th>STT</th>
+                <th>Tên Tài Khoản</th>
+                <th>Mật khẩu</th>
+                <th>Email</th>
+                <th>Loại Tài Khoản</th>
+                <th class="action-header">Tác vụ</th>
+            </tr>
+        </thead>
+        <tbody id="accountTableBody">
+            @if (Model != null && Model.Any())
+            {
+                var i = 1;
+                foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@i</td>
+                        <td>@item.Username</td>
+                        <td>********</td>
+                        <td class="email-cell text-truncate" title="@item.Email">@item.Email</td>
+                        <td>@item.VaiTro.TenVaiTro</td>
+                        <td>
+                            <button class="btn btn-sm btn-danger px-3 me-1 btn-delete">Sửa</button>
+
+                            <button class="btn btn-sm btn-danger px-3 me-1 btn-delete">Xóa</button>
+                            <button class="btn btn-sm btn-warning px-3 text-white btn-detail">Chi tiết</button>
+                        </td>
+                    </tr>
+                    i++;
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="6">Không có dữ liệu</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<!-- PHÂN TRANG -->
+<div class="d-flex justify-content-between align-items-center mt-3">
+    <div id="pagination" class="pagination-container">
+        <button class="btn btn-secondary btn-sm me-1" id="prev">&lt;</button>
+        <span id="pageNumbers"></span>
+        <button class="btn btn-secondary btn-sm ms-1" id="next">&gt;</button>
+    </div>
+    <div class="fw-bold text-end" id="pageInfo"></div>
+</div>
+
+
+
+
+
+
+
+<!-- FORM POPUP CHỈNH SỬA -->
+<div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="editModalLabel"><i class="fa fa-edit me-2"></i>Chỉnh sửa tài khoản</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editForm">
+                    <input type="hidden" id="editId" name="TaiKhoan_id" />
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Tên tài khoản</label>
+                        <input type="text" class="form-control" id="editUsername" name="Username" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Email</label>
+                        <input type="email" class="form-control" id="editEmail" name="Email" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Mật khẩu</label>
+                        <input type="password" class="form-control" id="editPassword" name="Password" placeholder="••••••" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Vai trò</label>
+                        <select id="editRole" name="VaiTro" class="form-select">
+                            <option value="SinhVien">Sinh viên</option>
+                            <option value="LopPhoLaoDong">Lớp phó lao động</option>
+                            <option value="QuanLy">Quản lý</option>
+                            <option value="Admin">Admin</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-primary" id="btnSaveEdit">
+                    <i class="fa fa-save me-1"></i> Lưu thay đổi
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Thanh công cụ trong suốt */
+    .toolbar {
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0;
+    }
+
+    /* Bảng */
+    .table {
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+        .table th {
+            background-color: #e9f2ff !important;
+            color: #003366;
+            font-weight: 600;
+        }
+
+        .table td {
+            vertical-align: middle;
+        }
+
+    /* Phân trang */
+    .pagination-container {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+        .pagination-container .btn {
+            border-radius: 6px;
+        }
+
+    #pageNumbers button.active {
+        background-color: #0d6efd;
+        color: #fff;
+    }
+
+    /* Responsive */
+    @@media (max-width: 768px) {
+        .navbar-collapse {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .navbar-nav .btn,
+        .navbar form select,
+        .navbar form .input-group {
+            width: 100%;
+            margin-bottom: 8px;
+        }
+    }
+
+    .btn-add {
+        background-color: #007bff;
+        color: white;
+        font-weight: 500;
+        border: none;
+        transition: background-color 0.2s ease, transform 0.15s ease;
+    }
+
+        .btn-add:hover {
+            background-color: #1d8bff;
+            transform: scale(1.04);
+        }
+
+    button#btnExportExcel {
+        background-color: #477e58f0;
+        color: #ffffff;
+    }
+
+    button#btnAdd {
+        border: 1px solid;
+    }
+</style>
+
+<script>
+
+    // Khi click nút SỬA
+    document.querySelectorAll(".btn-edit").forEach(btn => {
+        btn.addEventListener("click", () => {
+            const id = btn.getAttribute("data-id");
+            const username = btn.getAttribute("data-username");
+            const email = btn.getAttribute("data-email");
+            const role = btn.getAttribute("data-role");
+
+            // Gán vào form
+            document.getElementById("editId").value = id;
+            document.getElementById("editUsername").value = username;
+            document.getElementById("editEmail").value = email;
+            document.getElementById("editRole").value = role;
+
+            // Hiện modal
+            const modal = new bootstrap.Modal(document.getElementById("editModal"));
+            modal.show();
+        });
+    });
+
+    // Khi click Lưu
+    document.getElementById("btnSaveEdit").addEventListener("click", function () {
+        const form = document.getElementById("editForm");
+        const data = new FormData(form);
+
+        fetch("/Admin/Account/EditAjax", {
+            method: "POST",
+            body: data
+        })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    alert("Cập nhật thành công!");
+                    location.reload();
+                } else {
+                    alert("Lỗi khi cập nhật!");
+                }
+            })
+            .catch(() => alert("Không thể kết nối đến máy chủ!"));
+    });
+
+
+
+
+    // --- TÌM KIẾM ---
+    document.getElementById("searchBox").addEventListener("keyup", function () {
+        const searchText = this.value.toLowerCase();
+        const rows = document.querySelectorAll("#accountTableBody tr");
+        rows.forEach(row => {
+            const username = row.cells[1]?.innerText.toLowerCase() || "";
+            row.style.display = username.includes(searchText) ? "" : "none";
+        });
+    });
+
+    // --- LỌC THEO VAI TRÒ ---
+    document.getElementById("roleFilter").addEventListener("change", function () {
+        const selected = this.value.toLowerCase();
+        const rows = document.querySelectorAll("#accountTableBody tr");
+        rows.forEach(row => {
+            const role = row.cells[4]?.innerText.toLowerCase().replace(/\s/g, '');
+            row.style.display = !selected || role.includes(selected) ? "" : "none";
+        });
+    });
+
+    // --- XUẤT EXCEL ---
+    document.getElementById("btnExportExcel").addEventListener("click", function () {
+        const table = document.querySelector("table");
+        const rows = Array.from(table.querySelectorAll("tr"))
+            .map(tr => Array.from(tr.querySelectorAll("th, td"))
+                .map(td => td.innerText));
+        let excelContent = "<table>";
+        rows.forEach(row => {
+            excelContent += "<tr>";
+            row.forEach(cell => {
+                excelContent += `<td>${cell}</td>`;
+            });
+            excelContent += "</tr>";
+        });
+        excelContent += "</table>";
+        const blob = new Blob([excelContent], { type: "application/vnd.ms-excel" });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "DanhSachTaiKhoan.xls";
+        a.click();
+    });
+</script> 
+

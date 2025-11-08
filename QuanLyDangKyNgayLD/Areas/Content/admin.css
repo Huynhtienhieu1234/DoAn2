@@ -1,0 +1,390 @@
+﻿/* =========================================
+   🎨 GIAO DIỆN QUẢN TRỊ - STYLE DÙNG CHUNG
+   ========================================= */
+
+/* -------- RESET CƠ BẢN -------- */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background: linear-gradient(to bottom right, #f8faff, #dee6f2);
+    min-height: 100vh;
+    font-family: "Open Sans", sans-serif !important;
+    color: #2c3e50;
+    overflow-x: hidden;
+}
+
+/* -------- BỐ CỤC CHUNG -------- */
+.d-flex {
+    display: flex !important;
+}
+
+aside {
+    width: 290px;
+    min-height: 95vh;
+    margin: 20px;
+    background-color: #ffffff;
+    border-radius: 20px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+main.main-content {
+    width: calc(100% - 300px);
+    margin-top: 10px;
+    margin-right: 20px;
+}
+
+/* -------- THANH NGANG (NAVBAR) -------- */
+.navbar {
+    background-color: #ffffff !important;
+    border-radius: 15px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    padding: 10px 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    height: 60px;
+    object-fit: contain;
+}
+
+/* -------- SIDEBAR MENU -------- */
+.nav-link {
+    display: flex !important;
+    align-items: center;
+    padding: 12px 20px;
+    color: #5e6d85 !important;
+    font-weight: 600;
+    transition: all 0.3s ease-in-out;
+    border-radius: 12px;
+    width: 100%;
+}
+
+    .nav-link i {
+        margin-right: 10px;
+        font-size: 18px;
+    }
+
+    .nav-link:hover {
+        background-color: #e7efff;
+        color: #1a2b5f !important;
+        padding-left: 25px;
+    }
+
+    .nav-link.active {
+        background-color: #dce5ff !important;
+        color: #1a2b5f !important;
+        font-weight: 700;
+        box-shadow: inset 3px 0 0 #4b6cb7;
+        transform: translateX(4px);
+    }
+
+/* -------- CHÀO ADMIN -------- */
+.grayColor {
+    color: #5e6d85 !important;
+}
+
+.hr {
+    width: 100%;
+    height: 1px;
+    border: none;
+    background: linear-gradient(to right, transparent, #a0a7b4, transparent);
+    margin: 10px 0;
+}
+
+/* -------- NÚT CHUNG -------- */
+button,
+.btn {
+    font-weight: 600;
+    border-radius: 8px;
+    border: none;
+    transition: all 0.3s ease;
+}
+
+/* Nút tìm kiếm / đăng xuất */
+.timkiem {
+    padding: 8px 20px;
+    border-radius: 20px;
+    background-image: linear-gradient(315deg, #4b6cb7 0%, #182848 74%);
+    color: white;
+    font-weight: 600;
+    box-shadow: 0px 3px 6px rgba(0,0,0,0.15);
+}
+
+    .timkiem:hover {
+        background-image: linear-gradient(315deg, #5f80d2 0%, #233464 74%);
+        transform: scale(1.03);
+    }
+
+/* -------- BẢNG DỮ LIỆU -------- */
+table {
+    table-layout: fixed;
+    width: 100%;
+    border-collapse: collapse;
+    border-radius: 10px;
+    overflow: hidden;
+    background-color: #fff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+/**/
+    /* Hàng tiêu đề: màu xanh nhạt hơn thay vì xanh đậm */
+    table th {
+        background-color: #8fb6ff; /* Xanh nhạt */
+        color: white;
+        text-align: center;
+        padding: 12px;
+    }
+
+    /* Các hàng dữ liệu: màu trắng */
+    table td {
+        background-color: #ffffff;
+        text-align: center;
+        padding: 10px;
+        color: #333;
+        font-weight: 500;
+        border-bottom: 1px solid #eee;
+    }
+
+    /* Tạo hiệu ứng xen kẽ cho dễ nhìn */
+    table tr:nth-child(even) td {
+        background-color: #f9faff; /* Xanh nhạt rất nhẹ cho hàng chẵn */
+    }
+
+    /* Khi hover vào hàng – đổi nền nhẹ để nổi bật */
+    table tr:hover td {
+        background-color: #eaf1ff;
+        transition: background-color 0.2s ease;
+    }
+
+/**/
+    table th {
+        background-color: #4b6cb7;
+        color: white;
+        text-align: center;
+        padding: 12px;
+    }
+
+        table th:nth-child(1) {
+            width: 5%;
+        }
+        /* STT - rộng hơn một chút */
+        table th:nth-child(2) {
+            width: 19%;
+        }
+        /* Tên Tài Khoản - rộng hơn một chút */
+        table th:nth-child(3) {
+            width: 10%;
+        }
+        /* Mật khẩu */
+        table th:nth-child(4) {
+            width: 25%;
+        }
+        /* Email */
+        table th:nth-child(5) {
+            width: 15%;
+        }
+        /* Loại Tài Khoản */
+        table th:nth-child(6) {
+            width: 25%;
+        }
+    /* Tác vụ - điều chỉnh để tổng 100% */
+
+    table td {
+        text-align: center;
+        padding: 10px;
+        color: #333;
+        font-weight: 500;
+        border-bottom: 1px solid #eee;
+    }
+
+        /* Đảm bảo cột STT và các số khác căn giữa hoàn hảo */
+        table td:nth-child(1),
+        table td:nth-child(3) {
+            text-align: center;
+            font-weight: bold;
+        }
+
+    table tr:last-child td {
+        border-bottom: none;
+    }
+
+    table .btn {
+        padding: 6px 12px;
+        border-radius: 6px;
+        color: white;
+        font-weight: 600;
+    }
+
+.btn-edit {
+    background-color: #3498db;
+}
+
+    .btn-edit:hover {
+        background-color: #2980b9;
+    }
+
+.btn-delete {
+    background-color: #e74c3c;
+}
+
+    .btn-delete:hover {
+        background-color: #c0392b;
+    }
+
+.btn-detail {
+    background-color: #f1c40f;
+    color: #222;
+}
+
+    .btn-detail:hover {
+        background-color: #d4ac0d;
+    }
+
+/* -------- MODAL XÁC NHẬN -------- */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    background-color: rgba(0,0,0,0.4);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
+
+.boder_delete {
+    background-color: white;
+    padding: 25px 30px;
+    border-radius: 12px;
+    border: 2px solid #4b6cb7;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    text-align: center;
+}
+
+.boder_two_buton {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.btn-xoa {
+    background-color: #ff4d4f;
+    color: white;
+    padding: 8px 18px;
+}
+
+    .btn-xoa:hover {
+        background-color: #d9363e;
+    }
+
+.btn-huy {
+    background-color: #d9d9d9;
+    color: #000;
+    padding: 8px 18px;
+}
+
+/* -------- BIỂU ĐỒ / THỐNG KÊ -------- */
+.card {
+    background-color: #fff;
+    border-radius: 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    padding: 20px;
+}
+
+    .card h4 {
+        text-align: center;
+        font-weight: 700;
+        color: #1a2b5f;
+        margin-bottom: 15px;
+    }
+
+/* -------- ẨN THANH HIGHLIGHT -------- */
+.sidebar-highlight {
+    display: none !important;
+}
+
+/* -------- RESPONSIVE -------- */
+@media (max-width: 992px) {
+    aside {
+        width: 240px;
+    }
+
+    main.main-content {
+        width: calc(100% - 250px);
+    }
+}
+
+@media (max-width: 768px) {
+    aside {
+        display: none;
+    }
+
+    main.main-content {
+        width: 100%;
+        margin: 0;
+    }
+
+    .navbar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+}
+/* Giữ màu chữ cho các nút trong cột Tác vụ */
+.action-cell .btn {
+    color: #fff !important;
+    font-weight: 600;
+    text-shadow: 0 0 2px rgba(0,0,0,0.2);
+}
+
+.btn-edit {
+    background-color: #3498db !important; /* Xanh dương */
+    color: #fff !important;
+}
+
+.btn-delete {
+    background-color: #e74c3c !important; /* Đỏ */
+    color: #fff !important;
+}
+
+.btn-detail {
+    background-color: #f1c40f !important; /* Vàng */
+    color: #222 !important;
+}
+
+/* Giới hạn chiều rộng cho cột Email và hiện dấu ba chấm (...) nếu dài hơn 10 ký tự */
+.email-cell {
+    max-width: 120px; /* Ước lượng cho khoảng 10 ký tự với font Open Sans ~12px/char */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Nếu muốn canh giữa các nút Tác vụ */
+.action-cell {
+    text-align: center;
+    white-space: nowrap;
+}
+/**/
+.pagination-container {
+    margin-top: 15px;
+}
+
+    .pagination-container .btn {
+        border-radius: 8px;
+        padding: 6px 14px;
+    }
+
+.fw-bold {
+    font-weight: bold;
+}

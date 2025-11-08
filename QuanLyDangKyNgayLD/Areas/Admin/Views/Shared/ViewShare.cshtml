@@ -1,113 +1,209 @@
-﻿<html5>
-    <head>
-        <link rel="stylesheet" href="@Url.Content("~/Areas/Admin/Shared/layout.css")">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-        <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-        <script src="~/Areas/Admin/Javascript/AdminshareJavaScript.js"></script>
-        @RenderSection("Styles", required: false)
+﻿@{
+    Layout = null;
+}
 
-    </head>
-    <body style="overflow-x: hidden;">
-        <!-- Ngăn chặn thanh cuộn ngang -->
-        <div class="d-flex">
-            <!-- Sidebar -->
-            <aside class="bg-white  shadow m-4 rounded-5 pb-4"
-                   style="width: 280px; min-height: 95vh; left: 0; top: 0;">
-                <div class="p-3">
-                    <a class="navbar-brand d-flex align-items-center" href="#">
-@*                        <img src="@Url.Content("~/Content/Admin/Image/Screenshot 2025-02-23 214442.png")" style="height:40px;width:40px" alt="main_logo">
-*@                        <span class="ms-2 fw-bold grayColor">XIN CHÀO, ADMIN</span>
+<head>
+    <meta charset="utf-8">
+    <title>Trang Quản Trị</title>
+
+    <!-- Font + Bootstrap + Icon -->
+
+    <link rel="icon" type="image/png" href="https://cdn.jsdelivr.net/gh/Huynhtienhieu1234/UploadAnh/logoxoanen.png" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="~/Areas/Content/admin.css" />
+    <style>
+        nav.navbar.navbar-main.navbar-expand-lg.px-0.mx-4.shadow-none.border-radius-xl.my-3 {
+ 
+            margin-left: 0 !important;
+            margin-right: 0 !important;
+        }
+
+
+    </style>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            // ===== XỬ LÝ MODAL =====
+            window.openModal = function () {
+                document.getElementById('confirmationModal').style.display = 'flex';
+            }
+            window.closeModal = function () {
+                document.getElementById('confirmationModal').style.display = 'none';
+            }
+
+            // ===== HIGHLIGHT MENU =====
+            const navLinks = document.querySelectorAll(".nav-link");
+            const sidebar = document.querySelector("aside");
+
+            // Tạo highlight động
+            const highlight = document.createElement("div");
+            highlight.classList.add("sidebar-highlight");
+            sidebar.appendChild(highlight);
+
+            // Lấy URL hiện tại (chỉ phần path)
+            const currentPath = window.location.pathname.toLowerCase();
+
+            let currentActive = null;
+
+            navLinks.forEach(link => {
+                const linkPath = new URL(link.href).pathname.toLowerCase();
+                if (currentPath === linkPath) {
+                    link.classList.add("active");
+                    currentActive = link;
+                }
+            });
+
+            // Nếu không tìm thấy link khớp tuyệt đối, thử kiểm tra dạng chứa
+            if (!currentActive) {
+                navLinks.forEach(link => {
+                    const linkPath = new URL(link.href).pathname.toLowerCase();
+                    if (currentPath.includes(linkPath)) {
+                        link.classList.add("active");
+                        currentActive = link;
+                    }
+                });
+            }
+
+            // Di chuyển highlight đến vị trí link đang active
+            function moveHighlight(activeLink) {
+                if (!activeLink) return;
+                const rect = activeLink.getBoundingClientRect();
+                highlight.style.top = (activeLink.offsetTop + 6) + "px";
+                highlight.style.height = rect.height + "px";
+            }
+
+            moveHighlight(currentActive);
+
+
+
+
+
+
+
+
+
+
+            // ===== PHÂN TRANG =====
+            const totalItems = document.querySelectorAll("#accountTableBody tr").length;
+            const itemsPerPage = 5;
+            let currentPage = 1;
+            const totalPages = Math.ceil(totalItems / itemsPerPage);
+
+            function renderTable() {
+                const rows = document.querySelectorAll("#accountTableBody tr");
+                rows.forEach((row, index) => {
+                    row.style.display = (index >= (currentPage - 1) * itemsPerPage && index < currentPage * itemsPerPage) ? "" : "none";
+                });
+            }
+
+            function renderPagination() {
+                const pageNumbers = document.getElementById("pageNumbers");
+                pageNumbers.innerHTML = "";
+
+                for (let i = 1; i <= totalPages; i++) {
+                    const btn = document.createElement("button");
+                    btn.textContent = i;
+                    btn.className = "btn btn-sm " + (i === currentPage ? "btn-primary active" : "btn-outline-secondary");
+                    btn.addEventListener("click", () => {
+                        currentPage = i;
+                        updateDisplay();
+                    });
+                    pageNumbers.appendChild(btn);
+                }
+
+                document.getElementById("pageInfo").textContent = `Trang ${currentPage} / ${totalPages}`;
+            }
+
+            function updateDisplay() {
+                renderTable();
+                renderPagination();
+            }
+
+            document.getElementById("prev").addEventListener("click", () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    updateDisplay();
+                }
+            });
+
+            document.getElementById("next").addEventListener("click", () => {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    updateDisplay();
+                }
+            });
+
+            updateDisplay();
+        });
+    </script>
+
+
+
+
+</head>
+
+<body>
+    <div class="d-flex">
+        <!-- Sidebar -->
+        <aside class="shadow m-4 rounded-5 pb-4" style="width: 290px; min-height: 95vh;">
+            <div class="p-3">
+                <a class="navbar-brand d-flex align-items-center" href="#">
+                    <span class="ms-2 fw-bold grayColor">👋 XIN CHÀO, ADMIN</span>
+                </a>
+            </div>
+            <hr class="hr">
+
+            <ul class="nav flex-column">
+                <li class="nav-item"><a href="@Url.Action("Index","Admin",new{area="Admin"})" class="nav-link"></i>Trang Chủ</a></li>
+                <li class="nav-item"><a href="@Url.Action("Index","Account",new{area="Admin"})" class="nav-link"><i class="fa fa-list-alt"></i>Tài Khoản</a></li>
+                <li class="nav-item"><a href="@Url.Action("TrangTaoDotLaoDong","AdminHome",new{area="Admin"})" class="nav-link"><i class="fa fa-calendar-plus"></i>Tạo Đợt LĐ</a></li>
+                <li class="nav-item"><a href="@Url.Action("DuyetLaoDong","AdminTask",new{area="Admin"})" class="nav-link"><i class="fa fa-check-square"></i>Duyệt Lao Động</a></li>
+                <li class="nav-item"><a href="@Url.Action("XacNhanHoanThanh","XacNhanHoanThanhLD",new{area="Admin"})" class="nav-link"><i class="fa fa-clipboard-check"></i>Xác Nhận Hoàn Thành</a></li>
+                <li class="nav-item"><a href="@Url.Action("TrangChuSinhVien","QuanLySinhVien",new{area="Admin"})" class="nav-link"><i class="fa fa-users"></i>Danh Sách SV</a></li>
+                <li class="nav-item"><a href="@Url.Action("ThongKeIndex","ThongKe",new{area="Admin"})" class="nav-link"><i class="fa fa-chart-bar"></i>Thống Kê</a></li>
+            </ul>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content flex-grow-1 position-relative border-radius-lg" style="width: calc(100% - 280px);">
+            <nav class="navbar navbar-main navbar-expand-lg px-0 mx-4 shadow-none border-radius-xl my-3">
+                <div class="container-fluid py-1 px-3">
+                    <a href="@Url.Action("Index","AdminHome",new{area="Admin"})">
+                        <img src="https://cdn.jsdelivr.net/gh/Huynhtienhieu1234/UploadAnh@main/admin/Logodaxoanen.png" alt="Logo" class="logo">
+          
                     </a>
-                </div>
-                <hr class="hr">
-                <ul class="nav flex-column">
-                    <li class="nav-item">
-                        <a href="/Admin/AdminHome/Index" class="nav-link">
-                            <i class="fa-solid fa-tv"></i>
-                            <span>Trang Chủ</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="@Url.Action("TrangTaiKhoan", "AdminHome", new { area = "Admin" })" class="nav-link">
-                            <i class="fa fa-list-alt"></i>
-                            <span>Tài Khoản</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="@Url.Action("TrangTaoDotLaoDong", "AdminHome", new { area = "Admin" })" class="nav-link">
-                            <i class="fa fa-calendar-plus"></i>
-                            <span>Tạo Đợt LĐ</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="@Url.Action("DuyetLaoDong", "AdminTask", new { area = "Admin" })" class="nav-link">
-                            <i class="fa fa-check-square"></i>
-                            <span>Duyệt Đăng Kí Lao Động</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="@Url.Action("XacNhanHoanThanh", "XacNhanHoanThanhLD", new { area = "Admin" })" class="nav-link">
-                            <i class="fa fa-clipboard-check"></i>
-                            <span>Xác Nhận Hoàn Thành LĐ</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="@Url.Action("TrangChuSinhVien", "QuanLySinhVien", new { area = "Admin" })" class="nav-link">
-                            <i class="fa fa-users"></i>
-                            <span>Danh Sách Sinh Viên</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="@Url.Action("ThongKeIndex", "ThongKe", new { area = "Admin" })" class="nav-link">
-                            <i class="fa fa-chart-bar"></i>
-                            <span>Thống Kê</span>
-                        </a>
-                    </li>
-                </ul>
-            </aside>
 
-            <!-- Main Content -->
-            <main class="main-content flex-grow-1 position-relative border-radius-lg"
-                  style=" padding: 0px; width: calc(100% - 280px);">
-                <nav class="navbar navbar-main navbar-expand-lg px-0 mx-4 shadow-none border-radius-xl">
-                    <div class="container-fluid py-1 px-3">
-                        <a href="@Url.Action("Index", "AdminHome", new { area = "Admin" })">
-                            <img src="@Url.Content("~/ANH/Logodaxoanen.png")"
-                                 style="object-fit: cover; margin-right: 20px; transition: filter 0.3s ease;"
-                                 onmouseover="this.style.filter='brightness(1.3)'"
-                                 onmouseout="this.style.filter='brightness(1)'" />
-                        </a>
+                    <div class="collapse navbar-collapse" id="navbar">
+                        <div class="ms-md-auto pe-md-3 d-flex align-items-center">
+                            <button class="timkiem" onclick="openModal()">
+                                <i class="fa fa-sign-out"></i> Đăng xuất
+                            </button>
 
-                        <div class="collapse navbar-collapse" id="navbar">
-                            <div class="ms-md-auto pe-md-3 d-flex align-items-center">
-                                <button class="timkiem" onclick="openModal()">
-                                    <i class="fa fa-sign-out" aria-hidden="true"></i>
-                                    Sign out
-                                </button>
-                                <!-- Modal xác nhận -->
-                                <div id="confirmationModal" class="modal">
-                                    <div class="boder_delete">
-                                        <div class="modal-text">
-                                            <p>Bạn có chắc chắn muốn đăng xuất?</p>
-                                            <div class="boder_two_buton">
-                                                <!-- Truyền URL từ Razor vào attribute -->
-                                                <button class="btn-xoa" onclick="window.location.href='@Url.Action("Login", "Login", new { area = "" })'">Có</button>
-                                                <button class="btn-huy" onclick="closeModal()">Hủy</button>
-                                            </div>
+                            <!-- Modal xác nhận -->
+                            <div id="confirmationModal" class="modal">
+                                <div class="boder_delete">
+                                    <div class="modal-text">
+                                        <p>Bạn có chắc chắn muốn đăng xuất?</p>
+                                        <div class="boder_two_buton">
+                                            <button class="btn-xoa" onclick="window.location.href='@Url.Action("Login","Login",new{area=""})'">Có</button>
+                                            <button class="btn-huy" onclick="closeModal()">Hủy</button>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </nav>
-
-                <div class="container-fluid">
-                    @RenderBody()
                 </div>
-            </main>
-        </div>
+            </nav>
 
-    </body>
-</html5>
+            <div class="container-fluid">
+                @RenderBody()
+            </div>
+        </main>
+    </div>
+</body>
+

@@ -96,7 +96,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Areas\Admin\Views\Shared\layout.css" />
+    <Content Include="Areas\Content\admin.css" />
     <Content Include="Global.asax" />
     <Content Include="Models\QuanLyDangKyLaoDong.Context.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
@@ -113,6 +113,7 @@
   <ItemGroup>
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="Areas\Admin\AdminAreaRegistration.cs" />
+    <Compile Include="Areas\Admin\Controllers\AccountController.cs" />
     <Compile Include="Areas\Admin\Controllers\AdminController.cs" />
     <Compile Include="Areas\LopPhoLaoDong\Controllers\MainLPLDController.cs" />
     <Compile Include="Areas\LopPhoLaoDong\LopPhoLaoDongAreaRegistration.cs" />
@@ -205,6 +206,7 @@
     <Content Include="Models\QuanLyDangKyLaoDong.edmx.diagram">
       <DependentUpon>QuanLyDangKyLaoDong.edmx</DependentUpon>
     </Content>
+    <Content Include="Areas\Admin\Views\Account\Index.cshtml" />
     <None Include="packages.config" />
     <Content Include="Views\Login\Login.cshtml" />
     <Content Include="Views\ForgotPassword\ForgotPassword.cshtml" />
