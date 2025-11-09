@@ -8,10 +8,12 @@ namespace QuanLyDangKyNgayLD.Areas.SinhVien.Controllers
 {
     public class MainSinhVienController : Controller
     {
-        // GET: SinhVien/SinhVien
+        // GET: SinhVien/Index
+
         public ActionResult Index()
         {
             return View();
         }
+
     }
 }

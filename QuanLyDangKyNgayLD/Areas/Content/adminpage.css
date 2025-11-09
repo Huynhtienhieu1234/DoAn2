@@ -1,0 +1,76 @@
+﻿/* Thanh công cụ trong suốt */
+.toolbar {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0;
+}
+
+/* Bảng */
+.table {
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+    .table th {
+        background-color: #e9f2ff !important;
+        color: #003366;
+        font-weight: 600;
+    }
+
+    .table td {
+        vertical-align: middle;
+    }
+
+/* Phân trang */
+.pagination-container {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+    .pagination-container .btn {
+        border-radius: 6px;
+    }
+
+#pageNumbers button.active {
+    background-color: #0d6efd;
+    color: #fff;
+}
+
+/* Responsive */
+@@media (max-width: 768px) {
+    .navbar-collapse {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .navbar-nav .btn,
+    .navbar form select,
+    .navbar form .input-group {
+        width: 100%;
+        margin-bottom: 8px;
+    }
+}
+
+.btn-add {
+    background-color: #007bff;
+    color: white;
+    font-weight: 500;
+    border: none;
+    transition: background-color 0.2s ease, transform 0.15s ease;
+}
+
+    .btn-add:hover {
+        background-color: #1d8bff;
+        transform: scale(1.04);
+    }
+
+button#btnExportExcel {
+    background-color: #477e58f0;
+    color: #ffffff;
+}
+
+button#btnAdd {
+    border: 1px solid;
+}

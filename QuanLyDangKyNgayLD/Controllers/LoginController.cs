@@ -45,7 +45,7 @@ namespace QuanLyDangKyNgayLD.Controllers
                         {
                             case 1: return RedirectToAction("Index", "Admin", new { area = "Admin" });
                             case 2: return RedirectToAction("Index", "QuanLy", new { area = "Admin" });
-                            case 3: return RedirectToAction("Index", "SinhVien");
+                            case 3:return RedirectToAction("Index", "MainSinhVien", new { area = "SinhVien" });
                             case 4: return RedirectToAction("Index", "LopPhoLaoDong");
                             default:
                                 ModelState.AddModelError("", "Vai trò tài khoản không hợp lệ.");

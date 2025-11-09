@@ -16,12 +16,9 @@
     <link rel="stylesheet" href="~/Areas/Content/admin.css" />
     <style>
         nav.navbar.navbar-main.navbar-expand-lg.px-0.mx-4.shadow-none.border-radius-xl.my-3 {
- 
             margin-left: 0 !important;
             margin-right: 0 !important;
         }
-
-
     </style>
 
     <script>
@@ -146,6 +143,9 @@
 
 </head>
 
+
+@RenderSection("Scripts", required: false)
+
 <body>
     <div class="d-flex">
         <!-- Sidebar -->
@@ -174,7 +174,7 @@
                 <div class="container-fluid py-1 px-3">
                     <a href="@Url.Action("Index","AdminHome",new{area="Admin"})">
                         <img src="https://cdn.jsdelivr.net/gh/Huynhtienhieu1234/UploadAnh@main/admin/Logodaxoanen.png" alt="Logo" class="logo">
-          
+
                     </a>
 
                     <div class="collapse navbar-collapse" id="navbar">

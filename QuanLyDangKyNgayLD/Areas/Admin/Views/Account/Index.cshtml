@@ -1,8 +1,10 @@
 ﻿@model IEnumerable<QuanLyDangKyNgayLD.Models.TaiKhoan>
 
 @{
+    ViewBag.Title = "Trang Tài Khoản";
     Layout = "~/Areas/Admin/Views/Shared/ViewShare.cshtml";
 }
+<link href="~/Areas/Content/adminpage.css" rel="stylesheet" type="text/css" />
 
 <!-- THANH CÔNG CỤ -->
 <nav class="navbar navbar-expand-lg toolbar">
@@ -66,10 +68,25 @@
                         <td class="email-cell text-truncate" title="@item.Email">@item.Email</td>
                         <td>@item.VaiTro.TenVaiTro</td>
                         <td>
-                            <button class="btn btn-sm btn-danger px-3 me-1 btn-delete">Sửa</button>
+                            <!-- Nút Sửa - Gradient xanh -->
+                            <button class="btn btn-sm px-3 me-1" style="background: linear-gradient(45deg, #007bff, #0056b3); color: white; border: none;">
+                                <i class="fas fa-edit"></i>
+                            </button>
 
-                            <button class="btn btn-sm btn-danger px-3 me-1 btn-delete">Xóa</button>
-                            <button class="btn btn-sm btn-warning px-3 text-white btn-detail">Chi tiết</button>
+                            <!-- Nút Xóa - Gradient đỏ -->
+                            <button class="btn btn-sm px-3 me-1" style="background: linear-gradient(45deg, #dc3545, #a71e2a); color: white; border: none;">
+                                <i class="fas fa-trash"></i>
+                            </button>
+
+                            <!-- Nút Chi tiết - Gradient cam/vàng -->
+                            <button class="btn btn-sm px-3 me-1" style="background: linear-gradient(45deg, #fd7e14, #e55a00); color: white; border: none;">
+                                <i class="fas fa-info-circle"></i>
+                            </button>
+
+                            <!-- Nút Đặt lại mật khẩu - Gradient tím -->
+                            <button class="btn btn-sm px-3 me-1" style="background: linear-gradient(45deg, #6f42c1, #4a2d8a); color: white; border: none;">
+                                <i class="fas fa-key"></i>
+                            </button>
                         </td>
                     </tr>
                     i++;
@@ -94,12 +111,6 @@
     </div>
     <div class="fw-bold text-end" id="pageInfo"></div>
 </div>
-
-
-
-
-
-
 
 <!-- FORM POPUP CHỈNH SỬA -->
 <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
@@ -149,85 +160,6 @@
     </div>
 </div>
 
-<style>
-    /* Thanh công cụ trong suốt */
-    .toolbar {
-        background: transparent !important;
-        border: none !important;
-        box-shadow: none !important;
-        padding: 0;
-    }
-
-    /* Bảng */
-    .table {
-        border-radius: 10px;
-        overflow: hidden;
-    }
-
-        .table th {
-            background-color: #e9f2ff !important;
-            color: #003366;
-            font-weight: 600;
-        }
-
-        .table td {
-            vertical-align: middle;
-        }
-
-    /* Phân trang */
-    .pagination-container {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-    }
-
-        .pagination-container .btn {
-            border-radius: 6px;
-        }
-
-    #pageNumbers button.active {
-        background-color: #0d6efd;
-        color: #fff;
-    }
-
-    /* Responsive */
-    @@media (max-width: 768px) {
-        .navbar-collapse {
-            flex-direction: column;
-            align-items: stretch;
-        }
-
-        .navbar-nav .btn,
-        .navbar form select,
-        .navbar form .input-group {
-            width: 100%;
-            margin-bottom: 8px;
-        }
-    }
-
-    .btn-add {
-        background-color: #007bff;
-        color: white;
-        font-weight: 500;
-        border: none;
-        transition: background-color 0.2s ease, transform 0.15s ease;
-    }
-
-        .btn-add:hover {
-            background-color: #1d8bff;
-            transform: scale(1.04);
-        }
-
-    button#btnExportExcel {
-        background-color: #477e58f0;
-        color: #ffffff;
-    }
-
-    button#btnAdd {
-        border: 1px solid;
-    }
-</style>
-
 <script>
 
     // Khi click nút SỬA
@@ -271,9 +203,6 @@
             .catch(() => alert("Không thể kết nối đến máy chủ!"));
     });
 
-
-
-
     // --- TÌM KIẾM ---
     document.getElementById("searchBox").addEventListener("keyup", function () {
         const searchText = this.value.toLowerCase();
@@ -315,5 +244,5 @@
         a.download = "DanhSachTaiKhoan.xls";
         a.click();
     });
-</script> 
+</script>
 
