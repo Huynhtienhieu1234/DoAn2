@@ -69,7 +69,12 @@
                         <td>@item.VaiTro.TenVaiTro</td>
                         <td>
                             <!-- Nút Sửa - Gradient xanh -->
-                            <button class="btn btn-sm px-3 me-1" style="background: linear-gradient(45deg, #007bff, #0056b3); color: white; border: none;">
+                            <button class="btn btn-sm px-3 me-1 btn-edit"
+                                    style="background: linear-gradient(45deg, #007bff, #0056b3); color: white; border: none;"
+                                    data-id="@item.TaiKhoan_id"
+                                    data-username="@item.Username"
+                                    data-email="@item.Email"
+                                    data-role="@item.VaiTro">
                                 <i class="fas fa-edit"></i>
                             </button>
 
@@ -161,88 +166,92 @@
 </div>
 
 <script>
+    // Đợi DOM load xong
+    document.addEventListener("DOMContentLoaded", function () {
 
-    // Khi click nút SỬA
-    document.querySelectorAll(".btn-edit").forEach(btn => {
-        btn.addEventListener("click", () => {
-            const id = btn.getAttribute("data-id");
-            const username = btn.getAttribute("data-username");
-            const email = btn.getAttribute("data-email");
-            const role = btn.getAttribute("data-role");
+        // Khi click nút SỬA
+        document.querySelectorAll(".btn-edit").forEach(btn => {
+            btn.addEventListener("click", function () {
+                const id = this.getAttribute("data-id");
+                const username = this.getAttribute("data-username");
+                const email = this.getAttribute("data-email");
+                const role = this.getAttribute("data-role");
 
-            // Gán vào form
-            document.getElementById("editId").value = id;
-            document.getElementById("editUsername").value = username;
-            document.getElementById("editEmail").value = email;
-            document.getElementById("editRole").value = role;
+                console.log("Edit clicked:", { id, username, email, role }); // Debug
 
-            // Hiện modal
-            const modal = new bootstrap.Modal(document.getElementById("editModal"));
-            modal.show();
-        });
-    });
+                // Gán vào form
+                document.getElementById("editId").value = id;
+                document.getElementById("editUsername").value = username;
+                document.getElementById("editEmail").value = email;
+                document.getElementById("editRole").value = role;
 
-    // Khi click Lưu
-    document.getElementById("btnSaveEdit").addEventListener("click", function () {
-        const form = document.getElementById("editForm");
-        const data = new FormData(form);
-
-        fetch("/Admin/Account/EditAjax", {
-            method: "POST",
-            body: data
-        })
-            .then(response => response.json())
-            .then(result => {
-                if (result.success) {
-                    alert("Cập nhật thành công!");
-                    location.reload();
-                } else {
-                    alert("Lỗi khi cập nhật!");
-                }
-            })
-            .catch(() => alert("Không thể kết nối đến máy chủ!"));
-    });
-
-    // --- TÌM KIẾM ---
-    document.getElementById("searchBox").addEventListener("keyup", function () {
-        const searchText = this.value.toLowerCase();
-        const rows = document.querySelectorAll("#accountTableBody tr");
-        rows.forEach(row => {
-            const username = row.cells[1]?.innerText.toLowerCase() || "";
-            row.style.display = username.includes(searchText) ? "" : "none";
-        });
-    });
-
-    // --- LỌC THEO VAI TRÒ ---
-    document.getElementById("roleFilter").addEventListener("change", function () {
-        const selected = this.value.toLowerCase();
-        const rows = document.querySelectorAll("#accountTableBody tr");
-        rows.forEach(row => {
-            const role = row.cells[4]?.innerText.toLowerCase().replace(/\s/g, '');
-            row.style.display = !selected || role.includes(selected) ? "" : "none";
-        });
-    });
-
-    // --- XUẤT EXCEL ---
-    document.getElementById("btnExportExcel").addEventListener("click", function () {
-        const table = document.querySelector("table");
-        const rows = Array.from(table.querySelectorAll("tr"))
-            .map(tr => Array.from(tr.querySelectorAll("th, td"))
-                .map(td => td.innerText));
-        let excelContent = "<table>";
-        rows.forEach(row => {
-            excelContent += "<tr>";
-            row.forEach(cell => {
-                excelContent += `<td>${cell}</td>`;
+                // Hiện modal
+                const modal = new bootstrap.Modal(document.getElementById("editModal"));
+                modal.show();
             });
-            excelContent += "</tr>";
         });
-        excelContent += "</table>";
-        const blob = new Blob([excelContent], { type: "application/vnd.ms-excel" });
-        const a = document.createElement("a");
-        a.href = URL.createObjectURL(blob);
-        a.download = "DanhSachTaiKhoan.xls";
-        a.click();
+
+        // Khi click Lưu
+        document.getElementById("btnSaveEdit").addEventListener("click", function () {
+            const form = document.getElementById("editForm");
+            const data = new FormData(form);
+
+            fetch("/Admin/Account/EditAjax", {
+                method: "POST",
+                body: data
+            })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        alert("Cập nhật thành công!");
+                        location.reload();
+                    } else {
+                        alert("Lỗi khi cập nhật!");
+                    }
+                })
+                .catch(() => alert("Không thể kết nối đến máy chủ!"));
+        });
+
+        // --- TÌM KIẾM ---
+        document.getElementById("searchBox").addEventListener("keyup", function () {
+            const searchText = this.value.toLowerCase();
+            const rows = document.querySelectorAll("#accountTableBody tr");
+            rows.forEach(row => {
+                const username = row.cells[1]?.innerText.toLowerCase() || "";
+                row.style.display = username.includes(searchText) ? "" : "none";
+            });
+        });
+
+        // --- LỌC THEO VAI TRÒ ---
+        document.getElementById("roleFilter").addEventListener("change", function () {
+            const selected = this.value.toLowerCase();
+            const rows = document.querySelectorAll("#accountTableBody tr");
+            rows.forEach(row => {
+                const role = row.cells[4]?.innerText.toLowerCase().replace(/\s/g, '');
+                row.style.display = !selected || role.includes(selected) ? "" : "none";
+            });
+        });
+
+        // --- XUẤT EXCEL ---
+        document.getElementById("btnExportExcel").addEventListener("click", function () {
+            const table = document.querySelector("table");
+            const rows = Array.from(table.querySelectorAll("tr"))
+                .map(tr => Array.from(tr.querySelectorAll("th, td"))
+                    .map(td => td.innerText));
+            let excelContent = "<table>";
+            rows.forEach(row => {
+                excelContent += "<tr>";
+                row.forEach(cell => {
+                    excelContent += `<td>${cell}</td>`;
+                });
+                excelContent += "</tr>";
+            });
+            excelContent += "</table>";
+            const blob = new Blob([excelContent], { type: "application/vnd.ms-excel" });
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = "DanhSachTaiKhoan.xls";
+            a.click();
+        });
     });
 </script>
-
