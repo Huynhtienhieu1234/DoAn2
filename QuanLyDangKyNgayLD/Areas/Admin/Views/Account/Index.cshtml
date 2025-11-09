@@ -22,9 +22,9 @@
         <form class="d-flex align-items-center" role="search">
             <select id="roleFilter" class="form-select form-select-sm me-2 shadow-sm" style="min-width: 140px;">
                 <option value="">-- Lọc theo vai trò --</option>
-                <option value="SinhVien">Sinh viên</option>
-                <option value="LopPhoLaoDong">Lớp phó lao động</option>
-                <option value="QuanLy">Quản lý</option>
+                <option value="Sinh viên">Sinh viên</option>
+                <option value="Lớp phó lao động">Lớp phó lao động</option>
+                <option value="Quản lý">Quản lý</option>
                 <option value="Admin">Admin</option>
             </select>
 
@@ -74,22 +74,29 @@
                                     data-id="@item.TaiKhoan_id"
                                     data-username="@item.Username"
                                     data-email="@item.Email"
-                                    data-role="@item.VaiTro">
+                                    data-roleid="@item.VaiTro.VaiTro_id"
+                                    data-rolename="@item.VaiTro.TenVaiTro">
                                 <i class="fas fa-edit"></i>
                             </button>
 
                             <!-- Nút Xóa - Gradient đỏ -->
-                            <button class="btn btn-sm px-3 me-1" style="background: linear-gradient(45deg, #dc3545, #a71e2a); color: white; border: none;">
+                            <button class="btn btn-sm px-3 me-1 btn-delete"
+                                    style="background: linear-gradient(45deg, #dc3545, #a71e2a); color: white; border: none;"
+                                    data-id="@item.TaiKhoan_id">
                                 <i class="fas fa-trash"></i>
                             </button>
 
                             <!-- Nút Chi tiết - Gradient cam/vàng -->
-                            <button class="btn btn-sm px-3 me-1" style="background: linear-gradient(45deg, #fd7e14, #e55a00); color: white; border: none;">
+                            <button class="btn btn-sm px-3 me-1 btn-detail"
+                                    style="background: linear-gradient(45deg, #fd7e14, #e55a00); color: white; border: none;"
+                                    data-id="@item.TaiKhoan_id">
                                 <i class="fas fa-info-circle"></i>
                             </button>
 
                             <!-- Nút Đặt lại mật khẩu - Gradient tím -->
-                            <button class="btn btn-sm px-3 me-1" style="background: linear-gradient(45deg, #6f42c1, #4a2d8a); color: white; border: none;">
+                            <button class="btn btn-sm px-3 me-1 btn-reset"
+                                    style="background: linear-gradient(45deg, #6f42c1, #4a2d8a); color: white; border: none;"
+                                    data-id="@item.TaiKhoan_id">
                                 <i class="fas fa-key"></i>
                             </button>
                         </td>
@@ -118,13 +125,16 @@
 </div>
 
 <!-- FORM POPUP CHỈNH SỬA -->
-<div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+<div class="modal fade" data-bs-backdrop="false" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content shadow">
             <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title" id="editModalLabel"><i class="fa fa-edit me-2"></i>Chỉnh sửa tài khoản</h5>
+                <h5 class="modal-title" id="editModalLabel">
+                    <i class="fa fa-edit me-2"></i>Chỉnh sửa tài khoản
+                </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Đóng"></button>
             </div>
+
             <div class="modal-body">
                 <form id="editForm">
                     <input type="hidden" id="editId" name="TaiKhoan_id" />
@@ -141,22 +151,36 @@
 
                     <div class="mb-3">
                         <label class="form-label fw-bold">Mật khẩu</label>
-                        <input type="password" class="form-control" id="editPassword" name="Password" placeholder="••••••" />
+                        <input type="password" class="form-control" id="editPassword" name="Password" placeholder="Để trống nếu không đổi" />
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label fw-bold">Vai trò</label>
-                        <select id="editRole" name="VaiTro" class="form-select">
-                            <option value="SinhVien">Sinh viên</option>
-                            <option value="LopPhoLaoDong">Lớp phó lao động</option>
-                            <option value="QuanLy">Quản lý</option>
-                            <option value="Admin">Admin</option>
+                        <select id="editRole" name="VaiTro_id" class="form-select" required>
+                            <option value="">-- Chọn vai trò --</option>
+                            @if (ViewBag.VaiTroList != null)
+                            {
+                                foreach (var vaiTro in ViewBag.VaiTroList)
+                                {
+                                    <option value="@vaiTro.VaiTro_id">@vaiTro.TenVaiTro</option>
+                                }
+                            }
+                            else
+                            {
+                                <option value="3">Sinh viên</option>
+                                <option value="4">Lớp phó lao động</option>
+                                <option value="2">Quản lý</option>
+                                <option value="1">Admin</option>
+                            }
                         </select>
                     </div>
                 </form>
             </div>
+
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    Hủy
+                </button>
                 <button type="button" class="btn btn-primary" id="btnSaveEdit">
                     <i class="fa fa-save me-1"></i> Lưu thay đổi
                 </button>
@@ -169,89 +193,188 @@
     // Đợi DOM load xong
     document.addEventListener("DOMContentLoaded", function () {
 
-        // Khi click nút SỬA
+        // === XỬ LÝ NÚT SỬA ===
         document.querySelectorAll(".btn-edit").forEach(btn => {
             btn.addEventListener("click", function () {
                 const id = this.getAttribute("data-id");
                 const username = this.getAttribute("data-username");
                 const email = this.getAttribute("data-email");
-                const role = this.getAttribute("data-role");
+                const roleId = this.getAttribute("data-roleid");
+                const roleName = this.getAttribute("data-rolename");
 
-                console.log("Edit clicked:", { id, username, email, role }); // Debug
+                console.log("Edit data:", { id, username, email, roleId, roleName });
 
-                // Gán vào form
+                // Gán giá trị lên form
                 document.getElementById("editId").value = id;
                 document.getElementById("editUsername").value = username;
                 document.getElementById("editEmail").value = email;
-                document.getElementById("editRole").value = role;
+                document.getElementById("editRole").value = roleId;
 
-                // Hiện modal
+                // Hiển thị modal
                 const modal = new bootstrap.Modal(document.getElementById("editModal"));
                 modal.show();
             });
         });
 
-        // Khi click Lưu
+        // === XỬ LÝ LƯU THAY ĐỔI ===
         document.getElementById("btnSaveEdit").addEventListener("click", function () {
             const form = document.getElementById("editForm");
-            const data = new FormData(form);
+            const formData = new FormData(form);
+
+            // Kiểm tra dữ liệu trước khi gửi
+            const username = document.getElementById("editUsername").value;
+            const email = document.getElementById("editEmail").value;
+            const roleId = document.getElementById("editRole").value;
+
+            if (!username || !email || !roleId) {
+                alert("Vui lòng điền đầy đủ thông tin!");
+                return;
+            }
 
             fetch("/Admin/Account/EditAjax", {
                 method: "POST",
-                body: data
+                body: formData
             })
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
                 .then(result => {
                     if (result.success) {
                         alert("Cập nhật thành công!");
                         location.reload();
                     } else {
-                        alert("Lỗi khi cập nhật!");
+                        alert("Lỗi khi cập nhật: " + (result.message || ""));
                     }
                 })
-                .catch(() => alert("Không thể kết nối đến máy chủ!"));
+                .catch(error => {
+                    console.error("Error:", error);
+                    alert("Không thể kết nối đến máy chủ!");
+                });
         });
 
-        // --- TÌM KIẾM ---
+        // === XỬ LÝ NÚT XÓA ===
+        document.querySelectorAll(".btn-delete").forEach(btn => {
+            btn.addEventListener("click", function () {
+                const id = this.getAttribute("data-id");
+                const username = this.closest('tr').cells[1].innerText;
+
+                if (confirm(`Bạn có chắc muốn xóa tài khoản "${username}"?`)) {
+                    // Gọi API xóa ở đây
+                    console.log("Delete account ID:", id);
+                    // fetch("/Admin/Account/DeleteAjax", { method: "POST", body: { id } })
+                }
+            });
+        });
+
+        // === XỬ LÝ NÚT CHI TIẾT ===
+        document.querySelectorAll(".btn-detail").forEach(btn => {
+            btn.addEventListener("click", function () {
+                const id = this.getAttribute("data-id");
+                console.log("Detail account ID:", id);
+                // Mở modal chi tiết
+            });
+        });
+
+        // === XỬ LÝ NÚT ĐẶT LẠI MẬT KHẨU ===
+        document.querySelectorAll(".btn-reset").forEach(btn => {
+            btn.addEventListener("click", function () {
+                const id = this.getAttribute("data-id");
+                const username = this.closest('tr').cells[1].innerText;
+
+                if (confirm(`Bạn có chắc muốn đặt lại mật khẩu cho tài khoản "${username}"?`)) {
+                    // Gọi API đặt lại mật khẩu
+                    console.log("Reset password for account ID:", id);
+                    // fetch("/Admin/Account/ResetPasswordAjax", { method: "POST", body: { id } })
+                }
+            });
+        });
+
+        // === TÌM KIẾM ===
         document.getElementById("searchBox").addEventListener("keyup", function () {
             const searchText = this.value.toLowerCase();
             const rows = document.querySelectorAll("#accountTableBody tr");
+
             rows.forEach(row => {
                 const username = row.cells[1]?.innerText.toLowerCase() || "";
-                row.style.display = username.includes(searchText) ? "" : "none";
+                const email = row.cells[3]?.innerText.toLowerCase() || "";
+                const role = row.cells[4]?.innerText.toLowerCase() || "";
+
+                const match = username.includes(searchText) ||
+                    email.includes(searchText) ||
+                    role.includes(searchText);
+
+                row.style.display = match ? "" : "none";
             });
         });
 
-        // --- LỌC THEO VAI TRÒ ---
+        // === LỌC THEO VAI TRÒ ===
         document.getElementById("roleFilter").addEventListener("change", function () {
-            const selected = this.value.toLowerCase();
+            const selected = this.value;
             const rows = document.querySelectorAll("#accountTableBody tr");
+
             rows.forEach(row => {
-                const role = row.cells[4]?.innerText.toLowerCase().replace(/\s/g, '');
-                row.style.display = !selected || role.includes(selected) ? "" : "none";
+                const role = row.cells[4]?.innerText || "";
+                row.style.display = !selected || role === selected ? "" : "none";
             });
         });
 
-        // --- XUẤT EXCEL ---
+        // === XUẤT EXCEL ===
         document.getElementById("btnExportExcel").addEventListener("click", function () {
+            // Tạo bảng HTML để export
             const table = document.querySelector("table");
-            const rows = Array.from(table.querySelectorAll("tr"))
-                .map(tr => Array.from(tr.querySelectorAll("th, td"))
-                    .map(td => td.innerText));
-            let excelContent = "<table>";
-            rows.forEach(row => {
-                excelContent += "<tr>";
-                row.forEach(cell => {
-                    excelContent += `<td>${cell}</td>`;
-                });
-                excelContent += "</tr>";
-            });
-            excelContent += "</table>";
-            const blob = new Blob([excelContent], { type: "application/vnd.ms-excel" });
+            const html = table.outerHTML;
+
+            // Tạo blob và download
+            const blob = new Blob([html], { type: "application/vnd.ms-excel" });
+            const url = URL.createObjectURL(blob);
             const a = document.createElement("a");
-            a.href = URL.createObjectURL(blob);
+            a.href = url;
             a.download = "DanhSachTaiKhoan.xls";
+            document.body.appendChild(a);
             a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
         });
+
+        // === PHÂN TRANG ===
+        let currentPage = 1;
+        const itemsPerPage = 10;
+
+        function updatePagination() {
+            const rows = document.querySelectorAll("#accountTableBody tr");
+            const totalItems = Array.from(rows).filter(row => row.style.display !== 'none').length;
+            const totalPages = Math.ceil(totalItems / itemsPerPage);
+
+            // Hiển thị trang hiện tại
+            document.getElementById("pageInfo").textContent = `Trang ${currentPage} / ${totalPages}`;
+
+            // Cập nhật nút phân trang
+            document.getElementById("prev").disabled = currentPage === 1;
+            document.getElementById("next").disabled = currentPage === totalPages;
+        }
+
+        document.getElementById("prev").addEventListener("click", function () {
+            if (currentPage > 1) {
+                currentPage--;
+                updatePagination();
+            }
+        });
+
+        document.getElementById("next").addEventListener("click", function () {
+            const rows = document.querySelectorAll("#accountTableBody tr");
+            const totalItems = Array.from(rows).filter(row => row.style.display !== 'none').length;
+            const totalPages = Math.ceil(totalItems / itemsPerPage);
+
+            if (currentPage < totalPages) {
+                currentPage++;
+                updatePagination();
+            }
+        });
+
+        // Khởi tạo phân trang
+        updatePagination();
     });
 </script>
