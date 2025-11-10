@@ -295,77 +295,142 @@
         });
 
         // ======== BIẾN TOÀN CỤC ========
-        let rows = Array.from(document.querySelectorAll("#accountTableBody tr"));
-        // Exclude row "Không có dữ liệu" nếu tồn tại
-        rows = rows.filter(row => !row.querySelector('td[colspan="6"]'));
+        let allRows = Array.from(document.querySelectorAll("#accountTableBody tr"));
+        // Loại bỏ hàng "Không có dữ liệu" nếu có
+        allRows = allRows.filter(row => !row.querySelector('td[colspan="6"]'));
 
         const searchBox = document.getElementById("searchBox");
         const roleFilter = document.getElementById("roleFilter");
         const itemsPerPage = 5;
         let currentPage = 1;
-        let currentKeyword = ''; // Lưu keyword hiện tại
-        let currentRole = '';    // Lưu role hiện tại
+        let currentKeyword = '';
+        let currentRole = '';
 
-        // ======== HÀM ÁP DỤNG FILTER TỔNG HỢP (SEARCH + ROLE) ========
+        // ======== HÀM CHUẨN HÓA CHUỖI ĐỂ SO SÁNH ========
+        function normalizeRole(role) {
+            return role
+                .toLowerCase()
+                .replace(/\s+/g, '') // Xóa tất cả khoảng trắng
+                .normalize("NFD").replace(/[\u0300-\u036f]/g, ""); // Xóa dấu tiếng Việt
+        }
+
+        // ======== HÀM ÁP DỤNG FILTER TỔNG HỢP ========
         function applyFilters() {
-            const keyword = currentKeyword.toLowerCase();
-            const selectedRole = currentRole.toLowerCase();
+            const keyword = currentKeyword.toLowerCase().trim();
+            const selectedRole = currentRole;
 
-            rows.forEach(row => {
-                const username = row.cells[1]?.innerText.toLowerCase() || "";
-                const email = row.cells[3]?.innerText.toLowerCase() || "";
-                const role = row.cells[4]?.innerText.toLowerCase() || "";
+            allRows.forEach(row => {
+                const username = row.cells[1]?.innerText || "";
+                const email = row.cells[3]?.innerText || "";
+                const role = row.cells[4]?.innerText || "";
 
-                // Kiểm tra search
+                // Kiểm tra tìm kiếm
                 const searchMatch = keyword === '' ||
-                    username.includes(keyword) ||
-                    email.includes(keyword) ||
-                    role.includes(keyword);
+                    username.toLowerCase().includes(keyword) ||
+                    email.toLowerCase().includes(keyword) ||
+                    role.toLowerCase().includes(keyword);
 
-                // Kiểm tra role filter
-                const roleMatch = selectedRole === '' || selectedRole === 'all' || role === selectedRole;
+                // Kiểm tra lọc vai trò - TỰ ĐỘNG HIỂU CÁC ĐỊNH DẠNG KHÁC NHAU
+                let roleMatch = true;
+                if (selectedRole !== '' && selectedRole !== 'Tất Cả' && selectedRole !== 'all') {
+                    // Chuẩn hóa cả hai để so sánh
+                    const normalizedSelectedRole = normalizeRole(selectedRole);
+                    const normalizedRowRole = normalizeRole(role);
 
-                // Match nếu CẢ HAI đều true
-                const match = searchMatch && roleMatch;
-                row.style.display = match ? "" : "none-all";
+                    // Tự động hiểu các biến thể của vai trò
+                    roleMatch = normalizedSelectedRole === normalizedRowRole;
+
+                    // Debug: log để kiểm tra
+                    console.log(`Selected: ${normalizedSelectedRole}, Row: ${normalizedRowRole}, Match: ${roleMatch}`);
+                }
+
+                // Hiển thị nếu cả hai điều kiện đều thỏa mãn
+                row.style.display = (searchMatch && roleMatch) ? "" : "none";
             });
+
             currentPage = 1;
             renderTable();
         }
 
         // ======== HÀM HIỂN THỊ DỮ LIỆU PHÂN TRANG ========
         function renderTable() {
-            const filteredRows = rows.filter(row => row.style.display !== "none-all");
-            const totalItems = filteredRows.length;
-            const totalPages = Math.ceil(totalItems / itemsPerPage);
+            const visibleRows = allRows.filter(row => row.style.display !== "none");
+            const totalItems = visibleRows.length;
+            const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
 
-            filteredRows.forEach((row, index) => {
-                const start = (currentPage - 1) * itemsPerPage;
-                const end = currentPage * itemsPerPage;
-                row.style.display = (index >= start && index < end) ? "" : "none";
+            // Ẩn/hiển thị các hàng theo trang hiện tại
+            visibleRows.forEach((row, index) => {
+                const startIndex = (currentPage - 1) * itemsPerPage;
+                const endIndex = currentPage * itemsPerPage;
+                row.style.display = (index >= startIndex && index < endIndex) ? "" : "none";
             });
 
-            // Update page info
-            document.getElementById("pageInfo").textContent = `Trang ${currentPage} / ${totalPages || 1}`;
+            // Cập nhật thông tin phân trang
+            document.getElementById("pageInfo").textContent = `Trang ${currentPage} / ${totalPages}`;
             document.getElementById("prev").disabled = currentPage === 1;
             document.getElementById("next").disabled = currentPage === totalPages || totalPages === 0;
 
-            // Nếu không có data sau filter, hiển thị message (optional)
+            // Xử lý trường hợp không có dữ liệu
             const noDataRow = document.querySelector("#accountTableBody tr td[colspan='6']");
             if (noDataRow) {
                 noDataRow.parentElement.style.display = totalItems === 0 ? "" : "none";
             }
         }
 
-        // ======== TÌM KIẾM (với debounce để mượt hơn) ========
+        // ======== TÌM KIẾM (với debounce và xử lý khoảng trắng) ========
         let searchTimeout;
-        searchBox.addEventListener("keyup", function () {
+        searchBox.addEventListener("input", function () {
             clearTimeout(searchTimeout);
             currentKeyword = this.value;
             searchTimeout = setTimeout(() => {
                 applyFilters();
-            }, 300); // Delay 300ms để tránh gọi liên tục
+            }, 300);
         });
+
+        // ======== HÀM ÁP DỤNG FILTER TỔNG HỢP ========
+        function applyFilters() {
+            const keyword = currentKeyword.trim(); // Trim khoảng trắng đầu cuối
+            const selectedRole = currentRole;
+
+            allRows.forEach(row => {
+                const username = row.cells[1]?.innerText || "";
+                const email = row.cells[3]?.innerText || "";
+                const role = row.cells[4]?.innerText || "";
+
+                // Kiểm tra tìm kiếm - XỬ LÝ KHOẢNG TRẮNG THÔNG MINH
+                let searchMatch = true;
+                if (keyword !== '') {
+                    // Tách từ khóa thành các từ (phân tách bằng khoảng trắng)
+                    const searchTerms = keyword.toLowerCase().split(/\s+/).filter(term => term.length > 0);
+
+                    // Kiểm tra mỗi từ khóa trong mỗi trường
+                    const searchInFields = [username, email, role];
+
+                    searchMatch = searchTerms.every(term => {
+                        return searchInFields.some(field =>
+                            field.toLowerCase().includes(term)
+                        );
+                    });
+                }
+
+                // Kiểm tra lọc vai trò - TỰ ĐỘNG HIỂU CÁC ĐỊNH DẠNG KHÁC NHAU
+                let roleMatch = true;
+                if (selectedRole !== '' && selectedRole !== 'Tất Cả' && selectedRole !== 'all') {
+                    // Chuẩn hóa cả hai để so sánh
+                    const normalizedSelectedRole = normalizeRole(selectedRole);
+                    const normalizedRowRole = normalizeRole(role);
+
+                    // Tự động hiểu các biến thể của vai trò
+                    roleMatch = normalizedSelectedRole === normalizedRowRole;
+                }
+
+                // Hiển thị nếu cả hai điều kiện đều thỏa mãn
+                row.style.display = (searchMatch && roleMatch) ? "" : "none";
+            });
+
+            currentPage = 1;
+            renderTable();
+        }
 
         // ======== LỌC THEO VAI TRÒ ========
         roleFilter.addEventListener("change", function () {
@@ -382,46 +447,55 @@
         });
 
         document.getElementById("next").addEventListener("click", function () {
-            const filteredRows = rows.filter(r => r.style.display !== "none-all" && r.style.display !== "none");
-            const totalItems = filteredRows.length;
+            const visibleRows = allRows.filter(row => row.style.display !== "none");
+            const totalItems = visibleRows.length;
             const totalPages = Math.ceil(totalItems / itemsPerPage);
+
             if (currentPage < totalPages) {
                 currentPage++;
                 renderTable();
             }
         });
 
-        // ======== XUẤT EXCEL (cải thiện: export full filtered rows) ========
+        // ======== XUẤT EXCEL ========
         document.getElementById("btnExportExcel").addEventListener("click", function () {
-            const filteredRows = rows.filter(row => row.style.display !== "none-all");
-            if (filteredRows.length === 0) {
+            const visibleRows = allRows.filter(row => row.style.display !== "none");
+            if (visibleRows.length === 0) {
                 alert("Không có dữ liệu để xuất!");
                 return;
             }
 
-            // Tạo table mới với header + filtered rows
-            const header = `
-            <table border="1">
-                <thead>
-                    <tr>
-                        <th>STT</th>
-                        <th>Tên Tài Khoản</th>
-                        <th>Mật khẩu</th>
-                        <th>Email</th>
-                        <th>Loại Tài Khoản</th>
-                        <th>Tác vụ</th>
-                    </tr>
-                </thead>
-                <tbody>
-        `;
-            let body = '';
-            filteredRows.forEach((row, index) => {
-                const cells = Array.from(row.cells).map(cell => cell.innerText || cell.textContent).join('</td><td>');
-                body += `<tr><td>${(currentPage - 1) * itemsPerPage + index + 1}</td><td>${cells}</td></tr>`;
-            });
-            const footer = '</tbody></table>';
+            // Tạo HTML table để export
+            let html = `
+                <table border="1">
+                    <thead>
+                        <tr>
+                            <th>STT</th>
+                            <th>Tên Tài Khoản</th>
+                            <th>Mật khẩu</th>
+                            <th>Email</th>
+                            <th>Loại Tài Khoản</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
 
-            const html = header + body + footer;
+            visibleRows.forEach((row, index) => {
+                const cells = row.cells;
+                html += `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td>${cells[1].innerText}</td>
+                        <td>********</td>
+                        <td>${cells[3].innerText}</td>
+                        <td>${cells[4].innerText}</td>
+                    </tr>
+                `;
+            });
+
+            html += '</tbody></table>';
+
+            // Tạo và tải file
             const blob = new Blob([html], { type: "application/vnd.ms-excel" });
             const url = URL.createObjectURL(blob);
             const a = document.createElement("a");
@@ -433,16 +507,27 @@
             URL.revokeObjectURL(url);
         });
 
-        // ======== TỰ ĐỘNG THÊM "HIỂN THỊ TẤT CẢ" VÀO LỌC ========
-        if (!roleFilter.querySelector('option[value="all"]')) {
-            const allOption = document.createElement("option");
-            allOption.value = "all";
-            allOption.textContent = "Hiển thị tất cả";
-            roleFilter.insertBefore(allOption, roleFilter.firstChild);
-        }
+        // ======== NÚT THÊM TÀI KHOẢN ========
+        document.getElementById("btnAdd").addEventListener("click", function () {
+            // Reset form
+            document.getElementById("editForm").reset();
+            document.getElementById("editId").value = "";
 
-        // ======== KHỞI TẠO ========
-        currentRole = roleFilter.value; // Init với giá trị mặc định
+            // Hiển thị modal
+            const modal = new bootstrap.Modal(document.getElementById("editModal"));
+            modal.show();
+        });
+
+        // ======== KHỞI TẠO BAN ĐẦU ========
+        // Đảm bảo tất cả hàng đều hiển thị ban đầu
+        allRows.forEach(row => row.style.display = "");
         renderTable();
+
+        // Debug: Hiển thị tất cả các vai trò có trong bảng
+        console.log("Tất cả vai trò trong bảng:");
+        const allRoles = [...new Set(allRows.map(row => row.cells[4]?.innerText))];
+        allRoles.forEach(role => {
+            console.log(`"${role}" -> "${normalizeRole(role)}"`);
+        });
     });
 </script>

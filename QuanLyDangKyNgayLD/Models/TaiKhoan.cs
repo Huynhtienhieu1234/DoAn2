@@ -36,5 +36,6 @@ namespace QuanLyDangKyNgayLD.Models
         public virtual ICollection<SinhVien> SinhViens { get; set; }
         public virtual VaiTro VaiTro { get; set; }
         public DateTime Created_at { get; internal set; }
+        public object VaiTro_id { get; internal set; }
     }
 }
