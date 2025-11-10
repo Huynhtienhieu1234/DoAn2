@@ -7,18 +7,131 @@
     <title>Trang Quản Trị</title>
 
     <!-- Font + Bootstrap + Icon -->
-
     <link rel="icon" type="image/png" href="https://cdn.jsdelivr.net/gh/Huynhtienhieu1234/UploadAnh/logoxoanen.png" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="~/Areas/Content/admin.css" />
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
     <style>
         nav.navbar.navbar-main.navbar-expand-lg.px-0.mx-4.shadow-none.border-radius-xl.my-3 {
             margin-left: 0 !important;
             margin-right: 0 !important;
         }
+
+        /* ====== STYLE TOAST HIỆN ĐẠI ====== */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 2000;
+        }
+
+        .toast {
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            font-weight: 500;
+            margin-bottom: 15px;
+            overflow: hidden;
+            border: none;
+            min-width: 320px;
+            position: relative;
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            opacity: 0;
+            transform: translateX(400px) scale(0.8);
+        }
+
+            .toast.show {
+                opacity: 1;
+                transform: translateX(0) scale(1);
+            }
+
+            .toast.hiding {
+                opacity: 0;
+                transform: translateX(400px) scale(0.8);
+            }
+
+            .toast:hover {
+                transform: translateY(-3px) scale(1.02);
+                box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+            }
+
+        /* Màu sắc cho các loại thông báo */
+        .toast-success {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+        }
+
+        .toast-warning {
+            background: linear-gradient(135deg, #ff9800, #e68900);
+        }
+
+        .toast-error {
+            background: linear-gradient(135deg, #f44336, #d32f2f);
+        }
+
+        .toast-info {
+            background: linear-gradient(135deg, #2196F3, #0b7dda);
+        }
+
+        .toast-body {
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            color: white;
+        }
+
+        .toast-icon {
+            font-size: 1.5rem;
+            margin-right: 12px;
+            width: 30px;
+            text-align: center;
+        }
+
+        .toast-content {
+            flex: 1;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .toast-close {
+            background: none;
+            border: none;
+            color: white;
+            opacity: 0.8;
+            cursor: pointer;
+            padding: 5px;
+            margin-left: 10px;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+            .toast-close:hover {
+                background: rgba(255, 255, 255, 0.2);
+                opacity: 1;
+                transform: rotate(90deg);
+            }
+
+        /* Thanh tiến trình với transition */
+        .toast-progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.7);
+            width: 100%;
+            transform-origin: left;
+            transition: transform 3s linear;
+        }
+
+            .toast-progress.running {
+                transform: scaleX(0);
+            }
     </style>
 
     <script>
@@ -35,15 +148,11 @@
             // ===== HIGHLIGHT MENU =====
             const navLinks = document.querySelectorAll(".nav-link");
             const sidebar = document.querySelector("aside");
-
-            // Tạo highlight động
             const highlight = document.createElement("div");
             highlight.classList.add("sidebar-highlight");
             sidebar.appendChild(highlight);
 
-            // Lấy URL hiện tại (chỉ phần path)
             const currentPath = window.location.pathname.toLowerCase();
-
             let currentActive = null;
 
             navLinks.forEach(link => {
@@ -54,7 +163,6 @@
                 }
             });
 
-            // Nếu không tìm thấy link khớp tuyệt đối, thử kiểm tra dạng chứa
             if (!currentActive) {
                 navLinks.forEach(link => {
                     const linkPath = new URL(link.href).pathname.toLowerCase();
@@ -65,7 +173,6 @@
                 });
             }
 
-            // Di chuyển highlight đến vị trí link đang active
             function moveHighlight(activeLink) {
                 if (!activeLink) return;
                 const rect = activeLink.getBoundingClientRect();
@@ -76,73 +183,156 @@
             moveHighlight(currentActive);
 
 
+            // ===== PHÂN TRANG (nếu có bảng dữ liệu) =====
+            const body = document.querySelector("#accountTableBody");
+            if (body) {
+                const totalItems = body.querySelectorAll("tr").length;
+                const itemsPerPage = 5;
+                let currentPage = 1;
+                const totalPages = Math.ceil(totalItems / itemsPerPage);
 
-
-
-
-
-
-
-
-            // ===== PHÂN TRANG =====
-            const totalItems = document.querySelectorAll("#accountTableBody tr").length;
-            const itemsPerPage = 5;
-            let currentPage = 1;
-            const totalPages = Math.ceil(totalItems / itemsPerPage);
-
-            function renderTable() {
-                const rows = document.querySelectorAll("#accountTableBody tr");
-                rows.forEach((row, index) => {
-                    row.style.display = (index >= (currentPage - 1) * itemsPerPage && index < currentPage * itemsPerPage) ? "" : "none";
-                });
-            }
-
-            function renderPagination() {
-                const pageNumbers = document.getElementById("pageNumbers");
-                pageNumbers.innerHTML = "";
-
-                for (let i = 1; i <= totalPages; i++) {
-                    const btn = document.createElement("button");
-                    btn.textContent = i;
-                    btn.className = "btn btn-sm " + (i === currentPage ? "btn-primary active" : "btn-outline-secondary");
-                    btn.addEventListener("click", () => {
-                        currentPage = i;
-                        updateDisplay();
+                function renderTable() {
+                    const rows = body.querySelectorAll("tr");
+                    rows.forEach((row, index) => {
+                        row.style.display = (index >= (currentPage - 1) * itemsPerPage && index < currentPage * itemsPerPage) ? "" : "none";
                     });
-                    pageNumbers.appendChild(btn);
                 }
 
-                document.getElementById("pageInfo").textContent = `Trang ${currentPage} / ${totalPages}`;
+                function renderPagination() {
+                    const pageNumbers = document.getElementById("pageNumbers");
+                    if (!pageNumbers) return;
+                    pageNumbers.innerHTML = "";
+
+                    for (let i = 1; i <= totalPages; i++) {
+                        const btn = document.createElement("button");
+                        btn.textContent = i;
+                        btn.className = "btn btn-sm " + (i === currentPage ? "btn-primary active" : "btn-outline-secondary");
+                        btn.addEventListener("click", () => {
+                            currentPage = i;
+                            updateDisplay();
+                        });
+                        pageNumbers.appendChild(btn);
+                    }
+
+                    const pageInfo = document.getElementById("pageInfo");
+                    if (pageInfo)
+                        pageInfo.textContent = `Trang ${currentPage} / ${totalPages}`;
+                }
+
+                function updateDisplay() {
+                    renderTable();
+                    renderPagination();
+                }
+
+                const prev = document.getElementById("prev");
+                const next = document.getElementById("next");
+
+                if (prev) prev.addEventListener("click", () => {
+                    if (currentPage > 1) {
+                        currentPage--;
+                        updateDisplay();
+                    }
+                });
+
+                if (next) next.addEventListener("click", () => {
+                    if (currentPage < totalPages) {
+                        currentPage++;
+                        updateDisplay();
+                    }
+                });
+
+                updateDisplay();
             }
 
-            function updateDisplay() {
-                renderTable();
-                renderPagination();
+            // ===== HIỂN THỊ TOAST TỰ ĐỘNG NẾU CÓ TEMP DATA =====
+            const msg = '@TempData["Message"]';
+            const type = '@TempData["MessageType"]';
+            if (msg && msg.trim() !== "") {
+                showToast(msg, type || "success");
             }
-
-            document.getElementById("prev").addEventListener("click", () => {
-                if (currentPage > 1) {
-                    currentPage--;
-                    updateDisplay();
-                }
-            });
-
-            document.getElementById("next").addEventListener("click", () => {
-                if (currentPage < totalPages) {
-                    currentPage++;
-                    updateDisplay();
-                }
-            });
-
-            updateDisplay();
         });
+
+        // ===== HÀM HIỂN THỊ BONG BÓNG THÔNG BÁO HIỆN ĐẠI =====
+        function showToast(message, type = 'success') {
+            const toastContainer = document.getElementById('toastContainer');
+
+            // Tạo toast element
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+
+            // Xác định icon theo loại thông báo
+            let icon = 'fa-check-circle';
+            switch(type) {
+                case 'warning':
+                    icon = 'fa-exclamation-triangle';
+                    break;
+                case 'error':
+                    icon = 'fa-times-circle';
+                    break;
+                case 'info':
+                    icon = 'fa-info-circle';
+                    break;
+                default:
+                    icon = 'fa-check-circle';
+            }
+
+            // Tạo nội dung toast
+            toast.innerHTML = `
+                <div class="toast-body">
+                    <div class="toast-icon">
+                        <i class="fas ${icon}"></i>
+                    </div>
+                    <div class="toast-content">
+                        ${message}
+                    </div>
+                    <button type="button" class="toast-close" onclick="removeToast(this)">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="toast-progress"></div>
+            `;
+
+            // Thêm toast vào container
+            toastContainer.appendChild(toast);
+
+            // Hiệu ứng xuất hiện
+            setTimeout(() => {
+                toast.classList.add('show');
+
+                // Bắt đầu thanh tiến trình
+                const progress = toast.querySelector('.toast-progress');
+                setTimeout(() => {
+                    progress.classList.add('running');
+                }, 50);
+            }, 10);
+
+            // Tự động xóa toast sau 3 giây
+            setTimeout(() => {
+                removeToastElement(toast);
+            }, 3000);
+        }
+
+        // Hàm xóa toast khi click nút đóng
+        function removeToast(button) {
+            const toast = button.closest('.toast');
+            removeToastElement(toast);
+        }
+
+        // Hàm xóa toast với hiệu ứng
+        function removeToastElement(toast) {
+            if (!toast || toast.classList.contains('hiding')) return;
+
+            toast.classList.remove('show');
+            toast.classList.add('hiding');
+
+            setTimeout(() => {
+                if (toast.parentElement) {
+                    toast.remove();
+                }
+            }, 500);
+        }
     </script>
-
-
-
-
 </head>
-
 
 @RenderSection("Scripts", required: false)
 
@@ -158,7 +348,11 @@
             <hr class="hr">
 
             <ul class="nav flex-column">
-                <li class="nav-item"><a href="@Url.Action("Index","Admin",new{area="Admin"})" class="nav-link"></i>Trang Chủ</a></li>
+                <li class="nav-item">
+                    <a href="@Url.Action("Index","Admin",new{area="Admin"})" class="nav-link">
+                        <i class="fas fa-home me-1"></i>Trang Chủ
+                    </a>
+                </li>
                 <li class="nav-item"><a href="@Url.Action("Index","Account",new{area="Admin"})" class="nav-link"><i class="fa fa-list-alt"></i>Tài Khoản</a></li>
                 <li class="nav-item"><a href="@Url.Action("TrangTaoDotLaoDong","AdminHome",new{area="Admin"})" class="nav-link"><i class="fa fa-calendar-plus"></i>Tạo Đợt LĐ</a></li>
                 <li class="nav-item"><a href="@Url.Action("DuyetLaoDong","AdminTask",new{area="Admin"})" class="nav-link"><i class="fa fa-check-square"></i>Duyệt Lao Động</a></li>
@@ -174,7 +368,6 @@
                 <div class="container-fluid py-1 px-3">
                     <a href="@Url.Action("Index","AdminHome",new{area="Admin"})">
                         <img src="https://cdn.jsdelivr.net/gh/Huynhtienhieu1234/UploadAnh@main/admin/Logodaxoanen.png" alt="Logo" class="logo">
-
                     </a>
 
                     <div class="collapse navbar-collapse" id="navbar">
@@ -205,5 +398,7 @@
             </div>
         </main>
     </div>
-</body>
 
+    <!-- BONG BÓNG THÔNG BÁO DÙNG CHUNG -->
+    <div id="toastContainer" class="toast-container"></div>
+</body>

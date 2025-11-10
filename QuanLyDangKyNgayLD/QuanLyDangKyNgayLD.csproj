@@ -208,7 +208,6 @@
     </Content>
     <Content Include="Areas\Admin\Views\Account\Index.cshtml" />
     <Content Include="Areas\SinhVien\Views\MainSinhVien\Index.cshtml" />
-    <Content Include="Areas\Admin\Views\Shared\Toasts\_Toast.cshtml" />
     <None Include="packages.config" />
     <Content Include="Views\Login\Login.cshtml" />
     <Content Include="Views\ForgotPassword\ForgotPassword.cshtml" />
