@@ -98,6 +98,7 @@
   <ItemGroup>
     <Content Include="Areas\Content\admin.css" />
     <Content Include="Areas\Content\adminpage.css" />
+    <Content Include="Areas\Content\Js\adminCommon.js" />
     <Content Include="Global.asax" />
     <Content Include="Models\QuanLyDangKyLaoDong.Context.tt">
       <Generator>TextTemplatingFileGenerator</Generator>

@@ -21,6 +21,7 @@
         <form class="d-flex align-items-center" role="search">
             <select id="roleFilter" class="form-select form-select-sm me-2 shadow-sm" style="min-width: 140px;">
                 <option value="">-- Lọc theo vai trò --</option>
+                <option value="Tất Cả">Tất cả</option>
                 <option value="Sinh viên">Sinh viên</option>
                 <option value="Lớp phó lao động">Lớp phó lao động</option>
                 <option value="Quản lý">Quản lý</option>
@@ -195,7 +196,7 @@
 </div>
 
 <!-- DETAILS MODAL -->
-<div class="modal fade" id="detailModal" tabindex="-1" aria-labelledby="detailModalLabel" aria-hidden="true">
+<div class="modal fade" data-bs-backdrop="false" id="detailModal" tabindex="-1" aria-labelledby="detailModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content shadow">
             <div class="modal-header bg-warning text-dark">
@@ -228,108 +229,199 @@
 
 
 
-
 <script>
-    // Đợi DOM load xong
     document.addEventListener("DOMContentLoaded", function () {
-
-        // === XỬ LÝ NÚT SỬA ===
+        // ======== XỬ LÝ NÚT SỬA ========
         document.querySelectorAll(".btn-edit").forEach(btn => {
             btn.addEventListener("click", function () {
-                const id = this.getAttribute("data-id");
-                const username = this.getAttribute("data-username");
-                const email = this.getAttribute("data-email");
-                const roleId = this.getAttribute("data-roleid");
-                const roleName = this.getAttribute("data-rolename");
+                const id = this.dataset.id;
+                const username = this.dataset.username;
+                const email = this.dataset.email;
+                const roleId = this.dataset.roleid;
 
-                console.log("Edit data:", { id, username, email, roleId, roleName });
-
-                // Gán giá trị lên form
                 document.getElementById("editId").value = id;
                 document.getElementById("editUsername").value = username;
                 document.getElementById("editEmail").value = email;
                 document.getElementById("editRole").value = roleId;
 
-                // Hiển thị modal
                 const modal = new bootstrap.Modal(document.getElementById("editModal"));
                 modal.show();
             });
         });
 
-
-        // === XỬ LÝ NÚT XÓA ===
+        // ======== XỬ LÝ NÚT XÓA ========
         document.querySelectorAll(".btn-delete").forEach(btn => {
             btn.addEventListener("click", function () {
-                const id = this.getAttribute("data-id");
-                const username = this.closest('tr').cells[1].innerText;
+                const id = this.dataset.id;
+                const username = this.closest("tr").cells[1].innerText;
 
                 if (confirm(`Bạn có chắc muốn xóa tài khoản "${username}"?`)) {
-                    // Gọi API xóa ở đây
-                    console.log("Delete account ID:", id);
-                    // fetch("/Admin/Account/DeleteAjax", { method: "POST", body: { id } })
+                    console.log("Delete ID:", id);
+                    // fetch(`/Admin/Account/DeleteAjax/${id}`, { method: "POST" });
                 }
             });
         });
 
-        // === XỬ LÝ NÚT CHI TIẾT ===
-        document.querySelectorAll(".btn-detail").forEach(btn => {
-            btn.addEventListener("click", function () {
-                const id = this.getAttribute("data-id");
-                console.log("Detail account ID:", id);
-
-            });
-        });
-
-        // === XỬ LÝ NÚT ĐẶT LẠI MẬT KHẨU ===
+        // ======== XỬ LÝ NÚT ĐẶT LẠI MẬT KHẨU ========
         document.querySelectorAll(".btn-reset").forEach(btn => {
             btn.addEventListener("click", function () {
-                const id = this.getAttribute("data-id");
-                const username = this.closest('tr').cells[1].innerText;
+                const id = this.dataset.id;
+                const username = this.closest("tr").cells[1].innerText;
 
-                if (confirm(`Bạn có chắc muốn đặt lại mật khẩu cho tài khoản "${username}"?`)) {
-                    // Gọi API đặt lại mật khẩu
-                    console.log("Reset password for account ID:", id);
-                    // fetch("/Admin/Account/ResetPasswordAjax", { method: "POST", body: { id } })
+                if (confirm(`Đặt lại mật khẩu cho "${username}"?`)) {
+                    console.log("Reset password ID:", id);
+                    // fetch(`/Admin/Account/ResetPasswordAjax/${id}`, { method: "POST" });
                 }
             });
         });
 
-        // === TÌM KIẾM ===
-        document.getElementById("searchBox").addEventListener("keyup", function () {
-            const searchText = this.value.toLowerCase();
-            const rows = document.querySelectorAll("#accountTableBody tr");
+        // ======== XỬ LÝ NÚT CHI TIẾT ========
+        document.querySelectorAll(".btn-detail").forEach(btn => {
+            btn.addEventListener("click", function () {
+                const id = this.dataset.id;
+                const row = this.closest("tr");
+                const username = row.cells[1].innerText;
+                const email = row.cells[3].innerText;
+                const role = row.cells[4].innerText;
+
+                document.getElementById("detailId").textContent = id;
+                document.getElementById("detailUsername").textContent = username;
+                document.getElementById("detailEmail").textContent = email;
+                document.getElementById("detailRole").textContent = role;
+
+                const modal = new bootstrap.Modal(document.getElementById("detailModal"));
+                modal.show();
+            });
+        });
+
+        // ======== BIẾN TOÀN CỤC ========
+        let rows = Array.from(document.querySelectorAll("#accountTableBody tr"));
+        // Exclude row "Không có dữ liệu" nếu tồn tại
+        rows = rows.filter(row => !row.querySelector('td[colspan="6"]'));
+
+        const searchBox = document.getElementById("searchBox");
+        const roleFilter = document.getElementById("roleFilter");
+        const itemsPerPage = 5;
+        let currentPage = 1;
+        let currentKeyword = ''; // Lưu keyword hiện tại
+        let currentRole = '';    // Lưu role hiện tại
+
+        // ======== HÀM ÁP DỤNG FILTER TỔNG HỢP (SEARCH + ROLE) ========
+        function applyFilters() {
+            const keyword = currentKeyword.toLowerCase();
+            const selectedRole = currentRole.toLowerCase();
 
             rows.forEach(row => {
                 const username = row.cells[1]?.innerText.toLowerCase() || "";
                 const email = row.cells[3]?.innerText.toLowerCase() || "";
                 const role = row.cells[4]?.innerText.toLowerCase() || "";
 
-                const match = username.includes(searchText) ||
-                    email.includes(searchText) ||
-                    role.includes(searchText);
+                // Kiểm tra search
+                const searchMatch = keyword === '' ||
+                    username.includes(keyword) ||
+                    email.includes(keyword) ||
+                    role.includes(keyword);
 
-                row.style.display = match ? "" : "none";
+                // Kiểm tra role filter
+                const roleMatch = selectedRole === '' || selectedRole === 'all' || role === selectedRole;
+
+                // Match nếu CẢ HAI đều true
+                const match = searchMatch && roleMatch;
+                row.style.display = match ? "" : "none-all";
             });
+            currentPage = 1;
+            renderTable();
+        }
+
+        // ======== HÀM HIỂN THỊ DỮ LIỆU PHÂN TRANG ========
+        function renderTable() {
+            const filteredRows = rows.filter(row => row.style.display !== "none-all");
+            const totalItems = filteredRows.length;
+            const totalPages = Math.ceil(totalItems / itemsPerPage);
+
+            filteredRows.forEach((row, index) => {
+                const start = (currentPage - 1) * itemsPerPage;
+                const end = currentPage * itemsPerPage;
+                row.style.display = (index >= start && index < end) ? "" : "none";
+            });
+
+            // Update page info
+            document.getElementById("pageInfo").textContent = `Trang ${currentPage} / ${totalPages || 1}`;
+            document.getElementById("prev").disabled = currentPage === 1;
+            document.getElementById("next").disabled = currentPage === totalPages || totalPages === 0;
+
+            // Nếu không có data sau filter, hiển thị message (optional)
+            const noDataRow = document.querySelector("#accountTableBody tr td[colspan='6']");
+            if (noDataRow) {
+                noDataRow.parentElement.style.display = totalItems === 0 ? "" : "none";
+            }
+        }
+
+        // ======== TÌM KIẾM (với debounce để mượt hơn) ========
+        let searchTimeout;
+        searchBox.addEventListener("keyup", function () {
+            clearTimeout(searchTimeout);
+            currentKeyword = this.value;
+            searchTimeout = setTimeout(() => {
+                applyFilters();
+            }, 300); // Delay 300ms để tránh gọi liên tục
         });
 
-        // === LỌC THEO VAI TRÒ ===
-        document.getElementById("roleFilter").addEventListener("change", function () {
-            const selected = this.value;
-            const rows = document.querySelectorAll("#accountTableBody tr");
-
-            rows.forEach(row => {
-                const role = row.cells[4]?.innerText || "";
-                row.style.display = !selected || role === selected ? "" : "none";
-            });
+        // ======== LỌC THEO VAI TRÒ ========
+        roleFilter.addEventListener("change", function () {
+            currentRole = this.value;
+            applyFilters();
         });
 
-        // === XUẤT EXCEL ===
+        // ======== PHÂN TRANG ========
+        document.getElementById("prev").addEventListener("click", function () {
+            if (currentPage > 1) {
+                currentPage--;
+                renderTable();
+            }
+        });
+
+        document.getElementById("next").addEventListener("click", function () {
+            const filteredRows = rows.filter(r => r.style.display !== "none-all" && r.style.display !== "none");
+            const totalItems = filteredRows.length;
+            const totalPages = Math.ceil(totalItems / itemsPerPage);
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderTable();
+            }
+        });
+
+        // ======== XUẤT EXCEL (cải thiện: export full filtered rows) ========
         document.getElementById("btnExportExcel").addEventListener("click", function () {
-            // Tạo bảng HTML để export
-            const table = document.querySelector("table");
-            const html = table.outerHTML;
+            const filteredRows = rows.filter(row => row.style.display !== "none-all");
+            if (filteredRows.length === 0) {
+                alert("Không có dữ liệu để xuất!");
+                return;
+            }
 
-            // Tạo blob và download
+            // Tạo table mới với header + filtered rows
+            const header = `
+            <table border="1">
+                <thead>
+                    <tr>
+                        <th>STT</th>
+                        <th>Tên Tài Khoản</th>
+                        <th>Mật khẩu</th>
+                        <th>Email</th>
+                        <th>Loại Tài Khoản</th>
+                        <th>Tác vụ</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+            let body = '';
+            filteredRows.forEach((row, index) => {
+                const cells = Array.from(row.cells).map(cell => cell.innerText || cell.textContent).join('</td><td>');
+                body += `<tr><td>${(currentPage - 1) * itemsPerPage + index + 1}</td><td>${cells}</td></tr>`;
+            });
+            const footer = '</tbody></table>';
+
+            const html = header + body + footer;
             const blob = new Blob([html], { type: "application/vnd.ms-excel" });
             const url = URL.createObjectURL(blob);
             const a = document.createElement("a");
@@ -341,42 +433,16 @@
             URL.revokeObjectURL(url);
         });
 
-        // === PHÂN TRANG ===
-        let currentPage = 1;
-        const itemsPerPage = 10;
-
-        function updatePagination() {
-            const rows = document.querySelectorAll("#accountTableBody tr");
-            const totalItems = Array.from(rows).filter(row => row.style.display !== 'none').length;
-            const totalPages = Math.ceil(totalItems / itemsPerPage);
-
-            // Hiển thị trang hiện tại
-            document.getElementById("pageInfo").textContent = `Trang ${currentPage} / ${totalPages}`;
-
-            // Cập nhật nút phân trang
-            document.getElementById("prev").disabled = currentPage === 1;
-            document.getElementById("next").disabled = currentPage === totalPages;
+        // ======== TỰ ĐỘNG THÊM "HIỂN THỊ TẤT CẢ" VÀO LỌC ========
+        if (!roleFilter.querySelector('option[value="all"]')) {
+            const allOption = document.createElement("option");
+            allOption.value = "all";
+            allOption.textContent = "Hiển thị tất cả";
+            roleFilter.insertBefore(allOption, roleFilter.firstChild);
         }
 
-        document.getElementById("prev").addEventListener("click", function () {
-            if (currentPage > 1) {
-                currentPage--;
-                updatePagination();
-            }
-        });
-
-        document.getElementById("next").addEventListener("click", function () {
-            const rows = document.querySelectorAll("#accountTableBody tr");
-            const totalItems = Array.from(rows).filter(row => row.style.display !== 'none').length;
-            const totalPages = Math.ceil(totalItems / itemsPerPage);
-
-            if (currentPage < totalPages) {
-                currentPage++;
-                updatePagination();
-            }
-        });
-
-        // Khởi tạo phân trang
-        updatePagination();
+        // ======== KHỞI TẠO ========
+        currentRole = roleFilter.value; // Init với giá trị mặc định
+        renderTable();
     });
 </script>
