@@ -96,6 +96,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Areas\Content\jsAccount\Account.js" />
     <Content Include="Areas\Content\admin.css" />
     <Content Include="Areas\Content\adminpage.css" />
     <Content Include="Areas\Content\Js\adminCommon.js" />

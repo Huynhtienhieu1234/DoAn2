@@ -75,3 +75,31 @@ button#btnAdd {
     border: 1px solid;
 }
 
+/* Highlight cho các trường đã thay đổi */
+.is-changed {
+    border-color: #28a745 !important;
+    background-color: #f8fff9 !important;
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25) !important;
+}
+
+/* Style cho alert thông tin */
+.alert-info .row,
+.alert-warning .row {
+    margin-bottom: 0.25rem;
+}
+
+.alert-info .col-4,
+.alert-warning .col-4 {
+    padding-right: 0.5rem;
+}
+
+.alert-info .col-8,
+.alert-warning .col-8 {
+    padding-left: 0.5rem;
+}
+#btnDeletedList:hover {
+    background: linear-gradient(135deg, #9bbc0f 0%, #8bac0f 100%) !important;
+    border-color: #0f380f !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(15, 56, 15, 0.3);
+}

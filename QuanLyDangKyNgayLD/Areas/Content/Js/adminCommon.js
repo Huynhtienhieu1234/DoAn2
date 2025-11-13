@@ -1,6 +1,6 @@
 ﻿
 
-// ================== 1️⃣ Toast Thông Báo ==================
+// ================== Toast Thông Báo ==================
 function showToast(message, type = 'success') {
     const toastContainer = document.getElementById('toastContainer');
     if (!toastContainer) {
