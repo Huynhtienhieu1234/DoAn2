@@ -2,6 +2,8 @@
     Layout = null;
 }
 
+<!DOCTYPE html>
+<html lang="vi">
 <head>
     <meta charset="utf-8">
     <title>Trang Quản Trị</title>
@@ -132,6 +134,138 @@
             .toast-progress.running {
                 transform: scaleX(0);
             }
+
+        /* ====== ANIMATION GBA STYLE CHO NÚT DANH SÁCH XÓA ====== */
+        .gba-deleted-btn {
+            background: linear-gradient(135deg, #8bac0f 0%, #9bbc0f 100%) !important;
+            border: 2px solid #306230 !important;
+            color: #0f380f !important;
+            font-weight: bold;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            animation: gbaGlow 2s infinite alternate;
+            border-radius: 8px !important;
+            padding: 6px 12px !important;
+        }
+
+            .gba-deleted-btn::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: -100%;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+                transition: left 0.5s ease;
+            }
+
+            .gba-deleted-btn:hover::before {
+                left: 100%;
+            }
+
+            .gba-deleted-btn:hover {
+                animation: gbaPulse 0.6s ease, gbaGlow 1s infinite alternate;
+                transform: translateY(-2px);
+                box-shadow: 0 6px 12px rgba(15, 56, 15, 0.4);
+                border-color: #0f380f !important;
+            }
+
+            .gba-deleted-btn:active {
+                animation: gbaPress 0.2s ease;
+                transform: translateY(1px);
+            }
+
+                /* Hiệu ứng pixelated click */
+                .gba-deleted-btn:active::after {
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background: rgba(15, 56, 15, 0.3);
+                    animation: pixelFlash 0.3s ease;
+                }
+
+        /* Animation glow GBA */
+        @@keyframes gbaGlow {
+            0% {
+                box-shadow: 0 4px 8px rgba(139, 172, 15, 0.3);
+            }
+
+            100% {
+                box-shadow: 0 4px 16px rgba(139, 172, 15, 0.6), 0 0 8px rgba(155, 188, 15, 0.4);
+            }
+        }
+
+        /* Animation pulse khi hover */
+        @@keyframes gbaPulse {
+            0% {
+                transform: scale(1) translateY(0);
+            }
+
+            50% {
+                transform: scale(1.05) translateY(-3px);
+            }
+
+            100% {
+                transform: scale(1) translateY(-2px);
+            }
+        }
+
+        /* Animation khi nhấn */
+        @@keyframes gbaPress {
+            0% {
+                transform: scale(1) translateY(-2px);
+            }
+
+            50% {
+                transform: scale(0.95) translateY(0);
+            }
+
+            100% {
+                transform: scale(1) translateY(1px);
+            }
+        }
+
+        /* Hiệu ứng flash pixel */
+        @@keyframes pixelFlash {
+            0% {
+                opacity: 0.5;
+            }
+
+            100% {
+                opacity: 0;
+            }
+        }
+
+        /* Hiệu ứng scanline (giống màn hình GBA) */
+        .gba-deleted-btn::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+            animation: scanline 3s linear infinite;
+            opacity: 0;
+        }
+
+        .gba-deleted-btn:hover::after {
+            opacity: 1;
+        }
+
+        @@keyframes scanline {
+            0% {
+                transform: translateY(-100%);
+            }
+
+            100% {
+                transform: translateY(400%);
+            }
+        }
     </style>
 
     <script>
@@ -182,6 +316,17 @@
 
             moveHighlight(currentActive);
 
+            // ===== HIỆU ỨNG GBA CHO NÚT DANH SÁCH XÓA =====
+            const deletedListBtn = document.getElementById('btnDeletedList');
+            if (deletedListBtn) {
+                deletedListBtn.addEventListener('click', function() {
+                    // Thêm hiệu ứng visual feedback
+                    this.style.animation = 'gbaPress 0.3s ease';
+                    setTimeout(() => {
+                        this.style.animation = 'gbaGlow 2s infinite alternate';
+                    }, 300);
+                });
+            }
 
             // ===== PHÂN TRANG (nếu có bảng dữ liệu) =====
             const body = document.querySelector("#accountTableBody");
@@ -332,9 +477,6 @@
             }, 500);
         }
     </script>
-
-
-
 </head>
 
 @RenderSection("Scripts", required: false)
@@ -397,7 +539,7 @@
             </nav>
 
             <div class="container-fluid">
-                @RenderBody()
+                              @RenderBody()
             </div>
         </main>
     </div>
@@ -405,3 +547,4 @@
     <!-- BONG BÓNG THÔNG BÁO DÙNG CHUNG -->
     <div id="toastContainer" class="toast-container"></div>
 </body>
+</html>

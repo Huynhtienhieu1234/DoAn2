@@ -123,6 +123,15 @@ button,
         transform: scale(1.03);
     }
 
+/* -------- TOOLBAR -------- */
+.toolbar {
+    background: #f8f9fa !important;
+    border-radius: 12px;
+    padding: 15px 20px;
+    margin-bottom: 20px;
+    border: 1px solid #e9ecef;
+}
+
 /* -------- BẢNG DỮ LIỆU -------- */
 table {
     table-layout: fixed;
@@ -133,16 +142,17 @@ table {
     background-color: #fff;
     box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
-/**/
-    /* Hàng tiêu đề: màu xanh nhạt hơn thay vì xanh đậm */
+
+    /* Hàng tiêu đề */
     table th {
-        background-color: #8fb6ff; /* Xanh nhạt */
+        background-color: #8fb6ff;
         color: white;
         text-align: center;
         padding: 12px;
+        font-weight: 600;
     }
 
-    /* Các hàng dữ liệu: màu trắng */
+    /* Các hàng dữ liệu */
     table td {
         background-color: #ffffff;
         text-align: center;
@@ -152,74 +162,61 @@ table {
         border-bottom: 1px solid #eee;
     }
 
-    /* Tạo hiệu ứng xen kẽ cho dễ nhìn */
+    /* Hiệu ứng xen kẽ */
     table tr:nth-child(even) td {
-        background-color: #f9faff; /* Xanh nhạt rất nhẹ cho hàng chẵn */
+        background-color: #f9faff;
     }
 
-    /* Khi hover vào hàng – đổi nền nhẹ để nổi bật */
+    /* Hover effect */
     table tr:hover td {
         background-color: #eaf1ff;
         transition: background-color 0.2s ease;
     }
 
-/**/
-    table th {
-        background-color: #4b6cb7;
-        color: white;
-        text-align: center;
-        padding: 12px;
+    /* Điều chỉnh độ rộng cột */
+    table th:nth-child(1) {
+        width: 5%;
     }
-
-        table th:nth-child(1) {
-            width: 5%;
-        }
-        /* STT - rộng hơn một chút */
-        table th:nth-child(2) {
-            width: 19%;
-        }
-        /* Tên Tài Khoản - rộng hơn một chút */
-        table th:nth-child(3) {
-            width: 10%;
-        }
-        /* Mật khẩu */
-        table th:nth-child(4) {
-            width: 25%;
-        }
-        /* Email */
-        table th:nth-child(5) {
-            width: 15%;
-        }
-        /* Loại Tài Khoản */
-        table th:nth-child(6) {
-            width: 25%;
-        }
-    /* Tác vụ - điều chỉnh để tổng 100% */
-
-    table td {
-        text-align: center;
-        padding: 10px;
-        color: #333;
-        font-weight: 500;
-        border-bottom: 1px solid #eee;
+    /* STT */
+    table th:nth-child(2) {
+        width: 19%;
     }
+    /* Tên Tài Khoản */
+    table th:nth-child(3) {
+        width: 10%;
+    }
+    /* Mật khẩu */
+    table th:nth-child(4) {
+        width: 25%;
+    }
+    /* Email */
+    table th:nth-child(5) {
+        width: 15%;
+    }
+    /* Loại Tài Khoản */
+    table th:nth-child(6) {
+        width: 25%;
+    }
+    /* Tác vụ */
 
-        /* Đảm bảo cột STT và các số khác căn giữa hoàn hảo */
-        table td:nth-child(1),
-        table td:nth-child(3) {
-            text-align: center;
-            font-weight: bold;
-        }
+    /* Căn giữa các cột số */
+    table td:nth-child(1),
+    table td:nth-child(3) {
+        text-align: center;
+        font-weight: bold;
+    }
 
     table tr:last-child td {
         border-bottom: none;
     }
 
+    /* Nút trong bảng */
     table .btn {
         padding: 6px 12px;
         border-radius: 6px;
         color: white;
         font-weight: 600;
+        margin: 2px;
     }
 
 .btn-edit {
@@ -228,6 +225,7 @@ table {
 
     .btn-edit:hover {
         background-color: #2980b9;
+        transform: translateY(-1px);
     }
 
 .btn-delete {
@@ -236,6 +234,7 @@ table {
 
     .btn-delete:hover {
         background-color: #c0392b;
+        transform: translateY(-1px);
     }
 
 .btn-detail {
@@ -245,6 +244,7 @@ table {
 
     .btn-detail:hover {
         background-color: #d4ac0d;
+        transform: translateY(-1px);
     }
 
 /* -------- MODAL XÁC NHẬN -------- */
@@ -281,17 +281,29 @@ table {
     background-color: #ff4d4f;
     color: white;
     padding: 8px 18px;
+    border-radius: 6px;
+    border: none;
+    font-weight: 600;
 }
 
     .btn-xoa:hover {
         background-color: #d9363e;
+        transform: translateY(-1px);
     }
 
 .btn-huy {
     background-color: #d9d9d9;
     color: #000;
     padding: 8px 18px;
+    border-radius: 6px;
+    border: none;
+    font-weight: 600;
 }
+
+    .btn-huy:hover {
+        background-color: #bfbfbf;
+        transform: translateY(-1px);
+    }
 
 /* -------- BIỂU ĐỒ / THỐNG KÊ -------- */
 .card {
@@ -299,6 +311,7 @@ table {
     border-radius: 20px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     padding: 20px;
+    margin-bottom: 20px;
 }
 
     .card h4 {
@@ -307,6 +320,220 @@ table {
         color: #1a2b5f;
         margin-bottom: 15px;
     }
+
+/* -------- FORM CONTROLS -------- */
+.form-control, .form-select {
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+    padding: 8px 12px;
+    transition: all 0.3s ease;
+}
+
+    .form-control:focus, .form-select:focus {
+        border-color: #4b6cb7;
+        box-shadow: 0 0 0 0.2rem rgba(75, 108, 183, 0.25);
+    }
+
+.input-group-text {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+}
+
+/* -------- ANIMATION GBA CHO NÚT DANH SÁCH XÓA -------- */
+.gba-deleted-btn {
+    background: linear-gradient(135deg, #8bac0f 0%, #9bbc0f 100%) !important;
+    border: 2px solid #306230 !important;
+    color: #0f380f !important;
+    font-weight: bold;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    animation: gbaGlow 2s infinite alternate;
+    border-radius: 8px !important;
+    padding: 6px 12px !important;
+}
+
+    .gba-deleted-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+        transition: left 0.5s ease;
+    }
+
+    .gba-deleted-btn:hover::before {
+        left: 100%;
+    }
+
+    .gba-deleted-btn:hover {
+        animation: gbaPulse 0.6s ease, gbaGlow 1s infinite alternate;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(15, 56, 15, 0.4);
+        border-color: #0f380f !important;
+    }
+
+    .gba-deleted-btn:active {
+        animation: gbaPress 0.2s ease;
+        transform: translateY(1px);
+    }
+
+        .gba-deleted-btn:active::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(15, 56, 15, 0.3);
+            animation: pixelFlash 0.3s ease;
+        }
+
+/* GBA Animations */
+@keyframes gbaGlow {
+    0% {
+        box-shadow: 0 4px 8px rgba(139, 172, 15, 0.3);
+    }
+
+    100% {
+        box-shadow: 0 4px 16px rgba(139, 172, 15, 0.6), 0 0 8px rgba(155, 188, 15, 0.4);
+    }
+}
+
+@keyframes gbaPulse {
+    0% {
+        transform: scale(1) translateY(0);
+    }
+
+    50% {
+        transform: scale(1.05) translateY(-3px);
+    }
+
+    100% {
+        transform: scale(1) translateY(-2px);
+    }
+}
+
+@keyframes gbaPress {
+    0% {
+        transform: scale(1) translateY(-2px);
+    }
+
+    50% {
+        transform: scale(0.95) translateY(0);
+    }
+
+    100% {
+        transform: scale(1) translateY(1px);
+    }
+}
+
+@keyframes pixelFlash {
+    0% {
+        opacity: 0.5;
+    }
+
+    100% {
+        opacity: 0;
+    }
+}
+
+.gba-deleted-btn::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+    animation: scanline 3s linear infinite;
+    opacity: 0;
+}
+
+.gba-deleted-btn:hover::after {
+    opacity: 1;
+}
+
+@keyframes scanline {
+    0% {
+        transform: translateY(-100%);
+    }
+
+    100% {
+        transform: translateY(400%);
+    }
+}
+
+/* -------- GIỚI HẠN EMAIL VÀ CĂN CHỈNH NÚT -------- */
+.email-cell {
+    max-width: 120px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.action-cell {
+    text-align: center;
+    white-space: nowrap;
+}
+
+    /* Giữ màu chữ cho các nút trong cột Tác vụ */
+    .action-cell .btn {
+        color: #fff !important;
+        font-weight: 600;
+        text-shadow: 0 0 2px rgba(0,0,0,0.2);
+    }
+
+.btn-edit {
+    background-color: #3498db !important;
+}
+
+.btn-delete {
+    background-color: #e74c3c !important;
+}
+
+.btn-detail {
+    background-color: #f1c40f !important;
+    color: #222 !important;
+}
+
+/* -------- PHÂN TRANG -------- */
+.pagination-container {
+    margin-top: 15px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+
+    .pagination-container .btn {
+        border-radius: 8px;
+        padding: 6px 14px;
+        min-width: 40px;
+    }
+
+/* -------- UTILITY CLASSES -------- */
+.fw-bold {
+    font-weight: bold;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.mb-3 {
+    margin-bottom: 1rem;
+}
+
+.mt-3 {
+    margin-top: 1rem;
+}
+
+.shadow-sm {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+}
 
 /* -------- ẨN THANH HIGHLIGHT -------- */
 .sidebar-highlight {
@@ -321,6 +548,11 @@ table {
 
     main.main-content {
         width: calc(100% - 250px);
+    }
+
+    table th:nth-child(4),
+    table td:nth-child(4) {
+        max-width: 150px;
     }
 }
 
@@ -339,52 +571,38 @@ table {
         align-items: flex-start;
         gap: 10px;
     }
-}
-/* Giữ màu chữ cho các nút trong cột Tác vụ */
-.action-cell .btn {
-    color: #fff !important;
-    font-weight: 600;
-    text-shadow: 0 0 2px rgba(0,0,0,0.2);
-}
 
-.btn-edit {
-    background-color: #3498db !important; /* Xanh dương */
-    color: #fff !important;
-}
-
-.btn-delete {
-    background-color: #e74c3c !important; /* Đỏ */
-    color: #fff !important;
-}
-
-.btn-detail {
-    background-color: #f1c40f !important; /* Vàng */
-    color: #222 !important;
-}
-
-/* Giới hạn chiều rộng cho cột Email và hiện dấu ba chấm (...) nếu dài hơn 10 ký tự */
-.email-cell {
-    max-width: 120px; /* Ước lượng cho khoảng 10 ký tự với font Open Sans ~12px/char */
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-/* Nếu muốn canh giữa các nút Tác vụ */
-.action-cell {
-    text-align: center;
-    white-space: nowrap;
-}
-/**/
-.pagination-container {
-    margin-top: 15px;
-}
-
-    .pagination-container .btn {
-        border-radius: 8px;
-        padding: 6px 14px;
+    .toolbar .navbar-nav {
+        flex-direction: column;
+        gap: 10px;
     }
 
-.fw-bold {
-    font-weight: bold;
+    table {
+        font-size: 0.9rem;
+    }
+
+    .action-cell {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+}
+
+@media (max-width: 576px) {
+    .card {
+        padding: 15px;
+    }
+
+    .boder_delete {
+        margin: 20px;
+        padding: 20px;
+    }
+
+    .boder_two_buton {
+        flex-direction: column;
+    }
+
+    .pagination-container {
+        flex-wrap: wrap;
+    }
 }
