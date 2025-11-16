@@ -96,4 +96,3 @@ function setupPagination(tableBodyId, perPage, pageInfoId, prevBtnId, nextBtnId)
 
 
 
-

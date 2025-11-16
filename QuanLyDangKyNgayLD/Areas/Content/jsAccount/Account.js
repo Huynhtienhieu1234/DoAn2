@@ -54,6 +54,10 @@
         document.getElementById("btnExportExcel").addEventListener("click", handleExportExcel);
         // Thêm tài khoản
         document.getElementById("btnAdd").addEventListener("click", handleAddAccount);
+        // Xem tài khoản đã xóa
+        document.getElementById("btnViewDeleted").addEventListener("click", handleViewDeleted);
+        // Làm mới danh sách đã xóa
+        document.getElementById("btnRefreshDeleted").addEventListener("click", loadDeletedAccounts);
         // Reset modal khi đóng
         setupModalEvents();
     }
@@ -73,6 +77,9 @@
             currentResetId = null;
             resetResetButton();
         });
+        document.getElementById('deletedAccountsModal').addEventListener('shown.bs.modal', function () {
+            loadDeletedAccounts();
+        });
     }
 
     // ======== XỬ LÝ SỰ KIỆN CHÍNH ========
@@ -82,14 +89,16 @@
         const email = this.dataset.email;
         const roleId = this.dataset.roleid;
         const roleName = this.dataset.rolename;
+
         currentEditData = { id, username, email, roleId, roleName };
-        showCurrentEditData(currentEditData);
+
         document.getElementById("editId").value = id;
         document.getElementById("editUsername").value = username;
         document.getElementById("editEmail").value = email;
         document.getElementById("editRole").value = roleId;
+
         document.getElementById("editModalLabel").innerHTML = '<i class="fa fa-edit me-2"></i>Chỉnh sửa tài khoản';
-        document.getElementById('currentDataAlert').style.display = 'block';
+
         showModal("editModal");
     }
 
@@ -124,6 +133,219 @@
         showModal("detailModal");
     }
 
+    // ======== XỬ LÝ TÀI KHOẢN ĐÃ XÓA ========
+    function handleViewDeleted() {
+        showModal("deletedAccountsModal");
+    }
+
+    function loadDeletedAccounts() {
+        const tbody = document.getElementById("deletedAccountsTableBody");
+        const refreshBtn = document.getElementById("btnRefreshDeleted");
+
+        showLoading(refreshBtn, 'Đang tải...');
+
+        console.log('Fetching deleted accounts...');
+
+        fetch('/Admin/Account/GetDeletedAccounts')
+            .then(response => {
+                console.log('Response status:', response.status);
+                return response.json();
+            })
+            .then(data => {
+                console.log('Raw API response:', data);
+                if (data.success && data.accounts) {
+                    console.log('Accounts data:', data.accounts);
+                    renderDeletedAccounts(data.accounts);
+                } else {
+                    console.log('No accounts or API error:', data);
+                    tbody.innerHTML = '<tr class="no-data-row"><td colspan="7">Không có dữ liệu</td></tr>';
+                }
+            })
+            .catch(error => {
+                console.error('Error loading deleted accounts:', error);
+                tbody.innerHTML = '<tr class="no-data-row"><td colspan="7">Lỗi tải dữ liệu</td></tr>';
+            })
+            .finally(() => {
+                resetButton(refreshBtn, 'Làm mới', '<i class="fas fa-sync-alt me-1"></i>');
+            });
+    }
+
+    function renderDeletedAccounts(accounts) {
+        const tbody = document.getElementById("deletedAccountsTableBody");
+
+        if (!accounts || accounts.length === 0) {
+            tbody.innerHTML = '<tr class="no-data-row"><td colspan="6" class="text-center text-muted py-3">Không có tài khoản đã xóa</td></tr>';
+            return;
+        }
+
+        let html = '';
+        accounts.forEach((account, index) => {
+            // Rút gọn email nếu quá dài
+            const shortEmail = account.email && account.email.length > 20
+                ? account.email.substring(0, 20) + '...'
+                : account.email;
+
+            // Rút gọn tên tài khoản nếu quá dài
+            const shortUsername = account.username && account.username.length > 15
+                ? account.username.substring(0, 15) + '...'
+                : account.username;
+
+            // Format ngày tháng đơn giản
+            const displayDate = formatDateShort(account.deletedAt);
+
+            html += `
+            <tr>
+                <td class="text-center">${index + 1}</td>
+                <td>
+                    <div class="fw-bold" title="${account.username}">${shortUsername}</div>
+                </td>
+                <td title="${account.email}">${shortEmail}</td>
+                <td class="text-center">
+                    <span class="badge bg-secondary">${account.roleName || 'N/A'}</span>
+                </td>
+                <td class="text-center">${displayDate}</td>
+                <td class="text-center">
+                    <button class="btn btn-sm btn-success btn-restore" 
+                            data-id="${account.id}"
+                            title="Khôi phục tài khoản">
+                        <i class="fas fa-trash-restore me-1"></i> Khôi phục
+                    </button>
+                </td>
+            </tr>
+        `;
+        });
+
+        tbody.innerHTML = html;
+
+        // Thêm event listeners cho các nút khôi phục
+        document.querySelectorAll('.btn-restore').forEach(btn => {
+            btn.addEventListener('click', handleRestoreAccount);
+        });
+    }
+
+    function formatDateShort(dateString) {
+        if (!dateString || dateString === '0001-01-01T00:00:00' || dateString === '') {
+            return 'N/A';
+        }
+
+        try {
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) {
+                return 'N/A';
+            }
+
+            // Format ngắn gọn: dd/mm/yyyy
+            const day = date.getDate().toString().padStart(2, '0');
+            const month = (date.getMonth() + 1).toString().padStart(2, '0');
+            const year = date.getFullYear();
+
+            return `${day}/${month}/${year}`;
+
+        } catch (error) {
+            return 'N/A';
+        }
+    }
+
+    function handleRestoreAccount() {
+        const accountId = this.dataset.id;
+        const row = this.closest('tr');
+        const accountName = row.cells[1].textContent.trim();
+
+        if (confirm(`Bạn có chắc chắn muốn khôi phục tài khoản "${accountName}"?`)) {
+            const btn = this;
+            showLoading(btn, 'Đang khôi phục...');
+
+            fetch('/Admin/Account/RestoreAccount', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ id: accountId })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast(data.message, 'success');
+                        // Xóa hàng khỏi bảng sau khi khôi phục thành công
+                        row.remove();
+
+                        // Nếu không còn hàng nào, hiển thị thông báo
+                        const remainingRows = document.querySelectorAll('#deletedAccountsTableBody tr:not(.no-data-row)');
+                        if (remainingRows.length === 0) {
+                            document.getElementById('deletedAccountsTableBody').innerHTML =
+                                '<tr class="no-data-row"><td colspan="6" class="text-center text-muted py-3">Không có tài khoản đã xóa</td></tr>';
+                        }
+                    } else {
+                        showToast(data.message || 'Có lỗi xảy ra', 'error');
+                        resetButton(btn, 'Khôi phục', '<i class="fas fa-trash-restore me-1"></i>');
+                    }
+                })
+                .catch(error => {
+                    console.error('Restore error:', error);
+                    showToast('Lỗi kết nối! Vui lòng thử lại.', 'error');
+                    resetButton(btn, 'Khôi phục', '<i class="fas fa-trash-restore me-1"></i>');
+                });
+        }
+    }
+
+    function handleDetailDeleted() {
+        const accountId = this.dataset.id;
+
+        // Tìm account trong danh sách hiện tại (cần lưu trữ dữ liệu tạm thời)
+        fetch(`/Admin/Account/GetAccountDetail/${accountId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.account) {
+                    const acc = data.account;
+                    document.getElementById("detailId").textContent = acc.id;
+                    document.getElementById("detailUsername").textContent = acc.username;
+                    document.getElementById("detailEmail").textContent = acc.email;
+                    document.getElementById("detailRole").textContent = acc.roleName;
+                    showModal("detailModal");
+                } else {
+                    showToast('Không thể tải thông tin chi tiết', 'error');
+                }
+            })
+            .catch(error => {
+                showToast('Lỗi kết nối! Vui lòng thử lại.', 'error');
+            });
+    }
+
+    function formatDate(dateString) {
+        console.log('Formatting date:', dateString);
+
+        if (!dateString || dateString === '0001-01-01T00:00:00' || dateString === '') {
+            return 'Chưa xác định';
+        }
+
+        try {
+            // Thử parse date
+            const date = new Date(dateString);
+
+            if (isNaN(date.getTime())) {
+                return 'Ngày không hợp lệ';
+            }
+
+            // Format đơn giản
+            const day = date.getDate().toString().padStart(2, '0');
+            const month = (date.getMonth() + 1).toString().padStart(2, '0');
+            const year = date.getFullYear();
+            const hours = date.getHours().toString().padStart(2, '0');
+            const minutes = date.getMinutes().toString().padStart(2, '0');
+
+            return `${day}/${month}/${year} ${hours}:${minutes}`;
+
+        } catch (error) {
+            console.error('Date error:', error);
+            return dateString; // Trả về nguyên bản nếu lỗi
+        }
+    }
+
+
+
+
+
+    // ======== CÁC HÀM CÒN LẠI GIỮ NGUYÊN ========
     function handleEditSubmit(e) {
         e.preventDefault();
         if (!hasChanges()) {
@@ -134,7 +356,6 @@
         const submitButton = this.querySelector('button[type="submit"]');
         showLoading(submitButton, 'Đang lưu...');
 
-        // Sử dụng AJAX để submit form
         fetch(this.action, {
             method: 'POST',
             body: formData
@@ -203,12 +424,10 @@
         document.getElementById("editForm").reset();
         document.getElementById("editId").value = "";
         document.getElementById("editModalLabel").innerHTML = '<i class="fa fa-plus me-2"></i>Thêm tài khoản mới';
-        document.getElementById('currentDataAlert').style.display = 'none';
         showModal("editModal");
     }
-    // ======== HÀM LỌC VÀ TÌM KIẾM - PHIÊN BẢN SỬA LỖI ========
 
-    // Map dữ liệu: Dropdown display → Database value
+    // ======== HÀM LỌC VÀ TÌM KIẾM ========
     const roleDbMap = {
         'Sinh viên': 'SinhVien',
         'Lớp phó lao động': 'LopPhoLaoDong',
@@ -217,8 +436,6 @@
     };
 
     function applyFilters() {
-        console.log('Applying filters - Keyword:', currentKeyword, 'Role:', currentRole);
-
         const keyword = currentKeyword.toLowerCase().trim();
         const selectedRole = currentRole;
         let visibleCount = 0;
@@ -226,9 +443,8 @@
         allRows.forEach(row => {
             const username = (row.cells[1]?.innerText || "").toLowerCase();
             const email = (row.cells[3]?.innerText || "").toLowerCase();
-            const dbRole = row.cells[4]?.innerText || ""; // Giá trị từ database: SinhVien, QuanLy, etc.
+            const dbRole = row.cells[4]?.innerText || "";
 
-            // --- TÌM KIẾM ---
             let searchMatch = true;
             if (keyword !== '') {
                 searchMatch = username.includes(keyword) ||
@@ -236,37 +452,25 @@
                     dbRole.toLowerCase().includes(keyword);
             }
 
-            // --- LỌC VAI TRÒ ---
             let roleMatch = true;
             if (selectedRole !== '' && selectedRole !== 'Tất Cả') {
-                // Lấy giá trị database tương ứng với dropdown đã chọn
                 const dbRoleToMatch = roleDbMap[selectedRole];
-
-                // So sánh với giá trị trong database
                 roleMatch = dbRole === dbRoleToMatch;
-
-                console.log(`Role filter - Selected: "${selectedRole}" -> DB: "${dbRoleToMatch}", Row DB: "${dbRole}", Match: ${roleMatch}`);
             }
 
-            // --- ẨN/HIỆN HÀNG ---
             const shouldShow = searchMatch && roleMatch;
             row.style.display = shouldShow ? "" : "none";
             if (shouldShow) visibleCount++;
         });
 
-        // --- HIỂN THỊ THÔNG BÁO NẾU KHÔNG CÓ DỮ LIỆU ---
         handleNoDataMessage(visibleCount);
-
         currentPage = 1;
         updateSTT();
         renderTable();
-
-        console.log(`Filter completed: ${visibleCount} items visible`);
     }
 
     function handleNoDataMessage(visibleCount) {
         let noDataRow = document.querySelector('.no-data-row');
-
         if (visibleCount === 0) {
             if (!noDataRow) {
                 noDataRow = document.createElement('tr');
@@ -283,6 +487,7 @@
     function getVisibleRows() {
         return allRows.filter(row => row.style.display !== "none");
     }
+
     // ======== PHÂN TRANG ========
     function renderTable() {
         const visibleRows = getVisibleRows();
@@ -293,7 +498,6 @@
             currentPage = totalPages;
         }
 
-        // Ẩn/hiển thị các hàng theo trang hiện tại
         visibleRows.forEach((row, index) => {
             const startIndex = (currentPage - 1) * itemsPerPage;
             const endIndex = currentPage * itemsPerPage;
@@ -344,41 +548,6 @@
                 sttCell.textContent = index + 1;
             }
         });
-    }
-
-    function showCurrentEditData(data) {
-        document.getElementById('currentUsername').textContent = data.username;
-        document.getElementById('currentEmail').textContent = data.email;
-        document.getElementById('currentRole').textContent = data.roleName;
-        highlightChanges(data);
-    }
-
-    function highlightChanges(originalData) {
-        const usernameInput = document.getElementById('editUsername');
-        const emailInput = document.getElementById('editEmail');
-        const roleSelect = document.getElementById('editRole');
-
-        // Reset styles
-        [usernameInput, emailInput, roleSelect].forEach(el => {
-            if (el) el.classList.remove('is-changed');
-        });
-
-        // Check changes
-        if (usernameInput) {
-            usernameInput.addEventListener('input', function () {
-                this.classList.toggle('is-changed', this.value !== originalData.username);
-            });
-        }
-        if (emailInput) {
-            emailInput.addEventListener('input', function () {
-                this.classList.toggle('is-changed', this.value !== originalData.email);
-            });
-        }
-        if (roleSelect) {
-            roleSelect.addEventListener('change', function () {
-                this.classList.toggle('is-changed', this.value !== originalData.roleId);
-            });
-        }
     }
 
     function showDeleteModal(id, username, email, role) {
@@ -501,11 +670,9 @@
     }
 
     function showToast(message, type) {
-        // Sử dụng hàm showToast từ ViewShare
         if (typeof window.showToast === 'function') {
             window.showToast(message, type);
         } else {
-            // Fallback
             console.log(`${type}: ${message}`);
             alert(message);
         }

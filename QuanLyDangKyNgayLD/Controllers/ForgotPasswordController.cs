@@ -37,7 +37,7 @@ namespace QuanLyDangKyNgayLD.Controllers
                 {
                     // Tạo token ngẫu nhiên
                     string token = Guid.NewGuid().ToString();
-                    DateTime expiry = DateTime.Now.AddHours(1); // hết hạn sau 1 giờ
+                    DateTime expiry = DateTime.Now.AddHours(1); 
 
                     // Lưu token vào DB
                     user.Reset_token = token;
@@ -46,8 +46,8 @@ namespace QuanLyDangKyNgayLD.Controllers
 
                     // Tạo link đặt lại mật khẩu
                     string resetLink = Url.Action(
-                           "ResetPassword",               // action
-                           "ResetPassword",  // hoặc ForgotPassword nếu bạn viết trong controller này
+                           "ResetPassword",             
+                           "ResetPassword", 
                         new { token = token },
                         Request.Url.Scheme
                     );

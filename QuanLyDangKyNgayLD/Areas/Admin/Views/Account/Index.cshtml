@@ -4,6 +4,7 @@
     Layout = "~/Areas/Admin/Views/Shared/ViewShare.cshtml";
 }
 <link href="~/Areas/Content/adminpage.css" rel="stylesheet" type="text/css" />
+
 <!-- THANH CÔNG CỤ -->
 <nav class="navbar navbar-expand-lg toolbar">
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
@@ -14,7 +15,12 @@
                     <i class="fa fa-plus me-1"></i> Thêm tài khoản
                 </button>
             </li>
-
+            <!-- Nút xem tài khoản đã xóa -->
+            <li class="nav-item">
+                <button class="btn btn-outline-secondary btn-sm me-2" id="btnViewDeleted">
+                    <i class="fas fa-trash-restore me-1"></i> Tài khoản đã xóa
+                </button>
+            </li>
         </ul>
 
         <!-- BÊN PHẢI: Lọc + Tìm kiếm + Xuất Excel -->
@@ -39,6 +45,7 @@
         </form>
     </div>
 </nav>
+
 <!-- BẢNG DỮ LIỆU -->
 <div class="table-responsive shadow-sm rounded-3 bg-white p-2 mt-3">
     <table class="table table-bordered table-hover align-middle text-center mb-0">
@@ -78,7 +85,10 @@
                             <!-- Nút Xóa - Gradient đỏ -->
                             <button class="btn btn-sm px-3 me-1 btn-delete"
                                     style="background: linear-gradient(45deg, #dc3545, #a71e2a); color: white; border: none;"
-                                    data-id="@item.TaiKhoan_id">
+                                    data-id="@item.TaiKhoan_id"
+                                    data-username="@item.Username"
+                                    data-email="@item.Email"
+                                    data-rolename="@item.VaiTro.TenVaiTro">
                                 <i class="fas fa-trash"></i>
                             </button>
                             <!-- Nút Chi tiết - Gradient cam/vàng -->
@@ -90,7 +100,10 @@
                             <!-- Nút Đặt lại mật khẩu - Gradient tím -->
                             <button class="btn btn-sm px-3 me-1 btn-reset"
                                     style="background: linear-gradient(45deg, #6f42c1, #4a2d8a); color: white; border: none;"
-                                    data-id="@item.TaiKhoan_id">
+                                    data-id="@item.TaiKhoan_id"
+                                    data-username="@item.Username"
+                                    data-email="@item.Email"
+                                    data-rolename="@item.VaiTro.TenVaiTro">
                                 <i class="fas fa-key"></i>
                             </button>
                         </td>
@@ -107,6 +120,7 @@
         </tbody>
     </table>
 </div>
+
 <!-- PHÂN TRANG -->
 <div class="d-flex justify-content-between align-items-center mt-3">
     <div id="pagination" class="pagination-container">
@@ -116,7 +130,8 @@
     </div>
     <div class="fw-bold text-end" id="pageInfo"></div>
 </div>
-<!-- FORM POPUP CHỈNH SỬA -->
+
+<!-- FORM POPUP CHỈNH SỬA (ĐÃ LOẠI BỎ DỮ LIỆU HIỆN TẠI) -->
 <div class="modal fade" data-bs-backdrop="false" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content shadow">
@@ -127,20 +142,6 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Đóng"></button>
             </div>
             <div class="modal-body">
-                <!-- THÔNG BÁO DỮ LIỆU HIỆN TẠI -->
-                <div class="alert alert-info mb-3" id="currentDataAlert">
-                    <h6 class="alert-heading mb-2">
-                        <i class="fas fa-database me-1"></i>Dữ liệu hiện tại:
-                    </h6>
-                    <div class="row small">
-                        <div class="col-4 fw-bold">Tên TK:</div>
-                        <div class="col-8" id="currentUsername">-</div>
-                        <div class="col-4 fw-bold">Email:</div>
-                        <div class="col-8" id="currentEmail">-</div>
-                        <div class="col-4 fw-bold">Vai trò:</div>
-                        <div class="col-8" id="currentRole">-</div>
-                    </div>
-                </div>
                 <form id="editForm" method="post" action="/Admin/Account/Edit">
                     @Html.AntiForgeryToken()
                     <input type="hidden" id="editId" name="TaiKhoan_id" />
@@ -190,6 +191,7 @@
         </div>
     </div>
 </div>
+
 <!-- FORM POPUP CHI TIẾT -->
 <div class="modal fade" data-bs-backdrop="false" id="detailModal" tabindex="-1" aria-labelledby="detailModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
@@ -216,6 +218,7 @@
         </div>
     </div>
 </div>
+
 <!-- DELETE MODAL -->
 <div class="modal fade" data-bs-backdrop="false" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
@@ -248,6 +251,7 @@
         </div>
     </div>
 </div>
+
 <!-- RESET PASSWORD MODAL -->
 <div class="modal fade" data-bs-backdrop="false" id="resetPasswordModal" tabindex="-1" aria-labelledby="resetPasswordModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
@@ -294,6 +298,48 @@
                 </button>
                 <button type="button" class="btn btn-warning" id="confirmResetBtn">
                     <i class="fas fa-redo me-1"></i> Đặt lại mật khẩu
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- MODAL DANH SÁCH TÀI KHOẢN ĐÃ XÓA -->
+<div class="modal fade" data-bs-backdrop="false" id="deletedAccountsModal" tabindex="-1" aria-labelledby="deletedAccountsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content shadow">
+            <div class="modal-header bg-secondary text-white">
+                <h5 class="modal-title" id="deletedAccountsModalLabel">
+                    <i class="fas fa-trash-restore me-2"></i>Danh sách tài khoản đã xóa
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive" style="max-height: 400px;">
+                    <table class="table table-bordered table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th width="5%" class="text-center">STT</th>
+                                <th width="20%">Tài khoản</th>
+                                <th width="25%">Email</th>
+                                <th width="15%" class="text-center">Vai trò</th>
+                                <th width="15%" class="text-center">Ngày xóa</th>
+                                <th width="20%" class="text-center">Tác vụ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="deletedAccountsTableBody">
+                            <tr class="no-data-row">
+                                <td colspan="6" class="text-center text-muted py-3">Đang tải dữ liệu...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i> Đóng
+                </button>
+                <button type="button" class="btn btn-primary" id="btnRefreshDeleted">
+                    <i class="fas fa-sync-alt me-1"></i> Làm mới
                 </button>
             </div>
         </div>

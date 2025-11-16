@@ -97,6 +97,7 @@ button#btnAdd {
 .alert-warning .col-8 {
     padding-left: 0.5rem;
 }
+
 #btnDeletedList:hover {
     background: linear-gradient(135deg, #9bbc0f 0%, #8bac0f 100%) !important;
     border-color: #0f380f !important;
