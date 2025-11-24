@@ -1,719 +1,744 @@
-﻿document.addEventListener("DOMContentLoaded", function () {
-    // ======== BIẾN TOÀN CỤC ========
-    let allRows = Array.from(document.querySelectorAll("#accountTableBody tr:not(.no-data-row)"));
-    const searchBox = document.getElementById("searchBox");
-    const roleFilter = document.getElementById("roleFilter");
-    const itemsPerPage = 5;
-    let currentPage = 1;
-    let currentKeyword = '';
-    let currentRole = '';
-    let currentDeleteId = null;
-    let currentResetId = null;
-    let currentEditData = null;
-    let searchTimeout = null;
+﻿// ~/Areas/Content/jsAccount/Account.js
+// PHIÊN BẢN ĐÃ DỌN SẠCH & PHÂN VÙNG RÕ RÀNG - DỄ BẢO TRÌ 2025
 
-    // ======== KHỞI TẠO ========
-    initialize();
+document.addEventListener("DOMContentLoaded", function () {
 
-    function initialize() {
-        setupEventListeners();
-        applyFilters();
+    // ==================================================================
+    // 1. BIẾN TOÀN CỤC BỘ (STATE)
+    // ==================================================================
+    let currentEditData = null;   // Dùng khi sửa tài khoản (lưu dữ liệu cũ để kiểm tra thay đổi)
+    let currentDeleteId = null;   // ID tài khoản đang chuẩn bị xóa
+    let currentResetId = null;      // ID tài khoản đang đặt lại mật khẩu
+
+    let currentPage = 1;          // Trang hiện tại của phân trang
+    const pageSize = 5;           // Số dòng mỗi trang
+
+    // ==================================================================
+    // 2. GỌI KHỞI TẠO CHÍNH
+    // ==================================================================
+    setupEventListeners();   // Gắn tất cả sự kiện
+    loadAccounts();          // Load dữ liệu bảng lần đầu tiên (server-side)
+
+    // ==================================================================
+    // 3. GẮN SỰ KIỆN (EVENT LISTENERS)
+    // ==================================================================
+    function setupEventListeners() {
+
+        // ---- Toolbar buttons ----
+        document.getElementById("btnAdd")?.addEventListener("click", handleAddAccount);
+        document.getElementById("btnViewDeleted")?.addEventListener("click", handleViewDeleted);
+        document.getElementById("btnRefreshDeleted")?.addEventListener("click", loadDeletedAccounts);
+        document.getElementById("exportAllAccounts")?.addEventListener("click", exportAllAccounts);
+
+
+
+
+        // === THÊM 2 DÒNG NÀY VÀO CUỐI setupEventListeners() ===
+        document.getElementById("createForm")?.addEventListener("submit", handleCreateSubmit);
+        document.querySelector("#createModal .btn-success")?.addEventListener("click", () => {
+            document.getElementById("createForm").dispatchEvent(new Event("submit"));
+        });
+        // ---- Form & Confirm buttons ----
+        document.getElementById('editForm')?.addEventListener('submit', handleEditSubmit);
+        document.getElementById('confirmDeleteBtn')?.addEventListener('click', handleConfirmDelete);
+        document.getElementById('confirmResetBtn')?.addEventListener('click', handleConfirmReset);
+
+        // ---- Khi mở modal tài khoản đã xóa → tự động load ----
+        document.getElementById('deletedAccountsModal')?.addEventListener('shown.bs.modal', loadDeletedAccounts);
+
+        // ---- Bảng chính: dùng event delegation để xử lý các nút hành động ----
+        document.getElementById("accountTableBody")?.addEventListener("click", function (e) {
+            const btn = e.target.closest("button");
+            if (!btn) return;
+
+            if (btn.classList.contains("btn-detail")) handleDetail.call(btn);
+            else if (btn.classList.contains("btn-edit")) handleEdit.call(btn);
+            else if (btn.classList.contains("btn-delete")) handleDelete.call(btn);
+            else if (btn.classList.contains("btn-reset")) handleResetPassword.call(btn);
+        });
+
+        // ---- Bảng tài khoản đã xóa: nút khôi phục ----
+        document.getElementById("deletedAccountsTableBody")?.addEventListener("click", function (e) {
+            const btn = e.target.closest(".btn-restore");
+            if (btn) handleRestoreAccount.call(btn);
+        });
+
+        // ---- Reset state khi đóng modal ----
+        document.getElementById('editModal')?.addEventListener('hidden.bs.modal', () => currentEditData = null);
+        document.getElementById('deleteModal')?.addEventListener('hidden.bs.modal', () => currentDeleteId = null);
+        document.getElementById('resetPasswordModal')?.addEventListener('hidden.bs.modal', () => currentResetId = null);
+
+        // ---- Lọc theo vai trò ----
+        document.getElementById("roleFilter")?.addEventListener("change", () => {
+            currentPage = 1;
+            loadAccounts();
+        });
+
+        // ---- Tìm kiếm (search box) ----
+        const searchBox = document.getElementById("searchBox");
+        if (searchBox) {
+            searchBox.addEventListener("input", () => {
+                currentPage = 1;
+                loadAccounts();
+            });
+        }
     }
 
-    function setupEventListeners() {
-        // Nút sửa
+    // ==================================================================
+    // 4. XỬ LÝ THÊM MỚI TÀI KHOẢN
+    // ==================================================================
+    function handleAddAccount() {
+        const form = document.getElementById("createForm");
+        if (form) form.reset(); // reset form thêm mới
+        showModal("createModal"); // mở modal thêm mới
+    }
+    function handleCreateSubmit(e) {
+        e.preventDefault();
+        const form = this;
+        const btn = document.querySelector("#createModal .btn-success"); // nút Lưu
+
+        // Kiểm tra hợp lệ trước khi gửi
+        if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+
+        const formData = new FormData(form);
+        const token = form.querySelector('input[name="__RequestVerificationToken"]')?.value;
+
+        if (!token) {
+            showToast("Thiếu token bảo mật!", "error");
+            return;
+        }
+
+        showLoading(btn, "Đang thêm...");
+
+        fetch(form.action, {
+
+            method: "POST",
+            body: formData,
+            headers: {
+                "X-RequestVerificationToken": token
+            }
+
+
+
+        })
+            .then(response => {
+                if (!response.ok) throw new Error("Phản hồi không hợp lệ từ server");
+                return response.json();
+            })
+            .then(data => {
+                console.log("Server response:", data);
+                if (data.success) {
+                    hideModal("createModal");
+                    form.reset();
+                    showToast(data.message || "Thêm tài khoản thành công!", "success");
+                    loadAccounts(currentPage);
+                } else {
+                    showToast(data.message || "Thêm thất bại!", "error");
+                }
+            })
+            .catch(error => {
+                console.error("Lỗi gửi dữ liệu:", error);
+                showToast("Lỗi: Không thể gửi dữ liệu!", "error");
+            })
+            .finally(() => {
+                resetButton(btn, "Lưu", '<i class="fa fa-check me-1"></i>');
+            });
+    }
+
+
+
+    // ==================================================================
+    // 5. XỬ LÝ CHỈNH SỬA TÀI KHOẢN
+    // ==================================================================
+
+    // Gắn sự kiện cho nút sửa
+    document.addEventListener("DOMContentLoaded", function () {
         document.querySelectorAll(".btn-edit").forEach(btn => {
             btn.addEventListener("click", handleEdit);
         });
-        // Nút xóa
-        document.querySelectorAll(".btn-delete").forEach(btn => {
-            btn.addEventListener("click", handleDelete);
-        });
-        // Nút reset password
-        document.querySelectorAll(".btn-reset").forEach(btn => {
-            btn.addEventListener("click", handleResetPassword);
-        });
-        // Nút chi tiết
-        document.querySelectorAll(".btn-detail").forEach(btn => {
-            btn.addEventListener("click", handleDetail);
-        });
-        // Form edit
-        document.getElementById('editForm').addEventListener('submit', handleEditSubmit);
-        // Xác nhận xóa
-        document.getElementById('confirmDeleteBtn').addEventListener('click', handleConfirmDelete);
-        // Xác nhận reset password
-        document.getElementById('confirmResetBtn').addEventListener('click', handleConfirmReset);
-        // Tìm kiếm
-        searchBox.addEventListener("input", handleSearch);
-        // Lọc theo vai trò
-        roleFilter.addEventListener("change", handleRoleFilter);
-        // Phân trang
-        document.getElementById("prev").addEventListener("click", goToPrevPage);
-        document.getElementById("next").addEventListener("click", goToNextPage);
-        // Xuất Excel
-        document.getElementById("btnExportExcel").addEventListener("click", handleExportExcel);
-        // Thêm tài khoản
-        document.getElementById("btnAdd").addEventListener("click", handleAddAccount);
-        // Xem tài khoản đã xóa
-        document.getElementById("btnViewDeleted").addEventListener("click", handleViewDeleted);
-        // Làm mới danh sách đã xóa
-        document.getElementById("btnRefreshDeleted").addEventListener("click", loadDeletedAccounts);
-        // Reset modal khi đóng
-        setupModalEvents();
-    }
 
-    function setupModalEvents() {
-        document.getElementById('editModal').addEventListener('hidden.bs.modal', function () {
-            currentEditData = null;
-            document.querySelectorAll('.is-changed').forEach(el => {
-                el.classList.remove('is-changed');
-            });
-        });
-        document.getElementById('deleteModal').addEventListener('hidden.bs.modal', function () {
-            currentDeleteId = null;
-            resetDeleteButton();
-        });
-        document.getElementById('resetPasswordModal').addEventListener('hidden.bs.modal', function () {
-            currentResetId = null;
-            resetResetButton();
-        });
-        document.getElementById('deletedAccountsModal').addEventListener('shown.bs.modal', function () {
-            loadDeletedAccounts();
-        });
-    }
+        const editForm = document.getElementById("editForm");
+        if (editForm) {
+            editForm.addEventListener("submit", handleEditSubmit);
+        }
+    });
 
-    // ======== XỬ LÝ SỰ KIỆN CHÍNH ========
+    // Mở modal và gán dữ liệu vào form
     function handleEdit() {
-        const id = this.dataset.id;
-        const username = this.dataset.username;
-        const email = this.dataset.email;
-        const roleId = this.dataset.roleid;
-        const roleName = this.dataset.rolename;
+        const btn = this;
+        currentEditData = {
+            id: btn.dataset.id,
+            username: btn.dataset.username,
+            email: btn.dataset.email,
+            roleId: btn.dataset.roleid,
+            roleName: btn.dataset.rolename
+        };
 
-        currentEditData = { id, username, email, roleId, roleName };
-
-        document.getElementById("editId").value = id;
-        document.getElementById("editUsername").value = username;
-        document.getElementById("editEmail").value = email;
-        document.getElementById("editRole").value = roleId;
-
-        document.getElementById("editModalLabel").innerHTML = '<i class="fa fa-edit me-2"></i>Chỉnh sửa tài khoản';
+        document.getElementById("editId").value = currentEditData.id;
+        document.getElementById("editUsername").value = currentEditData.username;
+        document.getElementById("editEmail").value = currentEditData.email;
+        document.getElementById("editRole").value = currentEditData.roleId;
+        document.getElementById("editPassword").value = "";
 
         showModal("editModal");
     }
 
-    function handleDelete() {
-        const row = this.closest("tr");
-        const id = this.dataset.id;
-        const username = row.cells[1]?.innerText || "";
-        const email = row.cells[3]?.innerText || "";
-        const role = row.cells[4]?.innerText || "";
-        showDeleteModal(id, username, email, role);
+    // Kiểm tra có thay đổi không
+    function hasChanges() {
+        const username = document.getElementById("editUsername").value;
+        const email = document.getElementById("editEmail").value;
+        const roleId = document.getElementById("editRole").value;
+        const password = document.getElementById("editPassword").value;
+
+        return (
+            username !== currentEditData.username ||
+            email !== currentEditData.email ||
+            roleId !== currentEditData.roleId ||
+            password.trim() !== ""
+        );
     }
 
-    function handleResetPassword() {
-        const row = this.closest("tr");
-        const id = this.dataset.id;
-        const username = row.cells[1]?.innerText || "";
-        const email = row.cells[3]?.innerText || "";
-        const role = row.cells[4]?.innerText || "";
-        showResetPasswordModal(id, username, email, role);
-    }
-
-    function handleDetail() {
-        const row = this.closest("tr");
-        const id = this.dataset.id;
-        const username = row.cells[1]?.innerText || "";
-        const email = row.cells[3]?.innerText || "";
-        const role = row.cells[4]?.innerText || "";
-        document.getElementById("detailId").textContent = id;
-        document.getElementById("detailUsername").textContent = username;
-        document.getElementById("detailEmail").textContent = email;
-        document.getElementById("detailRole").textContent = role;
-        showModal("detailModal");
-    }
-
-    // ======== XỬ LÝ TÀI KHOẢN ĐÃ XÓA ========
-    function handleViewDeleted() {
-        showModal("deletedAccountsModal");
-    }
-
-    function loadDeletedAccounts() {
-        const tbody = document.getElementById("deletedAccountsTableBody");
-        const refreshBtn = document.getElementById("btnRefreshDeleted");
-
-        showLoading(refreshBtn, 'Đang tải...');
-
-        console.log('Fetching deleted accounts...');
-
-        fetch('/Admin/Account/GetDeletedAccounts')
-            .then(response => {
-                console.log('Response status:', response.status);
-                return response.json();
-            })
-            .then(data => {
-                console.log('Raw API response:', data);
-                if (data.success && data.accounts) {
-                    console.log('Accounts data:', data.accounts);
-                    renderDeletedAccounts(data.accounts);
-                } else {
-                    console.log('No accounts or API error:', data);
-                    tbody.innerHTML = '<tr class="no-data-row"><td colspan="7">Không có dữ liệu</td></tr>';
-                }
-            })
-            .catch(error => {
-                console.error('Error loading deleted accounts:', error);
-                tbody.innerHTML = '<tr class="no-data-row"><td colspan="7">Lỗi tải dữ liệu</td></tr>';
-            })
-            .finally(() => {
-                resetButton(refreshBtn, 'Làm mới', '<i class="fas fa-sync-alt me-1"></i>');
-            });
-    }
-
-    function renderDeletedAccounts(accounts) {
-        const tbody = document.getElementById("deletedAccountsTableBody");
-
-        if (!accounts || accounts.length === 0) {
-            tbody.innerHTML = '<tr class="no-data-row"><td colspan="6" class="text-center text-muted py-3">Không có tài khoản đã xóa</td></tr>';
-            return;
-        }
-
-        let html = '';
-        accounts.forEach((account, index) => {
-            // Rút gọn email nếu quá dài
-            const shortEmail = account.email && account.email.length > 20
-                ? account.email.substring(0, 20) + '...'
-                : account.email;
-
-            // Rút gọn tên tài khoản nếu quá dài
-            const shortUsername = account.username && account.username.length > 15
-                ? account.username.substring(0, 15) + '...'
-                : account.username;
-
-            // Format ngày tháng đơn giản
-            const displayDate = formatDateShort(account.deletedAt);
-
-            html += `
-            <tr>
-                <td class="text-center">${index + 1}</td>
-                <td>
-                    <div class="fw-bold" title="${account.username}">${shortUsername}</div>
-                </td>
-                <td title="${account.email}">${shortEmail}</td>
-                <td class="text-center">
-                    <span class="badge bg-secondary">${account.roleName || 'N/A'}</span>
-                </td>
-                <td class="text-center">${displayDate}</td>
-                <td class="text-center">
-                    <button class="btn btn-sm btn-success btn-restore" 
-                            data-id="${account.id}"
-                            title="Khôi phục tài khoản">
-                        <i class="fas fa-trash-restore me-1"></i> Khôi phục
-                    </button>
-                </td>
-            </tr>
-        `;
-        });
-
-        tbody.innerHTML = html;
-
-        // Thêm event listeners cho các nút khôi phục
-        document.querySelectorAll('.btn-restore').forEach(btn => {
-            btn.addEventListener('click', handleRestoreAccount);
-        });
-    }
-
-    function formatDateShort(dateString) {
-        if (!dateString || dateString === '0001-01-01T00:00:00' || dateString === '') {
-            return 'N/A';
-        }
-
-        try {
-            const date = new Date(dateString);
-            if (isNaN(date.getTime())) {
-                return 'N/A';
-            }
-
-            // Format ngắn gọn: dd/mm/yyyy
-            const day = date.getDate().toString().padStart(2, '0');
-            const month = (date.getMonth() + 1).toString().padStart(2, '0');
-            const year = date.getFullYear();
-
-            return `${day}/${month}/${year}`;
-
-        } catch (error) {
-            return 'N/A';
-        }
-    }
-
-    function handleRestoreAccount() {
-        const accountId = this.dataset.id;
-        const row = this.closest('tr');
-        const accountName = row.cells[1].textContent.trim();
-
-        if (confirm(`Bạn có chắc chắn muốn khôi phục tài khoản "${accountName}"?`)) {
-            const btn = this;
-            showLoading(btn, 'Đang khôi phục...');
-
-            fetch('/Admin/Account/RestoreAccount', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ id: accountId })
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        showToast(data.message, 'success');
-                        // Xóa hàng khỏi bảng sau khi khôi phục thành công
-                        row.remove();
-
-                        // Nếu không còn hàng nào, hiển thị thông báo
-                        const remainingRows = document.querySelectorAll('#deletedAccountsTableBody tr:not(.no-data-row)');
-                        if (remainingRows.length === 0) {
-                            document.getElementById('deletedAccountsTableBody').innerHTML =
-                                '<tr class="no-data-row"><td colspan="6" class="text-center text-muted py-3">Không có tài khoản đã xóa</td></tr>';
-                        }
-                    } else {
-                        showToast(data.message || 'Có lỗi xảy ra', 'error');
-                        resetButton(btn, 'Khôi phục', '<i class="fas fa-trash-restore me-1"></i>');
-                    }
-                })
-                .catch(error => {
-                    console.error('Restore error:', error);
-                    showToast('Lỗi kết nối! Vui lòng thử lại.', 'error');
-                    resetButton(btn, 'Khôi phục', '<i class="fas fa-trash-restore me-1"></i>');
-                });
-        }
-    }
-
-    function handleDetailDeleted() {
-        const accountId = this.dataset.id;
-
-        // Tìm account trong danh sách hiện tại (cần lưu trữ dữ liệu tạm thời)
-        fetch(`/Admin/Account/GetAccountDetail/${accountId}`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.success && data.account) {
-                    const acc = data.account;
-                    document.getElementById("detailId").textContent = acc.id;
-                    document.getElementById("detailUsername").textContent = acc.username;
-                    document.getElementById("detailEmail").textContent = acc.email;
-                    document.getElementById("detailRole").textContent = acc.roleName;
-                    showModal("detailModal");
-                } else {
-                    showToast('Không thể tải thông tin chi tiết', 'error');
-                }
-            })
-            .catch(error => {
-                showToast('Lỗi kết nối! Vui lòng thử lại.', 'error');
-            });
-    }
-
-    function formatDate(dateString) {
-        console.log('Formatting date:', dateString);
-
-        if (!dateString || dateString === '0001-01-01T00:00:00' || dateString === '') {
-            return 'Chưa xác định';
-        }
-
-        try {
-            // Thử parse date
-            const date = new Date(dateString);
-
-            if (isNaN(date.getTime())) {
-                return 'Ngày không hợp lệ';
-            }
-
-            // Format đơn giản
-            const day = date.getDate().toString().padStart(2, '0');
-            const month = (date.getMonth() + 1).toString().padStart(2, '0');
-            const year = date.getFullYear();
-            const hours = date.getHours().toString().padStart(2, '0');
-            const minutes = date.getMinutes().toString().padStart(2, '0');
-
-            return `${day}/${month}/${year} ${hours}:${minutes}`;
-
-        } catch (error) {
-            console.error('Date error:', error);
-            return dateString; // Trả về nguyên bản nếu lỗi
-        }
-    }
-
-
-
-
-
-    // ======== CÁC HÀM CÒN LẠI GIỮ NGUYÊN ========
+    // Gửi form chỉnh sửa bằng AJAX
     function handleEditSubmit(e) {
         e.preventDefault();
-        if (!hasChanges()) {
+
+        if (document.getElementById("editId").value && !hasChanges()) {
             showToast('Không có thay đổi nào để lưu!', 'info');
             return;
         }
-        const formData = new FormData(this);
-        const submitButton = this.querySelector('button[type="submit"]');
-        showLoading(submitButton, 'Đang lưu...');
 
-        fetch(this.action, {
+        const form = e.target;
+        const formData = new FormData(form);
+        const btn = form.querySelector('button[type="submit"]');
+        showLoading(btn, 'Đang lưu...');
+
+        fetch(form.action, {
             method: 'POST',
             body: formData
         })
-            .then(response => {
-                if (response.redirected) {
-                    window.location.href = response.url;
-                } else {
-                    return response.json();
-                }
-            })
+            .then(r => r.json())
             .then(data => {
-                if (data && data.success) {
-                    hideModal("editModal");
-                    showToast(data.message, 'success');
-                    setTimeout(() => location.reload(), 1500);
-                } else if (data) {
-                    showToast(data.message, 'error');
+                hideModal("editModal");
+                showToast(data.success ? data.message : data.message, data.success ? "success" : "error");
+
+                if (data.success) {
+                    // Nếu muốn cập nhật bảng mà không reload, có thể viết thêm ở đây
+                    setTimeout(() => location.reload(), 1000);
                 }
             })
-            .catch(error => {
-                showToast('Lỗi kết nối! Vui lòng thử lại.', 'error');
+            .catch(() => {
+                showToast("Lỗi kết nối!", "error");
             })
             .finally(() => {
-                resetButton(submitButton, 'Lưu thay đổi', '<i class="fa fa-save me-1"></i>');
+                resetButton(btn, 'Lưu thay đổi', '<i class="fa fa-save me-1"></i>');
             });
+    }
+
+    // ================== HÀM HỖ TRỢ ==================
+
+    // Mở modal
+    function showModal(id) {
+        const modal = new bootstrap.Modal(document.getElementById(id));
+        modal.show();
+    }
+
+    // Ẩn modal
+    function hideModal(id) {
+        const modalEl = document.getElementById(id);
+        const modal = bootstrap.Modal.getInstance(modalEl);
+        if (modal) modal.hide();
+    }
+
+    // Hiển thị loading trên nút
+    function showLoading(btn, text) {
+        btn.disabled = true;
+        btn.innerHTML = `<span class="spinner-border spinner-border-sm me-1"></span>${text}`;
+    }
+
+    // Reset nút sau khi gửi
+    function resetButton(btn, text, iconHtml = "") {
+        btn.disabled = false;
+        btn.innerHTML = `${iconHtml}${text}`;
+    }
+
+
+
+    // ==================================================================
+    // 5. XỬ LÝ XÓA TÀI KHOẢN
+    // ==================================================================
+    function handleDelete() {
+        const row = this.closest("tr");
+        currentDeleteId = this.dataset.id;
+
+        document.getElementById('deleteConfirmText').textContent = `Bạn có chắc chắn muốn xóa tài khoản "${row.cells[1].textContent}"?`;
+        document.getElementById('deleteAccountInfo').innerHTML = `<strong>${row.cells[1].textContent}</strong><br>${row.cells[2].textContent}<br><span class="badge bg-secondary">${row.cells[3].textContent}</span>`;
+
+        showModal('deleteModal');
     }
 
     function handleConfirmDelete() {
         if (!currentDeleteId) return;
         const btn = this;
         showLoading(btn, 'Đang xóa...');
-        deleteAccount(currentDeleteId);
+
+        const fd = new FormData();
+        fd.append('id', currentDeleteId);
+
+        fetch('/Admin/Account/DeleteAjax', { method: 'POST', body: fd })
+            .then(r => r.json())
+            .then(data => {
+                hideModal('deleteModal');
+                showToast(data.success ? "Xóa thành công!" : data.message, data.success ? "success" : "error");
+                if (data.success) setTimeout(() => location.reload(), 1000);
+            })
+            .catch(() => showToast("Lỗi kết nối!", "error"))
+            .finally(() => resetButton(btn, 'Xác nhận xóa', '<i class="fas fa-trash me-1"></i>'));
+    }
+
+    // ==================================================================
+    // 6. XỬ LÝ ĐẶT LẠI MẬT KHẨU
+    // ==================================================================
+    function handleResetPassword() {
+        const row = this.closest("tr");
+        currentResetId = this.dataset.id;
+
+        document.getElementById('resetCurrentUsername').textContent = row.cells[1].textContent;
+        document.getElementById('resetCurrentEmail').textContent = row.cells[2].textContent;
+        document.getElementById('resetCurrentRole').textContent = row.cells[3].textContent;
+
+        showModal('resetPasswordModal');
     }
 
     function handleConfirmReset() {
         if (!currentResetId) return;
         const btn = this;
         showLoading(btn, 'Đang xử lý...');
-        resetPassword(currentResetId);
-    }
 
-    function handleSearch() {
-        clearTimeout(searchTimeout);
-        currentKeyword = this.value.trim();
-        searchTimeout = setTimeout(() => {
-            applyFilters();
-        }, 300);
-    }
+        const fd = new FormData();
+        fd.append('id', currentResetId);
 
-    function handleRoleFilter() {
-        currentRole = this.value;
-        applyFilters();
-    }
-
-    function handleExportExcel() {
-        const visibleRows = getVisibleRows();
-        if (visibleRows.length === 0) {
-            showToast("Không có dữ liệu để xuất!", "warning");
-            return;
-        }
-        exportToExcel(visibleRows);
-    }
-
-    function handleAddAccount() {
-        document.getElementById("editForm").reset();
-        document.getElementById("editId").value = "";
-        document.getElementById("editModalLabel").innerHTML = '<i class="fa fa-plus me-2"></i>Thêm tài khoản mới';
-        showModal("editModal");
-    }
-
-    // ======== HÀM LỌC VÀ TÌM KIẾM ========
-    const roleDbMap = {
-        'Sinh viên': 'SinhVien',
-        'Lớp phó lao động': 'LopPhoLaoDong',
-        'Quản lý': 'QuanLy',
-        'Admin': 'Admin'
-    };
-
-    function applyFilters() {
-        const keyword = currentKeyword.toLowerCase().trim();
-        const selectedRole = currentRole;
-        let visibleCount = 0;
-
-        allRows.forEach(row => {
-            const username = (row.cells[1]?.innerText || "").toLowerCase();
-            const email = (row.cells[3]?.innerText || "").toLowerCase();
-            const dbRole = row.cells[4]?.innerText || "";
-
-            let searchMatch = true;
-            if (keyword !== '') {
-                searchMatch = username.includes(keyword) ||
-                    email.includes(keyword) ||
-                    dbRole.toLowerCase().includes(keyword);
-            }
-
-            let roleMatch = true;
-            if (selectedRole !== '' && selectedRole !== 'Tất Cả') {
-                const dbRoleToMatch = roleDbMap[selectedRole];
-                roleMatch = dbRole === dbRoleToMatch;
-            }
-
-            const shouldShow = searchMatch && roleMatch;
-            row.style.display = shouldShow ? "" : "none";
-            if (shouldShow) visibleCount++;
-        });
-
-        handleNoDataMessage(visibleCount);
-        currentPage = 1;
-        updateSTT();
-        renderTable();
-    }
-
-    function handleNoDataMessage(visibleCount) {
-        let noDataRow = document.querySelector('.no-data-row');
-        if (visibleCount === 0) {
-            if (!noDataRow) {
-                noDataRow = document.createElement('tr');
-                noDataRow.className = 'no-data-row';
-                noDataRow.innerHTML = '<td colspan="6" class="text-center text-muted py-3">Không có dữ liệu phù hợp</td>';
-                document.getElementById('accountTableBody').appendChild(noDataRow);
-            }
-            noDataRow.style.display = '';
-        } else if (noDataRow) {
-            noDataRow.style.display = 'none';
-        }
-    }
-
-    function getVisibleRows() {
-        return allRows.filter(row => row.style.display !== "none");
-    }
-
-    // ======== PHÂN TRANG ========
-    function renderTable() {
-        const visibleRows = getVisibleRows();
-        const totalItems = visibleRows.length;
-        const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
-
-        if (currentPage > totalPages && totalPages > 0) {
-            currentPage = totalPages;
-        }
-
-        visibleRows.forEach((row, index) => {
-            const startIndex = (currentPage - 1) * itemsPerPage;
-            const endIndex = currentPage * itemsPerPage;
-            row.style.display = (index >= startIndex && index < endIndex) ? "" : "none";
-        });
-
-        updatePaginationInfo(totalPages, totalItems);
-    }
-
-    function updatePaginationInfo(totalPages, totalItems) {
-        const pageInfo = document.getElementById("pageInfo");
-        const prevBtn = document.getElementById("prev");
-        const nextBtn = document.getElementById("next");
-
-        if (pageInfo) {
-            pageInfo.textContent = `Trang ${currentPage} / ${totalPages} (${totalItems} mục)`;
-        }
-        if (prevBtn) {
-            prevBtn.disabled = currentPage === 1;
-        }
-        if (nextBtn) {
-            nextBtn.disabled = currentPage === totalPages || totalPages === 0;
-        }
-    }
-
-    function goToPrevPage() {
-        if (currentPage > 1) {
-            currentPage--;
-            renderTable();
-        }
-    }
-
-    function goToNextPage() {
-        const visibleRows = getVisibleRows();
-        const totalPages = Math.ceil(visibleRows.length / itemsPerPage);
-        if (currentPage < totalPages) {
-            currentPage++;
-            renderTable();
-        }
-    }
-
-    // ======== HÀM TIỆN ÍCH ========
-    function updateSTT() {
-        const visibleRows = getVisibleRows();
-        visibleRows.forEach((row, index) => {
-            const sttCell = row.querySelector('td:first-child');
-            if (sttCell) {
-                sttCell.textContent = index + 1;
-            }
-        });
-    }
-
-    function showDeleteModal(id, username, email, role) {
-        currentDeleteId = id;
-        document.getElementById('deleteConfirmText').textContent = `Bạn có chắc chắn muốn xóa tài khoản "${username}"?`;
-        document.getElementById('deleteAccountInfo').innerHTML = `<strong>${username}</strong><br>${email}<br><span class="badge bg-secondary">${role}</span>`;
-        showModal('deleteModal');
-    }
-
-    function showResetPasswordModal(id, username, email, role) {
-        currentResetId = id;
-        document.getElementById('resetCurrentUsername').textContent = username;
-        document.getElementById('resetCurrentEmail').textContent = email;
-        document.getElementById('resetCurrentRole').textContent = role;
-        showModal('resetPasswordModal');
-    }
-
-    function showModal(modalId) {
-        const modalElement = document.getElementById(modalId);
-        if (modalElement) {
-            const modal = new bootstrap.Modal(modalElement);
-            modal.show();
-        }
-    }
-
-    function hideModal(modalId) {
-        const modalElement = document.getElementById(modalId);
-        if (modalElement) {
-            const modal = bootstrap.Modal.getInstance(modalElement);
-            if (modal) modal.hide();
-        }
-    }
-
-    function showLoading(button, text) {
-        const originalHTML = button.innerHTML;
-        button.innerHTML = `<i class="fa fa-spinner fa-spin me-1"></i> ${text}`;
-        button.disabled = true;
-        button.dataset.originalHTML = originalHTML;
-    }
-
-    function resetButton(button, originalText, icon = '') {
-        if (button.dataset.originalHTML) {
-            button.innerHTML = button.dataset.originalHTML;
-        } else {
-            button.innerHTML = icon + originalText;
-        }
-        button.disabled = false;
-        delete button.dataset.originalHTML;
-    }
-
-    function hasChanges() {
-        if (!currentEditData) return true;
-        const currentUsername = document.getElementById('editUsername').value;
-        const currentEmail = document.getElementById('editEmail').value;
-        const currentRole = document.getElementById('editRole').value;
-        const currentPassword = document.getElementById('editPassword').value;
-        return currentUsername !== currentEditData.username ||
-            currentEmail !== currentEditData.email ||
-            currentRole !== currentEditData.roleId ||
-            currentPassword !== '';
-    }
-
-    function deleteAccount(id) {
-        const formData = new FormData();
-        formData.append('id', id);
-
-        fetch('/Admin/Account/DeleteAjax', {
-            method: 'POST',
-            body: formData
-        })
-            .then(response => response.json())
-            .then(data => {
-                hideModal('deleteModal');
-                if (data.success) {
-                    showToast(data.message, 'success');
-                    setTimeout(() => location.reload(), 1500);
-                } else {
-                    showToast(data.message, 'error');
-                    resetDeleteButton();
-                }
-            })
-            .catch(error => {
-                showToast('Lỗi kết nối! Vui lòng thử lại.', 'error');
-                resetDeleteButton();
-            });
-    }
-
-    function resetPassword(id) {
-        const formData = new FormData();
-        formData.append('id', id);
-
-        fetch('/Admin/Account/ResetPasswordAjax', {
-            method: 'POST',
-            body: formData
-        })
-            .then(response => response.json())
+        fetch('/Admin/Account/ResetPasswordAjax', { method: 'POST', body: fd })
+            .then(r => r.json())
             .then(data => {
                 hideModal('resetPasswordModal');
-                if (data.success) {
-                    showToast(data.message, 'success');
-                } else {
-                    showToast(data.message, 'error');
-                }
-                resetResetButton();
+                showToast(data.success ? "Đặt lại mật khẩu thành công!" : data.message, data.success ? "success" : "error");
+                if (data.success) setTimeout(() => location.reload(), 1000);
             })
-            .catch(error => {
-                showToast('Lỗi kết nối! Vui lòng thử lại.', 'error');
-                resetResetButton();
-            });
+            .catch(() => showToast("Lỗi kết nối!", "error"))
+            .finally(() => resetButton(btn, 'Đặt lại mật khẩu', '<i class="fas fa-redo me-1"></i>'));
     }
 
-    function resetDeleteButton() {
-        const btn = document.getElementById('confirmDeleteBtn');
-        if (btn) resetButton(btn, 'Xác nhận xóa', '<i class="fas fa-trash me-1"></i>');
+    // ==================================================================
+    // 7. CÁC CHỨC NĂNG PHỤ (CHI TIẾT, XUẤT EXCEL, KHÔI PHỤC...)
+    // ==================================================================
+    function handleDetail() {
+        const row = this.closest("tr");
+        document.getElementById("detailId").textContent = this.dataset.id;
+        document.getElementById("detailUsername").textContent = row.cells[1].textContent;
+        document.getElementById("detailEmail").textContent = row.cells[2].textContent;
+        document.getElementById("detailRole").textContent = row.cells[3].textContent;
+        showModal("detailModal");
     }
 
-    function resetResetButton() {
-        const btn = document.getElementById('confirmResetBtn');
-        if (btn) resetButton(btn, 'Đặt lại mật khẩu', '<i class="fas fa-redo me-1"></i>');
+    function handleViewDeleted() {
+        showModal("deletedAccountsModal");
     }
 
-    function showToast(message, type) {
-        if (typeof window.showToast === 'function') {
-            window.showToast(message, type);
-        } else {
-            console.log(`${type}: ${message}`);
-            alert(message);
-        }
+    function loadDeletedAccounts() {
+        const tb = document.getElementById("deletedAccountsTableBody");
+        const btn = document.getElementById("btnRefreshDeleted");
+        if (!tb || !btn) return;
+
+        showLoading(btn, 'Đang tải...');
+        tb.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">Đang tải...</td></tr>';
+
+        fetch('/Admin/Account/GetDeletedAccounts')
+            .then(r => r.json())
+            .then(data => {
+                tb.innerHTML = (data.success && data.accounts?.length)
+                    ? renderDeletedHtml(data.accounts)
+                    : '<tr><td colspan="6" class="text-center text-muted py-4">Không có tài khoản đã xóa</td></tr>';
+            })
+            .catch(() => {
+                tb.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Lỗi tải dữ liệu</td></tr>';
+            })
+            .finally(() => resetButton(btn, 'Làm mới', '<i class="fas fa-sync-alt me-1"></i>'));
     }
 
-    function exportToExcel(visibleRows) {
-        let html = `
-            <table border="1">
-                <thead>
-                    <tr>
-                        <th>STT</th>
-                        <th>Tên Tài Khoản</th>
-                        <th>Mật khẩu</th>
-                        <th>Email</th>
-                        <th>Loại Tài Khoản</th>
-                    </tr>
-                </thead>
-                <tbody>
-        `;
-        visibleRows.forEach((row, index) => {
-            const cells = row.cells;
-            html += `
-                <tr>
-                    <td>${index + 1}</td>
-                    <td>${cells[1]?.innerText || ""}</td>
-                    <td>********</td>
-                    <td>${cells[3]?.innerText || ""}</td>
-                    <td>${cells[4]?.innerText || ""}</td>
-                </tr>
-            `;
+    function renderDeletedHtml(accounts) {
+        return accounts.map((a, i) => {
+            const su = a.username.length > 15 ? a.username.substr(0, 15) + '...' : a.username;
+            const se = a.email.length > 20 ? a.email.substr(0, 20) + '...' : a.email;
+            return `<tr>
+                <td class="text-center">${i + 1}</td>
+                <td title="${a.username}"><div class="fw-bold">${su}</div></td>
+                <td title="${a.email}">${se}</td>
+                <td class="text-center"><span class="badge bg-secondary">${a.roleName || 'N/A'}</span></td>
+                <td class="text-center">${formatDateShort(a.deletedAt)}</td>
+                <td class="text-center">
+                    <button class="btn btn-sm btn-success btn-restore" data-id="${a.id}">
+                        <i class="fas fa-trash-restore"></i> Khôi phục
+                    </button>
+                </td>
+            </tr>`;
+        }).join('');
+    }
+
+    function handleRestoreAccount() {
+        if (!confirm('Khôi phục tài khoản này?')) return;
+        const id = this.dataset.id;
+        const row = this.closest("tr");
+        showLoading(this, 'Đang khôi phục...');
+
+        fetch('/Admin/Account/RestoreAccount', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id })
+        })
+            .then(r => r.json())
+            .then(d => {
+                if (d.success) {
+                    showToast(d.message || "Khôi phục thành công!", "success");
+                    row.remove();
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showToast(d.message || "Lỗi!", "error");
+                }
+            })
+            .catch(() => showToast("Lỗi kết nối!", "error"));
+    }
+    function handleExportExcel() {
+        const rows = Array.from(document.querySelectorAll("#accountTableBody tr:not(.no-data-row)"));
+        if (rows.length === 0) return showToast("Không có dữ liệu để xuất!", "warning");
+
+        // Tạo nội dung HTML table
+        let html = `<table border="1"><thead><tr>
+        <th>STT</th><th>Tên Tài Khoản</th><th>Email</th><th>Loại Tài Khoản</th>
+    </tr></thead><tbody>`;
+
+        rows.forEach((r, i) => {
+            html += `<tr>
+            <td>${i + 1}</td>
+            <td>${r.cells[1].textContent}</td>
+            <td>${r.cells[2].textContent}</td>
+            <td>${r.cells[3].textContent}</td>
+        </tr>`;
         });
-        html += '</tbody></table>';
-        const blob = new Blob([html], { type: "application/vnd.ms-excel" });
+
+        html += `</tbody></table>`;
+
+        // Tạo file Excel giả bằng HTML table
+        const blob = new Blob([html], { type: "application/vnd.ms-excel;charset=utf-8;" });
         const url = URL.createObjectURL(blob);
+
         const a = document.createElement("a");
         a.href = url;
-        a.download = "DanhSachTaiKhoan_" + new Date().toISOString().split('T')[0] + ".xls";
-        document.body.appendChild(a);
+
+        // ✅ Đổi đuôi về .xls để Excel không cảnh báo
+        a.download = `DanhSachTaiKhoan_${new Date().toISOString().slice(0, 10)}.xls`;
         a.click();
-        document.body.removeChild(a);
+
         URL.revokeObjectURL(url);
         showToast("Xuất Excel thành công!", "success");
     }
+
+
+    // ==================================================================
+    // 8. PHÂN TRANG SERVER-SIDE + TẢI DỮ LIỆU BẢNG
+    // ==================================================================
+    function loadAccounts(page = 1) {
+        const role = document.getElementById("roleFilter")?.value || "";
+        const keyword = document.getElementById("searchBox")?.value?.trim() || "";
+        const tb = document.getElementById("accountTableBody");
+
+        if (tb) {
+            tb.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4"><i class="fa fa-spinner fa-spin"></i> Đang tải dữ liệu...</td></tr>';
+        }
+
+        fetch(`/Account/LoadAccounts?page=${page}&pageSize=${pageSize}&role=${encodeURIComponent(role)}&keyword=${encodeURIComponent(keyword)}`)
+            .then(r => r.json())
+            .then(data => {
+                // Truyền page vào để render số thứ tự chính xác
+                renderAccountTable(data.items || [], page);
+                setupPagination(data.page || 1, data.totalPages || 1);
+            })
+            .catch(err => {
+                console.error(err);
+                if (tb) tb.innerHTML = '<tr><td colspan="6" class="text-center text-danger py-4">Lỗi tải dữ liệu</td></tr>';
+            });
+    }
+    function renderAccountTable(items, page) {
+        const tb = document.getElementById("accountTableBody");
+        if (!tb) return;
+
+        tb.classList.remove("fade-in");
+        tb.classList.add("fade-out");
+
+        setTimeout(() => {
+            if (items.length === 0) {
+                tb.innerHTML = '<tr class="no-data-row"><td colspan="6" class="text-center text-muted py-4">Không có dữ liệu</td></tr>';
+            } else {
+                tb.innerHTML = '';
+                items.forEach((a, i) => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                    <td class="text-center">${(page - 1) * pageSize + i + 1}</td>
+                    <td>${a.Username}</td>
+                    <td class="text-truncate" style="max-width:200px;" title="${a.Email}">${a.Email}</td>
+                    <td><span class="badge bg-secondary">${a.RoleName || "Chưa có vai trò"}</span></td>
+                    <td class="text-center">
+                        <button class="btn btn-sm btn-warning btn-edit me-1"
+                                data-id="${a.TaiKhoan_id}"
+                                data-username="${a.Username}"
+                                data-email="${a.Email}"
+                                data-roleid="${a.VaiTro_id}"
+                                data-rolename="${a.RoleName}">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-danger btn-delete me-1" data-id="${a.TaiKhoan_id}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                        <button class="btn btn-sm btn-info btn-detail me-1 text-white" data-id="${a.TaiKhoan_id}">
+                            <i class="fas fa-info-circle"></i>
+                        </button>
+                        <button class="btn btn-sm btn-reset" style="background: linear-gradient(135deg, #667eea, #764ba2); color:white;" data-id="${a.TaiKhoan_id}">
+                            <i class="fas fa-key"></i>
+                        </button>
+                    </td>
+                `;
+                    tb.appendChild(tr);
+                });
+
+                tb.querySelectorAll(".btn-edit").forEach(btn => btn.onclick = handleEdit);
+                tb.querySelectorAll(".btn-delete").forEach(btn => btn.onclick = handleDelete);
+                tb.querySelectorAll(".btn-detail").forEach(btn => btn.onclick = handleDetail);
+                tb.querySelectorAll(".btn-reset").forEach(btn => btn.onclick = handleResetPassword);
+            }
+
+            tb.classList.remove("fade-out");
+            tb.classList.add("fade-in");
+        }, 200);
+    }
+
+
+
+
+
+    function setupPagination(page, totalPages) {
+        const container = document.getElementById("pageNumbers");
+        const prevBtn = document.getElementById("prev");
+        const nextBtn = document.getElementById("next");
+
+        if (!container) {
+            console.warn("Không tìm thấy #pageNumbers trong DOM");
+            return;
+        }
+
+        container.innerHTML = "";
+
+        if (totalPages <= 1) {
+            if (prevBtn) prevBtn.disabled = true;
+            if (nextBtn) nextBtn.disabled = true;
+            return;
+        }
+
+        // Nút Prev
+        if (prevBtn) {
+            prevBtn.disabled = page <= 1;
+            prevBtn.onclick = () => gotoPageLocal(page - 1);
+        }
+
+        const maxButtons = 7;
+        let start = Math.max(1, page - Math.floor(maxButtons / 2));
+        let end = Math.min(totalPages, start + maxButtons - 1);
+        if (end - start + 1 < maxButtons) {
+            start = Math.max(1, end - maxButtons + 1);
+        }
+
+        if (start > 1) {
+            addPageButton(1);
+            if (start > 2) addEllipsis();
+        }
+
+        for (let i = start; i <= end; i++) {
+            addPageButton(i);
+        }
+
+        if (end < totalPages) {
+            if (end < totalPages - 1) addEllipsis();
+            addPageButton(totalPages);
+        }
+
+        if (nextBtn) {
+            nextBtn.disabled = page >= totalPages;
+            nextBtn.onclick = () => gotoPageLocal(page + 1);
+        }
+
+        // ==== Hàm phụ ====
+        function addPageButton(p) {
+            const btn = document.createElement("button");
+            btn.type = "button";
+            btn.className = "page-btn";
+            btn.textContent = p;
+            if (p === page) btn.classList.add("active");
+            btn.addEventListener("click", () => {
+                if (p !== page) {
+                    gotoPageLocal(p);
+                }
+            });
+            container.appendChild(btn);
+        }
+
+        function addEllipsis() {
+            const span = document.createElement("span");
+            span.className = "page-ellipsis";
+            span.textContent = "...";
+            container.appendChild(span);
+        }
+
+        // ==== Hàm gọi loadAccounts kèm filter ====
+        function gotoPageLocal(p) {
+            const keyword = document.getElementById("searchKeyword")?.value || "";
+            const role = document.getElementById("filterRole")?.value || "";
+            loadAccounts(p, keyword, role);
+        }
+    }
+
+
+    // ==================================================================
+    // 9. CÁC HÀM HỖ TRỢ (UTILITY)
+    // ==================================================================
+    function hasChanges() {
+        if (!currentEditData) return true;
+        return document.getElementById('editUsername').value !== currentEditData.username ||
+            document.getElementById('editEmail').value !== currentEditData.email ||
+            document.getElementById('editRole').value !== currentEditData.roleId ||
+            document.getElementById('editPassword').value !== '';
+    }
+    function showModal(id) {
+        const modal = document.getElementById(id);
+        if (!modal) return;
+        let instance = bootstrap.Modal.getInstance(modal);
+        if (!instance) {
+            instance = new bootstrap.Modal(modal);
+        }
+        instance.show();
+    }
+
+
+    function hideModal(id) {
+        const modal = document.getElementById(id);
+        if (modal) bootstrap.Modal.getInstance(modal)?.hide();
+    }
+
+    function showLoading(btn, text) {
+        if (!btn) return;
+        btn.dataset.original = btn.innerHTML;
+        btn.innerHTML = `<i class="fa fa-spinner fa-spin"></i> ${text}`;
+        btn.disabled = true;
+    }
+
+    function resetButton(btn, text, icon = '') {
+        if (!btn) return;
+        btn.innerHTML = btn.dataset.original || `${icon} ${text}`;
+        btn.disabled = false;
+    }
+
+    function showToast(msg, type = 'info') {
+        if (window.showToast) window.showToast(msg, type);
+        else alert(msg);
+    }
+
+
+
+
+    function formatDateShort(dotNetDate) {
+        if (!dotNetDate) return '';
+
+        // Lấy số mili-giây từ chuỗi /Date(1748663189623)/
+        const match = /\/Date\((\d+)\)\//.exec(dotNetDate);
+        if (!match) return dotNetDate;
+
+        const timestamp = parseInt(match[1], 10);
+        const d = new Date(timestamp);
+
+        if (isNaN(d.getTime())) return dotNetDate;
+
+        const day = String(d.getDate()).padStart(2, '0');
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const year = d.getFullYear();
+
+        // Trả về định dạng dd/MM/yyyy
+        return `${day}/${month}/${year}`;
+    }
+
+    function exportAllAccounts() {
+        fetch('/Admin/Account/ExportAllAccounts')
+            .then(r => r.json())
+            .then(data => {
+                if (!data.success || !data.items?.length) {
+                    showToast("Không có dữ liệu để xuất!", "warning");
+                    return;
+                }
+
+                let html = `
+                    <meta charset="UTF-8">
+                    <style>
+                        table {
+                            font-family: 'Times New Roman', Times, serif;
+                            font-size: 14px;
+                            border-collapse: collapse;
+                            text-align: center;
+                        }
+                        th, td {
+                            padding: 6px;
+                            text-align: center;
+                            vertical-align: middle;
+                        }
+                    </style>
+                    <table border="1">
+                        <thead>
+                            <tr>
+                                <th>STT</th>
+                                <th>Tên Tài Khoản</th>
+                                <th>Email</th>
+                                <th>Loại Tài Khoản</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                    `;
+
+
+
+                data.items.forEach((a, i) => {
+                    html += `<tr>
+                    <td>${i + 1}</td>
+                    <td>${a.Username}</td>
+                    <td>${a.Email}</td>
+                    <td>${a.RoleName}</td>
+                </tr>`;
+                });
+
+                html += `</tbody></table>`;
+
+                const blob = new Blob([html], {
+                    type: "application/vnd.ms-excel;charset=utf-8;"
+                });
+
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = `DanhSachTaiKhoan_${new Date().toISOString().slice(0, 10)}.xls`;
+                a.click();
+                URL.revokeObjectURL(url);
+                showToast("Xuất Excel toàn bộ thành công!", "success");
+            })
+            .catch(() => showToast("Lỗi tải dữ liệu!", "error"));
+    }
+
+
+
 });

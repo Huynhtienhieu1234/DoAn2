@@ -6,7 +6,7 @@
 <html lang="vi">
 <head>
     <meta charset="utf-8">
-    <title>Quản Trị</title>
+    <title> Trang Quản Trị</title>
 
     <!-- Font + Bootstrap + Icon -->
     <link rel="icon" type="image/png" href="https://cdn.jsdelivr.net/gh/Huynhtienhieu1234/UploadAnh/logoxoanen.png" />
@@ -266,17 +266,357 @@
                 transform: translateY(400%);
             }
         }
+
+        /* ====== STYLE CHO MODAL ĐĂNG XUẤT ====== */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .boder_delete {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border-radius: 12px;
+            width: 400px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            animation: slideDown 0.3s ease;
+        }
+
+        .modal-text {
+            text-align: center;
+            padding: 20px;
+        }
+
+            .modal-text p {
+                font-size: 18px;
+                margin-bottom: 25px;
+                color: #333;
+                font-weight: 500;
+            }
+
+        .boder_two_buton {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .btn-xoa {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            min-width: 100px;
+        }
+
+            .btn-xoa:hover {
+                background: linear-gradient(135deg, #c82333, #bd2130);
+                transform: translateY(-2px);
+                box-shadow: 0 5px 15px rgba(220, 53, 69, 0.4);
+            }
+
+        .btn-huy {
+            background: linear-gradient(135deg, #6c757d, #5a6268);
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            min-width: 100px;
+        }
+
+            .btn-huy:hover {
+                background: linear-gradient(135deg, #5a6268, #545b62);
+                transform: translateY(-2px);
+                box-shadow: 0 5px 15px rgba(108, 117, 125, 0.4);
+            }
+
+        /* Nút đăng xuất chính */
+        .timkiem {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+            .timkiem:hover {
+                background: linear-gradient(135deg, #c82333, #bd2130);
+                transform: translateY(-2px);
+                box-shadow: 0 5px 15px rgba(220, 53, 69, 0.4);
+            }
+
+            .timkiem:active {
+                transform: translateY(0);
+            }
+
+        /* Animation cho modal */
+        @@keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @@keyframes slideDown {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* ====== OVERLAY LOADING ĐĂNG XUẤT ====== */
+        .logout-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+            .logout-overlay.active {
+                opacity: 1;
+                visibility: visible;
+            }
+
+        .logout-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            transform: scale(0.7);
+            transition: transform 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .logout-overlay.active .logout-card {
+            transform: scale(1);
+        }
+
+        .logout-icon {
+            font-size: 64px;
+            color: #dc3545;
+            margin-bottom: 20px;
+            animation: bounce 0.6s ease;
+        }
+
+        .logout-text {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .logout-countdown {
+            font-size: 14px;
+            color: #666;
+            margin-top: 15px;
+        }
+
+        .countdown-number {
+            font-weight: bold;
+            color: #dc3545;
+        }
+
+        .logout-progress-bar {
+            height: 4px;
+            background: #e9ecef;
+            border-radius: 2px;
+            margin-top: 15px;
+            overflow: hidden;
+        }
+
+        .logout-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #dc3545, #c82333);
+            width: 0%;
+            transition: width 2s linear;
+        }
+
+        .logout-overlay.active .logout-progress-fill {
+            width: 100%;
+        }
+
+        @@keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+
+            40% {
+                transform: translateY(-10px);
+            }
+
+            60% {
+                transform: translateY(-5px);
+            }
+        }
     </style>
+</head>
+
+@RenderSection("Scripts", required: false)
+
+<body>
+    <!-- Overlay loading đăng xuất -->
+    <div class="logout-overlay" id="logoutOverlay">
+        <div class="logout-card">
+            <div class="logout-icon">
+                <i class="fas fa-sign-out-alt"></i>
+            </div>
+            <div class="logout-text">Đang đăng xuất...</div>
+            <p class="logout-countdown">Chuyển hướng sau <span class="countdown-number" id="logoutCountdown">3</span> giây</p>
+            <div class="logout-progress-bar">
+                <div class="logout-progress-fill" id="logoutProgressFill"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex">
+        <!-- Sidebar -->
+        <aside class="shadow m-4 rounded-5 pb-4" style="width: 290px; min-height: 95vh;">
+            <div class="p-3">
+                <a class="navbar-brand d-flex align-items-center" href="#">
+                    <span class="ms-2 fw-bold grayColor">👋 XIN CHÀO, ADMIN</span>
+                </a>
+            </div>
+            <hr class="hr">
+
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a href="@Url.Action("Index","Admin",new{area="Admin"})" class="nav-link">
+                        <i class="fas fa-home me-1"></i>Trang Chủ
+                    </a>
+                </li>
+                <li class="nav-item"><a href="@Url.Action("Index","Account",new{area="Admin"})" class="nav-link"><i class="fa fa-list-alt"></i>Tài Khoản</a></li>
+                <li class="nav-item"><a href="@Url.Action("Index","",new{area="Admin"})" class="nav-link"><i class="fa fa-calendar-plus"></i>Tạo Đợt LĐ</a></li>
+                <li class="nav-item"><a href="@Url.Action("DuyetLaoDong","AdminTask",new{area="Admin"})" class="nav-link"><i class="fa fa-check-square"></i>Duyệt Lao Động</a></li>
+                <li class="nav-item"><a href="@Url.Action("XacNhanHoanThanh","XacNhanHoanThanhLD",new{area="Admin"})" class="nav-link"><i class="fa fa-clipboard-check"></i>Xác Nhận Hoàn Thành</a></li>
+                <li class="nav-item"><a href="@Url.Action("TrangChuSinhVien","QuanLySinhVien",new{area="Admin"})" class="nav-link"><i class="fa fa-users"></i>Danh Sách SV</a></li>
+                <li class="nav-item"><a href="@Url.Action("ThongKeIndex","ThongKe",new{area="Admin"})" class="nav-link"><i class="fa fa-chart-bar"></i>Thống Kê</a></li>
+            </ul>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content flex-grow-1 position-relative border-radius-lg" style="width: calc(100% - 280px);">
+            <nav class="navbar navbar-main navbar-expand-lg px-0 mx-4 shadow-none border-radius-xl my-3">
+                <div class="container-fluid py-1 px-3">
+                    <a href="@Url.Action("Index","AdminHome",new{area="Admin"})">
+                        <img src="https://cdn.jsdelivr.net/gh/Huynhtienhieu1234/UploadAnh@main/admin/Logodaxoanen.png" alt="Logo" class="logo">
+                    </a>
+
+                    <div class="collapse navbar-collapse" id="navbar">
+                        <div class="ms-md-auto pe-md-3 d-flex align-items-center">
+                            <button class="timkiem" onclick="openModal()">
+                                <i class="fa fa-sign-out"></i> Đăng xuất
+                            </button>
+
+                            <!-- Modal xác nhận đăng xuất -->
+                            <div id="confirmationModal" class="modal">
+                                <div class="boder_delete">
+                                    <div class="modal-text">
+                                        <p>Bạn có chắc chắn muốn đăng xuất?</p>
+                                        <div class="boder_two_buton">
+                                            <button class="btn-xoa" onclick="confirmLogout()">Có</button>
+                                            <button class="btn-huy" onclick="closeModal()">Hủy</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+
+            <div class="container-fluid">
+                @RenderBody()
+            </div>
+        </main>
+    </div>
+
+    <!-- BONG BÓNG THÔNG BÁO DÙNG CHUNG -->
+    <div id="toastContainer" class="toast-container"></div>
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
 
-            // ===== XỬ LÝ MODAL =====
+            // ===== XỬ LÝ MODAL ĐĂNG XUẤT =====
             window.openModal = function () {
                 document.getElementById('confirmationModal').style.display = 'flex';
             }
+
             window.closeModal = function () {
                 document.getElementById('confirmationModal').style.display = 'none';
+            }
+
+            // ===== XỬ LÝ ĐĂNG XUẤT =====
+            window.confirmLogout = function () {
+                // Đóng modal xác nhận
+                closeModal();
+
+                // Hiển thị overlay loading
+                showLogoutOverlay();
+            }
+
+            // ===== HIỆU ỨNG LOADING ĐĂNG XUẤT =====
+            function showLogoutOverlay() {
+                const overlay = document.getElementById('logoutOverlay');
+                const countdownElement = document.getElementById('logoutCountdown');
+                const progressFill = document.getElementById('logoutProgressFill');
+
+                // Hiển thị overlay
+                overlay.classList.add('active');
+
+                let countdown = 3;
+                countdownElement.textContent = countdown;
+
+                // Cập nhật countdown mỗi giây
+                const countdownInterval = setInterval(() => {
+                    countdown--;
+                    countdownElement.textContent = countdown;
+
+                    if (countdown <= 0) {
+                        clearInterval(countdownInterval);
+                        // Chuyển hướng đến trang login
+                        window.location.href = '@Url.Action("Login", "Login", new { area = "" })';
+                    }
+                }, 1000);
             }
 
             // ===== HIGHLIGHT MENU =====
@@ -476,75 +816,21 @@
                 }
             }, 500);
         }
+
+        // ===== XỬ LÝ CLICK NGOÀI MODAL ĐỂ ĐÓNG =====
+        document.addEventListener('click', function(event) {
+            const modal = document.getElementById('confirmationModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        });
+
+        // ===== XỬ LÝ PHÍM ESC ĐỂ ĐÓNG MODAL =====
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeModal();
+            }
+        });
     </script>
-</head>
-
-@RenderSection("Scripts", required: false)
-
-<body>
-    <div class="d-flex">
-        <!-- Sidebar -->
-        <aside class="shadow m-4 rounded-5 pb-4" style="width: 290px; min-height: 95vh;">
-            <div class="p-3">
-                <a class="navbar-brand d-flex align-items-center" href="#">
-                    <span class="ms-2 fw-bold grayColor">👋 XIN CHÀO, ADMIN</span>
-                </a>
-            </div>
-            <hr class="hr">
-
-            <ul class="nav flex-column">
-                <li class="nav-item">
-                    <a href="@Url.Action("Index","Admin",new{area="Admin"})" class="nav-link">
-                        <i class="fas fa-home me-1"></i>Trang Chủ
-                    </a>
-                </li>
-                <li class="nav-item"><a href="@Url.Action("Index","Account",new{area="Admin"})" class="nav-link"><i class="fa fa-list-alt"></i>Tài Khoản</a></li>
-                <li class="nav-item"><a href="@Url.Action("TrangTaoDotLaoDong","AdminHome",new{area="Admin"})" class="nav-link"><i class="fa fa-calendar-plus"></i>Tạo Đợt LĐ</a></li>
-                <li class="nav-item"><a href="@Url.Action("DuyetLaoDong","AdminTask",new{area="Admin"})" class="nav-link"><i class="fa fa-check-square"></i>Duyệt Lao Động</a></li>
-                <li class="nav-item"><a href="@Url.Action("XacNhanHoanThanh","XacNhanHoanThanhLD",new{area="Admin"})" class="nav-link"><i class="fa fa-clipboard-check"></i>Xác Nhận Hoàn Thành</a></li>
-                <li class="nav-item"><a href="@Url.Action("TrangChuSinhVien","QuanLySinhVien",new{area="Admin"})" class="nav-link"><i class="fa fa-users"></i>Danh Sách SV</a></li>
-                <li class="nav-item"><a href="@Url.Action("ThongKeIndex","ThongKe",new{area="Admin"})" class="nav-link"><i class="fa fa-chart-bar"></i>Thống Kê</a></li>
-            </ul>
-        </aside>
-
-        <!-- Main Content -->
-        <main class="main-content flex-grow-1 position-relative border-radius-lg" style="width: calc(100% - 280px);">
-            <nav class="navbar navbar-main navbar-expand-lg px-0 mx-4 shadow-none border-radius-xl my-3">
-                <div class="container-fluid py-1 px-3">
-                    <a href="@Url.Action("Index","AdminHome",new{area="Admin"})">
-                        <img src="https://cdn.jsdelivr.net/gh/Huynhtienhieu1234/UploadAnh@main/admin/Logodaxoanen.png" alt="Logo" class="logo">
-                    </a>
-
-                    <div class="collapse navbar-collapse" id="navbar">
-                        <div class="ms-md-auto pe-md-3 d-flex align-items-center">
-                            <button class="timkiem" onclick="openModal()">
-                                <i class="fa fa-sign-out"></i> Đăng xuất
-                            </button>
-
-                            <!-- Modal xác nhận -->
-                            <div id="confirmationModal" class="modal">
-                                <div class="boder_delete">
-                                    <div class="modal-text">
-                                        <p>Bạn có chắc chắn muốn đăng xuất?</p>
-                                        <div class="boder_two_buton">
-                                            <button class="btn-xoa" onclick="window.location.href='@Url.Action("Login","Login",new{area=""})'">Có</button>
-                                            <button class="btn-huy" onclick="closeModal()">Hủy</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </nav>
-
-            <div class="container-fluid">
-                              @RenderBody()
-            </div>
-        </main>
-    </div>
-
-    <!-- BONG BÓNG THÔNG BÁO DÙNG CHUNG -->
-    <div id="toastContainer" class="toast-container"></div>
 </body>
 </html>
