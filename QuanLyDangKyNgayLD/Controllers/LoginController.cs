@@ -23,8 +23,24 @@ namespace QuanLyDangKyNgayLD.Controllers
                 // Lấy DbContext từ Factory
                 using (var db = DbContextFactory.Create())
                 {
+                    if (string.IsNullOrEmpty(model.Password))
+                    {
+                        ModelState.AddModelError("", "Mật khẩu không được trống");
+                        return View(model);
+
+
+                    }
+                    if (string.IsNullOrEmpty(model.Username))
+                    {
+                        ModelState.AddModelError("", "Tài khoản không được trống");
+                        return View(model);
+
+
+                    }
+
+
                     // Tìm user trong DB
-                    var user = db.TaiKhoans
+                    TaiKhoan user = db.TaiKhoans
                         .FirstOrDefault(u => u.Username == model.Username && u.Password == model.Password);
 
                     if (user != null)
@@ -34,14 +50,14 @@ namespace QuanLyDangKyNgayLD.Controllers
                         Session["Username"] = user.Username;
 
                         // Lấy vai trò
-                        var role = db.VaiTroes.FirstOrDefault(r => r.VaiTro_id == user.Role_id);
+                        var role = db.VaiTroes.FirstOrDefault(r => r.VaiTro_id == user.TaiKhoan_id);
                         Session["Role"] = role?.TenVaiTro;
 
                         // Tạo cookie đăng nhập
                         FormsAuthentication.SetAuthCookie(user.Username, false);
 
                         // Điều hướng theo Role
-                        switch (user.Role_id)
+                        switch (user.TaiKhoan_id)
                         {
                             case 1: return RedirectToAction("Index", "Admin", new { area = "Admin" });
                             case 2: return RedirectToAction("Index", "QuanLy", new { area = "Admin" });

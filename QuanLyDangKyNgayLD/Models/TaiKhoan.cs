@@ -25,7 +25,7 @@ namespace QuanLyDangKyNgayLD.Models
         public string Username { get; set; }
         public string Password { get; set; }
         public string Email { get; set; }
-        public Nullable<int> Role_id { get; set; }
+        public Nullable<int> VaiTro_id { get; set; }
         public string Reset_token { get; set; }
         public Nullable<System.DateTime> Reset_token_expiry { get; set; }
         public Nullable<System.DateTime> Deleted_at { get; set; }
@@ -35,7 +35,5 @@ namespace QuanLyDangKyNgayLD.Models
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<SinhVien> SinhViens { get; set; }
         public virtual VaiTro VaiTro { get; set; }
-        public DateTime Created_at { get; internal set; }
-        public object VaiTro_id { get; internal set; }
     }
 }

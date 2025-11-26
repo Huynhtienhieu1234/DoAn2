@@ -67,24 +67,24 @@ main.main-content {
     width: 100%;
 }
 
-    .nav-link i {
-        margin-right: 10px;
-        font-size: 18px;
-    }
+.nav-link i {
+    margin-right: 10px;
+    font-size: 18px;
+}
 
-    .nav-link:hover {
-        background-color: #e7efff;
-        color: #1a2b5f !important;
-        padding-left: 25px;
-    }
+.nav-link:hover {
+    background-color: #e7efff;
+    color: #1a2b5f !important;
+    padding-left: 25px;
+}
 
-    .nav-link.active {
-        background-color: #dce5ff !important;
-        color: #1a2b5f !important;
-        font-weight: 700;
-        box-shadow: inset 3px 0 0 #4b6cb7;
-        transform: translateX(4px);
-    }
+.nav-link.active {
+    background-color: #dce5ff !important;
+    color: #1a2b5f !important;
+    font-weight: 700;
+    box-shadow: inset 3px 0 0 #4b6cb7;
+    transform: translateX(4px);
+}
 
 /* -------- CHÀO ADMIN -------- */
 .grayColor {
@@ -108,7 +108,6 @@ button,
     transition: all 0.3s ease;
 }
 
-/* Nút tìm kiếm / đăng xuất */
 .timkiem {
     padding: 8px 20px;
     border-radius: 20px;
@@ -118,208 +117,304 @@ button,
     box-shadow: 0px 3px 6px rgba(0,0,0,0.15);
 }
 
-    .timkiem:hover {
-        background-image: linear-gradient(315deg, #5f80d2 0%, #233464 74%);
-        transform: scale(1.03);
-    }
+.timkiem:hover {
+    background-image: linear-gradient(315deg, #5f80d2 0%, #233464 74%);
+    transform: scale(1.03);
+}
 
 /* -------- TOOLBAR -------- */
 .toolbar {
-    background: #f8f9fa !important;
+    background: #f8f9fa !important;             
     border-radius: 12px;
-    padding: 15px 20px;
-    margin-bottom: 20px;
+    padding: 10px 15px;
+    margin-bottom: 10px;
     border: 1px solid #e9ecef;
+}
+
+.toolbar .container-fluid {
+    display: flex !important;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    padding: 0 !important;
+}
+
+.toolbar .collapse {
+    width: 100%;
+    display: flex !important;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+}
+
+.toolbar .navbar-nav {
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 0;
+    display: flex;
+    align-items: center;
+}
+
+.toolbar .nav-item {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.toolbar .d-flex {
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.toolbar .form-select {
+    flex-shrink: 0;
+    white-space: nowrap;
+    padding: 6px 10px;
+    font-size: 0.875rem;
+}
+
+.toolbar .btn {
+    flex-shrink: 0;
+    white-space: nowrap;
+    padding: 6px 12px;
+    font-size: 0.875rem;
+}
+
+/* -------- SEARCH WRAPPER -------- */
+.search-wrapper {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    min-width: 180px;
+    flex-shrink: 0;
+}
+
+.search-wrapper input {
+    width: 100%;
+    padding: 6px 35px 6px 12px;
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+    font-size: 0.875rem;
+    transition: all 0.3s ease;
+}
+
+.search-wrapper input::placeholder {
+    color: #adb5bd;
+}
+
+.search-wrapper input:focus {
+    border-color: #4b6cb7;
+    box-shadow: 0 0 0 0.2rem rgba(75, 108, 183, 0.25);
+    outline: none;
+}
+
+.search-icon {
+    position: absolute;
+    right: 10px;
+    color: #999;
+    font-size: 0.9rem;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
 }
 
 /* -------- BẢNG DỮ LIỆU -------- */
 table {
-    table-layout: fixed;
+    table-layout: auto;
     width: 100%;
     border-collapse: collapse;
     border-radius: 10px;
     overflow: hidden;
     background-color: #fff;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    margin-bottom: 0;
+    min-width: 900px;
 }
 
-    /* Hàng tiêu đề */
-    table th {
-        background-color: #8fb6ff;
-        color: white;
-        text-align: center;
-        padding: 12px;
-        font-weight: 600;
-    }
-
-    /* Các hàng dữ liệu */
-    table td {
-        background-color: #ffffff;
-        text-align: center;
-        padding: 10px;
-        color: #333;
-        font-weight: 500;
-        border-bottom: 1px solid #eee;
-    }
-
-    /* Hiệu ứng xen kẽ */
-    table tr:nth-child(even) td {
-        background-color: #f9faff;
-    }
-
-    /* Hover effect */
-    table tr:hover td {
-        background-color: #eaf1ff;
-        transition: background-color 0.2s ease;
-    }
-
-    /* Điều chỉnh độ rộng cột */
-    table th:nth-child(1) {
-        width: 5%;
-    }
-    /* STT */
-    table th:nth-child(2) {
-        width: 19%;
-    }
-    /* Tên Tài Khoản */
-    table th:nth-child(3) {
-        width: 10%;
-    }
-    /* Mật khẩu */
-    table th:nth-child(4) {
-        width: 25%;
-    }
-    /* Email */
-    table th:nth-child(5) {
-        width: 15%;
-    }
-    /* Loại Tài Khoản */
-    table th:nth-child(6) {
-        width: 25%;
-    }
-    /* Tác vụ */
-
-    /* Căn giữa các cột số */
-    table td:nth-child(1),
-    table td:nth-child(3) {
-        text-align: center;
-        font-weight: bold;
-    }
-
-    table tr:last-child td {
-        border-bottom: none;
-    }
-
-    /* Nút trong bảng */
-    table .btn {
-        padding: 6px 12px;
-        border-radius: 6px;
-        color: white;
-        font-weight: 600;
-        margin: 2px;
-    }
-
-.btn-edit {
-    background-color: #3498db;
-}
-
-    .btn-edit:hover {
-        background-color: #2980b9;
-        transform: translateY(-1px);
-    }
-
-.btn-delete {
-    background-color: #e74c3c;
-}
-
-    .btn-delete:hover {
-        background-color: #c0392b;
-        transform: translateY(-1px);
-    }
-
-.btn-detail {
-    background-color: #f1c40f;
-    color: #222;
-}
-
-    .btn-detail:hover {
-        background-color: #d4ac0d;
-        transform: translateY(-1px);
-    }
-
-/* -------- MODAL XÁC NHẬN -------- */
-.modal {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    height: 100%;
-    width: 100%;
-    background-color: rgba(0,0,0,0.4);
-    z-index: 1000;
-    justify-content: center;
-    align-items: center;
-}
-
-.boder_delete {
-    background-color: white;
-    padding: 25px 30px;
-    border-radius: 12px;
-    border: 2px solid #4b6cb7;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+table th {
+    background-color: #8fb6ff;
+    color: white;
     text-align: center;
+    padding: 10px 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    white-space: nowrap;
 }
 
-.boder_two_buton {
+table td {
+    background-color: #ffffff;
+    text-align: center;
+    padding: 8px 6px;
+    color: #333;
+    font-weight: 500;
+    border-bottom: 1px solid #eee;
+    font-size: 0.9rem;
+}
+
+table tr:nth-child(even) td {
+    background-color: #f9faff;
+}
+
+table tr:hover td {
+    background-color: #eaf1ff;
+    transition: background-color 0.2s ease;
+}
+
+table th:nth-child(1), table td:nth-child(1) {
+    width: 5%;
+    min-width: 40px;
+}
+
+table th:nth-child(2), table td:nth-child(2) {
+    width: 15%;
+    min-width: 100px;
+}
+
+table th:nth-child(3), table td:nth-child(3) {
+    width: 10%;
+    min-width: 80px;
+}
+
+table th:nth-child(4), table td:nth-child(4) {
+    width: 20%;
+    min-width: 120px;
+}
+
+table th:nth-child(5), table td:nth-child(5) {
+    width: 12%;
+    min-width: 90px;
+}
+
+table th:nth-child(6), table td:nth-child(6) {
+    width: 38%;
+    min-width: 220px;
+}
+
+table td:nth-child(1), table td:nth-child(3) {
+    text-align: center;
+    font-weight: bold;
+}
+
+table tr:last-child td {
+    border-bottom: none;
+}
+
+table .btn-action {
+    padding: 6px 8px;
+    border-radius: 6px;
+    color: white !important;
+    font-weight: 600;
+    margin: 2px 1px;
+    font-size: 0.75rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 32px;
+    border: none !important;
+    transition: all 0.2s ease;
+}
+
+table .btn-action:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+
+table .btn-action i {
+    font-size: 0.8rem;
+}
+
+/* -------- BẢNG CONTAINER -------- */
+.table-responsive {
+    border-radius: 12px;
+    padding: 8px !important;
+    margin-top: 10px !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    overflow-x: auto;
+}
+
+/* -------- PHÂN TRANG -------- */
+.pagination-container {
+    margin-top: 8px;
     display: flex;
     justify-content: center;
-    gap: 15px;
-    margin-top: 15px;
+    align-items: center;
+    gap: 6px;
 }
 
-.btn-xoa {
-    background-color: #ff4d4f;
-    color: white;
-    padding: 8px 18px;
+.pagination-container .btn {
     border-radius: 6px;
-    border: none;
+    padding: 8px 12px;
+    min-width: 40px;
+    font-size: 0.9rem;
     font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid #dee2e6 !important;
 }
 
-    .btn-xoa:hover {
-        background-color: #d9363e;
-        transform: translateY(-1px);
-    }
-
-.btn-huy {
-    background-color: #d9d9d9;
-    color: #000;
-    padding: 8px 18px;
-    border-radius: 6px;
-    border: none;
-    font-weight: 600;
+.pagination-container #prev,
+.pagination-container #next {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+    height: 40px;
+    padding: 0;
+    background-color: #007bff !important;
+    color: white !important;
+    border: none !important;
 }
 
-    .btn-huy:hover {
-        background-color: #bfbfbf;
-        transform: translateY(-1px);
-    }
-
-/* -------- BIỂU ĐỒ / THỐNG KÊ -------- */
-.card {
-    background-color: #fff;
-    border-radius: 20px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    padding: 20px;
-    margin-bottom: 20px;
+.pagination-container #prev:hover,
+.pagination-container #next:hover {
+    background-color: #0056b3 !important;
+    transform: scale(1.05);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
-    .card h4 {
-        text-align: center;
-        font-weight: 700;
-        color: #1a2b5f;
-        margin-bottom: 15px;
-    }
+.pagination-container #prev:disabled,
+.pagination-container #next:disabled {
+    background-color: #e9ecef !important;
+    color: #999 !important;
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.pagination-container #prev:active,
+.pagination-container #next:active {
+    transform: scale(0.95);
+}
+
+.pagination-container span button {
+    background-color: #f8f9fa !important;
+    color: #333 !important;
+    border: 1px solid #dee2e6 !important;
+    min-width: 35px;
+    height: 35px;
+    padding: 0;
+}
+
+.pagination-container span button:hover {
+    background-color: #e9ecef !important;
+    border-color: #007bff !important;
+}
+
+.pagination-container span button.active {
+    background-color: #007bff !important;
+    color: white !important;
+    border-color: #007bff !important;
+}
+
+/* -------- MODAL (Bootstrap compatible) -------- */
+.modal {
+    z-index: 1050 !important;
+}
+
+.modal-backdrop {
+    z-index: 1040 !important;
+}
 
 /* -------- FORM CONTROLS -------- */
 .form-control, .form-select {
@@ -329,280 +424,126 @@ table {
     transition: all 0.3s ease;
 }
 
-    .form-control:focus, .form-select:focus {
-        border-color: #4b6cb7;
-        box-shadow: 0 0 0 0.2rem rgba(75, 108, 183, 0.25);
-    }
-
-.input-group-text {
-    background-color: #f8f9fa;
-    border-radius: 8px;
+.form-control:focus, .form-select:focus {
+    border-color: #4b6cb7;
+    box-shadow: 0 0 0 0.2rem rgba(75, 108, 183, 0.25);
 }
 
-/* -------- ANIMATION GBA CHO NÚT DANH SÁCH XÓA -------- */
-.gba-deleted-btn {
-    background: linear-gradient(135deg, #8bac0f 0%, #9bbc0f 100%) !important;
-    border: 2px solid #306230 !important;
-    color: #0f380f !important;
-    font-weight: bold;
-    position: relative;
-    overflow: hidden;
-    transition: all 0.3s ease;
-    animation: gbaGlow 2s infinite alternate;
-    border-radius: 8px !important;
-    padding: 6px 12px !important;
+/* -------- CARD -------- */
+.card {
+    background-color: #fff;
+    border-radius: 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    padding: 20px;
+    margin-bottom: 20px;
 }
 
-    .gba-deleted-btn::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-        transition: left 0.5s ease;
-    }
-
-    .gba-deleted-btn:hover::before {
-        left: 100%;
-    }
-
-    .gba-deleted-btn:hover {
-        animation: gbaPulse 0.6s ease, gbaGlow 1s infinite alternate;
-        transform: translateY(-2px);
-        box-shadow: 0 6px 12px rgba(15, 56, 15, 0.4);
-        border-color: #0f380f !important;
-    }
-
-    .gba-deleted-btn:active {
-        animation: gbaPress 0.2s ease;
-        transform: translateY(1px);
-    }
-
-        .gba-deleted-btn:active::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(15, 56, 15, 0.3);
-            animation: pixelFlash 0.3s ease;
-        }
-
-/* GBA Animations */
-@keyframes gbaGlow {
-    0% {
-        box-shadow: 0 4px 8px rgba(139, 172, 15, 0.3);
-    }
-
-    100% {
-        box-shadow: 0 4px 16px rgba(139, 172, 15, 0.6), 0 0 8px rgba(155, 188, 15, 0.4);
-    }
-}
-
-@keyframes gbaPulse {
-    0% {
-        transform: scale(1) translateY(0);
-    }
-
-    50% {
-        transform: scale(1.05) translateY(-3px);
-    }
-
-    100% {
-        transform: scale(1) translateY(-2px);
-    }
-}
-
-@keyframes gbaPress {
-    0% {
-        transform: scale(1) translateY(-2px);
-    }
-
-    50% {
-        transform: scale(0.95) translateY(0);
-    }
-
-    100% {
-        transform: scale(1) translateY(1px);
-    }
-}
-
-@keyframes pixelFlash {
-    0% {
-        opacity: 0.5;
-    }
-
-    100% {
-        opacity: 0;
-    }
-}
-
-.gba-deleted-btn::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
-    animation: scanline 3s linear infinite;
-    opacity: 0;
-}
-
-.gba-deleted-btn:hover::after {
-    opacity: 1;
-}
-
-@keyframes scanline {
-    0% {
-        transform: translateY(-100%);
-    }
-
-    100% {
-        transform: translateY(400%);
-    }
-}
-
-/* -------- GIỚI HẠN EMAIL VÀ CĂN CHỈNH NÚT -------- */
-.email-cell {
-    max-width: 120px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.action-cell {
+.card h4 {
     text-align: center;
-    white-space: nowrap;
+    font-weight: 700;
+    color: #1a2b5f;
+    margin-bottom: 15px;
 }
 
-    /* Giữ màu chữ cho các nút trong cột Tác vụ */
-    .action-cell .btn {
-        color: #fff !important;
-        font-weight: 600;
-        text-shadow: 0 0 2px rgba(0,0,0,0.2);
-    }
-
-.btn-edit {
-    background-color: #3498db !important;
+/* -------- ANIMATIONS -------- */
+@keyframes gbaGlow {
+    0% { box-shadow: 0 4px 8px rgba(139, 172, 15, 0.3); }
+    100% { box-shadow: 0 4px 16px rgba(139, 172, 15, 0.6), 0 0 8px rgba(155, 188, 15, 0.4); }
 }
-
-.btn-delete {
-    background-color: #e74c3c !important;
-}
-
-.btn-detail {
-    background-color: #f1c40f !important;
-    color: #222 !important;
-}
-
-/* -------- PHÂN TRANG -------- */
-.pagination-container {
-    margin-top: 15px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
-}
-
-    .pagination-container .btn {
-        border-radius: 8px;
-        padding: 6px 14px;
-        min-width: 40px;
-    }
 
 /* -------- UTILITY CLASSES -------- */
-.fw-bold {
-    font-weight: bold;
-}
-
-.text-center {
-    text-align: center;
-}
-
-.mb-3 {
-    margin-bottom: 1rem;
-}
-
-.mt-3 {
-    margin-top: 1rem;
-}
-
-.shadow-sm {
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
-}
-
-/* -------- ẨN THANH HIGHLIGHT -------- */
-.sidebar-highlight {
-    display: none !important;
-}
+.fw-bold { font-weight: bold; }
+.text-center { text-align: center; }
+.mb-3 { margin-bottom: 1rem; }
+.mt-3 { margin-top: 1rem; }
+.shadow-sm { box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important; }
+.sidebar-highlight { display: none !important; }
 
 /* -------- RESPONSIVE -------- */
+@media (max-width: 1200px) {
+    table th:nth-child(6), table td:nth-child(6) {
+        width: 40%;
+        min-width: 180px;
+    }
+    table .btn-action {
+        padding: 5px 6px;
+        min-width: 30px;
+        height: 30px;
+        margin: 1px 0.5px;
+        font-size: 0.7rem;
+    }
+}
+
 @media (max-width: 992px) {
-    aside {
-        width: 240px;
+    table { min-width: 800px; }
+    table th:nth-child(6), table td:nth-child(6) {
+        width: 45%;
+        min-width: 160px;
     }
-
-    main.main-content {
-        width: calc(100% - 250px);
-    }
-
-    table th:nth-child(4),
-    table td:nth-child(4) {
+    table th:nth-child(4), table td:nth-child(4) {
         max-width: 150px;
     }
 }
 
 @media (max-width: 768px) {
-    aside {
-        display: none;
-    }
-
-    main.main-content {
-        width: 100%;
-        margin: 0;
-    }
-
-    .navbar {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
-    }
-
-    .toolbar .navbar-nav {
-        flex-direction: column;
-        gap: 10px;
-    }
-
     table {
-        font-size: 0.9rem;
+        min-width: 700px;
+        font-size: 0.85rem;
     }
-
+    table th {
+        padding: 8px 5px;
+        font-size: 0.8rem;
+    }
+    table td {
+        padding: 6px 4px;
+        font-size: 0.8rem;
+    }
+    table .btn-action {
+        padding: 4px 5px;
+        min-width: 28px;
+        height: 28px;
+        font-size: 0.65rem;
+        margin: 0.5px;
+    }
     .action-cell {
         display: flex;
-        flex-direction: column;
-        gap: 5px;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 2px;
+    }
+    .search-wrapper {
+        min-width: 150px;
+    }
+    .search-wrapper input {
+        font-size: 0.8rem;
+        padding: 5px 30px 5px 10px;
+    }
+    .search-icon {
+        right: 8px;
+        font-size: 0.8rem;
     }
 }
 
 @media (max-width: 576px) {
-    .card {
-        padding: 15px;
+    .card { padding: 15px; }
+    .pagination-container { flex-wrap: wrap; }
+    table {
+        min-width: 600px;
+        font-size: 0.8rem;
     }
-
-    .boder_delete {
-        margin: 20px;
-        padding: 20px;
+    table th {
+        padding: 6px 4px;
+        font-size: 0.75rem;
     }
-
-    .boder_two_buton {
-        flex-direction: column;
+    table td {
+        padding: 5px 3px;
+        font-size: 0.75rem;
     }
-
-    .pagination-container {
-        flex-wrap: wrap;
+    table .btn-action {
+        padding: 3px 4px;
+        min-width: 26px;
+        height: 26px;
+        font-size: 0.6rem;
+        margin: 1px 0.5px;
     }
 }

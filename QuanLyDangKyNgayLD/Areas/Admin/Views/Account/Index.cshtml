@@ -6,57 +6,60 @@
 <link href="~/Areas/Content/adminpage.css" rel="stylesheet" type="text/css" />
 
 <!-- THANH CÔNG CỤ -->
-<nav class="navbar navbar-expand-lg toolbar">
-    <div class="collapse navbar-collapse" id="navbarSupportedContent">
-        <!-- BÊN TRÁI: Nút thêm -->
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-            <li class="nav-item">
-                <button class="btn btn-outline-primary btn-sm me-2" id="btnAdd">
-                    <i class="fa fa-plus me-1"></i> Thêm tài khoản
-                </button>
-            </li>
-            <!-- Nút xem tài khoản đã xóa -->
-            <li class="nav-item">
-                <button class="btn btn-outline-secondary btn-sm me-2" id="btnViewDeleted">
-                    <i class="fas fa-trash-restore me-1"></i> Tài khoản đã xóa
-                </button>
-            </li>
-        </ul>
+<nav class="navbar navbar-expand-lg toolbar shadow-sm mb-3">
+    <div class="container-fluid p-0">
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <!-- Bên trái -->
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                    <button class="btn btn-outline-primary btn-sm me-2" id="btnAdd">
+                        <i class="fa fa-plus me-1"></i> Thêm tài khoản
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="btn btn-outline-secondary btn-sm me-2" id="btnViewDeleted">
+                        <i class="fas fa-trash-restore me-1"></i> Tài khoản đã xóa
+                    </button>
+                </li>
+            </ul>
 
-        <!-- BÊN PHẢI: Lọc + Tìm kiếm + Xuất Excel -->
-        <form class="d-flex align-items-center" role="search">
-            <select id="roleFilter" class="form-select form-select-sm me-2 shadow-sm" style="min-width: 140px;">
-                <option value="">-- Lọc theo vai trò --</option>
-                <option value="Tất Cả">Tất cả</option>
-                <option value="Sinh viên">Sinh viên</option>
-                <option value="Lớp phó lao động">Lớp phó lao động</option>
-                <option value="Quản lý">Quản lý</option>
-                <option value="Admin">Admin</option>
-            </select>
-            <div class="input-group input-group-sm shadow-sm me-2" style="min-width: 180px;">
-                <span class="input-group-text bg-white border-end-0">
-                    <i class="fa fa-search text-muted"></i>
-                </span>
-                <input type="text" id="searchBox" class="form-control border-start-0" placeholder="Tìm kiếm...">
-            </div>
-            <button class="btn btn-outline-success btn-sm shadow-sm" id="btnExportExcel" type="button">
-                <i class="fa fa-file-excel me-1"></i> Xuất Excel
-            </button>
-        </form>
+            <!-- Bên phải -->
+            <form class="toolbar-flex align-items-center" role="search">
+                <select id="roleFilter" class="form-select form-select-sm me-2 shadow-sm" style="min-width: 140px;">
+                    <option value="">-- Lọc theo vai trò --</option>
+                    <option value="Tất Cả">Tất cả</option>
+                    <option value="SinhVien">Sinh viên</option>
+                    <option value="LopPhoLaoDong">Lớp phó lao động</option>
+                    <option value="QuanLy">Quản lý</option>
+                    <option value="Admin">Admin</option>
+                </select>
+
+                <div class="input-group input-group-sm shadow-sm me-2" style="min-width: 180px;">
+                    <span class="input-group-text bg-white border-end-0">
+                        <i class="fa fa-search text-muted"></i>
+                    </span>
+                    <input type="text" id="searchBox" class="form-control border-start-0" placeholder="Tìm kiếm...">
+                </div>
+
+
+                <button class="btn btn-outline-success btn-sm shadow-sm" id="exportAllAccounts" type="button">
+                    <i class="fa fa-file-excel me-1"></i> Xuất Excel
+                </button>
+            </form>
+        </div>
     </div>
 </nav>
 
 <!-- BẢNG DỮ LIỆU -->
-<div class="table-responsive shadow-sm rounded-3 bg-white p-2 mt-3">
+<div class="table-responsive shadow-sm rounded-3 bg-white p-2">
     <table class="table table-bordered table-hover align-middle text-center mb-0">
         <thead class="table-light">
             <tr>
-                <th>STT</th>
+                <th width="6%">STT</th>
                 <th>Tên Tài Khoản</th>
-                <th>Mật khẩu</th>
                 <th>Email</th>
                 <th>Loại Tài Khoản</th>
-                <th class="action-header">Tác vụ</th>
+                <th width="22%" class="action-header">Tác vụ</th>
             </tr>
         </thead>
         <tbody id="accountTableBody">
@@ -65,56 +68,46 @@
                 var i = 1;
                 foreach (var item in Model)
                 {
-                    <tr data-row-id="@i">
+                    <tr>
                         <td class="stt-cell">@i</td>
                         <td>@item.Username</td>
-                        <td>********</td>
-                        <td class="email-cell text-truncate" title="@item.Email">@item.Email</td>
-                        <td>@item.VaiTro.TenVaiTro</td>
-                        <td>
-                            <!-- Nút Sửa - Gradient xanh -->
-                            <button class="btn btn-sm px-3 me-1 btn-edit"
-                                    style="background: linear-gradient(45deg, #007bff, #0056b3); color: white; border: none;"
+                        <td class="text-truncate" style="max-width:200px;" title="@item.Email">@item.Email</td>
+                        <td>@(item.VaiTro?.TenVaiTro ?? "Chưa có vai trò")</td>
+                        <td class="action-cell">
+                            <button class="btn btn-sm btn-warning btn-edit me-1" title="Sửa"
                                     data-id="@item.TaiKhoan_id"
                                     data-username="@item.Username"
                                     data-email="@item.Email"
-                                    data-roleid="@item.VaiTro.VaiTro_id"
-                                    data-rolename="@item.VaiTro.TenVaiTro">
+                                    data-roleid="@item.VaiTro_id"
+                                    data-rolename="@(item.VaiTro?.TenVaiTro ?? "N/A")">
                                 <i class="fas fa-edit"></i>
                             </button>
-                            <!-- Nút Xóa - Gradient đỏ -->
-                            <button class="btn btn-sm px-3 me-1 btn-delete"
-                                    style="background: linear-gradient(45deg, #dc3545, #a71e2a); color: white; border: none;"
-                                    data-id="@item.TaiKhoan_id"
-                                    data-username="@item.Username"
-                                    data-email="@item.Email"
-                                    data-rolename="@item.VaiTro.TenVaiTro">
+
+
+                            <button class="btn btn-sm btn-danger btn-delete me-1" title="Xóa"
+                                    data-id="@item.TaiKhoan_id">
                                 <i class="fas fa-trash"></i>
                             </button>
-                            <!-- Nút Chi tiết - Gradient cam/vàng -->
-                            <button class="btn btn-sm px-3 me-1 btn-detail"
-                                    style="background: linear-gradient(45deg, #fd7e14, #e55a00); color: white; border: none;"
+
+                            <button class="btn btn-sm btn-info btn-detail me-1 text-white" title="Chi tiết"
                                     data-id="@item.TaiKhoan_id">
                                 <i class="fas fa-info-circle"></i>
                             </button>
-                            <!-- Nút Đặt lại mật khẩu - Gradient tím -->
-                            <button class="btn btn-sm px-3 me-1 btn-reset"
-                                    style="background: linear-gradient(45deg, #6f42c1, #4a2d8a); color: white; border: none;"
-                                    data-id="@item.TaiKhoan_id"
-                                    data-username="@item.Username"
-                                    data-email="@item.Email"
-                                    data-rolename="@item.VaiTro.TenVaiTro">
+
+                            <button class="btn btn-sm btn-secondary btn-reset" title="Đặt lại mật khẩu"
+                                    data-id="@item.TaiKhoan_id">
                                 <i class="fas fa-key"></i>
                             </button>
                         </td>
                     </tr>
+
                     i++;
                 }
             }
             else
             {
                 <tr class="no-data-row">
-                    <td colspan="6">Không có dữ liệu</td>
+                    <td colspan="6" class="text-muted py-4">Không có dữ liệu</td>
                 </tr>
             }
         </tbody>
@@ -128,77 +121,131 @@
         <span id="pageNumbers"></span>
         <button class="btn btn-secondary btn-sm ms-1" id="next">&gt;</button>
     </div>
-    <div class="fw-bold text-end" id="pageInfo"></div>
 </div>
 
-<!-- FORM POPUP CHỈNH SỬA (ĐÃ LOẠI BỎ DỮ LIỆU HIỆN TẠI) -->
-<div class="modal fade" data-bs-backdrop="false" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+<!-- MODAL THÊM TÀI KHOẢN -->
+<div class="modal fade" id="createModal" tabindex="-1">
+    <div class="modal-dialog">
         <div class="modal-content shadow">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title" id="editModalLabel">
-                    <i class="fa fa-edit me-2"></i>Chỉnh sửa tài khoản
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Đóng"></button>
-            </div>
-            <div class="modal-body">
-                <form id="editForm" method="post" action="/Admin/Account/Edit">
-                    @Html.AntiForgeryToken()
-                    <input type="hidden" id="editId" name="TaiKhoan_id" />
+            <form id="createForm" method="post" action="/Admin/Account/CreateAjax">
+                @Html.AntiForgeryToken()
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">Thêm Tài Khoản Mới</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+
                     <div class="mb-3">
-                        <label class="form-label fw-bold">Tên tài khoản</label>
-                        <input type="text" class="form-control" id="editUsername" name="Username" required />
+                        <label class="form-label fw-bold">Tên đăng nhập</label>
+                        <input name="Username" class="form-control" required maxlength="50" />
                     </div>
+
                     <div class="mb-3">
                         <label class="form-label fw-bold">Email</label>
-                        <input type="email" class="form-control" id="editEmail" name="Email" required />
+                        <input type="email" name="Email" class="form-control" required maxlength="100" />
                     </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Loại tài khoản</label>
+                        <select name="VaiTro_id" class="form-select" required>
+                            <option value="">-- Lọc theo vai trò --</option>
+                            <option value="1">Admin</option>
+                            <option value="2">Quản lý</option>
+                            <option value="3">Sinh viên</option>
+                            <option value="4">Lớp phó lao động</option>
+                        </select>
+
+                    </div>
+
                     <div class="mb-3">
                         <label class="form-label fw-bold">Mật khẩu</label>
-                        <input type="password" class="form-control" id="editPassword" name="Password" placeholder="Để trống nếu không đổi" />
-                        <div class="form-text">Chỉ nhập nếu muốn thay đổi mật khẩu</div>
+                        <input type="password" name="Password" class="form-control" required minlength="6" />
                     </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fa fa-times me-1"></i> Hủy
+                    </button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fa fa-check me-1"></i> Lưu
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<!-- Modal Chỉnh sửa -->
+<div class="modal fade" id="editModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow-lg">
+            <form id="editForm" method="post" action="/Admin/Account/EditAjax">
+                @Html.AntiForgeryToken()
+
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="editModalLabel">
+                        <i class="fa fa-edit me-2"></i> Chỉnh sửa tài khoản
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <!-- ID ẩn -->
+                    <input type="hidden" id="editId" name="TaiKhoan_id" />
+
+                    <!-- Tên tài khoản -->
                     <div class="mb-3">
-                        <label class="form-label fw-bold">Vai trò</label>
+                        <label for="editUsername" class="form-label fw-bold">Tên tài khoản</label>
+                        <input type="text" class="form-control" id="editUsername" name="Username" required maxlength="50" />
+                    </div>
+
+                    <!-- Email -->
+                    <div class="mb-3">
+                        <label for="editEmail" class="form-label fw-bold">Email</label>
+                        <input type="email" class="form-control" id="editEmail" name="Email" required maxlength="100" />
+                    </div>
+
+                    <!-- Mật khẩu -->
+                    <div class="mb-3">
+                        <label for="editPassword" class="form-label fw-bold">Mật khẩu</label>
+                        <input type="password" class="form-control" id="editPassword" name="Password" placeholder="Để trống nếu không đổi" minlength="6" />
+            
+                    </div>
+
+                    <!-- Vai trò -->
+                    <div class="mb-3">
+                        <label for="editRole" class="form-label fw-bold">Vai trò</label>
                         <select id="editRole" name="VaiTro_id" class="form-select" required>
                             <option value="">-- Chọn vai trò --</option>
-                            @if (ViewBag.VaiTroList != null)
-                            {
-                                foreach (var vt in ViewBag.VaiTroList)
-                                {
-                                    <option value="@vt.VaiTro_id">@vt.TenVaiTro</option>
-                                }
-                            }
-                            else
-                            {
-                                <option value="1">Admin</option>
-                                <option value="2">Quản lý</option>
-                                <option value="3">Sinh viên</option>
-                                <option value="4">Lớp phó lao động</option>
-                            }
+                            <option value="1">Admin</option>
+                            <option value="2">Quản lý</option>
+                            <option value="3">Sinh viên</option>
+                            <option value="4">Lớp phó lao động</option>
                         </select>
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                            Hủy
-                        </button>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fa fa-save me-1"></i> Lưu thay đổi
-                        </button>
-                    </div>
-                </form>
-            </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fa fa-times me-1"></i> Hủy
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fa fa-save me-1"></i> Lưu thay đổi
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
 
-<!-- FORM POPUP CHI TIẾT -->
-<div class="modal fade" data-bs-backdrop="false" id="detailModal" tabindex="-1" aria-labelledby="detailModalLabel" aria-hidden="true">
+<!-- Modal Chi tiết -->
+<div class="modal fade" id="detailModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content shadow">
-            <div class="modal-header bg-warning text-dark">
-                <h5 class="modal-title" id="detailModalLabel"><i class="fa fa-info-circle me-2"></i>Thông tin tài khoản</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+        <div class="modal-content shadow-lg">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title"><i class="fa fa-info-circle me-2"></i>Thông tin tài khoản</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
                 <dl class="row mb-0">
@@ -219,31 +266,24 @@
     </div>
 </div>
 
-<!-- DELETE MODAL -->
-<div class="modal fade" data-bs-backdrop="false" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+<!-- Modal Xóa -->
+<div class="modal fade" id="deleteModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content shadow">
+        <div class="modal-content shadow-lg">
             <div class="modal-header bg-danger text-white">
-                <h5 class="modal-title" id="deleteModalLabel">
-                    <i class="fas fa-trash me-2"></i>Xác nhận xóa
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                <h5 class="modal-title"><i class="fas fa-trash me-2"></i>Xác nhận xóa</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body text-center">
-                <div class="mb-3">
-                    <i class="fas fa-exclamation-triangle text-danger" style="font-size: 3rem;"></i>
-                </div>
-                <h6 class="fw-bold" id="deleteConfirmText">Xóa tài khoản này?</h6>
-                <p class="text-muted mb-2" id="deleteAccountInfo"></p>
-                <div class="alert alert-warning">
-                    <i class="fas fa-info-circle me-1"></i>
-                    Hành động này không thể hoàn tác!
+                <i class="fas fa-exclamation-triangle text-danger mb-3" style="font-size: 3.5rem;"></i>
+                <h6 class="fw-bold" id="deleteConfirmText"></h6>
+                <p class="text-muted" id="deleteAccountInfo"></p>
+                <div class="alert alert-warning small">
+                    <i class="fas fa-info-circle me-1"></i> Hành động này không thể hoàn tác!
                 </div>
             </div>
             <div class="modal-footer justify-content-center">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                    <i class="fas fa-times me-1"></i> Hủy bỏ
-                </button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy bỏ</button>
                 <button type="button" class="btn btn-danger" id="confirmDeleteBtn">
                     <i class="fas fa-trash me-1"></i> Xác nhận xóa
                 </button>
@@ -252,50 +292,31 @@
     </div>
 </div>
 
-<!-- RESET PASSWORD MODAL -->
-<div class="modal fade" data-bs-backdrop="false" id="resetPasswordModal" tabindex="-1" aria-labelledby="resetPasswordModalLabel" aria-hidden="true">
+<!-- Modal Đặt lại mật khẩu -->
+<div class="modal fade" id="resetPasswordModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content shadow">
+        <div class="modal-content shadow-lg">
             <div class="modal-header bg-warning text-dark">
-                <h5 class="modal-title" id="resetPasswordModalLabel">
-                    <i class="fas fa-key me-2"></i>Đặt lại mật khẩu
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                <h5 class="modal-title"><i class="fas fa-key me-2"></i>Đặt lại mật khẩu</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body">
-                <!-- THÔNG BÁO DỮ LIỆU HIỆN TẠI -->
-                <div class="alert alert-warning mb-3">
-                    <h6 class="alert-heading mb-2">
-                        <i class="fas fa-info-circle me-1"></i>Thông tin tài khoản:
-                    </h6>
-                    <div class="row small">
-                        <div class="col-4 fw-bold">Tên TK:</div>
-                        <div class="col-8" id="resetCurrentUsername">-</div>
-                        <div class="col-4 fw-bold">Email:</div>
-                        <div class="col-8" id="resetCurrentEmail">-</div>
-                        <div class="col-4 fw-bold">Vai trò:</div>
-                        <div class="col-8" id="resetCurrentRole">-</div>
+            <div class="modal-body text-center">
+                <div class="alert alert-info mb-4">
+                    <div class="row small text-start">
+                        <div class="col-5 fw-bold">Tên TK:</div>
+                        <div class="col-7" id="resetCurrentUsername">-</div>
+                        <div class="col-5 fw-bold">Email:</div>
+                        <div class="col-7" id="resetCurrentEmail">-</div>
+                        <div class="col-5 fw-bold">Vai trò:</div>
+                        <div class="col-7" id="resetCurrentRole">-</div>
                     </div>
                 </div>
-                <div class="text-center">
-                    <div class="mb-3">
-                        <i class="fas fa-key text-warning" style="font-size: 3rem;"></i>
-                    </div>
-                    <h6 class="fw-bold">Xác nhận đặt lại mật khẩu?</h6>
-                    <div class="alert alert-info mt-3">
-                        <i class="fas fa-exclamation-circle me-1"></i>
-                        <strong>Mật khẩu sẽ được đặt lại về:</strong>
-                        <div class="mt-1">
-                            <code class="fs-5">123456</code>
-                        </div>
-                        <small class="text-muted">Người dùng nên đổi mật khẩu sau khi đăng nhập</small>
-                    </div>
-                </div>
+                <i class="fas fa-key text-warning mb-3" style="font-size: 3rem;"></i>
+                <h6 class="fw-bold">Mật khẩu mới sẽ là: <code class="fs-5">123456</code></h6>
+                <small class="text-muted d-block mb-3">Người dùng nên đổi mật khẩu ngay sau khi đăng nhập</small>
             </div>
             <div class="modal-footer justify-content-center">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                    <i class="fas fa-times me-1"></i> Hủy bỏ
-                </button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy bỏ</button>
                 <button type="button" class="btn btn-warning" id="confirmResetBtn">
                     <i class="fas fa-redo me-1"></i> Đặt lại mật khẩu
                 </button>
@@ -303,41 +324,36 @@
         </div>
     </div>
 </div>
-<!-- MODAL DANH SÁCH TÀI KHOẢN ĐÃ XÓA -->
-<div class="modal fade" data-bs-backdrop="false" id="deletedAccountsModal" tabindex="-1" aria-labelledby="deletedAccountsModalLabel" aria-hidden="true">
+
+<!-- Modal Danh sách tài khoản đã xóa -->
+<div class="modal fade" id="deletedAccountsModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content shadow">
+        <div class="modal-content shadow-lg">
             <div class="modal-header bg-secondary text-white">
-                <h5 class="modal-title" id="deletedAccountsModalLabel">
-                    <i class="fas fa-trash-restore me-2"></i>Danh sách tài khoản đã xóa
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                <h5 class="modal-title"><i class="fas fa-trash-restore me-2"></i>Danh sách tài khoản đã xóa</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <div class="table-responsive" style="max-height: 400px;">
+                <div class="table-responsive" style="max-height: 450px;">
                     <table class="table table-bordered table-hover align-middle">
-                        <thead class="table-light">
+                        <thead class="table-light sticky-top">
                             <tr>
-                                <th width="5%" class="text-center">STT</th>
-                                <th width="20%">Tài khoản</th>
-                                <th width="25%">Email</th>
-                                <th width="15%" class="text-center">Vai trò</th>
-                                <th width="15%" class="text-center">Ngày xóa</th>
-                                <th width="20%" class="text-center">Tác vụ</th>
+                                <th class="text-center">STT</th>
+                                <th>Tài khoản</th>
+                                <th>Email</th>
+                                <th class="text-center">Vai trò</th>
+                                <th class="text-center">Ngày xóa</th>
+                                <th class="text-center">Tác vụ</th>
                             </tr>
                         </thead>
                         <tbody id="deletedAccountsTableBody">
-                            <tr class="no-data-row">
-                                <td colspan="6" class="text-center text-muted py-3">Đang tải dữ liệu...</td>
-                            </tr>
+                            <tr><td colspan="6" class="text-center text-muted py-4">Đang tải...</td></tr>
                         </tbody>
                     </table>
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                    <i class="fas fa-times me-1"></i> Đóng
-                </button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
                 <button type="button" class="btn btn-primary" id="btnRefreshDeleted">
                     <i class="fas fa-sync-alt me-1"></i> Làm mới
                 </button>
@@ -347,3 +363,4 @@
 </div>
 
 <script src="~/Areas/Content/jsAccount/Account.js"></script>
+<script src="~/Areas/Content/Js/adminCommon.js"></script>

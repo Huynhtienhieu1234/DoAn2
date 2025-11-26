@@ -18,6 +18,7 @@ namespace QuanLyDangKyNgayLD.Models
         public TaoDotNgayLaoDong()
         {
             this.DanhSachDiemDanhs = new HashSet<DanhSachDiemDanh>();
+            this.PhieuDangKies = new HashSet<PhieuDangKy>();
         }
     
         public int TaoDotLaoDong_id { get; set; }
@@ -36,5 +37,7 @@ namespace QuanLyDangKyNgayLD.Models
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<DanhSachDiemDanh> DanhSachDiemDanhs { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<PhieuDangKy> PhieuDangKies { get; set; }
     }
 }
