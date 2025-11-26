@@ -74,7 +74,8 @@
                     <span class="d-inline-block w-100 text-truncate">Ngày LD</span>
                 </th>
                 <th style="width:12%;">Khu Vực</th>
-                <th style="width:8%;">SL SV</th>
+                <th>Đăng ký/Quy định</th>
+
                 <th style="width:10%;">Trạng Thái</th>
                 <th style="width:15%;">Tác vụ</th>
             </tr>
@@ -98,7 +99,19 @@
                             </span>
                         </td>
                         <td>@item.KhuVuc</td>
-                        @*<td>@item.SoLuongDangK/@item.SoLuongSinhVien</td>*@
+
+                        <td class="text-center">
+                            @{
+                                var dict = ViewBag.SoLuongDangKyDict as Dictionary<int, int>;
+                                var key = item.TaoDotLaoDong_id;
+                                var soDangKy = (dict != null && dict.ContainsKey(key)) ? dict[key] : 0;
+                                var quyDinh = item.SoLuongSinhVien ?? 0;
+                                var mau = soDangKy < quyDinh ? "text-danger fw-bold" : "text-success fw-bold";
+                            }
+                            <span class="@mau">@soDangKy/@quyDinh</span>
+                        </td>
+
+
                         <td>
                             @if (item.TrangThaiDuyet == true)
                             {

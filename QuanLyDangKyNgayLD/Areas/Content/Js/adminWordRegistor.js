@@ -62,7 +62,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 <td class="text-success fw-bold">${item.GiaTri ?? ""}</td>
                 <td>${item.NgayLaoDong || ""}</td>
                 <td>${item.KhuVuc || ""}</td>
-                <td>${item.SoLuongSinhVien ?? ""}</td>
+                <td class="${item.SoLuongDangKy < item.SoLuongSinhVien ? 'text-danger fw-bold' : 'text-success fw-bold'} text-center">
+                    ${item.SoLuongDangKy}/${item.SoLuongSinhVien}
+                </td>
+
                 <td>
                     <span class="badge ${item.TrangThaiDuyet === 'Đã duyệt' ? 'bg-success' : 'bg-warning text-dark'}">
                         ${item.TrangThaiDuyet}
@@ -161,35 +164,54 @@ document.addEventListener("DOMContentLoaded", function () {
         new bootstrap.Modal(document.getElementById("createModal")).show();
     });
 
+    // Replace btnViewDeleted fetch handler with this improved version
     document.getElementById("btnViewDeleted")?.addEventListener("click", function () {
         const body = document.getElementById("deletedTableBody");
         body.innerHTML = `<tr><td colspan="7" class="text-center"><div class="spinner"></div> Đang tải...</td></tr>`;
 
-        fetch("/Admin/AdminWordRegister/GetDeletedDotLaoDong")
-            .then(res => res.json())
+        fetch("/Admin/AdminWordRegister/GetDeletedDotLaoDong", { credentials: 'same-origin' })
+            .then(res => {
+                // log status for debugging
+                console.log("GetDeletedDotLaoDong status:", res.status, res.statusText);
+                const ct = res.headers.get('content-type') || '';
+                if (!res.ok) {
+                    // try to get text to show server error
+                    return res.text().then(text => { throw new Error(`HTTP ${res.status}: ${text}`); });
+                }
+                if (!ct.includes('application/json')) {
+                    return res.text().then(text => { throw new Error('Expected JSON but got: ' + text); });
+                }
+                return res.json();
+            })
             .then(data => {
                 if (!data.items || data.items.length === 0) {
                     body.innerHTML = `<tr><td colspan="7" class="text-center text-muted">Không có dữ liệu</td></tr>`;
                 } else {
-                    body.innerHTML = data.items.map((x, i) => `
-                        <tr>
-                            <td>${i + 1}</td>
-                            <td>${x.DotLaoDong}</td>
-                            <td>${x.Buoi}</td>
-                            <td>${x.NgayLaoDong}</td>
-                            <td>${x.KhuVuc}</td>
-                            <td>${x.Ngayxoa}</td>
-                            <td>
-                                <button class="btn btn-sm btn-success btn-restore" data-id="${x.TaoDotLaoDong_id}">
-                                    Khôi phục
-                                </button>
-                            </td>
-                        </tr>
-                    `).join("");
+                    const rows = data.items.map((x, i) => {
+                        return `
+                                    <tr>
+                                        <td>${i + 1}</td>
+                                        <td>${x.DotLaoDong || ""}</td>
+                                        <td>${x.Buoi || ""}</td>
+                                        <td>${x.NgayLaoDong || ""}</td>
+                                        <td>${x.KhuVuc || ""}</td>
+                                        <td>${x.Ngayxoa || ""}</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-success btn-restore" data-id="${x.TaoDotLaoDong_id}">
+                                                Khôi phục
+                                            </button>
+                                        </td>
+                                    </tr>
+                                `;
+                    }).join("");
+
+                    body.innerHTML = rows;
+
                 }
                 new bootstrap.Modal(document.getElementById("deletedModal")).show();
             })
-            .catch(() => {
+            .catch(err => {
+                console.error("Load deleted items failed:", err);
                 body.innerHTML = `<tr><td colspan="7" class="text-center text-danger">Lỗi tải dữ liệu</td></tr>`;
                 new bootstrap.Modal(document.getElementById("deletedModal")).show();
             });
@@ -243,33 +265,59 @@ document.addEventListener("DOMContentLoaded", function () {
             document.getElementById("confirmDeleteBtn").dataset.id = deleteBtn.dataset.id;
             new bootstrap.Modal(document.getElementById("deleteModal")).show();
         }
-
         // Duyệt
         if (approveBtn) {
             const id = approveBtn.dataset.id;
-            if (!confirm("Duyệt đợt lao động này?")) return;
+
+
             fetch(`/Admin/AdminWordRegister/ApproveAjax?id=${id}`, { method: "POST" })
                 .then(res => res.json())
                 .then(data => {
-                    alert(data.message || (data.success ? "Đã duyệt" : "Duyệt thất bại"));
+                    showToast(data.message || (data.success ? "Đã duyệt đợt lao động!" : "Duyệt thất bại"), data.success ? "success" : "error");
                     loadDataToTable(currentPage);
                 })
-                .catch(() => alert("Lỗi kết nối!"));
+                .catch(() => {
+                    showToast("Lỗi kết nối đến máy chủ!", "error");
+                });
         }
 
-        // Khôi phục
         if (restoreBtn) {
             const id = restoreBtn.dataset.id;
-            if (!confirm("Khôi phục đợt này?")) return;
-            fetch(`/Admin/AdminWordRegister/RestoreAjax?id=${id}`, { method: "POST" })
-                .then(res => res.json())
+            const row = restoreBtn.closest("tr");
+
+            restoreBtn.disabled = true;
+
+            fetch(`/Admin/AdminWordRegister/RestoreAjax?id=${id}`, { method: "POST", credentials: 'same-origin' })
+                .then(res => {
+                    if (!res.ok) return res.text().then(text => { throw new Error(`HTTP ${res.status}: ${text}`); });
+                    const ct = res.headers.get('content-type') || '';
+                    if (!ct.includes('application/json')) return res.text().then(text => { throw new Error('Invalid JSON: ' + text); });
+                    return res.json();
+                })
                 .then(data => {
-                    alert(data.message || (data.success ? "Đã khôi phục" : "Khôi phục thất bại"));
-                    document.getElementById("btnViewDeleted").click();
+                    showToast(data.message || (data.success ? "Đã khôi phục đợt lao động!" : "Khôi phục thất bại"), data.success ? "success" : "error");
+
+                    if (data.success && row) {
+                        // ✅ Xóa dòng khỏi bảng đã xóa với hiệu ứng mượt
+                        row.style.transition = "opacity 0.4s ease";
+                        row.style.opacity = "0";
+                        setTimeout(() => row.remove(), 400);
+                    }
+
+                    // ✅ Cập nhật bảng chính
                     loadDataToTable(currentPage);
                 })
-                .catch(() => alert("Lỗi kết nối!"));
+                .catch(err => {
+                    console.error("Restore failed:", err);
+                    showToast("Lỗi khôi phục hoặc kết nối!", "error");
+                })
+                .finally(() => {
+                    restoreBtn.disabled = false;
+                });
         }
+
+
+
     });
 
     // ==============================
@@ -297,15 +345,15 @@ document.addEventListener("DOMContentLoaded", function () {
             .then((data) => {
                 if (data.success) {
                     bootstrap.Modal.getInstance(document.getElementById("createModal")).hide();
-                    alert(data.message || "Tạo đợt thành công!");
+                    showToast(data.message || "Tạo đợt thành công!");
                     loadDataToTable(currentPage);
                 } else {
-                    alert(data.message || "Tạo thất bại!");
+                    showToast(data.message || "Tạo thất bại!");
                 }
             })
             .catch((err) => {
                 console.error("Lỗi:", err);
-                alert("Lỗi kết nối hoặc server không phản hồi.");
+                showToast("Lỗi kết nối hoặc server không phản hồi.");
             });
     });
 
@@ -317,13 +365,13 @@ document.addEventListener("DOMContentLoaded", function () {
             .then(data => {
                 if (data.success) {
                     bootstrap.Modal.getInstance(document.getElementById("editModal")).hide();
-                    alert(data.message || "Cập nhật thành công!");
+                    showToast(data.message || "Cập nhật thành công!");
                     loadDataToTable(currentPage);
                 } else {
-                    alert(data.message || "Cập nhật thất bại!");
+                    showToast(data.message || "Cập nhật thất bại!");
                 }
             })
-            .catch(() => alert("Lỗi kết nối!"));
+            .catch(() => showToast("Lỗi kết nối!"));
     });
 
     document.getElementById("confirmDeleteBtn")?.addEventListener("click", function () {
@@ -332,10 +380,10 @@ document.addEventListener("DOMContentLoaded", function () {
             .then(res => res.json())
             .then(data => {
                 bootstrap.Modal.getInstance(document.getElementById("deleteModal")).hide();
-                alert(data.message || (data.success ? "Đã xóa" : "Xóa thất bại"));
+                showToast(data.message || (data.success ? "Đã xóa" : "Xóa thất bại"));
                 loadDataToTable(currentPage);
             })
-            .catch(() => alert("Lỗi kết nối!"));
+            .catch(() => showToast("Lỗi kết nối!"));
     });
 
     // ==============================

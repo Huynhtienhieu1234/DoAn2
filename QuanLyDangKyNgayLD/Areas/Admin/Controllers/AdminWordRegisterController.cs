@@ -219,27 +219,33 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
         [HttpPost]
         public ActionResult DeleteAjax(int id)
         {
-            try
+            using (var db = DbContextFactory.Create())
             {
-                using (var db = DbContextFactory.Create())
-                {
-                    var dot = db.TaoDotNgayLaoDongs.Find(id);
-                    if (dot == null)
-                        return Json(new { success = false, message = "Không tìm thấy đợt lao động." });
+                var dot = db.TaoDotNgayLaoDongs.Find(id);
+                if (dot == null)
+                    return Json(new { success = false, message = "Không tìm thấy đợt lao động." });
 
-                    dot.Ngayxoa = DateTime.Now;
-                    db.SaveChanges();
+                // ❌ Không cho xóa nếu đã duyệt
+                if (dot.TrangThaiDuyet == true)
+                    return Json(new { success = false, message = "Đợt đã duyệt không thể xóa." });
 
-                    return Json(new { success = true, message = "Đã xóa đợt lao động." });
-                }
-            }
-            catch (Exception ex)
-            {
-                return Json(new { success = false, message = "Lỗi: " + ex.Message });
+                // ✅ Kiểm tra quyền: chỉ Admin mới được xóa
+                var userId = Session["UserId"]?.ToString();
+                var user = db.TaiKhoans.FirstOrDefault(u => u.TaiKhoan_id.ToString() == userId);
+                if (user == null || user.VaiTro_id != 1) // 1 = Admin
+                    return Json(new { success = false, message = "Chỉ tài khoản Admin mới được xóa." });
+
+                // ✅ Cho phép xóa
+                dot.Ngayxoa = DateTime.Now;
+                db.SaveChanges();
+
+                return Json(new { success = true, message = "Đã xóa đợt lao động." });
             }
         }
 
+
         // AJAX: Duyệt đợt
+
         [HttpPost]
         public ActionResult ApproveAjax(int id)
         {
@@ -251,6 +257,18 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                     if (dot == null || dot.Ngayxoa != null)
                         return Json(new { success = false, message = "Không tìm thấy đợt." });
 
+                    // Kiểm tra số lượng sinh viên đã đăng ký
+                    int soDangKy = db.PhieuDangKies.Count(p => p.TaoDotLaoDong_id == id);
+                    if (soDangKy < 5)
+                    {
+                        return Json(new
+                        {
+                            success = false,
+                            message = $"Chưa đủ số lượng sinh viên đăng ký (hiện tại: {soDangKy}/5)."
+                        });
+                    }
+
+                    // Nếu đủ thì duyệt
                     dot.TrangThaiDuyet = true;
                     db.SaveChanges();
 
@@ -272,15 +290,22 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                 var list = db.TaoDotNgayLaoDongs
                     .Where(x => x.Ngayxoa != null)
                     .OrderByDescending(x => x.Ngayxoa)
+                    .ToList() // ⬅️ Truy vấn xong rồi mới xử lý
                     .Select(x => new {
                         x.TaoDotLaoDong_id,
                         x.DotLaoDong,
                         x.Buoi,
-                        NgayLaoDong = x.NgayLaoDong.HasValue ? x.NgayLaoDong.Value.ToString("dd/MM/yyyy") : "",
+                        NgayLaoDong = x.NgayLaoDong.HasValue
+                            ? x.NgayLaoDong.Value.ToString("dd/MM/yyyy")
+                            : "",
                         x.KhuVuc,
-                        Ngayxoa = x.Ngayxoa.Value.ToString("dd/MM/yyyy")
+                        Ngayxoa = x.Ngayxoa.HasValue
+                            ? x.Ngayxoa.Value.ToString("dd/MM/yyyy")
+                            : ""
                     })
                     .ToList();
+
+
 
                 return Json(new { success = true, items = list }, JsonRequestBehavior.AllowGet);
             }
@@ -309,5 +334,9 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                 return Json(new { success = false, message = "Lỗi: " + ex.Message });
             }
         }
+
+
+
+
     }
 }
