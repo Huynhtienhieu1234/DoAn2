@@ -1,8 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
+﻿using System.Linq;
 using System.Web.Mvc;
+using QuanLyDangKyNgayLD.Models;
+using QuanLyDangKyNgayLD.Factories;
+using QuanLyDangKyNgayLD.Areas.Admin.Models; 
 
 namespace QuanLyDangKyNgayLD.Areas.QuanLy.Controllers
 {
@@ -11,7 +11,18 @@ namespace QuanLyDangKyNgayLD.Areas.QuanLy.Controllers
         // GET: QuanLy/QuanLy
         public ActionResult Index()
         {
-            return View();
+            using (var db = DbContextFactory.Create())
+            {
+                var model = new AdminThongKeViewModel
+                {
+                    TongTaiKhoan = db.TaiKhoans.Count(),
+                    TongSinhVien = db.SinhViens.Count(),
+                    TongDotLaoDong = db.TaoDotNgayLaoDongs.Count(),
+                    TongHoanThanh = db.PhieuXacNhanHoanThanhs.Count(x => x.TrangThai == "Hoàn thành")
+                };
+
+                return View(model);
+            }
         }
     }
 }

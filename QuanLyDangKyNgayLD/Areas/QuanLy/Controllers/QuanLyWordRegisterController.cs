@@ -4,9 +4,9 @@ using System.Web.Mvc;
 using QuanLyDangKyNgayLD.Models;
 using QuanLyDangKyNgayLD.Factories;
 
-namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
+namespace QuanLyDangKyNgayLD.Areas.QuanLy.Controllers
 {
-    public class AdminWordRegisterController : Controller
+    public class QuanLyWordRegisterController : Controller
     {
         private const int ITEMS_PER_PAGE = 5;
 

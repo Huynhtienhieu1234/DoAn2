@@ -1,0 +1,423 @@
+﻿@model IEnumerable<QuanLyDangKyNgayLD.Models.TaoDotNgayLaoDong>
+@{
+    ViewBag.Title = "Quản Lý Đợt Lao Động";
+    Layout = "~/Areas/QuanLy/Views/Shared/View.cshtml";
+
+
+}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+
+<link href="~/Areas/Content/css/admonWwordRegister.css" rel="stylesheet" type="text/css" />
+<link href="~/Areas/Content/adminpage.css" rel="stylesheet" type="text/css" />
+
+
+<!-- THANH CÔNG CỤ -->
+<nav class="navbar navbar-expand-lg toolbar shadow-sm mb-3">
+    <div class="container-fluid p-0">
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <!-- Bên trái -->
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                    <button class="btn btn-outline-primary btn-sm me-2" id="btnAdd">
+                        <i class="fa fa-plus me-1"></i> Tạo đợt mới
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="btn btn-outline-secondary btn-sm me-2" id="btnViewDeleted">
+                        <i class="fas fa-trash-restore me-1"></i> Đợt đã xóa
+                    </button>
+                </li>
+            </ul>
+
+            <!-- Bên phải -->
+            <form class="toolbar-flex align-items-center" role="search">
+                <select id="statusFilter" class="form-select form-select-sm me-2 shadow-sm" style="min-width: 150px;">
+                    <option value="">-- Trạng thái duyệt --</option>
+                    <option value="all">Tất cả</option>
+                    <option value="1">Đã duyệt</option>
+                    <option value="0">Chưa duyệt</option>
+                </select>
+
+                <select id="sessionFilter" class="form-select form-select-sm me-2 shadow-sm" style="min-width: 120px;">
+                    <option value="">-- Buổi --</option>
+                    <option value="Sáng">Sáng</option>
+                    <option value="Chiều">Chiều</option>
+                </select>
+
+                <div class="input-group input-group-sm shadow-sm me-2" style="min-width: 220px;">
+                    <span class="input-group-text bg-white border-end-0">
+                        <i class="fa fa-search text-muted"></i>
+                    </span>
+                    <input type="text" id="searchBox" class="form-control border-start-0" placeholder="Tìm tên đợt, khu vực...">
+                </div>
+
+                <button class="btn btn-outline-success btn-sm shadow-sm" id="exportExcel" type="button">
+                    <i class="fa fa-file-excel me-1"></i> Xuất Excel
+                </button>
+            </form>
+        </div>
+    </div>
+</nav>
+
+<!-- BẢNG DỮ LIỆU -->
+<div class="table-wrapper shadow-sm rounded-3 bg-white p-2" style="overflow-x: auto;">
+    <table class="table table-bordered table-hover align-middle text-center mb-0">
+        <thead class="table-light">
+            <tr>
+                <th style="width:5%;">STT</th>
+                <th style="width:18%;">Tên Đợt</th>
+                <th style="width:8%;">Buổi</th>
+                <th style="width:12%;">Loại LD</th>
+                <th style="width:10%;">Giá Trị</th>
+                <th class="text-center px-1" style="width:80px;" title="Ngày Lao Động">
+                    <span class="d-inline-block w-100 text-truncate">Ngày LD</span>
+                </th>
+                <th style="width:12%;">Khu Vực</th>
+                <th>Đăng ký/Quy định</th>
+
+                <th style="width:10%;">Trạng Thái</th>
+                <th style="width:15%;">Tác vụ</th>
+            </tr>
+
+        </thead>
+        <tbody id="dotLaoDongTableBody">
+            @if (Model != null && Model.Any())
+            {
+                var stt = 1;
+                foreach (var item in Model)
+                {
+                    <tr data-id="@item.TaoDotLaoDong_id" data-deleted="@(item.Ngayxoa != null)">
+                        <td class="stt-cell">@stt</td>
+                        <td class="Dotloaodong">@item.DotLaoDong</td>
+                        <td>@item.Buoi</td>
+                        <td>@item.LoaiLaoDong</td>
+                        <td class="text-success fw-bold">@String.Format("{0:N0}", item.GiaTri)</td>
+                        <td class="px-1 text-center">
+                            <span class="text-truncate d-inline-block w-100" style="max-width:80px;" title="@(item.NgayLaoDong?.ToString("dd/MM/yyyy"))">
+                                @(item.NgayLaoDong?.ToString("dd/MM/yyyy"))
+                            </span>
+                        </td>
+                        <td>@item.KhuVuc</td>
+
+                        <td class="text-center">
+                            @{
+                                var dict = ViewBag.SoLuongDangKyDict as Dictionary<int, int>;
+                                var key = item.TaoDotLaoDong_id;
+                                var soDangKy = (dict != null && dict.ContainsKey(key)) ? dict[key] : 0;
+                                var quyDinh = item.SoLuongSinhVien ?? 0;
+                                var mau = soDangKy < quyDinh ? "text-danger fw-bold" : "text-success fw-bold";
+                            }
+                            <span class="@mau">@soDangKy/@quyDinh</span>
+                        </td>
+
+
+                        <td>
+                            @if (item.TrangThaiDuyet == true)
+                            {
+                                <span class="badge bg-success">Đã duyệt</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-warning text-dark">Chưa duyệt</span>
+                            }
+                        </td>
+                        <td class="action-cell">
+                            <button class="btn btn-sm btn-info btn-detail me-1 text-white" title="Chi tiết"
+                                    data-id="@item.TaoDotLaoDong_id">
+                                <i class="fas fa-info-circle"></i>
+                            </button>
+                            <button class="btn btn-sm btn-warning btn-edit me-1" title="Sửa"
+                                    data-id="@item.TaoDotLaoDong_id">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-danger btn-delete me-1" title="Xóa"
+                                    data-id="@item.TaoDotLaoDong_id">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                            @if (item.TrangThaiDuyet == false)
+                            {
+                                <button class="btn btn-sm btn-success btn-approve" title="Duyệt ngay"
+                                        data-id="@item.TaoDotLaoDong_id">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                            }
+                        </td>
+                    </tr>
+                    stt++;
+                }
+            }
+            else
+            {
+                <tr class="no-data-row">
+                    <td colspan="10" class="text-muted py-4">Không có dữ liệu đợt lao động</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<!-- PHÂN TRANG -->
+<div class="d-flex justify-content-between align-items-center mt-3">
+    <div id="pagination" class="pagination-container">
+        <!-- Nút trang trước -->
+        <button class="btn btn-secondary btn-sm me-1" id="prev">&lt;</button>
+
+        <!-- Vùng chứa số trang -->
+        <span id="pageNumbers"></span>
+
+        <!-- Nút trang sau -->
+        <button class="btn btn-secondary btn-sm ms-1" id="next">&gt;</button>
+    </div>
+</div>
+
+
+<!-- ==================== TẤT CẢ MODAL ==================== -->
+<!-- Modal Tạo Mới -->
+<div class="modal fade" id="createModal" tabindex="-1">
+    <div class="modal-dialog modal-md">
+        <div class="modal-content shadow">
+            <form id="createForm" action="/AdminWordRegister/CreateAjax" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title"><i class="fa fa-plus me-2"></i> Tạo Đợt Lao Động Mới</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Đợt lao động (Tháng) <span class="text-danger">*</span></label>
+                            <select name="DotLaoDong" id="dotLaoDongMonth" class="form-select" required>
+                                <option value="">-- Chọn tháng --</option>
+                                <option value="Tháng 1">Tháng 1</option>
+                                <option value="Tháng 2">Tháng 2</option>
+                                <option value="Tháng 3">Tháng 3</option>
+                                <option value="Tháng 4">Tháng 4</option>
+                                <option value="Tháng 5">Tháng 5</option>
+                                <option value="Tháng 6">Tháng 6</option>
+                                <option value="Tháng 7">Tháng 7</option>
+                                <option value="Tháng 8">Tháng 8</option>
+                                <option value="Tháng 9">Tháng 9</option>
+                                <option value="Tháng 10">Tháng 10</option>
+                                <option value="Tháng 11">Tháng 11</option>
+                                <option value="Tháng 12">Tháng 12</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Buổi <span class="text-danger">*</span></label>
+                            <select name="Buoi" class="form-select" required>
+                                <option value="">-- Chọn buổi --</option>
+                                <option value="Sáng">Sáng (7h)</option>
+                                <option value="Chiều">Chiều (14h)</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Loại lao động</label>
+                            <select name="LoaiLaoDong" class="form-select" required>
+                                <option value="">-- Chọn loại lao động --</option>
+                                <option value="Cá Nhân">Cá Nhân</option>
+                                <option value="Lớp">Lớp</option>
+                            </select>
+
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Giá trị (điểm)</label>
+                            <input name="GiaTri" type="number" step="0.1" class="form-control" value="1" min="0" />
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Ngày lao động <span class="text-danger">*</span></label>
+                            <select name="NgayLaoDong" id="dotLaoDongDay" class="form-select" required>
+                                <option value="">-- Chọn ngày --</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Khu vực</label>
+                            <input name="KhuVuc" class="form-control" maxlength="150" />
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Số lượng sinh viên</label>
+                            <input name="SoLuongSinhVien" type="number" class="form-control" min="1" value="20" />
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label fw-bold">Mô tả công việc</label>
+                            <textarea name="MoTa" class="form-control" rows="4"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-success"><i class="fa fa-check me-1"></i> Tạo đợt</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<!-- Modal Chỉnh Sửa -->
+<div class="modal fade" id="editModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content shadow-lg">
+            <form id="editForm" action="/Admin/DotLaoDong/EditAjax" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="TaoDotLaoDong_id" id="editId" />
+                <div class="modal-header bg-warning text-dark">
+                    <h5 class="modal-title"><i class="fas fa-edit me-2"></i> Chỉnh sửa đợt lao động</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Tên đợt <span class="text-danger">*</span></label>
+                            <input name="DotLaoDong" id="editDotLaoDong" class="form-control" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Buổi <span class="text-danger">*</span></label>
+                            <select name="Buoi" id="editBuoi" class="form-select" required>
+                                <option value="Sáng">Sáng</option>
+                                <option value="Chiều">Chiều</option>
+                                <option value="Tối">Tối</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Loại lao động</label>
+                            <input name="LoaiLaoDong" id="editLoaiLaoDong" class="form-control" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Giá trị</label>
+                            <input name="GiaTri" id="editGiaTri" type="number" step="0.1" class="form-control" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Ngày lao động <span class="text-danger">*</span></label>
+                            <input name="NgayLaoDong" id="editNgayLaoDong" type="date" class="form-control" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Khu vực</label>
+                            <input name="KhuVuc" id="editKhuVuc" class="form-control" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Số lượng SV</label>
+                            <input name="SoLuongSinhVien" id="editSoLuongSinhVien" type="number" class="form-control" />
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-bold">Mô tả</label>
+                            <textarea name="MoTa" id="editMoTa" class="form-control" rows="4"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-primary"><i class="fa fa-save me-1"></i> Lưu thay đổi</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Chi Tiết -->
+<div class="modal fade" id="detailModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content shadow-lg">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title"><i class="fa fa-info-circle me-2"></i> Chi Tiết Đợt Lao Động</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-4">Tên đợt</dt>
+                    <dd class="col-sm-8 fw-bold" id="detailDotLaoDong"></dd>
+                    <dt class="col-sm-4">Buổi</dt>
+                    <dd class="col-sm-8" id="detailBuoi"></dd>
+                    <dt class="col-sm-4">Loại lao động</dt>
+                    <dd class="col-sm-8" id="detailLoaiLaoDong"></dd>
+                    <dt class="col-sm-4">Giá trị</dt>
+                    <dd class="col-sm-8 text-success fw-bold" id="detailGiaTri"></dd>
+                    <dt class="col-sm-4">Ngày lao động</dt>
+                    <dd class="col-sm-8" id="detailNgayLaoDong"></dd>
+                    <dt class="col-sm-4">Khu vực</dt>
+                    <dd class="col-sm-8" id="detailKhuVuc"></dd>
+                    <dt class="col-sm-4">Số lượng SV</dt>
+                    <dd class="col-sm-8" id="detailSoLuongSinhVien"></dd>
+                    <dt class="col-sm-4">Trạng thái</dt>
+                    <dd class="col-sm-8" id="detailTrangThaiDuyet"></dd>
+                    <dt class="col-sm-4">Người tạo</dt>
+                    <dd class="col-sm-8" id="detailNguoiTao"></dd>
+                    <dt class="col-sm-4">Mô tả</dt>
+                    <dd class="col-sm-8" id="detailMoTa"></dd>
+                </dl>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Xóa -->
+<div class="modal fade" id="deleteModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow-lg">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title"><i class="fas fa-trash me-2"></i> Xác nhận xóa đợt</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <i class="fas fa-exclamation-triangle text-danger mb-3" style="font-size: 3.5rem;"></i>
+                <h6 class="fw-bold" id="deleteConfirmText">Bạn có chắc chắn muốn xóa đợt này?</h6>
+                <p class="text-muted" id="deleteDotInfo"></p>
+                <div class="alert alert-warning small">
+                    <i class="fas fa-info-circle me-1"></i> Hành động này không thể hoàn tác!
+                </div>
+            </div>
+            <div class="modal-footer justify-content-center">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy bỏ</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Xác nhận xóa</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Danh sách đã xóa -->
+<div class="modal fade" id="deletedModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content shadow-lg">
+            <div class="modal-header bg-secondary text-white">
+                <h5 class="modal-title"><i class="fas fa-trash-restore me-2"></i> Đợt lao động đã hủy</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive" style="max-height: 500px;">
+                    <table class="table table-bordered table-hover">
+                        <thead class="table-light sticky-top">
+                            <tr>
+                                <th>STT</th>
+                                <th>Tên đợt</th>
+                                <th>Buổi</th>
+                                <th>Ngày LD</th>
+                                <th>Khu vực</th>
+                                <th>Ngày xóa</th>
+                                <th>Tác vụ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="deletedTableBody">
+                            <tr><td colspan="7" class="text-center text-muted py-4">Đang tải dữ liệu...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="~/Areas/Content/Js/adminCommon.js"></script>
+<script src="~/Areas/Content/Js/adminWordRegistor.js"></script>

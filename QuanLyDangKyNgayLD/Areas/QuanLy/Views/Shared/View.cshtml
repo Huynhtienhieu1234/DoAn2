@@ -514,20 +514,19 @@
         <aside class="shadow m-4 rounded-5 pb-4" style="width: 290px; min-height: 95vh;">
             <div class="p-3">
                 <a class="navbar-brand d-flex align-items-center" href="#">
-                    <span class="ms-2 fw-bold grayColor">👋 XIN CHÀO, ADMIN</span>
+                    <span class="ms-2 fw-bold grayColor">👋 XIN CHÀO, QUẢN LÝ</span>
                 </a>
             </div>
             <hr class="hr">
 
             <ul class="nav flex-column">
                 <li class="nav-item">
-                    <a href="@Url.Action("Index","Admin",new{area="Admin"})" class="nav-link">
+                    <a href="@Url.Action("Index","QuanLy",new{area="QuanLy"})" class="nav-link">
                         <i class="fas fa-home me-1"></i>Trang Chủ
                     </a>
                 </li>
-                <li class="nav-item"><a href="@Url.Action("Index","Account",new{area="Admin"})" class="nav-link"><i class="fa fa-list-alt"></i>Tài Khoản</a></li>
-                <li class="nav-item"><a href="@Url.Action("Index","AdminWordRegister",new{area="Admin"})" class="nav-link"><i class="fa fa-calendar-plus"></i>Tạo Đợt LĐ</a></li>
-                <li class="nav-item"><a href="@Url.Action("DuyetLaoDong","AdminTask",new{area="Admin"})" class="nav-link"><i class="fa fa-check-square"></i>Duyệt Lao Động</a></li>
+                <li class="nav-item"><a href="@Url.Action("Index","QuanLyAccount",new{area="QuanLy"})" class="nav-link"><i class="fa fa-list-alt"></i>Tài Khoản</a></li>
+                <li class="nav-item"><a href="@Url.Action("Index","QuanLyWordRegister",new{area="QuanLy"})" class="nav-link"><i class="fa fa-calendar-plus"></i>Tạo Đợt LĐ</a></li>
                 <li class="nav-item"><a href="@Url.Action("XacNhanHoanThanh","XacNhanHoanThanhLD",new{area="Admin"})" class="nav-link"><i class="fa fa-clipboard-check"></i>Xác Nhận Hoàn Thành</a></li>
                 <li class="nav-item"><a href="@Url.Action("TrangChuSinhVien","QuanLySinhVien",new{area="Admin"})" class="nav-link"><i class="fa fa-users"></i>Danh Sách SV</a></li>
                 <li class="nav-item"><a href="@Url.Action("ThongKeIndex","ThongKe",new{area="Admin"})" class="nav-link"><i class="fa fa-chart-bar"></i>Thống Kê</a></li>

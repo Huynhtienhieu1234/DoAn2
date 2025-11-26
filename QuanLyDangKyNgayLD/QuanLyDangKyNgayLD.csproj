@@ -122,9 +122,12 @@
     <Compile Include="Areas\Admin\Controllers\AccountController.cs" />
     <Compile Include="Areas\Admin\Controllers\AdminController.cs" />
     <Compile Include="Areas\Admin\Controllers\AdminWordRegisterController.cs" />
+    <Compile Include="Areas\Models\AdminThongKeViewModel.cs" />
     <Compile Include="Areas\LopPhoLaoDong\Controllers\MainLPLDController.cs" />
     <Compile Include="Areas\LopPhoLaoDong\LopPhoLaoDongAreaRegistration.cs" />
+    <Compile Include="Areas\QuanLy\Controllers\QuanLyAccountController.cs" />
     <Compile Include="Areas\QuanLy\Controllers\QuanLyController.cs" />
+    <Compile Include="Areas\QuanLy\Controllers\QuanLyWordRegisterController.cs" />
     <Compile Include="Areas\QuanLy\QuanLyAreaRegistration.cs" />
     <Compile Include="Areas\SinhVien\Controllers\MainSinhVienController.cs" />
     <Compile Include="Areas\SinhVien\SinhVienAreaRegistration.cs" />
@@ -201,7 +204,6 @@
     <Content Include="Areas\QuanLy\Views\web.config" />
     <Content Include="Areas\LopPhoLaoDong\Views\web.config" />
     <Content Include="Areas\LopPhoLaoDong\Views\MainLPLD\MainLPLD.cshtml" />
-    <Content Include="Areas\QuanLy\Views\QuanLy\QuanLy.cshtml" />
     <Content Include="Areas\Admin\Views\web.config" />
     <Content Include="Areas\Admin\Views\Admin\Index.cshtml" />
     <Content Include="Areas\Admin\Views\Shared\ViewShare.cshtml" />
@@ -215,6 +217,10 @@
     <Content Include="Models\QuanLyDangKyLaoDong.edmx.diagram">
       <DependentUpon>QuanLyDangKyLaoDong.edmx</DependentUpon>
     </Content>
+    <Content Include="Areas\QuanLy\Views\QuanLy\Index.cshtml" />
+    <Content Include="Areas\QuanLy\Views\Shared\View.cshtml" />
+    <Content Include="Areas\QuanLy\Views\QuanLyWordRegister\Index.cshtml" />
+    <Content Include="Areas\QuanLy\Views\QuanLyAccount\Index.cshtml" />
     <None Include="packages.config" />
     <Content Include="Views\Login\Login.cshtml" />
     <Content Include="Views\ForgotPassword\ForgotPassword.cshtml" />
@@ -228,11 +234,9 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
-    <Folder Include="Areas\Admin\Models\" />
     <Folder Include="Areas\LopPhoLaoDong\Data\" />
     <Folder Include="Areas\LopPhoLaoDong\Views\Shared\" />
     <Folder Include="Areas\QuanLy\Data\" />
-    <Folder Include="Areas\QuanLy\Views\Shared\" />
     <Folder Include="Areas\SinhVien\Data\" />
     <Folder Include="Areas\SinhVien\Views\Shared\" />
   </ItemGroup>

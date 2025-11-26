@@ -2,6 +2,7 @@
 using System.Web.Mvc;
 using QuanLyDangKyNgayLD.Models;
 using QuanLyDangKyNgayLD.Factories;
+using QuanLyDangKyNgayLD.Areas.Admin.Models; // dùng ViewModel riêng
 
 namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
 {
@@ -23,16 +24,5 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                 return View(model);
             }
         }
-        // ViewModel chứa dữ liệu hiển thị ra giao diện
-        public class AdminThongKeViewModel
-        {
-            public int TongTaiKhoan { get; set; }
-            public int TongSinhVien { get; set; }
-            public int TongDotLaoDong { get; set; }
-            public int TongHoanThanh { get; set; }
-        }
     }
-
-
-
 }
