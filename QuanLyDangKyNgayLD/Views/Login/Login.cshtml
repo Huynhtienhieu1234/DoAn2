@@ -55,8 +55,14 @@
         input#Username {
             margin-top: 6px;
         }
+
         input#password {
             margin-top: 6px;
+        }
+        /* Chặn icon reveal của Edge / Chrome */
+        input::-ms-reveal,
+        input::-ms-clear {
+            display: none !important;
         }
 
     </style>
@@ -123,6 +129,24 @@
                 eye.classList.add("fa-eye");
             }
         }
+
+        // Xóa biểu tượng "eye" mặc định mà trình duyệt tự thêm
+        document.addEventListener("DOMContentLoaded", function () {
+            const pwd = document.getElementById("password");
+
+            if (pwd) {
+                // Tắt autocomplete để trình duyệt không tự gợi ý + hiện icon
+                pwd.setAttribute("autocomplete", "new-password");
+
+                // Khi focus vào, tạm thời bật readonly -> trình duyệt sẽ không hiện icon
+                pwd.addEventListener("focus", function () {
+                    pwd.removeAttribute("readonly");
+                });
+
+                // Để tránh icon mắt xuất hiện, ban đầu set readonly
+                pwd.setAttribute("readonly", true);
+            }
+        });
     </script>
 </body>
 </html>

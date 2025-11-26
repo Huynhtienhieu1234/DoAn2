@@ -48,7 +48,7 @@
           <Property Name="LaoDongTheoLop" Type="bit" />
           <Property Name="LaoDongCaNhan" Type="bit" />
           <Property Name="ThoiGian" Type="datetime" />
-          <Property Name="DotLaoDongId" Type="int" />
+          <Property Name="TaoDotLaoDong_id" Type="int" />
         </EntityType>
         <EntityType Name="PhieuDuyet">
           <Key>
@@ -125,7 +125,7 @@
           <Property Name="Username" Type="nvarchar" MaxLength="255" />
           <Property Name="Password" Type="nvarchar" MaxLength="255" />
           <Property Name="Email" Type="nvarchar" MaxLength="255" />
-          <Property Name="Role_id" Type="int" />
+          <Property Name="VaiTro_id" Type="int" />
           <Property Name="Reset_token" Type="nvarchar" MaxLength="255" />
           <Property Name="Reset_token_expiry" Type="datetime" />
           <Property Name="Deleted_at" Type="datetime" />
@@ -239,6 +239,18 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
+        <Association Name="FK_PhieuDangKy_TaoDot">
+          <End Role="TaoDotNgayLaoDong" Type="Self.TaoDotNgayLaoDong" Multiplicity="0..1" />
+          <End Role="PhieuDangKy" Type="Self.PhieuDangKy" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="TaoDotNgayLaoDong">
+              <PropertyRef Name="TaoDotLaoDong_id" />
+            </Principal>
+            <Dependent Role="PhieuDangKy">
+              <PropertyRef Name="TaoDotLaoDong_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
         <Association Name="fk_quanly_taikhoan">
           <End Role="TaiKhoan" Type="Self.TaiKhoan" Multiplicity="0..1" />
           <End Role="QuanLy" Type="Self.QuanLy" Multiplicity="*" />
@@ -295,7 +307,7 @@
               <PropertyRef Name="VaiTro_id" />
             </Principal>
             <Dependent Role="TaiKhoan">
-              <PropertyRef Name="Role_id" />
+              <PropertyRef Name="VaiTro_id" />
             </Dependent>
           </ReferentialConstraint>
         </Association>
@@ -377,6 +389,10 @@
           <AssociationSet Name="fk_lop" Association="Self.fk_lop">
             <End Role="Lop" EntitySet="Lop" />
             <End Role="SinhVien" EntitySet="SinhVien" />
+          </AssociationSet>
+          <AssociationSet Name="FK_PhieuDangKy_TaoDot" Association="Self.FK_PhieuDangKy_TaoDot">
+            <End Role="TaoDotNgayLaoDong" EntitySet="TaoDotNgayLaoDong" />
+            <End Role="PhieuDangKy" EntitySet="PhieuDangKy" />
           </AssociationSet>
           <AssociationSet Name="fk_quanly_taikhoan" Association="Self.fk_quanly_taikhoan">
             <End Role="TaiKhoan" EntitySet="TaiKhoan" />
@@ -465,8 +481,9 @@
           <Property Name="LaoDongTheoLop" Type="Boolean" />
           <Property Name="LaoDongCaNhan" Type="Boolean" />
           <Property Name="ThoiGian" Type="DateTime" Precision="3" />
-          <Property Name="DotLaoDongId" Type="Int32" />
+          <Property Name="TaoDotLaoDong_id" Type="Int32" />
           <NavigationProperty Name="PhieuDuyets" Relationship="Self.fk_duyet_phieu" FromRole="PhieuDangKy" ToRole="PhieuDuyet" />
+          <NavigationProperty Name="TaoDotNgayLaoDong" Relationship="Self.FK_PhieuDangKy_TaoDot" FromRole="PhieuDangKy" ToRole="TaoDotNgayLaoDong" />
         </EntityType>
         <EntityType Name="PhieuDuyet">
           <Key>
@@ -561,7 +578,7 @@
           <Property Name="Username" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
           <Property Name="Password" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
           <Property Name="Email" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
-          <Property Name="Role_id" Type="Int32" />
+          <Property Name="VaiTro_id" Type="Int32" />
           <Property Name="Reset_token" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
           <Property Name="Reset_token_expiry" Type="DateTime" Precision="3" />
           <Property Name="Deleted_at" Type="DateTime" Precision="3" />
@@ -587,6 +604,7 @@
           <Property Name="MoTa" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
           <Property Name="NguoiTao" Type="Int32" />
           <NavigationProperty Name="DanhSachDiemDanhs" Relationship="Self.fk_diemdanh_dot" FromRole="TaoDotNgayLaoDong" ToRole="DanhSachDiemDanh" />
+          <NavigationProperty Name="PhieuDangKies" Relationship="Self.FK_PhieuDangKy_TaoDot" FromRole="TaoDotNgayLaoDong" ToRole="PhieuDangKy" />
         </EntityType>
         <EntityType Name="VaiTro">
           <Key>
@@ -665,6 +683,18 @@
             </Principal>
             <Dependent Role="PhieuDuyet">
               <PropertyRef Name="PhieuDangKy" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_PhieuDangKy_TaoDot">
+          <End Role="TaoDotNgayLaoDong" Type="Self.TaoDotNgayLaoDong" Multiplicity="0..1" />
+          <End Role="PhieuDangKy" Type="Self.PhieuDangKy" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="TaoDotNgayLaoDong">
+              <PropertyRef Name="TaoDotLaoDong_id" />
+            </Principal>
+            <Dependent Role="PhieuDangKy">
+              <PropertyRef Name="TaoDotLaoDong_id" />
             </Dependent>
           </ReferentialConstraint>
         </Association>
@@ -772,11 +802,11 @@
               <PropertyRef Name="VaiTro_id" />
             </Principal>
             <Dependent Role="TaiKhoan">
-              <PropertyRef Name="Role_id" />
+              <PropertyRef Name="VaiTro_id" />
             </Dependent>
           </ReferentialConstraint>
         </Association>
-        <EntityContainer Name="DB_QLNLD4ROLEEntities2" annotation:LazyLoadingEnabled="true">
+        <EntityContainer Name="DB_QLNLD4ROLEEntities1" annotation:LazyLoadingEnabled="true">
           <EntitySet Name="Anhs" EntityType="Self.Anh" />
           <EntitySet Name="DanhSachDiemDanhs" EntityType="Self.DanhSachDiemDanh" />
           <EntitySet Name="Khoas" EntityType="Self.Khoa" />
@@ -814,6 +844,10 @@
           <AssociationSet Name="fk_duyet_phieu" Association="Self.fk_duyet_phieu">
             <End Role="PhieuDangKy" EntitySet="PhieuDangKies" />
             <End Role="PhieuDuyet" EntitySet="PhieuDuyets" />
+          </AssociationSet>
+          <AssociationSet Name="FK_PhieuDangKy_TaoDot" Association="Self.FK_PhieuDangKy_TaoDot">
+            <End Role="TaoDotNgayLaoDong" EntitySet="TaoDotNgayLaoDongs" />
+            <End Role="PhieuDangKy" EntitySet="PhieuDangKies" />
           </AssociationSet>
           <AssociationSet Name="fk_duyet_quanly" Association="Self.fk_duyet_quanly">
             <End Role="QuanLy" EntitySet="QuanLies" />
@@ -857,7 +891,7 @@
     <!-- C-S mapping content -->
     <edmx:Mappings>
       <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
-        <EntityContainerMapping StorageEntityContainer="DB_QLNLD4ROLEModelStoreContainer" CdmEntityContainer="DB_QLNLD4ROLEEntities2">
+        <EntityContainerMapping StorageEntityContainer="DB_QLNLD4ROLEModelStoreContainer" CdmEntityContainer="DB_QLNLD4ROLEEntities1">
           <EntitySetMapping Name="Anhs">
             <EntityTypeMapping TypeName="DB_QLNLD4ROLEModel.Anh">
               <MappingFragment StoreEntitySet="Anh">
@@ -904,7 +938,7 @@
                 <ScalarProperty Name="LaoDongTheoLop" ColumnName="LaoDongTheoLop" />
                 <ScalarProperty Name="LaoDongCaNhan" ColumnName="LaoDongCaNhan" />
                 <ScalarProperty Name="ThoiGian" ColumnName="ThoiGian" />
-                <ScalarProperty Name="DotLaoDongId" ColumnName="DotLaoDongId" />
+                <ScalarProperty Name="TaoDotLaoDong_id" ColumnName="TaoDotLaoDong_id" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
@@ -988,7 +1022,7 @@
                 <ScalarProperty Name="Username" ColumnName="Username" />
                 <ScalarProperty Name="Password" ColumnName="Password" />
                 <ScalarProperty Name="Email" ColumnName="Email" />
-                <ScalarProperty Name="Role_id" ColumnName="Role_id" />
+                <ScalarProperty Name="VaiTro_id" ColumnName="VaiTro_id" />
                 <ScalarProperty Name="Reset_token" ColumnName="Reset_token" />
                 <ScalarProperty Name="Reset_token_expiry" ColumnName="Reset_token_expiry" />
                 <ScalarProperty Name="Deleted_at" ColumnName="Deleted_at" />

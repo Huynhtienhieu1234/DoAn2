@@ -13,10 +13,10 @@ namespace QuanLyDangKyNgayLD.Models
     using System.Data.Entity;
     using System.Data.Entity.Infrastructure;
     
-    public partial class DB_QLNLD4ROLEEntities2 : DbContext
+    public partial class DB_QLNLD4ROLEEntities1 : DbContext
     {
-        public DB_QLNLD4ROLEEntities2()
-            : base("name=DB_QLNLD4ROLEEntities2")
+        public DB_QLNLD4ROLEEntities1()
+            : base("name=DB_QLNLD4ROLEEntities1")
         {
         }
     
