@@ -414,7 +414,6 @@ document.addEventListener("DOMContentLoaded", function () {
         const rows = Array.from(document.querySelectorAll("#accountTableBody tr:not(.no-data-row)"));
         if (rows.length === 0) return showToast("Không có dữ liệu để xuất!", "warning");
 
-        // Tạo nội dung HTML table
         let html = `<table border="1"><thead><tr>
         <th>STT</th><th>Tên Tài Khoản</th><th>Email</th><th>Loại Tài Khoản</th>
     </tr></thead><tbody>`;
@@ -430,20 +429,36 @@ document.addEventListener("DOMContentLoaded", function () {
 
         html += `</tbody></table>`;
 
-        // Tạo file Excel giả bằng HTML table
         const blob = new Blob([html], { type: "application/vnd.ms-excel;charset=utf-8;" });
         const url = URL.createObjectURL(blob);
 
         const a = document.createElement("a");
         a.href = url;
-
-        // ✅ Đổi đuôi về .xls để Excel không cảnh báo
         a.download = `DanhSachTaiKhoan_${new Date().toISOString().slice(0, 10)}.xls`;
-        a.click();
 
+        // Theo dõi trạng thái tab
+        let tabHidden = false;
+        const onVisibilityChange = () => {
+            tabHidden = document.visibilityState === "hidden";
+        };
+        document.addEventListener("visibilitychange", onVisibilityChange);
+
+        // Bắt đầu tải
+        a.click();
         URL.revokeObjectURL(url);
-        showToast("Xuất Excel thành công!", "success");
+
+        // Kiểm tra sau 2 giây
+        setTimeout(() => {
+            document.removeEventListener("visibilitychange", onVisibilityChange);
+            if (tabHidden) {
+                showToast("Xuất Excel thành công!", "success");
+            } else {
+                showToast("Xuất không thành công hoặc bị hủy!", "error");
+            }
+        }, 2000);
     }
+
+
 
 
     // ==================================================================

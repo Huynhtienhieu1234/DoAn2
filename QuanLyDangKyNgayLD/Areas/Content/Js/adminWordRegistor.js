@@ -53,11 +53,17 @@ document.addEventListener("DOMContentLoaded", function () {
     // ==============================
     function renderDataToTable(items, page) {
         const tbody = document.getElementById("dotLaoDongTableBody");
-        tbody.innerHTML = items.map((item, index) => `
+        tbody.innerHTML = items.map((item, index) => {
+            // Map buổi sang text hiển thị
+            let buoiText = item.Buoi;
+            if (buoiText === "Sáng") buoiText = "Sáng (7h-8h30)";
+            if (buoiText === "Chiều") buoiText = "Chiều (13h-14h)";
+
+            return `
             <tr data-id="${item.TaoDotLaoDong_id}">
                 <td>${(page - 1) * pageSize + index + 1}</td>
                 <td>${item.DotLaoDong}</td>
-                <td>${item.Buoi}</td>
+                <td>${buoiText}</td>
                 <td>${item.LoaiLaoDong || ""}</td>
                 <td class="text-success fw-bold">${item.GiaTri ?? ""}</td>
                 <td>${item.NgayLaoDong || ""}</td>
@@ -65,7 +71,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 <td class="${item.SoLuongDangKy < item.SoLuongSinhVien ? 'text-danger fw-bold' : 'text-success fw-bold'} text-center">
                     ${item.SoLuongDangKy}/${item.SoLuongSinhVien}
                 </td>
-
                 <td>
                     <span class="badge ${item.TrangThaiDuyet === 'Đã duyệt' ? 'bg-success' : 'bg-warning text-dark'}">
                         ${item.TrangThaiDuyet}
@@ -87,13 +92,15 @@ document.addEventListener("DOMContentLoaded", function () {
                         </button>` : ""}
                 </td>
             </tr>
-        `).join("");
+        `;
+        }).join("");
 
         setTimeout(() => {
             tbody.classList.remove("fade-out");
             tbody.classList.add("fade-in");
         }, 50);
     }
+
 
     // ==============================
     // 4) Phân trang
@@ -231,31 +238,62 @@ document.addEventListener("DOMContentLoaded", function () {
         if (detailBtn) {
             const tr = detailBtn.closest("tr");
             const cells = tr.querySelectorAll("td");
+
             document.getElementById("detailDotLaoDong").textContent = cells[1]?.textContent || "";
             document.getElementById("detailBuoi").textContent = cells[2]?.textContent || "";
             document.getElementById("detailLoaiLaoDong").textContent = cells[3]?.textContent || "";
             document.getElementById("detailGiaTri").textContent = cells[4]?.textContent || "";
             document.getElementById("detailNgayLaoDong").textContent = cells[5]?.textContent || "";
             document.getElementById("detailKhuVuc").textContent = cells[6]?.textContent || "";
-            document.getElementById("detailSoLuongSinhVien").textContent = cells[7]?.textContent || "";
+
+            let soLuongRaw = cells[7]?.textContent || "";
+            let quyDinh = soLuongRaw.split("/")[1]?.trim() || "";
+            document.getElementById("detailSoLuongSinhVien").textContent = quyDinh;
+
             document.getElementById("detailTrangThaiDuyet").textContent = tr.querySelector(".badge")?.textContent || "";
+
+            const mota = tr.dataset.mota || "";
+            document.getElementById("detailMoTa").textContent = mota;
+
             new bootstrap.Modal(document.getElementById("detailModal")).show();
         }
+
+
 
         // Sửa
         if (editBtn) {
             const tr = editBtn.closest("tr");
             const cells = tr.querySelectorAll("td");
+
             document.getElementById("editId").value = editBtn.dataset.id;
             document.getElementById("editDotLaoDong").value = cells[1]?.textContent || "";
-            document.getElementById("editBuoi").value = cells[2]?.textContent || "Sáng";
+
+            let buoiRaw = cells[2]?.textContent || "";
+            let buoiValue = buoiRaw.includes("Sáng") ? "Sáng" : buoiRaw.includes("Chiều") ? "Chiều" : "";
+            document.getElementById("editBuoi").value = buoiValue;
+
             document.getElementById("editLoaiLaoDong").value = cells[3]?.textContent || "";
             document.getElementById("editGiaTri").value = (cells[4]?.textContent || "").replace(/\D/g, "");
+
+            let ngayRaw = cells[5]?.textContent || "";
+            let ngayParts = ngayRaw.split("/");
+            let ngayValue = ngayParts.length === 3 ? `${ngayParts[2]}-${ngayParts[1]}-${ngayParts[0]}` : "";
+            document.getElementById("editNgayLaoDong").value = ngayValue;
+
             document.getElementById("editKhuVuc").value = cells[6]?.textContent || "";
-            document.getElementById("editSoLuongSinhVien").value = cells[7]?.textContent || "";
-            document.getElementById("editMoTa").value = "";
+
+            let soLuongRaw = cells[7]?.textContent || "";
+            let quyDinh = soLuongRaw.split("/")[1]?.trim() || "";
+            document.getElementById("editSoLuongSinhVien").value = quyDinh;
+
+            const mota = tr.dataset.mota || "";
+            document.getElementById("editMoTa").value = mota;
+
             new bootstrap.Modal(document.getElementById("editModal")).show();
         }
+
+
+
 
         // Xóa
         if (deleteBtn) {

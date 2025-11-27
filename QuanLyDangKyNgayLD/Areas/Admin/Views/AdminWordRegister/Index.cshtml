@@ -41,8 +41,8 @@
 
                 <select id="sessionFilter" class="form-select form-select-sm me-2 shadow-sm" style="min-width: 120px;">
                     <option value="">-- Buổi --</option>
-                    <option value="Sáng">Sáng</option>
-                    <option value="Chiều">Chiều</option>
+                    <option value="Sáng">Sáng (7h-8h30h)</option>
+                    <option value="Chiều">Chiều (13h-14h)</option>
                 </select>
 
                 <div class="input-group input-group-sm shadow-sm me-2" style="min-width: 220px;">
@@ -87,63 +87,64 @@
                 var stt = 1;
                 foreach (var item in Model)
                 {
-                    <tr data-id="@item.TaoDotLaoDong_id" data-deleted="@(item.Ngayxoa != null)">
-                        <td class="stt-cell">@stt</td>
-                        <td class="Dotloaodong">@item.DotLaoDong</td>
-                        <td>@item.Buoi</td>
-                        <td>@item.LoaiLaoDong</td>
-                        <td class="text-success fw-bold">@String.Format("{0:N0}", item.GiaTri)</td>
-                        <td class="px-1 text-center">
-                            <span class="text-truncate d-inline-block w-100" style="max-width:80px;" title="@(item.NgayLaoDong?.ToString("dd/MM/yyyy"))">
-                                @(item.NgayLaoDong?.ToString("dd/MM/yyyy"))
-                            </span>
-                        </td>
-                        <td>@item.KhuVuc</td>
+<tr data-id="@item.TaoDotLaoDong_id" data-mota="@Html.Raw(HttpUtility.JavaScriptStringEncode(item.MoTa ?? ""))" data-deleted="@(item.Ngayxoa != null)">
 
-                        <td class="text-center">
-                            @{
-                                var dict = ViewBag.SoLuongDangKyDict as Dictionary<int, int>;
-                                var key = item.TaoDotLaoDong_id;
-                                var soDangKy = (dict != null && dict.ContainsKey(key)) ? dict[key] : 0;
-                                var quyDinh = item.SoLuongSinhVien ?? 0;
-                                var mau = soDangKy < quyDinh ? "text-danger fw-bold" : "text-success fw-bold";
-                            }
-                            <span class="@mau">@soDangKy/@quyDinh</span>
-                        </td>
+    <td class="stt-cell">@stt</td>
+    <td class="Dotloaodong">@item.DotLaoDong</td>
+    <td>@item.Buoi</td>
+    <td>@item.LoaiLaoDong</td>
+    <td class="text-success fw-bold">@String.Format("{0:N0}", item.GiaTri)</td>
+    <td class="px-1 text-center">
+        <span class="text-truncate d-inline-block w-100" style="max-width:80px;" title="@(item.NgayLaoDong?.ToString("dd/MM/yyyy"))">
+            @(item.NgayLaoDong?.ToString("dd/MM/yyyy"))
+        </span>
+    </td>
+    <td>@item.KhuVuc</td>
+
+    <td class="text-center">
+        @{
+            var dict = ViewBag.SoLuongDangKyDict as Dictionary<int, int>;
+            var key = item.TaoDotLaoDong_id;
+            var soDangKy = (dict != null && dict.ContainsKey(key)) ? dict[key] : 0;
+            var quyDinh = item.SoLuongSinhVien ?? 0;
+            var mau = soDangKy < quyDinh ? "text-danger fw-bold" : "text-success fw-bold";
+        }
+        <span class="@mau">@soDangKy/@quyDinh</span>
+    </td>
 
 
-                        <td>
-                            @if (item.TrangThaiDuyet == true)
-                            {
-                                <span class="badge bg-success">Đã duyệt</span>
-                            }
-                            else
-                            {
-                                <span class="badge bg-warning text-dark">Chưa duyệt</span>
-                            }
-                        </td>
-                        <td class="action-cell">
-                            <button class="btn btn-sm btn-info btn-detail me-1 text-white" title="Chi tiết"
-                                    data-id="@item.TaoDotLaoDong_id">
-                                <i class="fas fa-info-circle"></i>
-                            </button>
-                            <button class="btn btn-sm btn-warning btn-edit me-1" title="Sửa"
-                                    data-id="@item.TaoDotLaoDong_id">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="btn btn-sm btn-danger btn-delete me-1" title="Xóa"
-                                    data-id="@item.TaoDotLaoDong_id">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                            @if (item.TrangThaiDuyet == false)
-                            {
-                                <button class="btn btn-sm btn-success btn-approve" title="Duyệt ngay"
-                                        data-id="@item.TaoDotLaoDong_id">
-                                    <i class="fas fa-check"></i>
-                                </button>
-                            }
-                        </td>
-                    </tr>
+    <td>
+        @if (item.TrangThaiDuyet == true)
+        {
+            <span class="badge bg-success">Đã duyệt</span>
+        }
+        else
+        {
+            <span class="badge bg-warning text-dark">Chưa duyệt</span>
+        }
+    </td>
+    <td class="action-cell">
+        <button class="btn btn-sm btn-info btn-detail me-1 text-white" title="Chi tiết"
+                data-id="@item.TaoDotLaoDong_id">
+            <i class="fas fa-info-circle"></i>
+        </button>
+        <button class="btn btn-sm btn-warning btn-edit me-1" title="Sửa"
+                data-id="@item.TaoDotLaoDong_id">
+            <i class="fas fa-edit"></i>
+        </button>
+        <button class="btn btn-sm btn-danger btn-delete me-1" title="Xóa"
+                data-id="@item.TaoDotLaoDong_id">
+            <i class="fas fa-trash"></i>
+        </button>
+        @if (item.TrangThaiDuyet == false)
+        {
+            <button class="btn btn-sm btn-success btn-approve" title="Duyệt ngay"
+                    data-id="@item.TaoDotLaoDong_id">
+                <i class="fas fa-check"></i>
+            </button>
+        }
+    </td>
+</tr>
                     stt++;
                 }
             }
@@ -208,8 +209,8 @@
                             <label class="form-label fw-bold">Buổi <span class="text-danger">*</span></label>
                             <select name="Buoi" class="form-select" required>
                                 <option value="">-- Chọn buổi --</option>
-                                <option value="Sáng">Sáng (7h)</option>
-                                <option value="Chiều">Chiều (14h)</option>
+                                <option value="Sáng">Sáng (7h-8h30h)</option>
+                                <option value="Chiều">Chiều (13h-14h)</option>
                             </select>
                         </div>
 
@@ -281,9 +282,9 @@
                         <div class="col-md-6">
                             <label class="form-label fw-bold">Buổi <span class="text-danger">*</span></label>
                             <select name="Buoi" id="editBuoi" class="form-select" required>
-                                <option value="Sáng">Sáng</option>
-                                <option value="Chiều">Chiều</option>
-                                <option value="Tối">Tối</option>
+                                <option value="Sáng">Sáng (7h-8h30h)</option>
+                                <option value="Chiều">Chiều (13h-14h)</option>
+                   
                             </select>
                         </div>
                         <div class="col-md-6">

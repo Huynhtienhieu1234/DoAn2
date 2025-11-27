@@ -335,5 +335,53 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
 
 
 
+        [HttpGet]
+        public ActionResult ExportDotLaoDong(string keyword = "", string buoi = "", string trangthai = "")
+        {
+            using (var db = DbContextFactory.Create())
+            {
+                var query = db.TaoDotNgayLaoDongs.Where(x => x.Ngayxoa == null);
+
+                // Lọc theo từ khóa (tên đợt hoặc khu vực)
+                if (!string.IsNullOrWhiteSpace(keyword))
+                    query = query.Where(x => x.DotLaoDong.Contains(keyword) || x.KhuVuc.Contains(keyword));
+
+                // Lọc theo buổi
+                if (!string.IsNullOrWhiteSpace(buoi))
+                    query = query.Where(x => x.Buoi == buoi);
+
+                // Lọc theo trạng thái duyệt
+                if (trangthai == "1")
+                    query = query.Where(x => x.TrangThaiDuyet == true);
+                else if (trangthai == "0")
+                    query = query.Where(x => x.TrangThaiDuyet == false);
+
+                // Lấy dữ liệu
+                var items = query
+                    .OrderByDescending(x => x.NgayLaoDong)
+                    .Select(x => new
+                    {
+                        x.TaoDotLaoDong_id,
+                        x.DotLaoDong,
+                        x.Buoi,
+                        x.LoaiLaoDong,
+                        GiaTri = x.GiaTri,
+                        NgayLaoDong = x.NgayLaoDong.HasValue
+                            ? x.NgayLaoDong.Value.ToString("dd/MM/yyyy")
+                            : "",
+                        x.KhuVuc,
+                        x.SoLuongSinhVien,
+                        TrangThaiDuyet = x.TrangThaiDuyet == true ? "Đã duyệt" : "Chưa duyệt",
+                        x.MoTa,
+                        x.NguoiTao
+                    })
+                    .ToList();
+
+                return Json(new { success = true, items }, JsonRequestBehavior.AllowGet);
+            }
+        }
+
+
+
     }
 }
