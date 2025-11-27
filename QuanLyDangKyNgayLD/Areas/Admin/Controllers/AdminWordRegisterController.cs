@@ -53,13 +53,18 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
         }
 
         // AJAX: Lấy danh sách đợt lao động (phân trang + lọc)
+
+
+
         [HttpGet]
         public ActionResult LoadDotLaoDong(
-               int page = 1,
-               int pageSize = ITEMS_PER_PAGE,
-               string keyword = "",
-               string buoi = "",
-               string trangThai = "")
+            int page = 1,
+            int pageSize = ITEMS_PER_PAGE,
+            string keyword = "",
+            string buoi = "",
+            string trangThai = "",
+            int? thang = null 
+        )
         {
             using (var db = DbContextFactory.Create())
             {
@@ -90,18 +95,24 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                     query = query.Where(x => x.TrangThaiDuyet == false);
                 }
 
-                // Bước 5: Tính tổng số dòng và số trang
+                // ✅ Bước 5: Lọc theo tháng nếu có
+                if (thang.HasValue)
+                {
+                    query = query.Where(x => x.NgayLaoDong.HasValue && x.NgayLaoDong.Value.Month == thang.Value);
+                }
+
+                // Bước 6: Tính tổng số dòng và số trang
                 int totalItems = query.Count();
                 int totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
 
-                // Bước 6: Lấy dữ liệu theo trang
+                // Bước 7: Lấy dữ liệu theo trang
                 var rawItems = query
                     .OrderByDescending(x => x.NgayLaoDong)
                     .Skip((page - 1) * pageSize)
                     .Take(pageSize)
-                    .ToList(); // Truy vấn xong rồi mới xử lý
+                    .ToList();
 
-                // Bước 7: Xử lý dữ liệu để trả về JSON
+                // Bước 8: Xử lý dữ liệu để trả về JSON
                 var items = rawItems.Select(x => new
                 {
                     x.TaoDotLaoDong_id,
@@ -110,8 +121,8 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                     x.LoaiLaoDong,
                     GiaTri = x.GiaTri,
                     NgayLaoDong = x.NgayLaoDong.HasValue
-                  ? x.NgayLaoDong.Value.ToString("dd/MM/yyyy")
-                  : "",
+                        ? x.NgayLaoDong.Value.ToString("dd/MM/yyyy")
+                        : "",
                     x.KhuVuc,
                     x.SoLuongSinhVien,
                     SoLuongDangKy = db.PhieuDangKies.Count(p => p.TaoDotLaoDong_id == x.TaoDotLaoDong_id),
@@ -120,9 +131,7 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                     x.NguoiTao
                 }).ToList();
 
-
-
-                // Bước 8: Trả về JSON
+                // Bước 9: Trả về JSON
                 return Json(new
                 {
                     success = true,
@@ -132,6 +141,7 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                 }, JsonRequestBehavior.AllowGet);
             }
         }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public JsonResult CreateAjax(TaoDotNgayLaoDong model)
@@ -143,16 +153,16 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
 
                 using (var db = DbContextFactory.Create())
                 {
-                    // Kiểm tra trùng đợt lao động cùng ngày, buổi, khu vực
+                    // ✅ Chỉ chặn khi: cùng ngày + cùng buổi + cùng khu vực + cùng loại lao động
                     bool isDuplicate = db.TaoDotNgayLaoDongs.Any(x =>
-                        x.DotLaoDong == model.DotLaoDong &&
                         x.NgayLaoDong == model.NgayLaoDong &&
                         x.Buoi == model.Buoi &&
                         x.KhuVuc == model.KhuVuc &&
+                        x.LoaiLaoDong == model.LoaiLaoDong &&
                         x.Ngayxoa == null);
 
                     if (isDuplicate)
-                        return Json(new { success = false, message = "Đợt lao động này đã tồn tại." });
+                        return Json(new { success = false, message = "Khu vực này đã có đợt lao động cùng loại trong ngày và buổi này." });
 
                     // Kiểm tra ngày lao động
                     if (!model.NgayLaoDong.HasValue)
@@ -170,6 +180,13 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                     model.TrangThaiDuyet = false;
                     model.Ngayxoa = null;
 
+                    var userIdStr = Session["UserId"]?.ToString();
+                    if (!int.TryParse(userIdStr, out int userId))
+                        return Json(new { success = false, message = "Không xác định được người tạo." });
+
+                    var user = db.TaiKhoans.FirstOrDefault(u => u.TaiKhoan_id == userId);
+                    model.NguoiTao = user?.TaiKhoan_id ?? userId;
+
                     db.TaoDotNgayLaoDongs.Add(model);
                     db.SaveChanges();
 
@@ -181,6 +198,9 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                 return Json(new { success = false, message = "Lỗi hệ thống: " + ex.Message });
             }
         }
+
+
+
 
         // AJAX: Chỉnh sửa
         [HttpPost]
@@ -242,7 +262,6 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
 
 
         // AJAX: Duyệt đợt
-
         [HttpPost]
         public ActionResult ApproveAjax(int id)
         {
@@ -338,48 +357,107 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
         [HttpGet]
         public ActionResult ExportDotLaoDong(string keyword = "", string buoi = "", string trangthai = "")
         {
-            using (var db = DbContextFactory.Create())
+            try
             {
-                var query = db.TaoDotNgayLaoDongs.Where(x => x.Ngayxoa == null);
+                using (var db = DbContextFactory.Create())
+                {
+                    var query = db.TaoDotNgayLaoDongs.Where(x => x.Ngayxoa == null);
 
-                // Lọc theo từ khóa (tên đợt hoặc khu vực)
-                if (!string.IsNullOrWhiteSpace(keyword))
-                    query = query.Where(x => x.DotLaoDong.Contains(keyword) || x.KhuVuc.Contains(keyword));
+                    if (!string.IsNullOrWhiteSpace(keyword))
+                        query = query.Where(x => x.DotLaoDong.Contains(keyword) || x.KhuVuc.Contains(keyword));
 
-                // Lọc theo buổi
-                if (!string.IsNullOrWhiteSpace(buoi))
-                    query = query.Where(x => x.Buoi == buoi);
+                    if (!string.IsNullOrWhiteSpace(buoi))
+                        query = query.Where(x => x.Buoi == buoi);
 
-                // Lọc theo trạng thái duyệt
-                if (trangthai == "1")
-                    query = query.Where(x => x.TrangThaiDuyet == true);
-                else if (trangthai == "0")
-                    query = query.Where(x => x.TrangThaiDuyet == false);
+                    if (trangthai == "1")
+                        query = query.Where(x => x.TrangThaiDuyet == true);
+                    else if (trangthai == "0")
+                        query = query.Where(x => x.TrangThaiDuyet == false);
 
-                // Lấy dữ liệu
-                var items = query
-                    .OrderByDescending(x => x.NgayLaoDong)
-                    .Select(x => new
-                    {
-                        x.TaoDotLaoDong_id,
-                        x.DotLaoDong,
-                        x.Buoi,
-                        x.LoaiLaoDong,
-                        GiaTri = x.GiaTri,
-                        NgayLaoDong = x.NgayLaoDong.HasValue
-                            ? x.NgayLaoDong.Value.ToString("dd/MM/yyyy")
-                            : "",
-                        x.KhuVuc,
-                        x.SoLuongSinhVien,
-                        TrangThaiDuyet = x.TrangThaiDuyet == true ? "Đã duyệt" : "Chưa duyệt",
-                        x.MoTa,
-                        x.NguoiTao
-                    })
-                    .ToList();
+                    // ✅ KHÔNG pagination — lấy TẤT CẢ dữ liệu
+                    var items = query
+                        .OrderBy(x => x.NgayLaoDong)
+                        .Select(x => new {
+                            x.DotLaoDong,
+                            x.Buoi,
+                            x.LoaiLaoDong,
+                            GiaTri = x.GiaTri,
+                            NgayLaoDong = x.NgayLaoDong.HasValue ? x.NgayLaoDong.Value.ToString("dd/MM/yyyy") : "",
+                            x.KhuVuc,
+                            x.SoLuongSinhVien,
+                            TrangThaiDuyet = x.TrangThaiDuyet == true ? "Đã duyệt" : "Chưa duyệt",
+                            MoTa = x.MoTa ?? "",
+                            NguoiTao = x.NguoiTao.HasValue ? x.NguoiTao.Value.ToString() : ""
+                        })
+                        .ToList();
 
-                return Json(new { success = true, items }, JsonRequestBehavior.AllowGet);
+                    return Json(new { success = true, count = items.Count, items }, JsonRequestBehavior.AllowGet);
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Lỗi server: " + ex.Message }, JsonRequestBehavior.AllowGet);
             }
         }
+        [HttpGet]
+        public ActionResult ExportAllDotLaoDong(string keyword = "", string buoi = "", string trangthai = "")
+        {
+            try
+            {
+                using (var db = DbContextFactory.Create())
+                {
+                    var query = db.TaoDotNgayLaoDongs.Where(x => x.Ngayxoa == null);
+
+                    keyword = (keyword ?? "").Trim();
+                    buoi = (buoi ?? "").Trim();
+                    trangthai = (trangthai ?? "").Trim().ToLower();
+
+                    if (!string.IsNullOrWhiteSpace(keyword))
+                        query = query.Where(x => x.DotLaoDong.Contains(keyword) || x.KhuVuc.Contains(keyword));
+
+                    if (!string.IsNullOrWhiteSpace(buoi))
+                        query = query.Where(x => x.Buoi == buoi);
+
+                    // trangthai: "", "all" -> không lọc; "1" -> đã duyệt; "0" -> chưa duyệt
+                    if (trangthai == "1")
+                        query = query.Where(x => x.TrangThaiDuyet == true);
+                    else if (trangthai == "0")
+                        query = query.Where(x => x.TrangThaiDuyet == false);
+
+                    var items = query
+                        .OrderByDescending(x => x.NgayLaoDong)
+                        .Select(x => new
+                        {
+                            x.TaoDotLaoDong_id,
+                            x.DotLaoDong,
+                            x.Buoi,
+                            x.LoaiLaoDong,
+                            GiaTri = x.GiaTri,
+                            NgayLaoDong = x.NgayLaoDong.HasValue ? x.NgayLaoDong.Value.ToString("dd/MM/yyyy") : "",
+                            x.KhuVuc,
+                            x.SoLuongSinhVien,
+                            SoLuongDangKy = db.PhieuDangKies.Count(p => p.TaoDotLaoDong_id == x.TaoDotLaoDong_id),
+                            TrangThaiDuyet = x.TrangThaiDuyet == true ? "Đã duyệt" : "Chưa duyệt",
+                            MoTa = x.MoTa ?? "",
+                            NguoiTao = (x.NguoiTao.HasValue)
+                                ? db.TaiKhoans.Where(t => t.TaiKhoan_id == x.NguoiTao.Value)
+                                              .Select(t => t.Username)
+                                              .FirstOrDefault()
+                                : ""
+                        })
+                        .ToList();
+
+                    return Json(new { success = true, count = items.Count, items }, JsonRequestBehavior.AllowGet);
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Lỗi server: " + ex.Message }, JsonRequestBehavior.AllowGet);
+            }
+        }
+
+
+
 
 
 

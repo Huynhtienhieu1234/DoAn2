@@ -819,3 +819,10 @@ btn-reset {
         color: white;
         font-weight: bold;
     }
+.modal-body {
+    overflow: visible !important;
+}
+#khuVucSelect {
+    position: relative;
+    z-index: 1051;
+}

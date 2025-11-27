@@ -32,6 +32,18 @@
 
             <!-- Bên phải -->
             <form class="toolbar-flex align-items-center" role="search">
+                <div class="input-group input-group-sm me-2" style="max-width: 180px;">
+                    <label class="input-group-text bg-white border-end-0" for="sortMonthSelect">
+                        <i class="fas fa-sort me-1"></i> Sắp xếp
+                    </label>
+                    <select id="sortMonthSelect" class="form-select border-start-0">
+                        <option value="">-- Chọn --</option>
+                        <option value="asc">Tăng dần</option>
+                        <option value="desc">Giảm dần</option>
+                    </select>
+                </div>
+
+
                 <select id="statusFilter" class="form-select form-select-sm me-2 shadow-sm" style="min-width: 150px;">
                     <option value="">-- Trạng thái duyệt --</option>
                     <option value="all">Tất cả</option>
@@ -238,7 +250,21 @@
 
                         <div class="col-md-6">
                             <label class="form-label fw-bold">Khu vực</label>
-                            <input name="KhuVuc" class="form-control" maxlength="150" />
+                            <select id="createKhuVuc" name="KhuVuc" class="form-select">
+                                <option value="A1">Tòa A1</option>
+                                <option value="A2">Tòa A2</option>
+                                <option value="B1">Tòa B1</option>
+                                <option value="B2">Tòa B2</option>
+                                <option value="B3">Tòa B3</option>
+                                <option value="B4">Tòa B4</option>
+                                <option value="C1">Tòa C1</option>
+                                <option value="C2">Tòa C2</option>
+                                <option value="H1">Tòa H1</option>
+                                <option value="H2">Tòa H2</option>
+                                <option value="T2">Tòa T2</option>
+                                <option value="Trước cổng trường">Trước cổng trường</option>
+                            </select>
+
                         </div>
 
                         <div class="col-md-6">
@@ -261,12 +287,11 @@
     </div>
 </div>
 
-
 <!-- Modal Chỉnh Sửa -->
 <div class="modal fade" id="editModal" tabindex="-1" data-bs-backdrop="static">
     <div class="modal-dialog modal-lg">
         <div class="modal-content shadow-lg">
-            <form id="editForm" action="/Admin/DotLaoDong/EditAjax" method="post">
+            <form id="editForm" action="/AdminWordRegister/EditAjax" method="post">
                 @Html.AntiForgeryToken()
                 <input type="hidden" name="TaoDotLaoDong_id" id="editId" />
                 <div class="modal-header bg-warning text-dark">
@@ -284,7 +309,7 @@
                             <select name="Buoi" id="editBuoi" class="form-select" required>
                                 <option value="Sáng">Sáng (7h-8h30h)</option>
                                 <option value="Chiều">Chiều (13h-14h)</option>
-                   
+
                             </select>
                         </div>
                         <div class="col-md-6">
@@ -300,8 +325,21 @@
                             <input name="NgayLaoDong" id="editNgayLaoDong" type="date" class="form-control" required />
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-bold">Khu vực</label>
-                            <input name="KhuVuc" id="editKhuVuc" class="form-control" />
+                            <label class="form-label fw-bold">Khu vực <span class="text-danger">*</span></label>
+                            <select name="KhuVuc" id="editKhuVuc" class="form-select" required>
+                                <option value="A1">Tòa A1</option>
+                                <option value="A2">Tòa A2</option>
+                                <option value="B1">Tòa B1</option>
+                                <option value="B2">Tòa B2</option>
+                                <option value="B3">Tòa B3</option>
+                                <option value="B4">Tòa B4</option>
+                                <option value="C1">Tòa C1</option>
+                                <option value="C2">Tòa C2</option>
+                                <option value="H1">Tòa H1</option>
+                                <option value="H2">Tòa H2</option>
+                                <option value="T2">Tòa T2</option>
+                                <option value="Trước cổng trường">Trước cổng trường</option>
+                            </select>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-bold">Số lượng SV</label>
@@ -311,6 +349,8 @@
                             <label class="form-label fw-bold">Mô tả</label>
                             <textarea name="MoTa" id="editMoTa" class="form-control" rows="4"></textarea>
                         </div>
+
+
                     </div>
                 </div>
                 <div class="modal-footer">

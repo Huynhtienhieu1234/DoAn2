@@ -388,7 +388,6 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function handleRestoreAccount() {
-        if (!confirm('Khôi phục tài khoản này?')) return;
         const id = this.dataset.id;
         const row = this.closest("tr");
         showLoading(this, 'Đang khôi phục...');
@@ -410,6 +409,7 @@ document.addEventListener("DOMContentLoaded", function () {
             })
             .catch(() => showToast("Lỗi kết nối!", "error"));
     }
+
     function handleExportExcel() {
         const rows = Array.from(document.querySelectorAll("#accountTableBody tr:not(.no-data-row)"));
         if (rows.length === 0) return showToast("Không có dữ liệu để xuất!", "warning");

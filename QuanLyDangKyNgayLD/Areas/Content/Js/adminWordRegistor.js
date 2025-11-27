@@ -2,6 +2,7 @@
 document.addEventListener("DOMContentLoaded", function () {
     let currentPage = 1;
     const pageSize = 5;
+    let currentLoadedItems = []; // chứa dữ liệu đang hiển thị
 
     // ==============================
     // 1) Tải dữ liệu lần đầu
@@ -11,6 +12,43 @@ document.addEventListener("DOMContentLoaded", function () {
     // ==============================
     // 2) Hàm load dữ liệu + loading
     // ==============================
+    document.getElementById("createForm")?.addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        const formData = new FormData(this);
+
+        fetch(this.action, { method: "POST", body: formData })
+            .then((res) => {
+                if (!res.ok) {
+                    return res.text().then(text => {
+                        console.error("Server response:", text);
+                        throw new Error("Server error");
+                    });
+                }
+                return res.json();
+            })
+            .then((data) => {
+                if (data.success) {
+                    bootstrap.Modal.getInstance(document.getElementById("createModal")).hide();
+                    showToast(data.message || "Tạo đợt thành công!");
+
+                    // Tải lại dữ liệu
+                    loadDataToTable(currentPage);
+
+                    // Sau khi tải xong, sắp xếp lại để dòng mới nằm cuối
+                    setTimeout(() => {
+                        sortDotLaoDong(true); // hoặc false nếu bạn muốn tháng mới nhất lên đầu
+                    }, 400);
+                } else {
+                    showToast(data.message || "Tạo thất bại!");
+                }
+            })
+            .catch((err) => {
+                console.error("Lỗi:", err);
+                showToast("Lỗi kết nối hoặc server không phản hồi.");
+            });
+    });
+
     function loadDataToTable(page = 1, keyword = "", buoi = "", trangthai = "") {
         const tbody = document.getElementById("dotLaoDongTableBody");
         const tableWrapper = document.querySelector(".table-responsive");
@@ -19,16 +57,18 @@ document.addEventListener("DOMContentLoaded", function () {
         tbody.classList.remove("fade-in");
         tbody.classList.add("fade-out");
         tbody.innerHTML = `
-            <tr>
-                <td colspan="10" class="text-center">
-                    <div class="spinner"></div> Đang tải dữ liệu...
-                </td>
-            </tr>
-        `;
+        <tr>
+            <td colspan="10" class="text-center">
+                <div class="spinner"></div> Đang tải dữ liệu...
+            </td>
+        </tr>
+    `;
 
         fetch(`/Admin/AdminWordRegister/LoadDotLaoDong?page=${page}&pageSize=${pageSize}&keyword=${encodeURIComponent(keyword)}&buoi=${encodeURIComponent(buoi)}&trangThai=${encodeURIComponent(trangthai)}`)
             .then(res => res.json())
+
             .then(data => {
+                currentLoadedItems = data.items || [];
                 tableWrapper.classList.remove("loading");
 
                 if (!data.items || data.items.length === 0) {
@@ -52,6 +92,8 @@ document.addEventListener("DOMContentLoaded", function () {
     // 3) Render bảng
     // ==============================
     function renderDataToTable(items, page) {
+
+
         const tbody = document.getElementById("dotLaoDongTableBody");
         tbody.innerHTML = items.map((item, index) => {
             // Map buổi sang text hiển thị
@@ -60,7 +102,12 @@ document.addEventListener("DOMContentLoaded", function () {
             if (buoiText === "Chiều") buoiText = "Chiều (13h-14h)";
 
             return `
-            <tr data-id="${item.TaoDotLaoDong_id}">
+                <tr
+                  data-id="${item.TaoDotLaoDong_id}" 
+                  data-mota="${(item.MoTa || '').replace(/"/g, '&quot;').replace(/\n/g, ' ')}"
+                  data-nguoitao="${String(item.NguoiTao || '').replace(/"/g, '&quot;')}"
+
+                >
                 <td>${(page - 1) * pageSize + index + 1}</td>
                 <td>${item.DotLaoDong}</td>
                 <td>${buoiText}</td>
@@ -255,6 +302,10 @@ document.addEventListener("DOMContentLoaded", function () {
             const mota = tr.dataset.mota || "";
             document.getElementById("detailMoTa").textContent = mota;
 
+
+            const nguoiTao = tr.dataset.nguoitao || "";
+            document.getElementById("detailNguoiTao").textContent = nguoiTao;
+
             new bootstrap.Modal(document.getElementById("detailModal")).show();
         }
 
@@ -280,7 +331,24 @@ document.addEventListener("DOMContentLoaded", function () {
             let ngayValue = ngayParts.length === 3 ? `${ngayParts[2]}-${ngayParts[1]}-${ngayParts[0]}` : "";
             document.getElementById("editNgayLaoDong").value = ngayValue;
 
-            document.getElementById("editKhuVuc").value = cells[6]?.textContent || "";
+
+
+            const khuVucRaw = cells[6]?.textContent.trim() || "";
+            const khuVucSelect = document.getElementById("editKhuVuc");
+
+            // Nếu dropdown có option khớp, gán vào
+            if ([...khuVucSelect.options].some(opt => opt.value === khuVucRaw)) {
+                khuVucSelect.value = khuVucRaw;
+            } else {
+                // Nếu không khớp, gán mặc định hoặc báo lỗi
+                khuVucSelect.value = "";
+                console.warn("Không tìm thấy khu vực:", khuVucRaw);
+            }
+
+
+
+
+
 
             let soLuongRaw = cells[7]?.textContent || "";
             let quyDinh = soLuongRaw.split("/")[1]?.trim() || "";
@@ -288,6 +356,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
             const mota = tr.dataset.mota || "";
             document.getElementById("editMoTa").value = mota;
+
+
 
             new bootstrap.Modal(document.getElementById("editModal")).show();
         }
@@ -361,39 +431,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // ==============================
     // 7) Submit form AJAX: Create, Edit, Delete
     // ==============================
-    document.getElementById("createForm")?.addEventListener("submit", function (e) {
-        e.preventDefault();
 
-        const formData = new FormData(this);
-        // token được tạo tự động bởi @Html.AntiForgeryToken() trong form, không cần append thủ công
-        // const token = this.querySelector('input[name="__RequestVerificationToken"]')?.value;
-        // formData.append("__RequestVerificationToken", token);
-
-        fetch(this.action, { method: "POST", body: formData })
-            .then((res) => {
-                console.log("Status:", res.status);
-                if (!res.ok) {
-                    return res.text().then(text => {
-                        console.error("Server response:", text);
-                        throw new Error("Server error");
-                    });
-                }
-                return res.json();
-            })
-            .then((data) => {
-                if (data.success) {
-                    bootstrap.Modal.getInstance(document.getElementById("createModal")).hide();
-                    showToast(data.message || "Tạo đợt thành công!");
-                    loadDataToTable(currentPage);
-                } else {
-                    showToast(data.message || "Tạo thất bại!");
-                }
-            })
-            .catch((err) => {
-                console.error("Lỗi:", err);
-                showToast("Lỗi kết nối hoặc server không phản hồi.");
-            });
-    });
 
     document.getElementById("editForm")?.addEventListener("submit", function (e) {
         e.preventDefault();
@@ -499,4 +537,107 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
     }
+    // ==============================
+    // 10. Tăng dần giảm dần
+    // ==============================
+    document.getElementById("sortMonthSelect")?.addEventListener("change", function () {
+        const value = this.value;
+        if (value === "asc") sortDotLaoDong(true);
+        else if (value === "desc") sortDotLaoDong(false);
+    });
+
+    function sortDotLaoDong(isAsc) {
+        const tbody = document.getElementById("dotLaoDongTableBody");
+        const rows = Array.from(tbody.querySelectorAll("tr"));
+
+        const monthMap = {
+            "Tháng 1": 1, "Tháng 2": 2, "Tháng 3": 3, "Tháng 4": 4,
+            "Tháng 5": 5, "Tháng 6": 6, "Tháng 7": 7, "Tháng 8": 8,
+            "Tháng 9": 9, "Tháng 10": 10, "Tháng 11": 11, "Tháng 12": 12
+        };
+
+        rows.sort((a, b) => {
+            const aText = a.querySelector("td:nth-child(2)")?.textContent.trim() || "";
+            const bText = b.querySelector("td:nth-child(2)")?.textContent.trim() || "";
+            const aMonth = monthMap[aText] || 0;
+            const bMonth = monthMap[bText] || 0;
+            return isAsc ? aMonth - bMonth : bMonth - aMonth;
+        });
+
+        tbody.innerHTML = "";
+        rows.forEach((row, i) => {
+            row.querySelector("td:first-child").textContent = i + 1; // cập nhật STT
+            tbody.appendChild(row);
+        });
+    }
+    // ==============================
+    // 11. Xuất Excel toàn bộ dữ liệu
+    // ==============================
+    document.getElementById("exportExcel")?.addEventListener("click", function () {
+        const tbody = document.getElementById("dotLaoDongTableBody");
+        const rows = tbody.querySelectorAll("tr");
+
+        if (!rows || rows.length === 0 || rows[0].classList.contains("no-data-row")) {
+            showToast("Không có dữ liệu để xuất!", "warning");
+            return;
+        }
+
+        let html = `
+        <meta charset="UTF-8">
+        <style>
+            table { font-family: 'Times New Roman'; font-size:14px; border-collapse:collapse; text-align:center; }
+            th, td { padding:6px; vertical-align:middle; }
+        </style>
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>STT</th>
+                    <th>Tên Đợt</th>
+                    <th>Buổi</th>
+                    <th>Loại LĐ</th>
+                    <th>Giá trị</th>
+                    <th>Ngày LĐ</th>
+                    <th>Khu vực</th>
+                    <th>Đăng ký/Quy định</th>
+                    <th>Trạng thái</th>
+                    <th>Ghi chú</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+
+        rows.forEach((row, i) => {
+            const cells = row.querySelectorAll("td");
+            if (cells.length < 10) return;
+
+            html += `<tr>
+            <td>${cells[0].textContent.trim()}</td>
+            <td>${cells[1].textContent.trim()}</td>
+            <td>${cells[2].textContent.trim()}</td>
+            <td>${cells[3].textContent.trim()}</td>
+            <td>${cells[4].textContent.trim()}</td>
+            <td>${cells[5].textContent.trim()}</td>
+            <td>${cells[6].textContent.trim()}</td>
+            <td>${cells[7].textContent.trim()}</td>
+            <td>${cells[8].textContent.trim()}</td>
+            <td>${cells[9]?.textContent.trim() || ""}</td>
+        </tr>`;
+        });
+
+        html += `</tbody></table>`;
+
+        const blob = new Blob([html], { type: "application/vnd.ms-excel;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `DotLaoDong_HienThi_${new Date().toISOString().slice(0, 10)}.xls`;
+        a.click();
+        URL.revokeObjectURL(url);
+
+        showToast("Xuất Excel thành công!", "success");
+    });
+
+
+
+
 });
