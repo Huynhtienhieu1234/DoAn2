@@ -177,6 +177,8 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                 if (db.TaiKhoans.Any(t => t.Username == taiKhoan.Username && t.Deleted_at == null))
                     return Json(new { success = false, message = "Tên tài khoản đã tồn tại." });
 
+                if (db.TaiKhoans.Any(t => t.Email == taiKhoan.Email && t.Deleted_at == null))
+                    return Json(new { success = false, message = "Email đã tồn tại." });
 
                 int roleId;
                 try
@@ -213,15 +215,25 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
             {
                 if (!ModelState.IsValid)
                 {
-                    // xử lý lỗi
+                    return Json(new { success = false, message = "Dữ liệu không hợp lệ." });
                 }
 
                 using (var db = DbContextFactory.Create())
                 {
                     // kiểm tra trùng username
+                    if (db.TaiKhoans.Any(t => t.Username == model.Username && t.Deleted_at == null))
+                        return Json(new { success = false, message = "Tên tài khoản đã tồn tại." });
+                    // kiểm tra trùng email
+                    if (db.TaiKhoans.Any(t => t.Email == model.Email && t.Deleted_at == null))
+                        return Json(new { success = false, message = "Email đã tồn tại." });
                     // kiểm tra mật khẩu
+                    if (string.IsNullOrWhiteSpace(model.Password))
+                        return Json(new { success = false, message = "Mật khẩu không được để trống." });
 
-                    // ✅ CHÍNH LÀ ĐÂY: xử lý VaiTro_id
+                    // hash mật khẩu bằng BCrypt
+                    model.Password = PasswordHelper.HashPassword(model.Password);
+
+                    // xử lý VaiTro_id
                     int roleId;
                     try
                     {
@@ -238,9 +250,8 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                     }
 
                     model.VaiTro_id = roleId;
-
-                    // gán các thông tin còn lại
                     model.Deleted_at = null;
+
                     db.TaiKhoans.Add(model);
                     db.SaveChanges();
 
@@ -252,6 +263,7 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                 return Json(new { success = false, message = "Lỗi hệ thống: " + ex.Message });
             }
         }
+
 
         // GET: Chỉnh sửa
         public ActionResult Edit(int? id)
@@ -310,7 +322,8 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                 taiKhoan.VaiTro_id = model.VaiTro_id;
 
                 if (!string.IsNullOrWhiteSpace(model.Password))
-                    taiKhoan.Password = model.Password;
+                    taiKhoan.Password = PasswordHelper.PreparePasswordForSave(model.Password);
+
 
                 db.SaveChanges();
 
@@ -343,7 +356,8 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                     taiKhoan.VaiTro_id = model.VaiTro_id;
 
                     if (!string.IsNullOrWhiteSpace(model.Password))
-                        taiKhoan.Password = model.Password; // Nên hash lại ở đây (quan trọng bảo mật)
+                        taiKhoan.Password = PasswordHelper.PreparePasswordForSave(model.Password);
+
 
                     db.SaveChanges();
 
@@ -381,7 +395,8 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                     if (taiKhoan == null)
                         return Json(new { success = false, message = "Không tìm thấy tài khoản." });
 
-                    taiKhoan.Password = "123456";
+                    taiKhoan.Password = PasswordHelper.HashPassword("123456");
+
                     db.SaveChanges();
 
                     return Json(new { success = true, message = "Đặt lại mật khẩu thành công! Mật khẩu mới: 123456" });
