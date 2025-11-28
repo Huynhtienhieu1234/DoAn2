@@ -830,10 +830,10 @@ btn-reset {
 
 /*khung ảnh */
 .khuvuc-frame {
-    width: 100%;
-    max-width: 500px;
-    height: 280px;
-    margin: 0 auto;
+    width: 61%;
+    max-width: 472px;
+    height: 221px;
+    margin: 0px auto;
     border-radius: 14px;
     overflow: hidden;
     box-shadow: 0 6px 20px rgba(0,0,0,0.1);
@@ -866,3 +866,5 @@ btn-reset {
     font-size: 0.9rem;
     padding: 8px 12px;
 }
+
+

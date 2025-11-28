@@ -622,8 +622,11 @@ document.addEventListener("DOMContentLoaded", function () {
     if (monthSelect && dayChoices) {
         const currentYear = new Date().getFullYear();
 
-        monthSelect.value = "Tháng 1";
-        fillDays("Tháng 1");
+        // ✅ Chọn tháng hiện tại
+        const currentMonthNumber = new Date().getMonth() + 1;
+        const currentMonthLabel = `Tháng ${currentMonthNumber}`;
+        monthSelect.value = currentMonthLabel;
+        fillDays(currentMonthLabel);
 
         monthSelect.addEventListener("change", function () {
             fillDays(this.value);
@@ -638,23 +641,36 @@ document.addEventListener("DOMContentLoaded", function () {
             const monthNumber = parseInt(monthLabel.replace("Tháng ", ""));
             const daysInMonth = new Date(currentYear, monthNumber, 0).getDate();
 
-            const choicesArray = Array.from({ length: daysInMonth }, (_, i) => {
-                const d = i + 1;
-                const dayStr = String(d).padStart(2, "0");
-                const monthStr = String(monthNumber).padStart(2, "0");
-                const value = `${currentYear}-${monthStr}-${dayStr}`; // giá trị chuẩn yyyy-MM-dd
-                const label = `${dayStr}/${monthStr}/${currentYear}`; // hiển thị dd/MM/yyyy
-                return {
-                    value: value,
-                    label: label,
-                    selected: d === 1
-                };
-            });
+            const today = new Date();
+            const todayMidnight = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+            const choicesArray = [];
+
+            for (let d = 1; d <= daysInMonth; d++) {
+                const date = new Date(currentYear, monthNumber - 1, d);
+                if (date >= todayMidnight) {
+                    const dayStr = String(d).padStart(2, "0");
+                    const monthStr = String(monthNumber).padStart(2, "0");
+                    const value = `${currentYear}-${monthStr}-${dayStr}`;
+                    const label = `${dayStr}/${monthStr}/${currentYear}`;
+                    choicesArray.push({
+                        value: value,
+                        label: label,
+                        selected: choicesArray.length === 0
+                    });
+                }
+            }
 
             dayChoices.setChoices(choicesArray, 'value', 'label', true);
         }
-
     }
+
+
+
+
+
+
+
     // ==============================
     // 10. Tăng dần giảm dần
     // ==============================
