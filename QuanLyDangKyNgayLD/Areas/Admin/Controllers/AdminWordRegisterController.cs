@@ -1,8 +1,9 @@
-﻿using System;
+﻿using QuanLyDangKyNgayLD.Factories;
+using QuanLyDangKyNgayLD.Models;
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Web.Mvc;
-using QuanLyDangKyNgayLD.Models;
-using QuanLyDangKyNgayLD.Factories;
 
 namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
 {
@@ -257,8 +258,6 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
             }
         }
 
-
-
         // AJAX: Duyệt đợt
         [HttpPost]
         public ActionResult ApproveAjax(int id)
@@ -349,9 +348,6 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
             }
         }
 
-
-
-
         [HttpGet]
         public ActionResult ExportDotLaoDong(string keyword = "", string buoi = "", string trangthai = "")
         {
@@ -397,63 +393,7 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                 return Json(new { success = false, message = "Lỗi server: " + ex.Message }, JsonRequestBehavior.AllowGet);
             }
         }
-        [HttpGet]
-        public ActionResult ExportAllDotLaoDong(string keyword = "", string buoi = "", string trangthai = "")
-        {
-            try
-            {
-                using (var db = DbContextFactory.Create())
-                {
-                    var query = db.TaoDotNgayLaoDongs.Where(x => x.Ngayxoa == null);
-
-                    keyword = (keyword ?? "").Trim();
-                    buoi = (buoi ?? "").Trim();
-                    trangthai = (trangthai ?? "").Trim().ToLower();
-
-                    if (!string.IsNullOrWhiteSpace(keyword))
-                        query = query.Where(x => x.DotLaoDong.Contains(keyword) || x.KhuVuc.Contains(keyword));
-
-                    if (!string.IsNullOrWhiteSpace(buoi))
-                        query = query.Where(x => x.Buoi == buoi);
-
-                    // trangthai: "", "all" -> không lọc; "1" -> đã duyệt; "0" -> chưa duyệt
-                    if (trangthai == "1")
-                        query = query.Where(x => x.TrangThaiDuyet == true);
-                    else if (trangthai == "0")
-                        query = query.Where(x => x.TrangThaiDuyet == false);
-
-                    var items = query
-                        .OrderByDescending(x => x.NgayLaoDong)
-                        .Select(x => new
-                        {
-                            x.TaoDotLaoDong_id,
-                            x.DotLaoDong,
-                            x.Buoi,
-                            x.LoaiLaoDong,
-                            GiaTri = x.GiaTri,
-                            NgayLaoDong = x.NgayLaoDong.HasValue ? x.NgayLaoDong.Value.ToString("dd/MM/yyyy") : "",
-                            x.KhuVuc,
-                            x.SoLuongSinhVien,
-                            SoLuongDangKy = db.PhieuDangKies.Count(p => p.TaoDotLaoDong_id == x.TaoDotLaoDong_id),
-                            TrangThaiDuyet = x.TrangThaiDuyet == true ? "Đã duyệt" : "Chưa duyệt",
-                            MoTa = x.MoTa ?? "",
-                            NguoiTao = (x.NguoiTao.HasValue)
-                                ? db.TaiKhoans.Where(t => t.TaiKhoan_id == x.NguoiTao.Value)
-                                              .Select(t => t.Username)
-                                              .FirstOrDefault()
-                                : ""
-                        })
-                        .ToList();
-
-                    return Json(new { success = true, count = items.Count, items }, JsonRequestBehavior.AllowGet);
-                }
-            }
-            catch (Exception ex)
-            {
-                return Json(new { success = false, message = "Lỗi server: " + ex.Message }, JsonRequestBehavior.AllowGet);
-            }
-        }
-
+   
         //xóa vĩnh viễn 
         [HttpPost]
         public JsonResult DeleteForever(int id)
@@ -477,6 +417,42 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                 return Json(new { success = false, message = "Lỗi: " + ex.Message });
             }
         }
+
+        // lấy danh sách sinh viên tham gia
+        [HttpGet]
+        public JsonResult GetSinhVienThamGia(int maDot)
+        {
+            try
+            {
+                using (var db = new DB_QLNLD4ROLEEntities1())
+                {
+                    var danhSach = (from pd in db.PhieuDangKies
+                                    join sv in db.SinhViens on pd.MSSV equals sv.MSSV
+                                    join lop in db.Lops on sv.Lop.Lop_id equals lop.Lop_id
+                                    where pd.TaoDotLaoDong_id == maDot && pd.MSSV != null
+                                    select new
+                                    {
+                                        TenSinhVien = sv.HoTen,
+                                        TenLop = lop.TenLop
+                                    }).ToList();
+
+                    return Json(new
+                    {
+                        success = true,
+                        data = danhSach
+                    }, JsonRequestBehavior.AllowGet);
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Lỗi: " + ex.Message }, JsonRequestBehavior.AllowGet);
+            }
+        }
+
+
+
+
+
 
 
 

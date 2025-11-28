@@ -338,42 +338,98 @@ document.addEventListener("DOMContentLoaded", function () {
         const restoreBtn = e.target.closest(".btn-restore");
         const permanentDeleteBtn = e.target.closest(".btn-permanent-delete");
 
+        // Hỗ trợ cả id và class cho nút Xem (tránh trùng id khi render nhiều lần)
+        const btnXemChiTiet = e.target.closest("#btnXemChiTietSinhVien, .btn-view-sinhvien");
+
+        // xem chi tiết sinh viên tham gia
+        if (btnXemChiTiet) {
+            const id = btnXemChiTiet.dataset.id || btnXemChiTiet.getAttribute("data-id");
+            const tbody = document.getElementById("sinhVienTableBody");
+            if (!tbody) return console.warn("Không tìm thấy #sinhVienTableBody");
+            tbody.innerHTML = `<tr><td colspan="3" class="text-muted text-center">Đang tải...</td></tr>`;
+
+            fetch(`/Admin/AdminWordRegister/GetSinhVienThamGia?maDot=${encodeURIComponent(id)}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (!data || !data.success || !Array.isArray(data.data) || data.data.length === 0) {
+                        tbody.innerHTML = `<tr><td colspan="3" class="text-muted text-center">Chưa có sinh viên nào</td></tr>`;
+                    } else {
+                        tbody.innerHTML = data.data.map((sv, i) => `
+                        <tr><td>${i + 1}</td><td>${sv.TenSinhVien || ""}</td><td>${sv.TenLop || ""}</td></tr>
+                    `).join("");
+                    }
+                    const modalEl = document.getElementById("sinhVienModal");
+                    if (modalEl) new bootstrap.Modal(modalEl).show();
+                })
+                .catch(err => {
+                    console.error("Lỗi khi tải danh sách sinh viên:", err);
+                    tbody.innerHTML = `<tr><td colspan="3" class="text-danger text-center">Lỗi tải dữ liệu</td></tr>`;
+                });
+
+            return; // tránh tiếp tục xử lý nếu bấm nút Xem
+        }
+
         // Chi tiết
         if (detailBtn) {
             const tr = detailBtn.closest("tr");
+            if (!tr) return;
             const cells = tr.querySelectorAll("td");
 
-            document.getElementById("detailDotLaoDong").textContent = cells[1]?.textContent || "";
-            document.getElementById("detailBuoi").textContent = cells[2]?.textContent || "";
-            document.getElementById("detailLoaiLaoDong").textContent = cells[3]?.textContent || "";
-            document.getElementById("detailGiaTri").textContent = cells[4]?.textContent || "";
-            document.getElementById("detailNgayLaoDong").textContent = cells[5]?.textContent || "";
-            document.getElementById("detailKhuVuc").textContent = cells[6]?.textContent || "";
+            // Gán thông tin cơ bản (kiểm tra tồn tại phần tử trước khi gán)
+            const setText = (id, value) => {
+                const el = document.getElementById(id);
+                if (el) el.textContent = value || "";
+            };
+            setText("detailDotLaoDong", cells[1]?.textContent);
+            setText("detailBuoi", cells[2]?.textContent);
+            setText("detailLoaiLaoDong", cells[3]?.textContent);
+            setText("detailGiaTri", cells[4]?.textContent);
+            setText("detailNgayLaoDong", cells[5]?.textContent);
+            setText("detailKhuVuc", cells[6]?.textContent);
 
-            let soLuongRaw = cells[7]?.textContent || "";
-            let quyDinh = soLuongRaw.split("/")[1]?.trim() || "";
-            document.getElementById("detailSoLuongSinhVien").textContent = quyDinh;
+            // Số lượng SV + nút Xem (an toàn nếu thiếu /)
+            const soLuongRaw = cells[7]?.textContent || "";
+            let soDangKy = "", soQuyDinh = "";
+            if (soLuongRaw.includes("/")) {
+                [soDangKy, soQuyDinh] = soLuongRaw.split("/").map(x => x.trim());
+            } else {
+                soDangKy = soLuongRaw.trim();
+                soQuyDinh = "";
+            }
+            const soLuongEl = document.getElementById("detailSoLuongSinhVien");
+            if (soLuongEl) {
+                // Tạo nút bằng class để tránh trùng id khi có nhiều modal/dòng
+                soLuongEl.innerHTML = `
+                <span class="fw-bold">${soDangKy || "0"}${soQuyDinh ? "/" + soQuyDinh : ""}</span>
+                <button class="btn btn-sm btn-outline-primary ms-2 btn-view-sinhvien" data-id="${detailBtn.dataset.id}">
+                    <i class="fas fa-users me-1"></i> Xem
+                </button>
+            `;
+            }
 
-            document.getElementById("detailTrangThaiDuyet").textContent = tr.querySelector(".badge")?.textContent || "";
+            // Trạng thái duyệt
+            setText("detailTrangThaiDuyet", tr.querySelector(".badge")?.textContent);
 
-            const mota = tr.dataset.mota || "";
-            document.getElementById("detailMoTa").textContent = mota;
+            // Mô tả & người tạo
+            setText("detailMoTa", tr.dataset.mota);
+            setText("detailNguoiTao", tr.dataset.nguoitao);
 
+            // Ảnh khu vực (kiểm tra tồn tại)
+            const khuVucValue = cells[6]?.textContent?.trim() || "";
+            const imgEl = document.getElementById("detailKhuVucImage");
+            if (imgEl) setAreaImage(imgEl, khuVucValue);
 
-            const nguoiTao = tr.dataset.nguoitao || "";
-            document.getElementById("detailNguoiTao").textContent = nguoiTao;
+            // Mở modal chi tiết
+            const detailModalEl = document.getElementById("detailModal");
+            if (detailModalEl) new bootstrap.Modal(detailModalEl).show();
 
-
-            const khuVucValue = cells[6]?.textContent.trim() || "";
-            setAreaImage(document.getElementById("detailKhuVucImage"), khuVucValue);
-
-            new bootstrap.Modal(document.getElementById("detailModal")).show();
+            return;
         }
 
-
-
+        // sửa
         if (editBtn) {
             const tr = editBtn.closest("tr");
+            if (!tr) return;
             const isApproved = tr.querySelector(".badge")?.textContent === "Đã duyệt";
             if (isApproved) {
                 showToast("Đợt đã duyệt không thể chỉnh sửa!", "warning");
@@ -381,97 +437,115 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
             const cells = tr.querySelectorAll("td");
-            document.getElementById("editId").value = editBtn.dataset.id;
-            document.getElementById("editDotLaoDong").value = cells[1]?.textContent || "";
+
+            const setInputValue = (id, value) => {
+                const el = document.getElementById(id);
+                if (el) el.value = value || "";
+            };
+
+            setInputValue("editId", editBtn.dataset.id);
+            setInputValue("editDotLaoDong", cells[1]?.textContent || "");
 
             let buoiRaw = cells[2]?.textContent || "";
             let buoiValue = buoiRaw.includes("Sáng") ? "Sáng" : buoiRaw.includes("Chiều") ? "Chiều" : "";
-            document.getElementById("editBuoi").value = buoiValue;
+            setInputValue("editBuoi", buoiValue);
 
-            document.getElementById("editLoaiLaoDong").value = cells[3]?.textContent || "";
-            document.getElementById("editGiaTri").value = (cells[4]?.textContent || "").replace(/\D/g, "");
+            setInputValue("editLoaiLaoDong", cells[3]?.textContent || "");
+            setInputValue("editGiaTri", (cells[4]?.textContent || "").replace(/\D/g, ""));
 
             let ngayRaw = cells[5]?.textContent || "";
             let ngayParts = ngayRaw.split("/");
             let ngayValue = ngayParts.length === 3 ? `${ngayParts[2]}-${ngayParts[1]}-${ngayParts[0]}` : "";
-            document.getElementById("editNgayLaoDong").value = ngayValue;
+            setInputValue("editNgayLaoDong", ngayValue);
 
-            const khuVucRaw = cells[6]?.textContent.trim() || "";
+            const khuVucRaw = cells[6]?.textContent?.trim() || "";
             const khuVucSelect = document.getElementById("editKhuVuc");
-            khuVucSelect.value = [...khuVucSelect.options].some(opt => opt.value === khuVucRaw) ? khuVucRaw : "";
-            setAreaImage(document.getElementById("editKhuVucImage"), khuVucSelect.value);
+            if (khuVucSelect) {
+                khuVucSelect.value = [...khuVucSelect.options].some(opt => opt.value === khuVucRaw) ? khuVucRaw : "";
+                setAreaImage(document.getElementById("editKhuVucImage"), khuVucSelect.value);
+            }
 
-            let soLuongRaw = cells[7]?.textContent || "";
-            let quyDinh = soLuongRaw.split("/")[1]?.trim() || "";
-            document.getElementById("editSoLuongSinhVien").value = quyDinh;
+            let soLuongRaw2 = cells[7]?.textContent || "";
+            let quyDinh = soLuongRaw2.includes("/") ? soLuongRaw2.split("/")[1]?.trim() || "" : "";
+            setInputValue("editSoLuongSinhVien", quyDinh);
 
-            document.getElementById("editMoTa").value = tr.dataset.mota || "";
+            setInputValue("editMoTa", tr.dataset.mota || "");
 
-            new bootstrap.Modal(document.getElementById("editModal")).show();
+            const editModalEl = document.getElementById("editModal");
+            if (editModalEl) new bootstrap.Modal(editModalEl).show();
+
+            return;
         }
 
-        //xóa mềm
-
+        // xóa mềm
         if (deleteBtn) {
             const tr = deleteBtn.closest("tr");
+            if (!tr) return;
             const tenDot = tr.querySelector("td:nth-child(2)")?.textContent || "";
             const id = deleteBtn.dataset.id;
 
             const isApproved = tr.querySelector(".badge")?.textContent === "Đã duyệt";
             if (isApproved) {
                 showToast("Đợt đã duyệt không thể xóa!", "warning");
-                return; // ✅ Không mở modal
+                return;
             }
 
             closeModalIfOpen("deletedModal");
             closeModalIfOpen("editModal");
             closeModalIfOpen("detailModal");
 
-            document.getElementById("deleteConfirmText").textContent = "Bạn có chắc chắn muốn xóa đợt này?";
-            document.getElementById("deleteDotInfo").textContent = `Đợt: ${tenDot} (ID: ${id})`;
-            document.getElementById("confirmDeleteBtn").dataset.id = id;
-            document.getElementById("confirmDeleteBtn").dataset.mode = "soft";
+            const deleteConfirmText = document.getElementById("deleteConfirmText");
+            const deleteDotInfo = document.getElementById("deleteDotInfo");
+            const confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
+            if (deleteConfirmText) deleteConfirmText.textContent = "Bạn có chắc chắn muốn xóa đợt này?";
+            if (deleteDotInfo) deleteDotInfo.textContent = `Đợt: ${tenDot} (ID: ${id})`;
+            if (confirmDeleteBtn) {
+                confirmDeleteBtn.dataset.id = id;
+                confirmDeleteBtn.dataset.mode = "soft";
+            }
 
-            new bootstrap.Modal(document.getElementById("deleteModal")).show();
+            const deleteModalEl = document.getElementById("deleteModal");
+            if (deleteModalEl) new bootstrap.Modal(deleteModalEl).show();
+
+            return;
         }
+
         // xóa vĩnh viễn
         if (permanentDeleteBtn) {
             const tr = permanentDeleteBtn.closest("tr");
+            if (!tr) return;
             const tenDot = tr.querySelector("td:nth-child(2)")?.textContent || "";
             const id = permanentDeleteBtn.dataset.id;
 
             const isApproved = tr.querySelector(".badge")?.textContent === "Đã duyệt";
             if (isApproved) {
                 showToast("Đợt đã duyệt không thể xóa vĩnh viễn!", "warning");
-                return; // ✅ Không mở modal
+                return;
             }
 
             closeModalIfOpen("deletedModal");
 
-            document.getElementById("deleteConfirmText").textContent = "⚠️ Bạn có chắc chắn muốn xóa vĩnh viễn đợt này?";
-            document.getElementById("deleteDotInfo").textContent = `Đợt: ${tenDot} (ID: ${id})`;
-            document.getElementById("confirmDeleteBtn").dataset.id = id;
-            document.getElementById("confirmDeleteBtn").dataset.mode = "hard";
+            const deleteConfirmText = document.getElementById("deleteConfirmText");
+            const deleteDotInfo = document.getElementById("deleteDotInfo");
+            const confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
+            if (deleteConfirmText) deleteConfirmText.textContent = "⚠️ Bạn có chắc chắn muốn xóa vĩnh viễn đợt này?";
+            if (deleteDotInfo) deleteDotInfo.textContent = `Đợt: ${tenDot} (ID: ${id})`;
+            if (confirmDeleteBtn) {
+                confirmDeleteBtn.dataset.id = id;
+                confirmDeleteBtn.dataset.mode = "hard";
+            }
 
-            new bootstrap.Modal(document.getElementById("deleteModal")).show();
+            const deleteModalEl = document.getElementById("deleteModal");
+            if (deleteModalEl) new bootstrap.Modal(deleteModalEl).show();
+
+            return;
         }
-
-
-
-
-
-
-
-
-
-
 
         // Duyệt
         if (approveBtn) {
             const id = approveBtn.dataset.id;
-
-
-            fetch(`/Admin/AdminWordRegister/ApproveAjax?id=${id}`, { method: "POST" })
+            if (!id) return;
+            fetch(`/Admin/AdminWordRegister/ApproveAjax?id=${encodeURIComponent(id)}`, { method: "POST" })
                 .then(res => res.json())
                 .then(data => {
                     showToast(data.message || (data.success ? "Đã duyệt đợt lao động!" : "Duyệt thất bại"), data.success ? "success" : "error");
@@ -480,15 +554,17 @@ document.addEventListener("DOMContentLoaded", function () {
                 .catch(() => {
                     showToast("Lỗi kết nối đến máy chủ!", "error");
                 });
+            return;
         }
 
+        // Khôi phục
         if (restoreBtn) {
             const id = restoreBtn.dataset.id;
             const row = restoreBtn.closest("tr");
-
+            if (!id) return;
             restoreBtn.disabled = true;
 
-            fetch(`/Admin/AdminWordRegister/RestoreAjax?id=${id}`, { method: "POST", credentials: 'same-origin' })
+            fetch(`/Admin/AdminWordRegister/RestoreAjax?id=${encodeURIComponent(id)}`, { method: "POST", credentials: 'same-origin' })
                 .then(res => {
                     if (!res.ok) return res.text().then(text => { throw new Error(`HTTP ${res.status}: ${text}`); });
                     const ct = res.headers.get('content-type') || '';
@@ -497,15 +573,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 })
                 .then(data => {
                     showToast(data.message || (data.success ? "Đã khôi phục đợt lao động!" : "Khôi phục thất bại"), data.success ? "success" : "error");
-
                     if (data.success && row) {
-                        // ✅ Xóa dòng khỏi bảng đã xóa với hiệu ứng mượt
                         row.style.transition = "opacity 0.4s ease";
                         row.style.opacity = "0";
                         setTimeout(() => row.remove(), 400);
                     }
-
-                    // ✅ Cập nhật bảng chính
                     loadDataToTable(currentPage);
                 })
                 .catch(err => {
@@ -515,12 +587,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 .finally(() => {
                     restoreBtn.disabled = false;
                 });
+
+            return;
         }
-
-
-
-
     });
+
 
     // ==============================
     // 7) Submit form AJAX: Create, Edit, Delete

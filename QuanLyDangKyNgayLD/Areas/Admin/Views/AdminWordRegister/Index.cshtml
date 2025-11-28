@@ -207,7 +207,7 @@
 
                         <div class="col-md-6">
                             <label class="form-label fw-bold">Đợt lao động (Tháng) <span class="text-danger">*</span></label>
-                            <select name="DotLaoDong" id="dotLaoDongMonth" class="form-select" style="cursor:pointer"  required>
+                            <select name="DotLaoDong" id="dotLaoDongMonth" class="form-select" style="cursor:pointer" required>
                                 <option value="">-- Chọn tháng --</option>
                                 <option value="Tháng 1">Tháng 1</option>
                                 <option value="Tháng 2">Tháng 2</option>
@@ -225,8 +225,8 @@
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label fw-bold"  style="cursor:pointer">Buổi <span class="text-danger">*</span></label>
-                            <select name="Buoi" class="form-select" style="cursor:pointer"  required>
+                            <label class="form-label fw-bold" style="cursor:pointer">Buổi <span class="text-danger">*</span></label>
+                            <select name="Buoi" class="form-select" style="cursor:pointer" required>
                                 <option value="">-- Chọn buổi --</option>
                                 <option value="Sáng">Sáng (7h-8h30h)</option>
                                 <option value="Chiều">Chiều (13h-14h)</option>
@@ -234,8 +234,8 @@
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label fw-bold" >Loại lao động</label>
-                            <select name="LoaiLaoDong" class="form-select" style="cursor:pointer"   required>
+                            <label class="form-label fw-bold">Loại lao động</label>
+                            <select name="LoaiLaoDong" class="form-select" style="cursor:pointer" required>
                                 <option value="">-- Chọn loại lao động --</option>
                                 <option value="Cá Nhân">Cá Nhân</option>
                                 <option value="Lớp">Lớp</option>
@@ -257,7 +257,7 @@
 
                         <div class="col-md-6">
                             <label class="form-label fw-bold">Khu vực</label>
-                            <select id="createKhuVuc" name="KhuVuc" class="form-select" style="cursor:pointer" >
+                            <select id="createKhuVuc" name="KhuVuc" class="form-select" style="cursor:pointer">
                                 <option value="">-- Chọn khu vực --</option>
                                 <option value="A1">Tòa A1</option>
                                 <option value="A2">Tòa A2</option>
@@ -415,7 +415,12 @@
                         <dd class="col-sm-8" id="detailKhuVuc"></dd>
 
                         <dt class="col-sm-4">Số lượng SV</dt>
-                        <dd class="col-sm-8" id="detailSoLuongSinhVien"></dd>
+                        <dd class="col-sm-8">
+                            <span id="detailSoLuongSinhVien" class="fw-bold"></span>
+                            <button type="button" class="btn btn-sm btn-outline-primary ms-2" id="btnXemChiTietSinhVien" title="Xem danh sách sinh viên">
+                                <i class="fas fa-users me-1"></i> Xem
+                            </button>
+                        </dd>
 
                         <dt class="col-sm-4">Trạng thái</dt>
                         <dd class="col-sm-8" id="detailTrangThaiDuyet"></dd>
@@ -425,9 +430,6 @@
 
                         <dt class="col-sm-4">Mô tả</dt>
                         <dd class="col-sm-8" id="detailMoTa"></dd>
-
-
-
                     </dl>
                 </div>
             </div>
@@ -438,6 +440,7 @@
         </div>
     </div>
 </div>
+
 
 
 
@@ -499,6 +502,7 @@
         </div>
     </div>
 </div>
+
 
 <script src="~/Areas/Content/Js/adminCommon.js"></script>
 <script src="~/Areas/Content/Js/adminWordRegistor.js"></script>
