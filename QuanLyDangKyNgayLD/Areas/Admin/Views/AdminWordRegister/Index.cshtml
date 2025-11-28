@@ -417,9 +417,7 @@
                         <dt class="col-sm-4">Số lượng SV</dt>
                         <dd class="col-sm-8">
                             <span id="detailSoLuongSinhVien" class="fw-bold"></span>
-                            <button type="button" class="btn btn-sm btn-outline-primary ms-2" id="btnXemChiTietSinhVien" title="Xem danh sách sinh viên">
-                                <i class="fas fa-users me-1"></i> Xem
-                            </button>
+
                         </dd>
 
                         <dt class="col-sm-4">Trạng thái</dt>
@@ -440,6 +438,41 @@
         </div>
     </div>
 </div>
+
+<!-- Modal Danh Sách Sinh Viên -->
+<div class="modal fade" id="sinhVienModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered" style="max-width: 800px;">
+        <div class="modal-content shadow-lg">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title"><i class="fas fa-users me-2"></i> Danh sách sinh viên tham gia</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body px-3" style="max-height: 400px; overflow-y: auto;">
+                <table class="table table-bordered table-hover table-sm align-middle text-center">
+                    <thead class="table-light sticky-top">
+                        <tr>
+                            <th style="width:5%;">STT</th>
+                            <th style="width:30%;">Họ tên</th>
+                            <th style="width:30%;">Lớp</th>
+                            <th style="width:35%;">Khoa</th>
+                        </tr>
+                    </thead>
+                    <tbody id="sinhVienTableBody">
+                        <tr><td colspan="4" class="text-center text-muted">Chưa có dữ liệu</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="modal-footer flex-column">
+                <div id="sinhVienPagination" class="mb-2"></div>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 
 
 

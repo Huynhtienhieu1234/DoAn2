@@ -345,29 +345,79 @@ document.addEventListener("DOMContentLoaded", function () {
         if (btnXemChiTiet) {
             const id = btnXemChiTiet.dataset.id || btnXemChiTiet.getAttribute("data-id");
             const tbody = document.getElementById("sinhVienTableBody");
-            if (!tbody) return console.warn("Không tìm thấy #sinhVienTableBody");
-            tbody.innerHTML = `<tr><td colspan="3" class="text-muted text-center">Đang tải...</td></tr>`;
+            const modalEl = document.getElementById("sinhVienModal");
+            const pageSize = 5;
+            let currentPage = 1;
+            let fullData = [];
+
+            if (!tbody || !modalEl) return console.warn("Không tìm thấy bảng hoặc modal sinh viên");
+
+            tbody.innerHTML = `<tr><td colspan="4" class="text-muted text-center">Đang tải...</td></tr>`;
 
             fetch(`/Admin/AdminWordRegister/GetSinhVienThamGia?maDot=${encodeURIComponent(id)}`)
                 .then(res => res.json())
                 .then(data => {
                     if (!data || !data.success || !Array.isArray(data.data) || data.data.length === 0) {
-                        tbody.innerHTML = `<tr><td colspan="3" class="text-muted text-center">Chưa có sinh viên nào</td></tr>`;
-                    } else {
-                        tbody.innerHTML = data.data.map((sv, i) => `
-                        <tr><td>${i + 1}</td><td>${sv.TenSinhVien || ""}</td><td>${sv.TenLop || ""}</td></tr>
-                    `).join("");
+                        tbody.innerHTML = `<tr><td colspan="4" class="text-muted text-center">Chưa có sinh viên nào</td></tr>`;
+                        return;
                     }
-                    const modalEl = document.getElementById("sinhVienModal");
-                    if (modalEl) new bootstrap.Modal(modalEl).show();
+
+                    fullData = data.data;
+
+                    function renderPage(page) {
+                        currentPage = page;
+                        const start = (page - 1) * pageSize;
+                        const end = start + pageSize;
+                        const pageData = fullData.slice(start, end);
+
+                        tbody.innerHTML = pageData.map((sv, i) => `
+                    <tr>
+                        <td>${start + i + 1}</td>
+                        <td>${sv.TenSinhVien || ""}</td>
+                        <td>${sv.TenLop || ""}</td>
+                        <td>${sv.TenKhoa || ""}</td>
+                    </tr>
+                `).join("");
+
+                        renderPagination();
+                    }
+
+                    function renderPagination() {
+                        const totalPages = Math.ceil(fullData.length / pageSize);
+                        const footer = modalEl.querySelector(".modal-footer");
+                        if (!footer) return;
+
+                        let nav = footer.querySelector(".pagination-nav");
+                        if (!nav) {
+                            nav = document.createElement("div");
+                            nav.className = "pagination-nav mb-2";
+                            footer.prepend(nav);
+                        }
+
+                        nav.innerHTML = "";
+
+                        for (let i = 1; i <= totalPages; i++) {
+                            const btn = document.createElement("button");
+                            btn.className = "btn btn-sm btn-outline-secondary me-1 mb-1";
+                            btn.textContent = i;
+                            if (i === currentPage) btn.classList.add("active");
+                            btn.onclick = () => renderPage(i);
+                            nav.appendChild(btn);
+                        }
+                    }
+
+                    renderPage(1);
+                    new bootstrap.Modal(modalEl).show();
                 })
                 .catch(err => {
                     console.error("Lỗi khi tải danh sách sinh viên:", err);
-                    tbody.innerHTML = `<tr><td colspan="3" class="text-danger text-center">Lỗi tải dữ liệu</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="4" class="text-danger text-center">Lỗi tải dữ liệu</td></tr>`;
                 });
 
-            return; // tránh tiếp tục xử lý nếu bấm nút Xem
+            return;
         }
+
+
 
         // Chi tiết
         if (detailBtn) {

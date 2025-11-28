@@ -418,6 +418,9 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
             }
         }
 
+
+
+
         // lấy danh sách sinh viên tham gia
         [HttpGet]
         public JsonResult GetSinhVienThamGia(int maDot)
@@ -428,12 +431,14 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                 {
                     var danhSach = (from pd in db.PhieuDangKies
                                     join sv in db.SinhViens on pd.MSSV equals sv.MSSV
-                                    join lop in db.Lops on sv.Lop.Lop_id equals lop.Lop_id
+                                    join lop in db.Lops on sv.Lop_id equals lop.Lop_id
+                                    join khoa in db.Khoas on lop.Khoa_id equals khoa.Khoa_id
                                     where pd.TaoDotLaoDong_id == maDot && pd.MSSV != null
                                     select new
                                     {
                                         TenSinhVien = sv.HoTen,
-                                        TenLop = lop.TenLop
+                                        TenLop = lop.TenLop,
+                                        TenKhoa = khoa.TenKhoa
                                     }).ToList();
 
                     return Json(new
@@ -448,6 +453,7 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                 return Json(new { success = false, message = "Lỗi: " + ex.Message }, JsonRequestBehavior.AllowGet);
             }
         }
+
 
 
 
