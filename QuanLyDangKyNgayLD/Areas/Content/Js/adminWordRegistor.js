@@ -1,5 +1,55 @@
 ﻿// Quản lý Đợt Lao Động - Full JS
 document.addEventListener("DOMContentLoaded", function () {
+
+
+
+    // Map khu vực → ảnh GitHub
+    const khuVucImages = {
+        "A1": "https://raw.githubusercontent.com/Huynhtienhieu1234/KhuVucLaoDong/main/1.jpg",
+        "A2": "https://raw.githubusercontent.com/Huynhtienhieu1234/KhuVucLaoDong/main/2.jpg",
+        "B1": "https://raw.githubusercontent.com/Huynhtienhieu1234/KhuVucLaoDong/main/3.jpg",
+        "B2": "https://raw.githubusercontent.com/Huynhtienhieu1234/KhuVucLaoDong/main/4.jpg",
+        "B3": "https://raw.githubusercontent.com/Huynhtienhieu1234/KhuVucLaoDong/main/5.jpg",
+        "B4": "https://raw.githubusercontent.com/Huynhtienhieu1234/KhuVucLaoDong/main/6.jpg",
+        "C1": "https://raw.githubusercontent.com/Huynhtienhieu1234/KhuVucLaoDong/main/7.jpg",
+        "C2": "https://raw.githubusercontent.com/Huynhtienhieu1234/KhuVucLaoDong/main/8.jpg",
+        "H1": "https://raw.githubusercontent.com/Huynhtienhieu1234/KhuVucLaoDong/main/9.jpg",
+        "H2": "https://raw.githubusercontent.com/Huynhtienhieu1234/KhuVucLaoDong/main/10.jpg",
+        "T2": "https://raw.githubusercontent.com/Huynhtienhieu1234/KhuVucLaoDong/main/11.jpg",
+        "Trước cổng trường": "https://raw.githubusercontent.com/Huynhtienhieu1234/KhuVucLaoDong/main/12.jpg"
+    };
+
+    // Hàm hiển thị ảnh theo khu vực
+    function setAreaImage(imgEl, areaValue) {
+        const url = khuVucImages[areaValue] || "";
+        if (url) {
+            imgEl.src = url;
+            imgEl.style.display = "block";
+            imgEl.onerror = function () {
+                this.style.display = "none";
+                showToast("Không tải được ảnh khu vực: " + areaValue, "warning");
+            };
+        } else {
+            imgEl.style.display = "none";
+        }
+    }
+
+    // Gắn sự kiện cho dropdown trong form Tạo mới
+    document.getElementById("createKhuVuc")?.addEventListener("change", function () {
+        setAreaImage(document.getElementById("createKhuVucImage"), this.value);
+    });
+
+    // Gắn sự kiện cho dropdown trong form Chỉnh sửa
+    document.getElementById("editKhuVuc")?.addEventListener("change", function () {
+        setAreaImage(document.getElementById("editKhuVucImage"), this.value);
+    });
+
+
+
+
+
+
+
     let currentPage = 1;
     const pageSize = 5;
     let currentLoadedItems = []; // chứa dữ liệu đang hiển thị
@@ -92,8 +142,6 @@ document.addEventListener("DOMContentLoaded", function () {
     // 3) Render bảng
     // ==============================
     function renderDataToTable(items, page) {
-
-
         const tbody = document.getElementById("dotLaoDongTableBody");
         tbody.innerHTML = items.map((item, index) => {
             // Map buổi sang text hiển thị
@@ -102,43 +150,47 @@ document.addEventListener("DOMContentLoaded", function () {
             if (buoiText === "Chiều") buoiText = "Chiều (13h-14h)";
 
             return `
-                <tr
-                  data-id="${item.TaoDotLaoDong_id}" 
-                  data-mota="${(item.MoTa || '').replace(/"/g, '&quot;').replace(/\n/g, ' ')}"
-                  data-nguoitao="${String(item.NguoiTao || '').replace(/"/g, '&quot;')}"
-
-                >
-                <td>${(page - 1) * pageSize + index + 1}</td>
-                <td>${item.DotLaoDong}</td>
-                <td>${buoiText}</td>
-                <td>${item.LoaiLaoDong || ""}</td>
-                <td class="text-success fw-bold">${item.GiaTri ?? ""}</td>
-                <td>${item.NgayLaoDong || ""}</td>
-                <td>${item.KhuVuc || ""}</td>
-                <td class="${item.SoLuongDangKy < item.SoLuongSinhVien ? 'text-danger fw-bold' : 'text-success fw-bold'} text-center">
-                    ${item.SoLuongDangKy}/${item.SoLuongSinhVien}
-                </td>
-                <td>
-                    <span class="badge ${item.TrangThaiDuyet === 'Đã duyệt' ? 'bg-success' : 'bg-warning text-dark'}">
-                        ${item.TrangThaiDuyet}
-                    </span>
-                </td>
-                <td class="action-cell">
-                    <button class="btn btn-sm btn-info btn-detail me-1 text-white" data-id="${item.TaoDotLaoDong_id}" title="Chi tiết">
-                        <i class="fas fa-info-circle"></i>
-                    </button>
-                    <button class="btn btn-sm btn-warning btn-edit me-1" data-id="${item.TaoDotLaoDong_id}" title="Sửa">
+            <tr
+              data-id="${item.TaoDotLaoDong_id}" 
+              data-mota="${(item.MoTa || '').replace(/"/g, '&quot;').replace(/\n/g, ' ')}"
+              data-nguoitao="${String(item.NguoiTao || '').replace(/"/g, '&quot;')}"
+            >
+            <td>${(page - 1) * pageSize + index + 1}</td>
+            <td>${item.DotLaoDong}</td>
+            <td>${buoiText}</td>
+            <td>${item.LoaiLaoDong || ""}</td>
+            <td class="text-success fw-bold">${item.GiaTri ?? ""}</td>
+            <td>${item.NgayLaoDong || ""}</td>
+            <td>${item.KhuVuc || ""}</td>
+            <td class="${item.SoLuongDangKy < item.SoLuongSinhVien ? 'text-danger fw-bold' : 'text-success fw-bold'} text-center">
+                ${item.SoLuongDangKy}/${item.SoLuongSinhVien}
+            </td>
+            <td>
+                <span class="badge ${item.TrangThaiDuyet === 'Đã duyệt' ? 'bg-success' : 'bg-warning text-dark'}">
+                    ${item.TrangThaiDuyet}
+                </span>
+            </td>
+            <td class="action-cell">
+                <button class="btn btn-sm btn-info btn-detail me-1 text-white" 
+                        data-id="${item.TaoDotLaoDong_id}" title="Chi tiết">
+                    <i class="fas fa-info-circle"></i>
+                </button>
+                ${item.TrangThaiDuyet === 'Chưa duyệt' ? `
+                    <button class="btn btn-sm btn-warning btn-edit me-1" 
+                            data-id="${item.TaoDotLaoDong_id}" title="Sửa">
                         <i class="fas fa-edit"></i>
                     </button>
-                    <button class="btn btn-sm btn-danger btn-delete me-1" data-id="${item.TaoDotLaoDong_id}" title="Xóa">
+                    <button class="btn btn-sm btn-danger btn-delete me-1" 
+                            data-id="${item.TaoDotLaoDong_id}" title="Xóa">
                         <i class="fas fa-trash"></i>
                     </button>
-                    ${item.TrangThaiDuyet === 'Chưa duyệt' ? `
-                        <button class="btn btn-sm btn-success btn-approve" data-id="${item.TaoDotLaoDong_id}" title="Duyệt">
-                            <i class="fas fa-check"></i>
-                        </button>` : ""}
-                </td>
-            </tr>
+                    <button class="btn btn-sm btn-success btn-approve" 
+                            data-id="${item.TaoDotLaoDong_id}" title="Duyệt">
+                        <i class="fas fa-check"></i>
+                    </button>
+                ` : ""}
+            </td>
+        </tr>
         `;
         }).join("");
 
@@ -147,6 +199,7 @@ document.addEventListener("DOMContentLoaded", function () {
             tbody.classList.add("fade-in");
         }, 50);
     }
+
 
 
     // ==============================
@@ -225,11 +278,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
         fetch("/Admin/AdminWordRegister/GetDeletedDotLaoDong", { credentials: 'same-origin' })
             .then(res => {
-                // log status for debugging
                 console.log("GetDeletedDotLaoDong status:", res.status, res.statusText);
                 const ct = res.headers.get('content-type') || '';
                 if (!res.ok) {
-                    // try to get text to show server error
                     return res.text().then(text => { throw new Error(`HTTP ${res.status}: ${text}`); });
                 }
                 if (!ct.includes('application/json')) {
@@ -242,25 +293,29 @@ document.addEventListener("DOMContentLoaded", function () {
                     body.innerHTML = `<tr><td colspan="7" class="text-center text-muted">Không có dữ liệu</td></tr>`;
                 } else {
                     const rows = data.items.map((x, i) => {
+                        const buoiText = x.Buoi === "Sáng" ? "Sáng (7h-8h30)" :
+                            x.Buoi === "Chiều" ? "Chiều (13h-14h)" : (x.Buoi || "");
                         return `
-                                    <tr>
-                                        <td>${i + 1}</td>
-                                        <td>${x.DotLaoDong || ""}</td>
-                                        <td>${x.Buoi || ""}</td>
-                                        <td>${x.NgayLaoDong || ""}</td>
-                                        <td>${x.KhuVuc || ""}</td>
-                                        <td>${x.Ngayxoa || ""}</td>
-                                        <td>
-                                            <button class="btn btn-sm btn-success btn-restore" data-id="${x.TaoDotLaoDong_id}">
-                                                Khôi phục
-                                            </button>
-                                        </td>
-                                    </tr>
-                                `;
+                        <tr>
+                            <td>${i + 1}</td>
+                            <td>${x.DotLaoDong || ""}</td>
+                            <td>${buoiText}</td>
+                            <td>${x.NgayLaoDong || ""}</td>
+                            <td>${x.KhuVuc || ""}</td>
+                            <td>${x.Ngayxoa || ""}</td>
+                            <td>
+                                <button class="btn btn-sm btn-success btn-restore me-1" data-id="${x.TaoDotLaoDong_id}">
+                                    Khôi phục
+                                </button>
+                                <button class="btn btn-sm btn-danger btn-permanent-delete" data-id="${x.TaoDotLaoDong_id}">
+                                    Xóa vĩnh viễn
+                                </button>
+                            </td>
+                        </tr>
+                    `;
                     }).join("");
 
                     body.innerHTML = rows;
-
                 }
                 new bootstrap.Modal(document.getElementById("deletedModal")).show();
             })
@@ -271,6 +326,7 @@ document.addEventListener("DOMContentLoaded", function () {
             });
     });
 
+
     // ==============================
     // 6) Event delegation cho nút trong bảng
     // ==============================
@@ -280,6 +336,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const deleteBtn = e.target.closest(".btn-delete");
         const approveBtn = e.target.closest(".btn-approve");
         const restoreBtn = e.target.closest(".btn-restore");
+        const permanentDeleteBtn = e.target.closest(".btn-permanent-delete");
 
         // Chi tiết
         if (detailBtn) {
@@ -306,16 +363,24 @@ document.addEventListener("DOMContentLoaded", function () {
             const nguoiTao = tr.dataset.nguoitao || "";
             document.getElementById("detailNguoiTao").textContent = nguoiTao;
 
+
+            const khuVucValue = cells[6]?.textContent.trim() || "";
+            setAreaImage(document.getElementById("detailKhuVucImage"), khuVucValue);
+
             new bootstrap.Modal(document.getElementById("detailModal")).show();
         }
 
 
 
-        // Sửa
         if (editBtn) {
             const tr = editBtn.closest("tr");
-            const cells = tr.querySelectorAll("td");
+            const isApproved = tr.querySelector(".badge")?.textContent === "Đã duyệt";
+            if (isApproved) {
+                showToast("Đợt đã duyệt không thể chỉnh sửa!", "warning");
+                return;
+            }
 
+            const cells = tr.querySelectorAll("td");
             document.getElementById("editId").value = editBtn.dataset.id;
             document.getElementById("editDotLaoDong").value = cells[1]?.textContent || "";
 
@@ -331,48 +396,76 @@ document.addEventListener("DOMContentLoaded", function () {
             let ngayValue = ngayParts.length === 3 ? `${ngayParts[2]}-${ngayParts[1]}-${ngayParts[0]}` : "";
             document.getElementById("editNgayLaoDong").value = ngayValue;
 
-
-
             const khuVucRaw = cells[6]?.textContent.trim() || "";
             const khuVucSelect = document.getElementById("editKhuVuc");
-
-            // Nếu dropdown có option khớp, gán vào
-            if ([...khuVucSelect.options].some(opt => opt.value === khuVucRaw)) {
-                khuVucSelect.value = khuVucRaw;
-            } else {
-                // Nếu không khớp, gán mặc định hoặc báo lỗi
-                khuVucSelect.value = "";
-                console.warn("Không tìm thấy khu vực:", khuVucRaw);
-            }
-
-
-
-
-
+            khuVucSelect.value = [...khuVucSelect.options].some(opt => opt.value === khuVucRaw) ? khuVucRaw : "";
+            setAreaImage(document.getElementById("editKhuVucImage"), khuVucSelect.value);
 
             let soLuongRaw = cells[7]?.textContent || "";
             let quyDinh = soLuongRaw.split("/")[1]?.trim() || "";
             document.getElementById("editSoLuongSinhVien").value = quyDinh;
 
-            const mota = tr.dataset.mota || "";
-            document.getElementById("editMoTa").value = mota;
-
-
+            document.getElementById("editMoTa").value = tr.dataset.mota || "";
 
             new bootstrap.Modal(document.getElementById("editModal")).show();
         }
 
+        //xóa mềm
 
-
-
-        // Xóa
         if (deleteBtn) {
             const tr = deleteBtn.closest("tr");
             const tenDot = tr.querySelector("td:nth-child(2)")?.textContent || "";
-            document.getElementById("deleteDotInfo").textContent = `Đợt: ${tenDot} (ID: ${deleteBtn.dataset.id})`;
-            document.getElementById("confirmDeleteBtn").dataset.id = deleteBtn.dataset.id;
+            const id = deleteBtn.dataset.id;
+
+            const isApproved = tr.querySelector(".badge")?.textContent === "Đã duyệt";
+            if (isApproved) {
+                showToast("Đợt đã duyệt không thể xóa!", "warning");
+                return; // ✅ Không mở modal
+            }
+
+            closeModalIfOpen("deletedModal");
+            closeModalIfOpen("editModal");
+            closeModalIfOpen("detailModal");
+
+            document.getElementById("deleteConfirmText").textContent = "Bạn có chắc chắn muốn xóa đợt này?";
+            document.getElementById("deleteDotInfo").textContent = `Đợt: ${tenDot} (ID: ${id})`;
+            document.getElementById("confirmDeleteBtn").dataset.id = id;
+            document.getElementById("confirmDeleteBtn").dataset.mode = "soft";
+
             new bootstrap.Modal(document.getElementById("deleteModal")).show();
         }
+        // xóa vĩnh viễn
+        if (permanentDeleteBtn) {
+            const tr = permanentDeleteBtn.closest("tr");
+            const tenDot = tr.querySelector("td:nth-child(2)")?.textContent || "";
+            const id = permanentDeleteBtn.dataset.id;
+
+            const isApproved = tr.querySelector(".badge")?.textContent === "Đã duyệt";
+            if (isApproved) {
+                showToast("Đợt đã duyệt không thể xóa vĩnh viễn!", "warning");
+                return; // ✅ Không mở modal
+            }
+
+            closeModalIfOpen("deletedModal");
+
+            document.getElementById("deleteConfirmText").textContent = "⚠️ Bạn có chắc chắn muốn xóa vĩnh viễn đợt này?";
+            document.getElementById("deleteDotInfo").textContent = `Đợt: ${tenDot} (ID: ${id})`;
+            document.getElementById("confirmDeleteBtn").dataset.id = id;
+            document.getElementById("confirmDeleteBtn").dataset.mode = "hard";
+
+            new bootstrap.Modal(document.getElementById("deleteModal")).show();
+        }
+
+
+
+
+
+
+
+
+
+
+
         // Duyệt
         if (approveBtn) {
             const id = approveBtn.dataset.id;
@@ -426,6 +519,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 
+
     });
 
     // ==============================
@@ -449,18 +543,42 @@ document.addEventListener("DOMContentLoaded", function () {
             })
             .catch(() => showToast("Lỗi kết nối!"));
     });
-
     document.getElementById("confirmDeleteBtn")?.addEventListener("click", function () {
         const id = this.dataset.id;
-        fetch(`/Admin/AdminWordRegister/DeleteAjax?id=${id}`, { method: "POST" })
-            .then(res => res.json())
+        const mode = this.dataset.mode;
+        const url = mode === "hard"
+            ? `/Admin/AdminWordRegister/DeleteForever?id=${id}`
+            : `/Admin/AdminWordRegister/DeleteAjax?id=${id}`;
+
+
+        console.log("Xác nhận xóa:", { id, mode, url });
+
+        fetch(url, { method: "POST" })
+            .then(res => {
+                if (!res.ok) {
+                    return res.text().then(text => {
+                        console.error("Lỗi server:", text);
+                        throw new Error("Server error");
+                    });
+                }
+                return res.json();
+            })
             .then(data => {
-                bootstrap.Modal.getInstance(document.getElementById("deleteModal")).hide();
-                showToast(data.message || (data.success ? "Đã xóa" : "Xóa thất bại"));
+                console.log("Kết quả trả về:", data);
+                closeModalIfOpen("deleteModal");
+                showToast(data.message || (data.success ? "Đã xóa" : "Xóa thất bại"), data.success ? "success" : "error");
                 loadDataToTable(currentPage);
             })
-            .catch(() => showToast("Lỗi kết nối!"));
+            .catch(err => {
+                console.error("Lỗi kết nối:", err);
+                showToast("Lỗi kết nối hoặc server không phản hồi!", "error");
+            });
+
     });
+
+
+
+
 
     // ==============================
     // 8) Bộ lọc + tìm kiếm
@@ -637,6 +755,11 @@ document.addEventListener("DOMContentLoaded", function () {
         showToast("Xuất Excel thành công!", "success");
     });
 
+    function closeModalIfOpen(modalId) {
+        const modalEl = document.getElementById(modalId);
+        const modalInstance = bootstrap.Modal.getInstance(modalEl);
+        if (modalInstance) modalInstance.hide();
+    }
 
 
 

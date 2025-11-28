@@ -8,7 +8,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
 <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
 
-<link href="~/Areas/Content/css/admonWwordRegister.css" rel="stylesheet" type="text/css" /> 
+<link href="~/Areas/Content/css/admonWwordRegister.css" rel="stylesheet" type="text/css" />
 <link href="~/Areas/Content/adminpage.css" rel="stylesheet" type="text/css" />
 
 
@@ -99,64 +99,64 @@
                 var stt = 1;
                 foreach (var item in Model)
                 {
-<tr data-id="@item.TaoDotLaoDong_id" data-mota="@Html.Raw(HttpUtility.JavaScriptStringEncode(item.MoTa ?? ""))" data-deleted="@(item.Ngayxoa != null)">
+                    <tr data-id="@item.TaoDotLaoDong_id" data-mota="@Html.Raw(HttpUtility.JavaScriptStringEncode(item.MoTa ?? ""))" data-deleted="@(item.Ngayxoa != null)">
 
-    <td class="stt-cell">@stt</td>
-    <td class="Dotloaodong">@item.DotLaoDong</td>
-    <td>@item.Buoi</td>
-    <td>@item.LoaiLaoDong</td>
-    <td class="text-success fw-bold">@String.Format("{0:N0}", item.GiaTri)</td>
-    <td class="px-1 text-center">
-        <span class="text-truncate d-inline-block w-100" style="max-width:80px;" title="@(item.NgayLaoDong?.ToString("dd/MM/yyyy"))">
-            @(item.NgayLaoDong?.ToString("dd/MM/yyyy"))
-        </span>
-    </td>
-    <td>@item.KhuVuc</td>
+                        <td class="stt-cell">@stt</td>
+                        <td class="Dotloaodong">@item.DotLaoDong</td>
+                        <td>@item.Buoi</td>
+                        <td>@item.LoaiLaoDong</td>
+                        <td class="text-success fw-bold">@String.Format("{0:N0}", item.GiaTri)</td>
+                        <td class="px-1 text-center">
+                            <span class="text-truncate d-inline-block w-100" style="max-width:80px;" title="@(item.NgayLaoDong?.ToString("dd/MM/yyyy"))">
+                                @(item.NgayLaoDong?.ToString("dd/MM/yyyy"))
+                            </span>
+                        </td>
+                        <td>@item.KhuVuc</td>
 
-    <td class="text-center">
-        @{
-            var dict = ViewBag.SoLuongDangKyDict as Dictionary<int, int>;
-            var key = item.TaoDotLaoDong_id;
-            var soDangKy = (dict != null && dict.ContainsKey(key)) ? dict[key] : 0;
-            var quyDinh = item.SoLuongSinhVien ?? 0;
-            var mau = soDangKy < quyDinh ? "text-danger fw-bold" : "text-success fw-bold";
-        }
-        <span class="@mau">@soDangKy/@quyDinh</span>
-    </td>
+                        <td class="text-center">
+                            @{
+                                var dict = ViewBag.SoLuongDangKyDict as Dictionary<int, int>;
+                                var key = item.TaoDotLaoDong_id;
+                                var soDangKy = (dict != null && dict.ContainsKey(key)) ? dict[key] : 0;
+                                var quyDinh = item.SoLuongSinhVien ?? 0;
+                                var mau = soDangKy < quyDinh ? "text-danger fw-bold" : "text-success fw-bold";
+                            }
+                            <span class="@mau">@soDangKy/@quyDinh</span>
+                        </td>
 
 
-    <td>
-        @if (item.TrangThaiDuyet == true)
-        {
-            <span class="badge bg-success">Đã duyệt</span>
-        }
-        else
-        {
-            <span class="badge bg-warning text-dark">Chưa duyệt</span>
-        }
-    </td>
-    <td class="action-cell">
-        <button class="btn btn-sm btn-info btn-detail me-1 text-white" title="Chi tiết"
-                data-id="@item.TaoDotLaoDong_id">
-            <i class="fas fa-info-circle"></i>
-        </button>
-        <button class="btn btn-sm btn-warning btn-edit me-1" title="Sửa"
-                data-id="@item.TaoDotLaoDong_id">
-            <i class="fas fa-edit"></i>
-        </button>
-        <button class="btn btn-sm btn-danger btn-delete me-1" title="Xóa"
-                data-id="@item.TaoDotLaoDong_id">
-            <i class="fas fa-trash"></i>
-        </button>
-        @if (item.TrangThaiDuyet == false)
-        {
-            <button class="btn btn-sm btn-success btn-approve" title="Duyệt ngay"
-                    data-id="@item.TaoDotLaoDong_id">
-                <i class="fas fa-check"></i>
-            </button>
-        }
-    </td>
-</tr>
+                        <td>
+                            @if (item.TrangThaiDuyet == true)
+                            {
+                                <span class="badge bg-success">Đã duyệt</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-warning text-dark">Chưa duyệt</span>
+                            }
+                        </td>
+                        <td class="action-cell">
+                            <button class="btn btn-sm btn-info btn-detail me-1 text-white" title="Chi tiết"
+                                    data-id="@item.TaoDotLaoDong_id">
+                                <i class="fas fa-info-circle"></i>
+                            </button>
+                            <button class="btn btn-sm btn-warning btn-edit me-1" title="Sửa"
+                                    data-id="@item.TaoDotLaoDong_id">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-danger btn-delete me-1" title="Xóa"
+                                    data-id="@item.TaoDotLaoDong_id">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                            @if (item.TrangThaiDuyet == false)
+                            {
+                                <button class="btn btn-sm btn-success btn-approve" title="Duyệt ngay"
+                                        data-id="@item.TaoDotLaoDong_id">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                            }
+                        </td>
+                    </tr>
                     stt++;
                 }
             }
@@ -198,6 +198,14 @@
                 </div>
                 <div class="modal-body">
                     <div class="row g-3">
+
+                        <div class="khuvuc-frame mb-3">
+                            <img id="createKhuVucImage" alt="Ảnh khu vực" />
+
+                        </div>
+
+
+
                         <div class="col-md-6">
                             <label class="form-label fw-bold">Đợt lao động (Tháng) <span class="text-danger">*</span></label>
                             <select name="DotLaoDong" id="dotLaoDongMonth" class="form-select" required>
@@ -264,7 +272,6 @@
                                 <option value="T2">Tòa T2</option>
                                 <option value="Trước cổng trường">Trước cổng trường</option>
                             </select>
-
                         </div>
 
                         <div class="col-md-6">
@@ -298,8 +305,15 @@
                     <h5 class="modal-title"><i class="fas fa-edit me-2"></i> Chỉnh sửa đợt lao động</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body">
-                    <div class="row g-3">
+
+                <div class="modal-body text-center">
+                    <!-- ✅ Khung ảnh khu vực -->
+                    <div class="khuvuc-frame mb-4">
+                        <img id="editKhuVucImage" alt="Ảnh khu vực" />
+                    </div>
+
+                    <!-- ✅ Form chỉnh sửa -->
+                    <div class="row g-3 text-start">
                         <div class="col-md-6">
                             <label class="form-label fw-bold">Tên đợt <span class="text-danger">*</span></label>
                             <input name="DotLaoDong" id="editDotLaoDong" class="form-control" required />
@@ -309,7 +323,6 @@
                             <select name="Buoi" id="editBuoi" class="form-select" required>
                                 <option value="Sáng">Sáng (7h-8h30h)</option>
                                 <option value="Chiều">Chiều (13h-14h)</option>
-
                             </select>
                         </div>
                         <div class="col-md-6">
@@ -349,11 +362,10 @@
                             <label class="form-label fw-bold">Mô tả</label>
                             <textarea name="MoTa" id="editMoTa" class="form-control" rows="4"></textarea>
                         </div>
-
-
                     </div>
                 </div>
-                <div class="modal-footer">
+
+                <div class="modal-footer justify-content-center">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
                     <button type="submit" class="btn btn-primary"><i class="fa fa-save me-1"></i> Lưu thay đổi</button>
                 </div>
@@ -362,44 +374,69 @@
     </div>
 </div>
 
+
+
 <!-- Modal Chi Tiết -->
 <div class="modal fade" id="detailModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content shadow-lg">
             <div class="modal-header bg-info text-white">
-                <h5 class="modal-title"><i class="fa fa-info-circle me-2"></i> Chi Tiết Đợt Lao Động</h5>
+                <h5 class="modal-title">
+                    <i class="fa fa-info-circle me-2"></i> Chi Tiết Đợt Lao Động
+                </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body">
-                <dl class="row mb-0">
-                    <dt class="col-sm-4">Tên đợt</dt>
-                    <dd class="col-sm-8 fw-bold" id="detailDotLaoDong"></dd>
-                    <dt class="col-sm-4">Buổi</dt>
-                    <dd class="col-sm-8" id="detailBuoi"></dd>
-                    <dt class="col-sm-4">Loại lao động</dt>
-                    <dd class="col-sm-8" id="detailLoaiLaoDong"></dd>
-                    <dt class="col-sm-4">Giá trị</dt>
-                    <dd class="col-sm-8 text-success fw-bold" id="detailGiaTri"></dd>
-                    <dt class="col-sm-4">Ngày lao động</dt>
-                    <dd class="col-sm-8" id="detailNgayLaoDong"></dd>
-                    <dt class="col-sm-4">Khu vực</dt>
-                    <dd class="col-sm-8" id="detailKhuVuc"></dd>
-                    <dt class="col-sm-4">Số lượng SV</dt>
-                    <dd class="col-sm-8" id="detailSoLuongSinhVien"></dd>
-                    <dt class="col-sm-4">Trạng thái</dt>
-                    <dd class="col-sm-8" id="detailTrangThaiDuyet"></dd>
-                    <dt class="col-sm-4">Người tạo</dt>
-                    <dd class="col-sm-8" id="detailNguoiTao"></dd>
-                    <dt class="col-sm-4">Mô tả</dt>
-                    <dd class="col-sm-8" id="detailMoTa"></dd>
-                </dl>
+
+            <div class="modal-body text-center">
+                <!-- Ảnh khu vực -->
+                <div class="khuvuc-frame mb-3">
+                    <img id="detailKhuVucImage" alt="Ảnh khu vực" />
+                </div>
+
+                <!-- Thông tin chi tiết -->
+                <div class="d-inline-block text-start" style="max-width:600px; margin:0 auto;">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4">Tên đợt</dt>
+                        <dd class="col-sm-8 fw-bold" id="detailDotLaoDong"></dd>
+
+                        <dt class="col-sm-4">Buổi</dt>
+                        <dd class="col-sm-8" id="detailBuoi"></dd>
+
+                        <dt class="col-sm-4">Loại lao động</dt>
+                        <dd class="col-sm-8" id="detailLoaiLaoDong"></dd>
+
+                        <dt class="col-sm-4">Giá trị</dt>
+                        <dd class="col-sm-8 text-success fw-bold" id="detailGiaTri"></dd>
+
+                        <dt class="col-sm-4">Ngày lao động</dt>
+                        <dd class="col-sm-8" id="detailNgayLaoDong"></dd>
+
+                        <dt class="col-sm-4">Khu vực</dt>
+                        <dd class="col-sm-8" id="detailKhuVuc"></dd>
+
+                        <dt class="col-sm-4">Số lượng SV</dt>
+                        <dd class="col-sm-8" id="detailSoLuongSinhVien"></dd>
+
+                        <dt class="col-sm-4">Trạng thái</dt>
+                        <dd class="col-sm-8" id="detailTrangThaiDuyet"></dd>
+
+                        <dt class="col-sm-4">Người tạo</dt>
+                        <dd class="col-sm-8" id="detailNguoiTao"></dd>
+
+                        <dt class="col-sm-4">Mô tả</dt>
+                        <dd class="col-sm-8" id="detailMoTa"></dd>
+                    </dl>
+                </div>
             </div>
-            <div class="modal-footer">
+
+            <div class="modal-footer justify-content-center">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
             </div>
         </div>
     </div>
 </div>
+
+
 
 <!-- Modal Xóa -->
 <div class="modal fade" id="deleteModal" tabindex="-1" data-bs-backdrop="static">

@@ -54,8 +54,6 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
 
         // AJAX: Lấy danh sách đợt lao động (phân trang + lọc)
 
-
-
         [HttpGet]
         public ActionResult LoadDotLaoDong(
             int page = 1,
@@ -456,6 +454,29 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
             }
         }
 
+        //xóa vĩnh viễn 
+        [HttpPost]
+        public JsonResult DeleteForever(int id)
+        {
+            try
+            {
+                using (var db = DbContextFactory.Create())
+                {
+                    var dot = db.TaoDotNgayLaoDongs.Find(id);
+                    if (dot == null)
+                        return Json(new { success = false, message = "Không tìm thấy đợt." });
+
+                    db.TaoDotNgayLaoDongs.Remove(dot);
+                    db.SaveChanges();
+
+                    return Json(new { success = true, message = "Đã xóa vĩnh viễn." });
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Lỗi: " + ex.Message });
+            }
+        }
 
 
 

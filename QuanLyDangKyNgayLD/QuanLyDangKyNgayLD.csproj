@@ -137,6 +137,7 @@
     <Compile Include="Areas\Admin\AdminAreaRegistration.cs" />
     <Compile Include="Areas\Admin\Controllers\AccountController.cs" />
     <Compile Include="Areas\Admin\Controllers\AdminController.cs" />
+    <Compile Include="Areas\Admin\Controllers\AdminStudentController.cs" />
     <Compile Include="Areas\Admin\Controllers\AdminWordRegisterController.cs" />
     <Compile Include="Areas\Models\AdminThongKeViewModel.cs" />
     <Compile Include="Areas\LopPhoLaoDong\Controllers\MainLPLDController.cs" />
@@ -238,6 +239,7 @@
     <Content Include="Areas\QuanLy\Views\Shared\View.cshtml" />
     <Content Include="Areas\QuanLy\Views\QuanLyWordRegister\Index.cshtml" />
     <Content Include="Areas\QuanLy\Views\QuanLyAccount\Index.cshtml" />
+    <Content Include="Areas\Admin\Views\AdminStudent\Index.cshtml" />
     <None Include="packages.config" />
     <Content Include="Views\Login\Login.cshtml" />
     <Content Include="Views\ForgotPassword\ForgotPassword.cshtml" />
