@@ -358,9 +358,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 .then(res => res.json())
                 .then(data => {
                     if (!data || !data.success || !Array.isArray(data.data) || data.data.length === 0) {
-                        tbody.innerHTML = `<tr><td colspan="4" class="text-muted text-center">Chưa có sinh viên nào</td></tr>`;
+                        tbody.innerHTML = `<tr><td colspan="4" class="text-muted text-center">Chưa có sinh viên nào đăng ký</td></tr>`;
+                        new bootstrap.Modal(modalEl).show(); // ✅ Đảm bảo modal mở
                         return;
                     }
+
 
                     fullData = data.data;
 
@@ -826,72 +828,79 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
     // ==============================
-    // 11. Xuất Excel toàn bộ dữ liệu
+    // 11. Xuất Excel TOÀN BỘ dữ liệu (dùng action có sẵn)
     // ==============================
-    document.getElementById("exportExcel")?.addEventListener("click", function () {
-        const tbody = document.getElementById("dotLaoDongTableBody");
-        const rows = tbody.querySelectorAll("tr");
+    document.getElementById("exportExcel")?.addEventListener("click", exportDotLaoDong);
 
-        if (!rows || rows.length === 0 || rows[0].classList.contains("no-data-row")) {
-            showToast("Không có dữ liệu để xuất!", "warning");
-            return;
-        }
+    function exportDotLaoDong() {
+        fetch('/Admin/AdminWordRegister/ExportAllDotLaoDong')
+            .then(r => r.json())
+            .then(data => {
+                if (!data.success || !data.items?.length) {
+                    showToast("Không có dữ liệu để xuất!", "warning");
+                    return;
+                }
 
-        let html = `
-        <meta charset="UTF-8">
-        <style>
-            table { font-family: 'Times New Roman'; font-size:14px; border-collapse:collapse; text-align:center; }
-            th, td { padding:6px; vertical-align:middle; }
-        </style>
-        <table border="1">
-            <thead>
-                <tr>
-                    <th>STT</th>
-                    <th>Tên Đợt</th>
-                    <th>Buổi</th>
-                    <th>Loại LĐ</th>
-                    <th>Giá trị</th>
-                    <th>Ngày LĐ</th>
-                    <th>Khu vực</th>
-                    <th>Đăng ký/Quy định</th>
-                    <th>Trạng thái</th>
-                    <th>Ghi chú</th>
-                </tr>
-            </thead>
-            <tbody>
-    `;
+                let html = `
+                <table border="1">
+                    <thead>
+                        <tr>
+                            <th>STT</th>
+                            <th>Tên Đợt</th>
+                            <th>Buổi</th>
+                            <th>Loại Lao Động</th>
+                            <th>Giá Trị</th>
+                            <th>Ngày Lao Động</th>
+                            <th>Khu Vực</th>
+                            <th>Đăng ký/Quy định</th>
+                            <th>Trạng Thái</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
 
-        rows.forEach((row, i) => {
-            const cells = row.querySelectorAll("td");
-            if (cells.length < 10) return;
+                data.items.forEach((item, i) => {
+                    const soDangKy = item.SoLuongDangKy || 0;
+                    const quyDinh = item.SoLuongSinhVien || 0;
+                    html += `<tr>
+                    <td>${i + 1}</td>
+                    <td>${item.DotLaoDong}</td>
+                    <td>${item.Buoi}</td>
+                    <td>${item.LoaiLaoDong}</td>
+                    <td>${item.GiaTri}</td>
+                    <td>${item.NgayLaoDong}</td>
+                    <td>${item.KhuVuc}</td>
+                    <td>${soDangKy}/${quyDinh}</td>
+                    <td>${item.TrangThaiDuyet}</td>
+                </tr>`;
+                });
 
-            html += `<tr>
-            <td>${cells[0].textContent.trim()}</td>
-            <td>${cells[1].textContent.trim()}</td>
-            <td>${cells[2].textContent.trim()}</td>
-            <td>${cells[3].textContent.trim()}</td>
-            <td>${cells[4].textContent.trim()}</td>
-            <td>${cells[5].textContent.trim()}</td>
-            <td>${cells[6].textContent.trim()}</td>
-            <td>${cells[7].textContent.trim()}</td>
-            <td>${cells[8].textContent.trim()}</td>
-            <td>${cells[9]?.textContent.trim() || ""}</td>
-        </tr>`;
-        });
+                html += `</tbody></table>`;
 
-        html += `</tbody></table>`;
+                const blob = new Blob([html], { type: "application/vnd.ms-excel;charset=utf-8;" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = `DanhSachDotLaoDong_${new Date().toISOString().slice(0, 10)}.xls`;
+                a.click();
+                URL.revokeObjectURL(url);
 
-        const blob = new Blob([html], { type: "application/vnd.ms-excel;charset=utf-8;" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `DotLaoDong_HienThi_${new Date().toISOString().slice(0, 10)}.xls`;
-        a.click();
-        URL.revokeObjectURL(url);
+                showToast("Xuất Excel thành công!", "success");
+            })
+            .catch(() => showToast("Lỗi tải dữ liệu!", "error"));
+    }
 
-        showToast("Xuất Excel thành công!", "success");
-    });
 
+
+
+
+
+
+
+
+
+
+    // Hàm đóng modal nếu đang mở
     function closeModalIfOpen(modalId) {
         const modalEl = document.getElementById(modalId);
         const modalInstance = bootstrap.Modal.getInstance(modalEl);

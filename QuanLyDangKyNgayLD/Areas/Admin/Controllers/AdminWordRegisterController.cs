@@ -1,7 +1,6 @@
 ﻿using QuanLyDangKyNgayLD.Factories;
 using QuanLyDangKyNgayLD.Models;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Web.Mvc;
 
@@ -347,53 +346,51 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                 return Json(new { success = false, message = "Lỗi: " + ex.Message });
             }
         }
-
+        //
         [HttpGet]
-        public ActionResult ExportDotLaoDong(string keyword = "", string buoi = "", string trangthai = "")
+        public ActionResult ExportAllDotLaoDong()
         {
-            try
+            using (var db = DbContextFactory.Create())
             {
-                using (var db = DbContextFactory.Create())
-                {
-                    var query = db.TaoDotNgayLaoDongs.Where(x => x.Ngayxoa == null);
+                // Lấy dữ liệu thô
+                var rawData = db.TaoDotNgayLaoDongs
+                                .Where(x => x.Ngayxoa == null)
+                                .OrderByDescending(x => x.NgayLaoDong)
+                                .ToList();
 
-                    if (!string.IsNullOrWhiteSpace(keyword))
-                        query = query.Where(x => x.DotLaoDong.Contains(keyword) || x.KhuVuc.Contains(keyword));
+                // Sau đó xử lý số lượng đăng ký và format ngày
+                var data = rawData.Select(x => new {
+                    x.DotLaoDong,
+                    x.Buoi,
+                    x.LoaiLaoDong,
+                    GiaTri = x.GiaTri,
+                    NgayLaoDong = x.NgayLaoDong.HasValue
+                        ? x.NgayLaoDong.Value.ToString("dd/MM/yyyy")
+                        : "",
+                    x.KhuVuc,
+                    SoLuongSinhVien = x.SoLuongSinhVien ?? 0,
+                    SoLuongDangKy = db.PhieuDangKies.Count(p => p.TaoDotLaoDong_id == x.TaoDotLaoDong_id),
+                    TrangThaiDuyet = x.TrangThaiDuyet == true ? "Đã duyệt" : "Chưa duyệt"
+                })
+                .ToList();
 
-                    if (!string.IsNullOrWhiteSpace(buoi))
-                        query = query.Where(x => x.Buoi == buoi);
-
-                    if (trangthai == "1")
-                        query = query.Where(x => x.TrangThaiDuyet == true);
-                    else if (trangthai == "0")
-                        query = query.Where(x => x.TrangThaiDuyet == false);
-
-                    // ✅ KHÔNG pagination — lấy TẤT CẢ dữ liệu
-                    var items = query
-                        .OrderBy(x => x.NgayLaoDong)
-                        .Select(x => new {
-                            x.DotLaoDong,
-                            x.Buoi,
-                            x.LoaiLaoDong,
-                            GiaTri = x.GiaTri,
-                            NgayLaoDong = x.NgayLaoDong.HasValue ? x.NgayLaoDong.Value.ToString("dd/MM/yyyy") : "",
-                            x.KhuVuc,
-                            x.SoLuongSinhVien,
-                            TrangThaiDuyet = x.TrangThaiDuyet == true ? "Đã duyệt" : "Chưa duyệt",
-                            MoTa = x.MoTa ?? "",
-                            NguoiTao = x.NguoiTao.HasValue ? x.NguoiTao.Value.ToString() : ""
-                        })
-                        .ToList();
-
-                    return Json(new { success = true, count = items.Count, items }, JsonRequestBehavior.AllowGet);
-                }
-            }
-            catch (Exception ex)
-            {
-                return Json(new { success = false, message = "Lỗi server: " + ex.Message }, JsonRequestBehavior.AllowGet);
+                return Json(new { success = true, items = data }, JsonRequestBehavior.AllowGet);
             }
         }
-   
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         //xóa vĩnh viễn 
         [HttpPost]
         public JsonResult DeleteForever(int id)
