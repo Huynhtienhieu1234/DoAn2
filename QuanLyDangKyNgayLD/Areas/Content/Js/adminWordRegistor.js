@@ -844,7 +844,27 @@ document.addEventListener("DOMContentLoaded", function () {
                 // ===== Bảng 1: Đợt Lao Động =====
                 let html = `
                 <meta charset="UTF-8">
-                <table border="1">
+                <style>
+                    table {
+                        border-collapse: collapse;
+                        font-family: 'Times New Roman', Times, serif;
+                        font-size: 14px;
+                        width: 100%;
+                    }
+                    th, td {
+                        border: 1px solid black;
+                        padding: 6px;
+                        text-align: center;
+                        vertical-align: middle;
+                    }
+                    h2 {
+                        text-align: center;
+                        font-weight: bold;
+                        margin: 10px 0;
+                    }
+                </style>
+                <h2>BẢNG ĐỢT LAO ĐỘNG</h2>
+                <table>
                     <thead>
                         <tr>
                             <th>STT</th>
@@ -883,14 +903,18 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 // ===== Bảng 2: Sinh Viên tham gia =====
                 html += `
-                <table border="1">
+                <h2>BẢNG SINH VIÊN THAM GIA</h2>
+                <table>
                     <thead>
                         <tr>
                             <th>STT</th>
                             <th>MSSV</th>
                             <th>Họ Tên</th>
+                            <th>Lớp</th>
+                            <th>Khoa</th>
                             <th>Đợt Lao Động</th>
                             <th>Buổi</th>
+                            <th>Ngày Xác Nhận</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -901,8 +925,11 @@ document.addEventListener("DOMContentLoaded", function () {
                     <td>${i + 1}</td>
                     <td>${sv.MSSV}</td>
                     <td>${sv.HoTen}</td>
+                    <td>${sv.Lop}</td>
+                    <td>${sv.Khoa}</td>
                     <td>${sv.DotLaoDong}</td>
                     <td>${sv.Buoi}</td>
+                    <td>${sv.NgayXacNhan}</td>
                 </tr>`;
                 });
 

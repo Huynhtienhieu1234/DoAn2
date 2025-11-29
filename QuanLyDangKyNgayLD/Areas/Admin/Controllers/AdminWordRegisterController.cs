@@ -352,40 +352,61 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
         {
             using (var db = DbContextFactory.Create())
             {
-                var dotList = db.TaoDotNgayLaoDongs
-                                .Where(x => x.Ngayxoa == null)
-                                .OrderByDescending(x => x.NgayLaoDong)
-                                .ToList();
+                // Lấy danh sách đợt lao động
+                var dotListRaw = db.TaoDotNgayLaoDongs
+                                   .Where(x => x.Ngayxoa == null)
+                                   .OrderByDescending(x => x.NgayLaoDong)
+                                   .ToList();
 
-                var dataDot = dotList.Select(x => new {
+                var dataDot = dotListRaw.Select(x => new {
                     x.TaoDotLaoDong_id,
                     x.DotLaoDong,
                     x.Buoi,
                     x.LoaiLaoDong,
                     GiaTri = x.GiaTri,
-                    NgayLaoDong = x.NgayLaoDong.HasValue ? x.NgayLaoDong.Value.ToString("dd/MM/yyyy") : "",
+                    NgayLaoDong = x.NgayLaoDong.HasValue
+                        ? x.NgayLaoDong.Value.ToString("dd/MM/yyyy")
+                        : "",
                     x.KhuVuc,
                     SoLuongSinhVien = x.SoLuongSinhVien ?? 0,
                     SoLuongDangKy = db.PhieuDangKies.Count(p => p.TaoDotLaoDong_id == x.TaoDotLaoDong_id),
                     TrangThaiDuyet = x.TrangThaiDuyet == true ? "Đã duyệt" : "Chưa duyệt"
                 }).ToList();
 
-                // Join PhieuDangKy với SinhVien qua MSSV
-                var dataSinhVien = db.PhieuDangKies
-                                     .Join(db.SinhViens,
-                                           p => p.MSSV,
-                                           sv => sv.MSSV,
-                                           (p, sv) => new {
-                                               MSSV = sv.MSSV,
-                                               HoTen = sv.HoTen,
-                                               DotLaoDong = p.TaoDotNgayLaoDong.DotLaoDong,
-                                               Buoi = p.TaoDotNgayLaoDong.Buoi
-                                           })
-                                     .ToList();
+                // Lấy danh sách sinh viên đăng ký
+                var dataSinhVienRaw = db.PhieuDangKies
+                    .Join(db.SinhViens, p => p.MSSV, sv => sv.MSSV, (p, sv) => new { p, sv })
+                    .Join(db.Lops, ps => ps.sv.Lop_id, lop => lop.Lop_id, (ps, lop) => new { ps.p, ps.sv, lop })
+                    .Join(db.Khoas, psl => psl.lop.Khoa_id, khoa => khoa.Khoa_id, (psl, khoa) => new {
+                        MSSV = psl.sv.MSSV,
+                        HoTen = psl.sv.HoTen,
+                        Lop = psl.lop.TenLop,
+                        Khoa = khoa.TenKhoa,
+                        DotLaoDong = psl.p.TaoDotNgayLaoDong.DotLaoDong,
+                        Buoi = psl.p.TaoDotNgayLaoDong.Buoi,
+                        NgayXacNhan = psl.p.TaoDotNgayLaoDong.NgayLaoDong
+                    })
+                    .ToList();
+
+                // Format ngày sau khi dữ liệu đã load về
+                var dataSinhVien = dataSinhVienRaw.Select(x => new {
+                    x.MSSV,
+                    x.HoTen,
+                    x.Lop,
+                    x.Khoa,
+                    x.DotLaoDong,
+                    x.Buoi,
+                    NgayXacNhan = x.NgayXacNhan.HasValue
+                        ? x.NgayXacNhan.Value.ToString("dd/MM/yyyy")
+                        : ""
+                }).ToList();
 
                 return Json(new { success = true, dotList = dataDot, sinhVienList = dataSinhVien }, JsonRequestBehavior.AllowGet);
             }
         }
+
+
+
 
 
 
