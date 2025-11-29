@@ -836,12 +836,14 @@ document.addEventListener("DOMContentLoaded", function () {
         fetch('/Admin/AdminWordRegister/ExportAllDotLaoDong')
             .then(r => r.json())
             .then(data => {
-                if (!data.success || !data.items?.length) {
+                if (!data.success) {
                     showToast("Không có dữ liệu để xuất!", "warning");
                     return;
                 }
 
+                // ===== Bảng 1: Đợt Lao Động =====
                 let html = `
+                <meta charset="UTF-8">
                 <table border="1">
                     <thead>
                         <tr>
@@ -859,10 +861,12 @@ document.addEventListener("DOMContentLoaded", function () {
                     <tbody>
             `;
 
-                data.items.forEach((item, i) => {
+                (data.dotList || []).forEach((item, i) => {
                     const soDangKy = item.SoLuongDangKy || 0;
                     const quyDinh = item.SoLuongSinhVien || 0;
-                    html += `<tr>
+                    const boldStyle = item.TrangThaiDuyet === "Đã duyệt" ? "font-weight:bold;" : "";
+
+                    html += `<tr style="${boldStyle}">
                     <td>${i + 1}</td>
                     <td>${item.DotLaoDong}</td>
                     <td>${item.Buoi}</td>
@@ -875,13 +879,41 @@ document.addEventListener("DOMContentLoaded", function () {
                 </tr>`;
                 });
 
+                html += `</tbody></table><br/><br/>`;
+
+                // ===== Bảng 2: Sinh Viên tham gia =====
+                html += `
+                <table border="1">
+                    <thead>
+                        <tr>
+                            <th>STT</th>
+                            <th>MSSV</th>
+                            <th>Họ Tên</th>
+                            <th>Đợt Lao Động</th>
+                            <th>Buổi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+                (data.sinhVienList || []).forEach((sv, i) => {
+                    html += `<tr>
+                    <td>${i + 1}</td>
+                    <td>${sv.MSSV}</td>
+                    <td>${sv.HoTen}</td>
+                    <td>${sv.DotLaoDong}</td>
+                    <td>${sv.Buoi}</td>
+                </tr>`;
+                });
+
                 html += `</tbody></table>`;
 
+                // Xuất file Excel
                 const blob = new Blob([html], { type: "application/vnd.ms-excel;charset=utf-8;" });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement("a");
                 a.href = url;
-                a.download = `DanhSachDotLaoDong_${new Date().toISOString().slice(0, 10)}.xls`;
+                a.download = `DotLaoDong_SinhVien_${new Date().toISOString().slice(0, 10)}.xls`;
                 a.click();
                 URL.revokeObjectURL(url);
 

@@ -352,31 +352,42 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
         {
             using (var db = DbContextFactory.Create())
             {
-                // Lấy dữ liệu thô
-                var rawData = db.TaoDotNgayLaoDongs
+                var dotList = db.TaoDotNgayLaoDongs
                                 .Where(x => x.Ngayxoa == null)
                                 .OrderByDescending(x => x.NgayLaoDong)
                                 .ToList();
 
-                // Sau đó xử lý số lượng đăng ký và format ngày
-                var data = rawData.Select(x => new {
+                var dataDot = dotList.Select(x => new {
+                    x.TaoDotLaoDong_id,
                     x.DotLaoDong,
                     x.Buoi,
                     x.LoaiLaoDong,
                     GiaTri = x.GiaTri,
-                    NgayLaoDong = x.NgayLaoDong.HasValue
-                        ? x.NgayLaoDong.Value.ToString("dd/MM/yyyy")
-                        : "",
+                    NgayLaoDong = x.NgayLaoDong.HasValue ? x.NgayLaoDong.Value.ToString("dd/MM/yyyy") : "",
                     x.KhuVuc,
                     SoLuongSinhVien = x.SoLuongSinhVien ?? 0,
                     SoLuongDangKy = db.PhieuDangKies.Count(p => p.TaoDotLaoDong_id == x.TaoDotLaoDong_id),
                     TrangThaiDuyet = x.TrangThaiDuyet == true ? "Đã duyệt" : "Chưa duyệt"
-                })
-                .ToList();
+                }).ToList();
 
-                return Json(new { success = true, items = data }, JsonRequestBehavior.AllowGet);
+                // Join PhieuDangKy với SinhVien qua MSSV
+                var dataSinhVien = db.PhieuDangKies
+                                     .Join(db.SinhViens,
+                                           p => p.MSSV,
+                                           sv => sv.MSSV,
+                                           (p, sv) => new {
+                                               MSSV = sv.MSSV,
+                                               HoTen = sv.HoTen,
+                                               DotLaoDong = p.TaoDotNgayLaoDong.DotLaoDong,
+                                               Buoi = p.TaoDotNgayLaoDong.Buoi
+                                           })
+                                     .ToList();
+
+                return Json(new { success = true, dotList = dataDot, sinhVienList = dataSinhVien }, JsonRequestBehavior.AllowGet);
             }
         }
+
+
 
 
 
