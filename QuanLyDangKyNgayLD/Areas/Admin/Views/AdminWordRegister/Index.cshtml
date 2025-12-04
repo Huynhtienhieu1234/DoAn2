@@ -315,8 +315,22 @@
                     <!-- ✅ Form chỉnh sửa -->
                     <div class="row g-3 text-start">
                         <div class="col-md-6">
-                            <label class="form-label fw-bold">Tên đợt <span class="text-danger">*</span></label>
-                            <input name="DotLaoDong" id="editDotLaoDong" class="form-control" required />
+                            <label class="form-label fw-bold">Đợt lao động (Tháng) <span class="text-danger">*</span></label>
+                            <select name="DotLaoDong" id="editDotLaoDong" class="form-select" required>
+                                <option value="">-- Chọn tháng --</option>
+                                <option value="Tháng 1">Tháng 1</option>
+                                <option value="Tháng 2">Tháng 2</option>
+                                <option value="Tháng 3">Tháng 3</option>
+                                <option value="Tháng 4">Tháng 4</option>
+                                <option value="Tháng 5">Tháng 5</option>
+                                <option value="Tháng 6">Tháng 6</option>
+                                <option value="Tháng 7">Tháng 7</option>
+                                <option value="Tháng 8">Tháng 8</option>
+                                <option value="Tháng 9">Tháng 9</option>
+                                <option value="Tháng 10">Tháng 10</option>
+                                <option value="Tháng 11">Tháng 11</option>
+                                <option value="Tháng 12">Tháng 12</option>
+                            </select>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-bold">Buổi <span class="text-danger">*</span></label>
@@ -335,7 +349,9 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-bold">Ngày lao động <span class="text-danger">*</span></label>
-                            <input name="NgayLaoDong" id="editNgayLaoDong" type="date" class="form-control" required />
+                            <select name="NgayLaoDong" id="editNgayLaoDong" class="form-select" required>
+                                <option value="">-- Chọn ngày --</option>
+                            </select>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-bold">Khu vực <span class="text-danger">*</span></label>

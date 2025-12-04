@@ -496,7 +496,12 @@ document.addEventListener("DOMContentLoaded", function () {
             };
 
             setInputValue("editId", editBtn.dataset.id);
-            setInputValue("editDotLaoDong", cells[1]?.textContent || "");
+            const dotText = cells[1]?.textContent?.trim() || "";
+            const editMonthSelectEl = document.getElementById("editDotLaoDong");
+            if (editMonthSelectEl) {
+                editMonthSelectEl.value = [...editMonthSelectEl.options].some(opt => opt.value === dotText) ? dotText : "";
+            }
+
 
             let buoiRaw = cells[2]?.textContent || "";
             let buoiValue = buoiRaw.includes("Sáng") ? "Sáng" : buoiRaw.includes("Chiều") ? "Chiều" : "";
@@ -807,12 +812,14 @@ document.addEventListener("DOMContentLoaded", function () {
         const tbody = document.getElementById("dotLaoDongTableBody");
         const rows = Array.from(tbody.querySelectorAll("tr"));
 
+        // Map tên tháng sang số để dễ sắp xếp
         const monthMap = {
             "Tháng 1": 1, "Tháng 2": 2, "Tháng 3": 3, "Tháng 4": 4,
             "Tháng 5": 5, "Tháng 6": 6, "Tháng 7": 7, "Tháng 8": 8,
             "Tháng 9": 9, "Tháng 10": 10, "Tháng 11": 11, "Tháng 12": 12
         };
 
+        // Sắp xếp theo tháng
         rows.sort((a, b) => {
             const aText = a.querySelector("td:nth-child(2)")?.textContent.trim() || "";
             const bText = b.querySelector("td:nth-child(2)")?.textContent.trim() || "";
@@ -821,12 +828,20 @@ document.addEventListener("DOMContentLoaded", function () {
             return isAsc ? aMonth - bMonth : bMonth - aMonth;
         });
 
+        // Xóa nội dung cũ và render lại
         tbody.innerHTML = "";
         rows.forEach((row, i) => {
-            row.querySelector("td:first-child").textContent = i + 1; // cập nhật STT
+            // ✅ STT theo trang hiện tại
+            const stt = (currentPage - 1) * pageSize + i + 1;
+            row.querySelector("td:first-child").textContent = stt;
             tbody.appendChild(row);
         });
     }
+
+
+
+
+
     // ==============================
     // 11. Xuất Excel TOÀN BỘ dữ liệu (dùng action có sẵn)
     // ==============================
@@ -950,7 +965,32 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
 
+    // ==============================
+    // Tự động sinh ngày cho form Chỉnh sửa
+    // ==============================
+    const editMonthSelect = document.getElementById("editDotLaoDong");
+    const editDaySelect = document.getElementById("editNgayLaoDong");
 
+    if (editMonthSelect && editDaySelect) {
+        editMonthSelect.addEventListener("change", function () {
+            const monthLabel = this.value;
+            const currentYear = new Date().getFullYear();
+            const monthNumber = parseInt(monthLabel.replace("Tháng ", ""));
+            const daysInMonth = new Date(currentYear, monthNumber, 0).getDate();
+
+            editDaySelect.innerHTML = '<option value="">-- Chọn ngày --</option>';
+            for (let d = 1; d <= daysInMonth; d++) {
+                const dayStr = String(d).padStart(2, "0");
+                const monthStr = String(monthNumber).padStart(2, "0");
+                const value = `${currentYear}-${monthStr}-${dayStr}`;
+                const label = `${dayStr}/${monthStr}/${currentYear}`;
+                const option = document.createElement("option");
+                option.value = value;
+                option.textContent = label;
+                editDaySelect.appendChild(option);
+            }
+        });
+    }
 
 
 
