@@ -195,28 +195,35 @@
                     <input type="hidden" id="editId" name="TaiKhoan_id" />
 
                     <!-- Tên tài khoản -->
-                    <div class="mb-3">
+                    <div class="mb-3" style="cursor:pointer">
                         <label for="editUsername" class="form-label fw-bold">Tên tài khoản</label>
                         <input type="text" class="form-control" id="editUsername" name="Username" required maxlength="50" />
                     </div>
 
                     <!-- Email -->
-                    <div class="mb-3">
+                    <div class="mb-3" style="cursor:pointer">
                         <label for="editEmail" class="form-label fw-bold">Email</label>
                         <input type="email" class="form-control" id="editEmail" name="Email" required maxlength="100" />
                     </div>
-
                     <!-- Mật khẩu -->
-                    <div class="mb-3">
+                    <div class="mb-3" >
                         <label for="editPassword" class="form-label fw-bold">Mật khẩu</label>
-                        <input type="password" class="form-control" id="editPassword" name="Password" placeholder="Để trống nếu không đổi" minlength="6" />
-            
+                        <div class="position-relative w-100" style="cursor:pointer">
+                            <input type="password" class="form-control w-100" id="editPassword" name="Password"
+                                   placeholder="Để trống nếu không đổi" minlength="6"
+                                   style="padding-right: 40px;" />
+                            <span class="position-absolute top-50 end-0 translate-middle-y me-3"
+                                  style="cursor: pointer;" onclick="togglePassword()">
+                                <i class="fa fa-eye" id="toggleEye"></i>
+                            </span>
+                        </div>
                     </div>
 
+
                     <!-- Vai trò -->
-                    <div class="mb-3">
+                    <div class="mb-3" >
                         <label for="editRole" class="form-label fw-bold">Vai trò</label>
-                        <select id="editRole" name="VaiTro_id" class="form-select" required>
+                        <select style="cursor:pointer" id="editRole" name="VaiTro_id" class="form-select" required>
                             <option value="">-- Chọn vai trò --</option>
                             <option value="1">Admin</option>
                             <option value="2">Quản lý</option>

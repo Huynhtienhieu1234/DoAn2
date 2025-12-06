@@ -332,7 +332,7 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                 return RedirectToAction("Index");
             }
         }
-
+        // AJAX: Chỉnh sửa tài khoản
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult EditAjax(TaiKhoan model)
@@ -348,16 +348,25 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                     if (taiKhoan == null)
                         return Json(new { success = false, message = "Không tìm thấy tài khoản." });
 
-                    if (db.TaiKhoans.Any(t => t.Username == model.Username && t.TaiKhoan_id != model.TaiKhoan_id && t.Deleted_at == null))
-                        return Json(new { success = false, message = "Tên tài khoản đã tồn tại." });
+                    // ✅ Chỉ kiểm tra trùng tên nếu Username bị thay đổi
+                    if (model.Username != taiKhoan.Username)
+                    {
+                        bool usernameExists = db.TaiKhoans.Any(t =>
+                            t.Username == model.Username &&
+                            t.TaiKhoan_id != model.TaiKhoan_id &&
+                            t.Deleted_at == null);
 
+                        if (usernameExists)
+                            return Json(new { success = false, message = "Tên tài khoản đã tồn tại." });
+                    }
+
+                    // ✅ Cập nhật thông tin
                     taiKhoan.Username = model.Username;
                     taiKhoan.Email = model.Email;
                     taiKhoan.VaiTro_id = model.VaiTro_id;
 
                     if (!string.IsNullOrWhiteSpace(model.Password))
                         taiKhoan.Password = PasswordHelper.PreparePasswordForSave(model.Password);
-
 
                     db.SaveChanges();
 
@@ -370,8 +379,8 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                             taiKhoan.TaiKhoan_id,
                             taiKhoan.Username,
                             taiKhoan.Email,
-                            RoleName = taiKhoan.VaiTro?.TenVaiTro,     // để hiển thị trong bảng
-                            VaiTro_id = taiKhoan.VaiTro_id             // ← THÊM DÒNG NÀY (QUAN TRỌNG NHẤT!)
+                            RoleName = taiKhoan.VaiTro?.TenVaiTro,
+                            VaiTro_id = taiKhoan.VaiTro_id
                         }
                     });
                 }

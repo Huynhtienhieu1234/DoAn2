@@ -12,6 +12,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     let currentPage = 1;          // Trang hiện tại của phân trang
     const pageSize = 5;           // Số dòng mỗi trang
+    ///
 
     // ==================================================================
     // 2. GỌI KHỞI TẠO CHÍNH
@@ -754,6 +755,20 @@ document.addEventListener("DOMContentLoaded", function () {
             .catch(() => showToast("Lỗi tải dữ liệu!", "error"));
     }
 
+
+    // === Hàm toggle hiển thị mật khẩu ===
+    document.getElementById("toggleEye")?.addEventListener("click", togglePassword);
+
+    function togglePassword() {
+        const passwordInput = document.getElementById("editPassword");
+        const eyeIcon = document.getElementById("toggleEye");
+        if (!passwordInput || !eyeIcon) return;
+
+        const isHidden = passwordInput.type === "password";
+        passwordInput.type = isHidden ? "text" : "password";
+        eyeIcon.classList.toggle("fa-eye");
+        eyeIcon.classList.toggle("fa-eye-slash");
+    }
 
 
 });

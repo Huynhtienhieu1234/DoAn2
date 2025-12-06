@@ -132,6 +132,11 @@
     <Content Include="Areas\Content\adminpage.css" />
     <Content Include="Areas\Content\Js\adminCommon.js" />
     <Content Include="Areas\Content\Js\adminWordRegistor.js" />
+    <Content Include="Areas\SinhVien\Content\Css\Dashboard.css" />
+    <None Include="Areas\SinhVien\Views\Shared\Viewsiderbar.cshtml" />
+    <Content Include="Areas\SinhVien\Content\Css\Siderbarmain.css" />
+    <Content Include="Areas\SinhVien\Content\Css\Table.css" />
+    <Content Include="Areas\SinhVien\Content\Js\StudentRegister.js" />
     <Content Include="Global.asax" />
     <Content Include="Models\QuanLyDangKyLaoDong.Context.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
@@ -160,6 +165,7 @@
     <Compile Include="Areas\QuanLy\Controllers\QuanLyWordRegisterController.cs" />
     <Compile Include="Areas\QuanLy\QuanLyAreaRegistration.cs" />
     <Compile Include="Areas\SinhVien\Controllers\MainSinhVienController.cs" />
+    <Compile Include="Areas\SinhVien\Controllers\StudentRegisterWordController.cs" />
     <Compile Include="Areas\SinhVien\SinhVienAreaRegistration.cs" />
     <Compile Include="Controllers\ForgotPasswordController.cs" />
     <Compile Include="Controllers\LoginController.cs" />
@@ -253,6 +259,8 @@
     <Content Include="Areas\QuanLy\Views\QuanLyWordRegister\Index.cshtml" />
     <Content Include="Areas\QuanLy\Views\QuanLyAccount\Index.cshtml" />
     <Content Include="Areas\Admin\Views\AdminStudent\Index.cshtml" />
+    <Content Include="Areas\SinhVien\Views\Shared\ViewSinhvien.cshtml" />
+    <Content Include="Areas\SinhVien\Views\StudentRegisterWord\Index.cshtml" />
     <None Include="packages.config" />
     <Content Include="Views\Login\Login.cshtml" />
     <Content Include="Views\ForgotPassword\ForgotPassword.cshtml" />
@@ -270,7 +278,6 @@
     <Folder Include="Areas\LopPhoLaoDong\Views\Shared\" />
     <Folder Include="Areas\QuanLy\Data\" />
     <Folder Include="Areas\SinhVien\Data\" />
-    <Folder Include="Areas\SinhVien\Views\Shared\" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />

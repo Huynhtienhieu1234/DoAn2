@@ -1,0 +1,251 @@
+﻿/* ===== Reset mặc định ===== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+    text-decoration: none;
+    list-style: none;
+}
+
+/* ===== Liên kết ===== */
+a.a-color,
+a.text-primary,
+.text-decoration-none {
+    text-decoration: none;
+}
+
+a.btn.btn-outline-primary.btn-sm {
+    width: 98px;
+    margin-right: 67px;
+}
+
+/* ===== Tiêu đề nhỏ ===== */
+h6 {
+    color: blue;
+    font-size: 18px;
+    font-weight: 500;
+}
+
+/* ===== Ảnh lao động ===== */
+.img-Laodong {
+    height: 83px;
+    width: 96px;
+    display: block;
+    margin: auto;
+}
+
+/* ===== Body ===== */
+body {
+    background: rgb(237, 235, 235);
+}
+
+/* ===== List group ===== */
+li.list-group-item {
+    border: none;
+}
+
+/* ===== Tiêu đề quản lý ===== */
+h4.text-danger.fw-bold {
+    text-align: center;
+}
+
+/* ===== Thanh điều hướng (NAV) ===== */
+nav {
+    background-color: #ffffff;
+    display: flex;
+    justify-content: center;
+    padding: 10px 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.nav-content {
+    width: 100%;
+    max-width: 1200px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.logo {
+    height: 50px;
+}
+
+/* Ô tìm kiếm */
+.search-container {
+    display: flex;
+    align-items: center;
+    border: 1px solid #ccc;
+    border-radius: 20px;
+    padding: 5px 10px;
+    background: #f9f9f9;
+}
+
+.search-input {
+    border: none;
+    outline: none;
+    background: transparent;
+    padding: 5px;
+}
+
+.search-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #333;
+}
+
+/* Tiêu đề trang */
+.nav-content-text {
+    font-size: 31px;
+    font-weight: bold;
+    color: #6156ff;
+}
+
+/* =================== Nội dung chính =================== */
+/* ===== Container chính ===== */
+.container {
+    max-width: 1135px;
+    margin: 30px auto;
+    padding: 20px;
+    border-radius: 10px;
+    background-color: #ffffff; /* nền trắng cho toàn vùng */
+}
+
+/* ===== Card chức năng ===== */
+.func-card {
+    background-color: #ffffff;
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    color: #007bff;
+}
+
+    .func-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    }
+
+/* ===== Icon trong card ===== */
+.func-icon {
+    height: 83px;
+    width: 96px;
+    display: block;
+    margin: auto;
+}
+
+/* ===== Card màu riêng nếu cần ===== */
+.func-pink {
+    background-color: #f8d7da;
+    color: #c82333;
+}
+
+.func-cyan {
+    background-color: #d1ecf1;
+    color: #0c5460;
+}
+
+/* ===== Cột card ===== */
+.col-md-4 {
+    transition: transform 0.1s linear;
+    will-change: transform;
+}
+
+    .col-md-4:hover {
+        transform: translateY(-5px);
+    }
+
+/* ===== Card thông tin bên trái ===== */
+.card {
+    background-color: #ffffff;
+    border-radius: 10px;
+}
+
+    /* ===== Card đặc biệt nếu có class cụ thể ===== */
+    .card.shadow-sm.text-center.p-3.bg-info.text-white.mb-4 {
+        background-color: #ffffff;
+    }
+
+/* ===== Vùng chứa bên phải nếu cần ===== */
+.contains-right {
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 423px;
+    border: 1px solid #fff;
+}
+
+/* ===== Tiêu đề chính ===== */
+.main-title {
+    font-size: 22px;
+    margin-bottom: 15px;
+}
+
+/* ===== Card thông tin đơn lẻ ===== */
+.info-card {
+    background: #f9f9f9;
+    padding: 15px;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+    .info-card p {
+        margin: 5px 0;
+    }
+}
+
+/* =================== Responsive =================== */
+@media (max-width: 768px) {
+    .nav-content {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .search-container {
+        display: none;
+    }
+
+    .nav-content-text {
+        font-size: 24px;
+        margin-bottom: 10px;
+    }
+
+    .user-menu {
+        margin-top: 10px;
+    }
+
+    .container {
+        width: 100%;
+        padding: 15px;
+    }
+
+    .info-card {
+        padding: 10px;
+    }
+
+    footer {
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .nav-content {
+        padding: 10px;
+    }
+
+    .main-title {
+        font-size: 18px;
+    }
+
+    .user-name {
+        font-size: 14px;
+    }
+
+    footer {
+        font-size: 12px;
+    }
+}
+
+

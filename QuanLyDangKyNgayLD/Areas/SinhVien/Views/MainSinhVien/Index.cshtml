@@ -1,19 +1,89 @@
-﻿
-@{
-    Layout = null;
+﻿@{
+    ViewBag.Title = "Trang Thông Tin Sinh Viên";
+    Layout = "~/Areas/SinhVien/Views/Shared/ViewSinhvien.cshtml";
 }
 
-<!DOCTYPE html>
+<div class="container student-dashboard mt-5">
+    <div class="row g-4">
+        <!-- Cột trái: Thông tin quản lý -->
+        <div class="col-lg-4">
+            <div class="card info-card h-100">
+                <div class="card-body text-center">
+                    <h4 class="mb-4">Thông tin sinh viên</h4>
 
-<html>
-<head>
-    <meta name="viewport" content="width=device-width" />
-    <title>Index</title>
-</head>
-<body>
-    <div>
+                    <img src="~/image/Avarta.png" class="avatar-img rounded-circle mb-3" alt="Avatar quản lý" />
 
-        <h2>Đây là trang chính sinh viên </h2>  
+                    <a href="~/HTML/Trangthongtinquanly.html" class="d-block mb-4 text-primary fw-medium">
+                        Xem chi tiết
+                    </a>
+
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>MSQL:</strong> 2025001</li>
+                        <li class="list-group-item"><strong>Họ và Tên:</strong> Huỳnh Tiến Hiểu</li>
+                        <li class="list-group-item"><strong>Email:</strong> hienht@example.com</li>
+                        <li class="list-group-item"><strong>Vai trò:</strong> Quản lý</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cột phải: Các chức năng -->
+        <div class="col-lg-8">
+            <div class="row g-4">
+                <!-- Tạo lịch -->
+                <div class="col-md-4 col-sm-6">
+                    <a href="@Url.Action("Index", "StudentRegisterWord", new { area = "SinhVien" })"
+                       class="func-card text-white d-block">
+                        <h6 class="fw-bold mb-3">Đăng Ký Lao Động</h6>
+                        <img src="https://cdn.jsdelivr.net/gh/Huynhtienhieu1234/UploadAnh/sinhvien/Create.png"
+                             class="func-icon" alt="Đăng Ký Lao Động" />
+                    </a>
+                </div>
+
+                <!-- Thống kê -->
+                <div class="col-md-4 col-sm-6">
+                    <a href="~/HTML/Thongke.html" class="func-card text-white d-block">
+                        <h6 class="fw-bold mb-3">Thống kê</h6>
+                        <img src="https://cdn.jsdelivr.net/gh/Huynhtienhieu1234/UploadAnh/sinhvien/BAOCAO.png" class="func-icon" alt="Thống kê" />
+                    </a>
+                </div>
+
+                <!-- Lịch Lao Động -->
+                <div class="col-md-4 col-sm-6">
+                    <a href="~/HTML/LichLaoDong.html" class="func-card text-white d-block">
+                        <h6 class="fw-bold mb-3">Lịch Lao Động</h6>
+                        <img src="https://cdn.jsdelivr.net/gh/Huynhtienhieu1234/UploadAnh/sinhvien/icons8-calendar.gif" class="func-icon" alt="Lịch lao động" />
+                    </a>
+                </div>
+
+                <!-- Điểm Danh -->
+                <div class="col-md-4 col-sm-6">
+                    <a href="~/HTML/DiemDanh.html" class="func-card  text-white d-block">
+                        <h6 class="fw-bold mb-3">Điểm Danh Lao Động</h6>
+                        <img src="https://cdn.jsdelivr.net/gh/Huynhtienhieu1234/UploadAnh/sinhvien/Duyet1.png" class="func-icon" alt="Điểm danh" />
+                    </a>
+                </div>
+
+                <!-- Thông báo -->
+                <div class="col-md-4 col-sm-6">
+                    <a href="~/HTML/ThongBao.html" class="func-card  text-white d-block">
+                        <h6 class="fw-bold mb-3">Thông báo</h6>
+                        <img src="https://cdn.jsdelivr.net/gh/Huynhtienhieu1234/UploadAnh/sinhvien/icons8-bell.gif" class="func-icon" alt="Thông báo" />
+                    </a>
+                </div>
+
+                <!-- Xác nhận hoàn thành -->
+                <div class="col-md-4 col-sm-6">
+                    <a href="~/HTML/XacNhanHoanThanh.html" class="func-card  text-white d-block">
+                        <h6 class="fw-bold mb-3">Xác nhận hoàn thành</h6>
+                        <img src="https://cdn.jsdelivr.net/gh/Huynhtienhieu1234/UploadAnh/sinhvien/Duyet.png" class="func-icon" alt="Xác nhận" />
+                    </a>
+                </div>
+
+            </div>
+        </div>
     </div>
-</body>
-</html>
+</div>
+
+
+

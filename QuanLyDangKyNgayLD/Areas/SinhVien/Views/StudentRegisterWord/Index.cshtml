@@ -1,0 +1,107 @@
+﻿@model IEnumerable<QuanLyDangKyNgayLD.Models.TaoDotNgayLaoDong>
+@{
+    ViewBag.Title = "Đăng ký đợt lao động";
+    Layout = "~/Areas/SinhVien/Views/Shared/Viewsiderbar.cshtml";
+}
+<link href="~/Areas/SinhVien/Content/Css/Table.css" rel="stylesheet" type="text/css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<div class="card-header-custom">
+    <h4 class="title-gradient mb-0">
+        <i class="fas fa-clipboard-list me-2"></i>Danh sách đợt lao động
+    </h4>
+</div>
+<div class="container-lg mt-4 card-shadow">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle table-custom">
+                <thead class="table-header-gradient">
+                    <tr>
+                        <th class="text-center ps-4">STT</th>
+                        <th>Ngày lao động</th>
+                        <th>Buổi</th>
+                        <th>Loại lao động</th>
+                        <th>Giá trị</th>
+                        <th>Khu vực</th>
+                        <th>Số lượng SV</th>
+                        <th>Trạng thái</th>
+                        <th class="text-center pe-4">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        var stt = 1;
+                        foreach (var item in Model)
+                        {
+                            <tr class="table-row-hover">
+                                <td class="text-center fw-bold text-muted ps-4">@stt</td>
+                                <td class="px-1 text-center">
+                                    <span class="text-truncate d-inline-block w-100" style="max-width:80px;"
+                                          title="@(item.NgayLaoDong?.ToString("dd/MM/yyyy"))">
+                                        @(item.NgayLaoDong?.ToString("dd/MM/yyyy"))
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <span class="badge badge-session">@item.Buoi</span>
+                                </td>
+                                <td>
+                                    <span class="badge badge-type">@item.LoaiLaoDong</span>
+                                </td>
+                                <td class="fw-bold text-success-emphasis">@item.GiaTri</td>
+                                <td>
+                                    <span class="badge badge-location">
+                                        <i class="fas fa-map-marker-alt me-1"></i>@item.KhuVuc
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center justify-content-center">
+                                        <i class="fas fa-users me-2 text-info"></i>
+                                        <span class="fw-semibold">@item.SoLuongSinhVien</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    @if (item.TrangThaiDuyet == true)
+                                    {
+                                        <span class="badge status-approved">
+                                            <i class="fas fa-check-circle me-1"></i>Đã duyệt
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge status-pending">
+                                            <i class="fas fa-clock me-1"></i>Chưa duyệt
+                                        </span>
+                                    }
+                                </td>
+                                <td class="text-center pe-4">
+                                    <div class="btn-group-action">
+                                        <button class="btn btn-register me-2">
+                                            <i class="fas fa-user-plus me-1"></i>Đăng ký
+                                        </button>
+                                        <button class="btn btn-cancel">
+                                            <i class="fas fa-user-minus me-1"></i>Hủy
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            stt++;
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="9" class="text-center py-5">
+                                <div class="empty-state">
+                                    <i class="far fa-clipboard fa-3x text-muted mb-3"></i>
+                                    <h5 class="text-muted">Không có dữ liệu đợt lao động</h5>
+                                    <p class="text-muted small">Hiện tại chưa có đợt lao động nào để hiển thị</p>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

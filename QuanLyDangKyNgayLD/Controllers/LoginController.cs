@@ -89,5 +89,16 @@ namespace QuanLyDangKyNgayLD.Controllers
                 }
             }
         }
+
+
+        public ActionResult Logout()
+        {
+            FormsAuthentication.SignOut();
+            Session.Clear();
+            Session.Abandon();
+            return RedirectToAction("Login", "Login"); // quay về giao diện Login.cshtml
+        }
+
+
     }
 }
