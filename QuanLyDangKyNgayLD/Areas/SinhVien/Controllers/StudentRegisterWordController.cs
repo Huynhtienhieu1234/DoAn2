@@ -64,24 +64,35 @@ namespace QuanLyDangKyNgayLD.Areas.SinhVien.Controllers
             }
         }
 
-        // AJAX: Lấy danh sách đợt lao động (phân trang + lọc)
+
+
+
         [HttpGet]
         public ActionResult LoadDotLaoDong(
             int page = 1,
             int pageSize = ITEMS_PER_PAGE,
             string buoi = "",
             string trangThai = "",
-            int? thang = null
-        )
+            int? thang = null)
         {
             using (var db = DbContextFactory.Create())
             {
                 var user = Session["User"] as TaiKhoan;
 
+                // LẤY THÁNG + NĂM HIỆN TẠI CỦA MÁY NGƯỜI DÙNG
+                var today = DateTime.Today;                 // Ví dụ: 07/12/2025
+                var currentMonth = today.Month;
+                var currentYear = today.Year;
+
                 IQueryable<TaoDotNgayLaoDong> query = db.TaoDotNgayLaoDongs
                                                         .Where(d => d.Ngayxoa == null);
 
-                // Lọc theo vai trò
+                // CHỈ LẤY ĐỢT LAO ĐỘNG CÙNG THÁNG + CÙNG NĂM VỚI HÔM NAY
+                query = query.Where(x => x.NgayLaoDong.HasValue &&
+                                        x.NgayLaoDong.Value.Month == currentMonth &&
+                                        x.NgayLaoDong.Value.Year == currentYear);
+
+                // Lọc theo vai trò (giữ nguyên)
                 if (user != null)
                 {
                     if (user.VaiTro.TenVaiTro == "SinhVien")
@@ -90,24 +101,26 @@ namespace QuanLyDangKyNgayLD.Areas.SinhVien.Controllers
                     }
                 }
 
-                // Lọc theo buổi
+                // Lọc buổi, trạng thái duyệt (giữ nguyên)
                 if (!string.IsNullOrWhiteSpace(buoi))
                     query = query.Where(x => x.Buoi == buoi);
 
-                // Lọc theo trạng thái duyệt
                 if (trangThai == "1")
                     query = query.Where(x => x.TrangThaiDuyet == true);
                 else if (trangThai == "0")
                     query = query.Where(x => x.TrangThaiDuyet == false);
 
-                // Lọc theo tháng
+                // Nếu có truyền tháng từ client (dự phòng sau này) thì dùng tháng đó
                 if (thang.HasValue)
-                    query = query.Where(x => x.NgayLaoDong.HasValue && x.NgayLaoDong.Value.Month == thang.Value);
+                {
+                    query = query.Where(x => x.NgayLaoDong.HasValue &&
+                                            x.NgayLaoDong.Value.Month == thang.Value);
+                }
 
                 int totalItems = query.Count();
                 int totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
 
-                var rawItems = query.OrderByDescending(x => x.NgayLaoDong)
+                var rawItems = query.OrderBy(x => x.NgayLaoDong)
                                     .Skip((page - 1) * pageSize)
                                     .Take(pageSize)
                                     .ToList();
@@ -119,12 +132,11 @@ namespace QuanLyDangKyNgayLD.Areas.SinhVien.Controllers
                     x.Buoi,
                     x.LoaiLaoDong,
                     GiaTri = x.GiaTri,
-                    NgayLaoDong = x.NgayLaoDong.HasValue
-                        ? x.NgayLaoDong.Value.ToString("dd/MM/yyyy")
-                        : "",
+                    NgayLaoDong = x.NgayLaoDong.HasValue ? x.NgayLaoDong.Value.ToString("dd/MM/yyyy") : "",
                     x.KhuVuc,
                     x.SoLuongSinhVien,
-                    TrangThaiDuyet = x.TrangThaiDuyet == true ? "Đã duyệt" : "Chưa duyệt"
+                    TrangThaiDuyet = x.TrangThaiDuyet == true,
+                    TrangThaiText = x.TrangThaiDuyet == true ? "Đã duyệt" : "Chưa duyệt"
                 }).ToList();
 
                 return Json(new
@@ -136,5 +148,9 @@ namespace QuanLyDangKyNgayLD.Areas.SinhVien.Controllers
                 }, JsonRequestBehavior.AllowGet);
             }
         }
+
+
+
+
     }
 }
