@@ -4,6 +4,12 @@
     Layout = "~/Areas/SinhVien/Views/Shared/Viewsiderbar.cshtml";
 }
 <link href="~/Areas/SinhVien/Content/Css/Table.css" rel="stylesheet" type="text/css" />
+<script src="~/Areas/SinhVien/Content/Js/StudentRegister.js"></script> 
+
+
+
+
+
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <div class="card-header-custom">
     <h4 class="title-gradient mb-0">
@@ -27,7 +33,7 @@
                         <th class="text-center pe-4">Thao tác</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="tableBody">
                     @if (Model != null && Model.Any())
                     {
                         var stt = 1;
@@ -36,7 +42,7 @@
                             <tr class="table-row-hover">
                                 <td class="text-center fw-bold text-muted ps-4">@stt</td>
                                 <td class="px-1 text-center">
-                                    <span class="text-truncate d-inline-block w-100" style="max-width:80px;"
+                                    <span class="text-truncate d-inline-block w-100" style="max-width:83px;"
                                           title="@(item.NgayLaoDong?.ToString("dd/MM/yyyy"))">
                                         @(item.NgayLaoDong?.ToString("dd/MM/yyyy"))
                                     </span>
@@ -105,3 +111,17 @@
         </div>
     </div>
 </div>
+<!-- PHÂN TRANG -->
+<div class="d-flex justify-content-between align-items-center mt-3">
+    <div id="pagination" class="pagination-container">
+        <!-- Nút trang trước -->
+        <button class="btn btn-secondary btn-sm me-1" id="prev">&lt;</button>
+
+        <!-- Vùng chứa số trang -->
+        <span id="pageNumbers"></span>
+
+        <!-- Nút trang sau -->
+        <button class="btn btn-secondary btn-sm ms-1" id="next">&gt;</button>
+    </div>
+</div>
+

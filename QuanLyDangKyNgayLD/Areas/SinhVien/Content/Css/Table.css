@@ -317,3 +317,91 @@
         max-width: 150px;
     }
 }
+/* Hiển thị đầy đủ cột Ngày lao động */
+.date-full {
+    max-width: none !important;
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: unset !important;
+    font-weight: 600;
+    color: #2d3436;
+}
+
+/*Phân Trang*/
+.pagination-container {
+    margin-top: 8px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+}
+
+.pagination-container .btn {
+    border-radius: 6px;
+    padding: 8px 12px;
+    min-width: 40px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid #dee2e6 !important;
+}
+
+.pagination-container #prev,
+.pagination-container #next {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+    height: 40px;
+    padding: 0;
+    background-color: #007bff !important;
+    color: white !important;
+    border: none !important;
+    margin-left: 20px
+}
+
+    .pagination-container #prev:hover,
+    .pagination-container #next:hover {
+        background-color: #0056b3 !important;
+        transform: scale(1.05);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    }
+
+    .pagination-container #prev:disabled,
+    .pagination-container #next:disabled {
+        background-color: #e9ecef !important;
+        color: #999 !important;
+        cursor: not-allowed;
+        opacity: 0.5;
+    }
+
+    .pagination-container #prev:active,
+    .pagination-container #next:active {
+        transform: scale(0.95);
+    }
+
+.pagination-container span button {
+    background-color: #f8f9fa !important;
+    color: #333 !important;
+    border: 1px solid #dee2e6 !important;
+    min-width: 35px;
+    height: 35px;
+    padding: 0;
+}
+
+    .pagination-container span button:hover {
+        background-color: #e9ecef !important;
+        border-color: #007bff !important;
+    }
+
+    .pagination-container span button.active {
+        background-color: #007bff !important;
+        color: white !important;
+        border-color: #007bff !important;
+    }
+
+
+
+
+

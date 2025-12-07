@@ -995,10 +995,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 
-
-
-
-
     // Hàm đóng modal nếu đang mở
     function closeModalIfOpen(modalId) {
         const modalEl = document.getElementById(modalId);
