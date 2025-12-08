@@ -66,42 +66,35 @@ namespace QuanLyDangKyNgayLD.Areas.SinhVien.Controllers
 
 
 
-
         [HttpGet]
         public ActionResult LoadDotLaoDong(
             int page = 1,
-            int pageSize = ITEMS_PER_PAGE,
+            int pageSize = 5,
             string buoi = "",
-            string trangThai = "",
-            int? thang = null)
+            string trangThai = "")
         {
             using (var db = DbContextFactory.Create())
             {
                 var user = Session["User"] as TaiKhoan;
 
-                // LẤY THÁNG + NĂM HIỆN TẠI CỦA MÁY NGƯỜI DÙNG
-                var today = DateTime.Today;                 // Ví dụ: 07/12/2025
+                var today = DateTime.Today;
                 var currentMonth = today.Month;
                 var currentYear = today.Year;
 
                 IQueryable<TaoDotNgayLaoDong> query = db.TaoDotNgayLaoDongs
-                                                        .Where(d => d.Ngayxoa == null);
+                    .Where(d => d.Ngayxoa == null);
 
-                // CHỈ LẤY ĐỢT LAO ĐỘNG CÙNG THÁNG + CÙNG NĂM VỚI HÔM NAY
+                // CHỈ LẤY ĐỢT TRONG THÁNG HIỆN TẠI
                 query = query.Where(x => x.NgayLaoDong.HasValue &&
                                         x.NgayLaoDong.Value.Month == currentMonth &&
                                         x.NgayLaoDong.Value.Year == currentYear);
 
-                // Lọc theo vai trò (giữ nguyên)
-                if (user != null)
+                // Lọc theo vai trò: sinh viên chỉ thấy cá nhân
+                if (user != null && user.VaiTro.TenVaiTro == "SinhVien")
                 {
-                    if (user.VaiTro.TenVaiTro == "SinhVien")
-                    {
-                        query = query.Where(d => d.LoaiLaoDong == "Cá nhân");
-                    }
+                    query = query.Where(d => d.LoaiLaoDong == "Cá nhân");
                 }
 
-                // Lọc buổi, trạng thái duyệt (giữ nguyên)
                 if (!string.IsNullOrWhiteSpace(buoi))
                     query = query.Where(x => x.Buoi == buoi);
 
@@ -109,13 +102,6 @@ namespace QuanLyDangKyNgayLD.Areas.SinhVien.Controllers
                     query = query.Where(x => x.TrangThaiDuyet == true);
                 else if (trangThai == "0")
                     query = query.Where(x => x.TrangThaiDuyet == false);
-
-                // Nếu có truyền tháng từ client (dự phòng sau này) thì dùng tháng đó
-                if (thang.HasValue)
-                {
-                    query = query.Where(x => x.NgayLaoDong.HasValue &&
-                                            x.NgayLaoDong.Value.Month == thang.Value);
-                }
 
                 int totalItems = query.Count();
                 int totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
@@ -125,18 +111,32 @@ namespace QuanLyDangKyNgayLD.Areas.SinhVien.Controllers
                                     .Take(pageSize)
                                     .ToList();
 
+                // ĐẾM SỐ LƯỢNG SINH VIÊN ĐÃ ĐĂNG KÝ (theo PhieuDangKy)
+                var dotIds = rawItems.Select(x => x.TaoDotLaoDong_id).ToList();
+
+                var dangKyCount = db.PhieuDangKies
+                    .Where(p => dotIds.Contains(p.TaoDotLaoDong_id ?? 0))
+                    .GroupBy(p => p.TaoDotLaoDong_id)
+                    .ToDictionary(g => g.Key ?? 0, g => g.Count());
+
+                // Đảm bảo mọi đợt đều có số lượng (nếu chưa ai đăng ký → 0)
+                foreach (var id in dotIds)
+                    if (!dangKyCount.ContainsKey(id))
+                        dangKyCount[id] = 0;
+
                 var items = rawItems.Select(x => new
                 {
                     x.TaoDotLaoDong_id,
                     x.DotLaoDong,
                     x.Buoi,
                     x.LoaiLaoDong,
-                    GiaTri = x.GiaTri,
+                    GiaTri = x.GiaTri ?? 0,
                     NgayLaoDong = x.NgayLaoDong.HasValue ? x.NgayLaoDong.Value.ToString("dd/MM/yyyy") : "",
                     x.KhuVuc,
                     x.SoLuongSinhVien,
                     TrangThaiDuyet = x.TrangThaiDuyet == true,
-                    TrangThaiText = x.TrangThaiDuyet == true ? "Đã duyệt" : "Chưa duyệt"
+                    TrangThaiText = x.TrangThaiDuyet == true ? "Đã duyệt" : "Chưa duyệt",
+                    SoLuongDaDangKy = dangKyCount.ContainsKey(x.TaoDotLaoDong_id) ? dangKyCount[x.TaoDotLaoDong_id] : 0
                 }).ToList();
 
                 return Json(new
@@ -148,7 +148,6 @@ namespace QuanLyDangKyNgayLD.Areas.SinhVien.Controllers
                 }, JsonRequestBehavior.AllowGet);
             }
         }
-
 
 
 
