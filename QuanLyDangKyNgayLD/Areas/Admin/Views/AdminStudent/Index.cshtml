@@ -1,8 +1,181 @@
-﻿
+﻿@model IEnumerable<QuanLyDangKyNgayLD.Models.SinhVien>
 @{
-    ViewBag.Title = "Index";
-    Layout = "~/Areas/QuanLy/Views/Shared/View.cshtml";
+    ViewBag.Title = "Quản lý Sinh viên";
+    Layout = "~/Areas/Admin/Views/Shared/ViewShare.cshtml";
 }
+<link href="~/Areas/Content/adminpage.css" rel="stylesheet" type="text/css" />
 
-<h2>Index</h2>
+<!-- THANH CÔNG CỤ -->
+<nav class="navbar navbar-expand-lg toolbar shadow-sm mb-3">
+    <div class="container-fluid p-0">
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <!-- Bên trái -->
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                    <button class="btn btn-outline-primary btn-sm me-2" id="btnAddStudent">
+                        <i class="fa fa-plus me-1"></i> Thêm sinh viên
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="btn btn-outline-secondary btn-sm me-2" id="btnViewDeletedStudent">
+                        <i class="fas fa-trash-restore me-1"></i> Sinh viên đã xóa
+                    </button>
+                </li>
+            </ul>
 
+            <!-- Bên phải -->
+            <form class="toolbar-flex align-items-center" role="search">
+                <div class="input-group input-group-sm shadow-sm me-2" style="min-width: 200px;">
+                    <span class="input-group-text bg-white border-end-0">
+                        <i class="fa fa-search text-muted"></i>
+                    </span>
+                    <input type="text" id="searchStudentBox" class="form-control border-start-0" placeholder="Tìm kiếm MSSV, Họ tên...">
+                </div>
+                <button class="btn btn-outline-success btn-sm shadow-sm" id="exportAllStudents" type="button">
+                    <i class="fa fa-file-excel me-1"></i> Xuất Excel
+                </button>
+            </form>
+        </div>
+    </div>
+</nav>
+
+<!-- BẢNG DỮ LIỆU -->
+<div class="table-responsive shadow-sm rounded-3 bg-white p-2">
+    <table class="table table-bordered table-hover align-middle text-center mb-0">
+        <thead class="table-light">
+            <tr>
+                <th width="6%">STT</th>
+                <th>MSSV</th>
+                <th>Họ tên</th>
+                <th>Ngày sinh</th>
+                <th>Giới tính</th>
+                <th>Quê quán</th>
+                <th>Email</th>
+                <th>SĐT</th>
+                <th>Lớp</th>
+                <th width="22%" class="action-header">Tác vụ</th>
+            </tr>
+        </thead>
+        <tbody id="studentTableBody">
+            @if (Model != null && Model.Any())
+            {
+                var i = 1;
+                foreach (var sv in Model)
+                {
+                    <tr>
+                        <td>@i</td>
+                        <td>@sv.MSSV</td>
+                        <td>@sv.HoTen</td>
+                        <td>@(sv.NgaySinh.HasValue ? sv.NgaySinh.Value.ToString("dd/MM/yyyy") : "-")</td>
+                        <td>@sv.GioiTinh</td>
+                        <td>@sv.QueQuan</td>
+                        <td>@sv.Email</td>
+                        <td>@sv.SoDienThoaiSinhVien</td>
+                        <td>@(sv.Lop != null ? sv.Lop.TenLop : "Chưa có")</td>
+                        <td>
+                            <button class="btn btn-sm btn-warning btn-edit-student me-1"
+                                    data-id="@sv.MSSV"
+                                    data-hoten="@sv.HoTen"
+                                    data-ngaysinh="@sv.NgaySinh"
+                                    data-gioitinh="@sv.GioiTinh"
+                                    data-quequan="@sv.QueQuan"
+                                    data-email="@sv.Email"
+                                    data-sdt="@sv.SoDienThoaiSinhVien"
+                                    data-lop="@sv.Lop_id">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-danger btn-delete-student me-1" data-id="@sv.MSSV">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                            <button class="btn btn-sm btn-info btn-detail-student me-1 text-white" data-id="@sv.MSSV">
+                                <i class="fas fa-info-circle"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    i++;
+                }
+            }
+            else
+            {
+                <tr class="no-data-row">
+                    <td colspan="10" class="text-muted py-4">Không có dữ liệu</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<!-- PHÂN TRANG -->
+<div class="d-flex justify-content-between align-items-center mt-3">
+    <div id="paginationStudent" class="pagination-container">
+        <button class="btn btn-secondary btn-sm me-1" id="prevStudent">&lt;</button>
+        <span id="pageNumbersStudent"></span>
+        <button class="btn btn-secondary btn-sm ms-1" id="nextStudent">&gt;</button>
+    </div>
+</div>
+
+<!-- MODAL THÊM SINH VIÊN -->
+<div class="modal fade" id="createStudentModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content shadow">
+            <form id="createStudentForm" method="post" action="/Admin/SinhVien/CreateAjax">
+                @Html.AntiForgeryToken()
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">Thêm Sinh Viên Mới</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">MSSV</label>
+                        <input name="MSSV" class="form-control" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Họ tên</label>
+                        <input name="HoTen" class="form-control" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Ngày sinh</label>
+                        <input type="date" name="NgaySinh" class="form-control" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Giới tính</label>
+                        <select name="GioiTinh" class="form-select">
+                            <option value="Nam">Nam</option>
+                            <option value="Nữ">Nữ</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Quê quán</label>
+                        <input name="QueQuan" class="form-control" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Email</label>
+                        <input type="email" name="Email" class="form-control" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">SĐT</label>
+                        <input name="SoDienThoaiSinhVien" class="form-control" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Lớp</label>
+                        <select name="Lop_id" class="form-select">
+                            <option value="">-- Chọn lớp --</option>
+                            @foreach (var lop in ViewBag.LopList as List<QuanLyDangKyNgayLD.Models.Lop>)
+                            {
+                                <option value="@lop.Lop_id">@lop.TenLop</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fa fa-times me-1"></i> Hủy
+                    </button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fa fa-check me-1"></i> Lưu
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

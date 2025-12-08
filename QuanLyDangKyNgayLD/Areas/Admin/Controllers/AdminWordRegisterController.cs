@@ -140,6 +140,7 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
             }
         }
 
+        // Tạo Đợt Lao động 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public JsonResult CreateAjax(TaoDotNgayLaoDong model)
@@ -151,7 +152,20 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
 
                 using (var db = DbContextFactory.Create())
                 {
-                    // ✅ Chỉ chặn khi: cùng ngày + cùng buổi + cùng khu vực + cùng loại lao động
+                    // Lấy user từ Session
+                    var userIdStr = Session["UserId"]?.ToString();
+                    if (!int.TryParse(userIdStr, out int userId))
+                        return Json(new { success = false, message = "Không xác định được người tạo." });
+
+                    var user = db.TaiKhoans.FirstOrDefault(u => u.TaiKhoan_id == userId);
+                    if (user == null)
+                        return Json(new { success = false, message = "Không tìm thấy tài khoản." });
+
+                    // ✅ Chỉ cho phép Admin tạo đợt
+                    if (user.VaiTro_id != 1)
+                        return Json(new { success = false, message = "Chỉ Admin mới có quyền tạo đợt lao động." });
+
+                    // Kiểm tra trùng lặp (ngày + buổi + khu vực + loại lao động)
                     bool isDuplicate = db.TaoDotNgayLaoDongs.Any(x =>
                         x.NgayLaoDong == model.NgayLaoDong &&
                         x.Buoi == model.Buoi &&
@@ -162,31 +176,27 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                     if (isDuplicate)
                         return Json(new { success = false, message = "Khu vực này đã có đợt lao động cùng loại trong ngày và buổi này." });
 
-                    // Kiểm tra ngày lao động
+                    // Kiểm tra dữ liệu đầu vào
                     if (!model.NgayLaoDong.HasValue)
                         return Json(new { success = false, message = "Bạn phải chọn ngày lao động." });
 
-                    // Kiểm tra buổi
                     if (string.IsNullOrWhiteSpace(model.Buoi))
                         return Json(new { success = false, message = "Bạn phải chọn buổi." });
 
-                    // Kiểm tra số lượng sinh viên
                     if (model.SoLuongSinhVien <= 0)
                         return Json(new { success = false, message = "Số lượng sinh viên phải lớn hơn 0." });
 
                     // Gán mặc định
                     model.TrangThaiDuyet = false;
                     model.Ngayxoa = null;
+                    model.NguoiTao = user.TaiKhoan_id;
 
-                    var userIdStr = Session["UserId"]?.ToString();
-                    if (!int.TryParse(userIdStr, out int userId))
-                        return Json(new { success = false, message = "Không xác định được người tạo." });
-
-                    var user = db.TaiKhoans.FirstOrDefault(u => u.TaiKhoan_id == userId);
-                    model.NguoiTao = user?.TaiKhoan_id ?? userId;
-
+                    // ✅ Lưu đợt lao động
                     db.TaoDotNgayLaoDongs.Add(model);
                     db.SaveChanges();
+
+                    // ❌ Không tạo phiếu đăng ký ở đây
+                    // Phiếu sẽ được sinh viên tạo khi họ đăng ký vào đợt này
 
                     return Json(new { success = true, message = "Tạo đợt lao động thành công!" });
                 }
@@ -196,7 +206,6 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                 return Json(new { success = false, message = "Lỗi hệ thống: " + ex.Message });
             }
         }
-
 
 
 
@@ -280,11 +289,20 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                         });
                     }
 
-                    // Nếu đủ thì duyệt
+                    // ✅ Duyệt đợt
                     dot.TrangThaiDuyet = true;
+
+                    // ✅ Cập nhật tất cả phiếu đăng ký của sinh viên trong đợt này thành "DaDuyet"
+                    var phieuList = db.PhieuDangKies.Where(p => p.TaoDotLaoDong_id == id).ToList();
+                    foreach (var phieu in phieuList)
+                    {
+                        phieu.TrangThai = "DaDuyet";
+                        phieu.ThoiGian = DateTime.Now; // cập nhật thời gian duyệt
+                    }
+
                     db.SaveChanges();
 
-                    return Json(new { success = true, message = "Đã duyệt đợt lao động." });
+                    return Json(new { success = true, message = "Đã duyệt đợt và tất cả phiếu đăng ký." });
                 }
             }
             catch (Exception ex)
@@ -292,6 +310,12 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                 return Json(new { success = false, message = "Lỗi: " + ex.Message });
             }
         }
+
+
+
+
+
+
 
         // AJAX: Lấy danh sách đã xóa
         [HttpGet]

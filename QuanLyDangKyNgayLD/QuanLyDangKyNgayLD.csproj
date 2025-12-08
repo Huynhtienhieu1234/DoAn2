@@ -175,6 +175,7 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Logs\LoginLogger.cs" />
     <Compile Include="Models\Anh.cs">
       <DependentUpon>QuanLyDangKyLaoDong.tt</DependentUpon>
     </Compile>
@@ -218,9 +219,6 @@
       <DependentUpon>QuanLyDangKyLaoDong.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\SoNgayLaoDong.cs">
-      <DependentUpon>QuanLyDangKyLaoDong.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Models\sysdiagram.cs">
       <DependentUpon>QuanLyDangKyLaoDong.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\TaiKhoan.cs">

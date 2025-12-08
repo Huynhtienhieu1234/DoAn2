@@ -211,23 +211,78 @@ function dangKy(id) {
         $.post("/SinhVien/StudentRegisterWord/DangKy", { id: id }, function (res) {
             if (res.success) {
                 alert(res.message || "Đăng ký thành công!");
-                loadDataToTable(currentPage);
+
+                // TỰ ĐỘNG CỘNG +1 SỐ LƯỢNG MÀ KHÔNG CẦN LOAD LẠI TOÀN BỘ TRANG
+                const row = document.querySelector(`button[onclick="dangKy(${id})"]`)?.closest('tr');
+                if (row) {
+                    const soLuongCell = row.cells[6]; // Cột "Số lượng SV" (0-based index)
+                    if (soLuongCell) {
+                        const span = soLuongCell.querySelector('span');
+                        if (span) {
+                            const text = span.innerText; // ví dụ: "5/20"
+                            const parts = text.split('/');
+                            const daDangKy = parseInt(parts[0]) + 1;
+                            const can = parseInt(parts[1]);
+                            span.innerText = daDangKy + "/" + can;
+
+                            // Đổi màu nếu đủ người
+                            if (daDangKy >= can) {
+                                span.className = "text-success fw-bold";
+                            }
+
+                            // Đổi nút thành "Đã đăng ký"
+                            const thaoTacCell = row.cells[8]; // Cột thao tác
+                            thaoTacCell.innerHTML = `
+                                <div class="btn-group-action">
+                                    <button class="btn btn-success btn-sm" disabled>
+                                        <i class="fas fa-check me-1"></i>Đã đăng ký
+                                    </button>
+                                    <button class="btn btn-cancel btn-sm ms-2" onclick="huyDangKy(${id})">
+                                        <i class="fas fa-user-minus me-1"></i>Hủy
+                                    </button>
+                                </div>`;
+                        }
+                    }
+                }
+
+                // (Tùy chọn) Có thể load lại toàn trang nếu muốn đồng bộ 100%
+                // loadDataToTable(currentPage);
             } else {
                 alert(res.message || "Đăng ký thất bại!");
             }
         }).fail(() => alert("Lỗi kết nối đến máy chủ!"));
     }
 }
-
+// Hủy đăng ký
 function huyDangKy(id) {
-    if (confirm("Bạn có chắc chắn muốn hủy đăng ký đợt lao động này?")) {
+    if (confirm("Bạn chắc chắn muốn hủy đăng ký?")) {
         $.post("/SinhVien/StudentRegisterWord/HuyDangKy", { id: id }, function (res) {
             if (res.success) {
-                alert(res.message || "Hủy đăng ký thành công!");
-                loadDataToTable(currentPage);
+                alert("Hủy thành công!");
+
+                const row = document.querySelector(`button[onclick="huyDangKy(${id})"]`)?.closest('tr');
+                if (row) {
+                    const soLuongCell = row.cells[6];
+                    if (soLuongCell) {
+                        const span = soLuongCell.querySelector('span');
+                        if (span) {
+                            const text = span.innerText;
+                            const parts = text.split('/');
+                            const daDangKy = parseInt(parts[0]) - 1;
+                            const can = parseInt(parts[1]);
+                            span.innerText = daDangKy + "/" + can;
+                            if (daDangKy < can) span.className = "text-danger fw-bold";
+                        }
+                    }
+                    // Đổi lại nút Đăng ký
+                    row.cells[8].innerHTML = `
+                        <button class="btn btn-register me-2" onclick="dangKy(${id})">
+                            <i class="fas fa-user-plus me-1"></i>Đăng ký
+                        </button>`;
+                }
             } else {
-                alert(res.message || "Hủy đăng ký thất bại!");
+                alert(res.message || "Hủy thất bại!");
             }
-        }).fail(() => alert("Lỗi kết nối đến máy chủ!"));
+        });
     }
 }

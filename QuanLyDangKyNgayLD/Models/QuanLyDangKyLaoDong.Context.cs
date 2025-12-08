@@ -35,7 +35,6 @@ namespace QuanLyDangKyNgayLD.Models
         public virtual DbSet<QuanLy> QuanLies { get; set; }
         public virtual DbSet<SinhVien> SinhViens { get; set; }
         public virtual DbSet<SoNgayLaoDong> SoNgayLaoDongs { get; set; }
-        public virtual DbSet<sysdiagram> sysdiagrams { get; set; }
         public virtual DbSet<TaiKhoan> TaiKhoans { get; set; }
         public virtual DbSet<TaoDotNgayLaoDong> TaoDotNgayLaoDongs { get; set; }
         public virtual DbSet<VaiTro> VaiTroes { get; set; }

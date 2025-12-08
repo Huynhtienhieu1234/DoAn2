@@ -26,6 +26,7 @@ namespace QuanLyDangKyNgayLD.Models
         public Nullable<bool> LaoDongCaNhan { get; set; }
         public Nullable<System.DateTime> ThoiGian { get; set; }
         public Nullable<int> TaoDotLaoDong_id { get; set; }
+        public string TrangThai { get; set; }
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<PhieuDuyet> PhieuDuyets { get; set; }

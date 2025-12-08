@@ -4,19 +4,18 @@
   <edmx:Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
     <!-- Diagram content (shape and connector positions) -->
     <edmx:Diagrams>
-      <Diagram DiagramId="e2ba0173e13a4bee8ada7cb68b28aea2" Name="Diagram1">
+      <Diagram DiagramId="e2ba0173e13a4bee8ada7cb68b28aea2" Name="Diagram1" ZoomLevel="74">
         <EntityTypeShape EntityType="DB_QLNLD4ROLEModel.Anh" Width="1.5" PointX="3" PointY="0.75" IsExpanded="true" />
         <EntityTypeShape EntityType="DB_QLNLD4ROLEModel.DanhSachDiemDanh" Width="1.5" PointX="7.5" PointY="3.25" IsExpanded="true" />
-        <EntityTypeShape EntityType="DB_QLNLD4ROLEModel.Khoa" Width="1.5" PointX="0.75" PointY="3.625" IsExpanded="true" />
-        <EntityTypeShape EntityType="DB_QLNLD4ROLEModel.Lop" Width="1.5" PointX="3" PointY="3.375" IsExpanded="true" />
+        <EntityTypeShape EntityType="DB_QLNLD4ROLEModel.Khoa" Width="1.5" PointX="0.5" PointY="1.625" IsExpanded="true" />
+        <EntityTypeShape EntityType="DB_QLNLD4ROLEModel.Lop" Width="1.5" PointX="0.5" PointY="3.875" IsExpanded="true" />
         <EntityTypeShape EntityType="DB_QLNLD4ROLEModel.PhieuDangKy" Width="1.5" PointX="6" PointY="13.5" IsExpanded="true" />
         <EntityTypeShape EntityType="DB_QLNLD4ROLEModel.PhieuDuyet" Width="1.5" PointX="8.25" PointY="15.25" IsExpanded="true" />
         <EntityTypeShape EntityType="DB_QLNLD4ROLEModel.PhieuXacNhanHoanThanh" Width="1.5" PointX="10.5" PointY="2.875" IsExpanded="true" />
         <EntityTypeShape EntityType="DB_QLNLD4ROLEModel.QuanLy" Width="1.5" PointX="6" PointY="16.75" IsExpanded="true" />
         <EntityTypeShape EntityType="DB_QLNLD4ROLEModel.SinhVien" Width="1.5" PointX="5.25" PointY="2.5" IsExpanded="true" />
         <EntityTypeShape EntityType="DB_QLNLD4ROLEModel.SoNgayLaoDong" Width="1.5" PointX="12.75" PointY="3.375" IsExpanded="true" />
-        <EntityTypeShape EntityType="DB_QLNLD4ROLEModel.sysdiagram" Width="1.5" PointX="7.75" PointY="7" IsExpanded="true" />
-        <EntityTypeShape EntityType="DB_QLNLD4ROLEModel.TaiKhoan" Width="1.5" PointX="3" PointY="7.125" IsExpanded="true" />
+        <EntityTypeShape EntityType="DB_QLNLD4ROLEModel.TaiKhoan" Width="1.5" PointX="2.875" PointY="6" IsExpanded="true" />
         <EntityTypeShape EntityType="DB_QLNLD4ROLEModel.TaoDotNgayLaoDong" Width="1.5" PointX="5.25" PointY="8.5" IsExpanded="true" />
         <EntityTypeShape EntityType="DB_QLNLD4ROLEModel.VaiTro" Width="1.5" PointX="0.75" PointY="7.875" IsExpanded="true" />
         <AssociationConnector Association="DB_QLNLD4ROLEModel.fk_anh" ManuallyRouted="false" />

@@ -32,6 +32,7 @@ namespace QuanLyDangKyNgayLD.Models
         public Nullable<int> Lop_id { get; set; }
         public Nullable<int> Anh_id { get; set; }
         public string Email { get; set; }
+        public Nullable<System.DateTime> Deleted_at { get; set; }
     
         public virtual Anh Anh { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]

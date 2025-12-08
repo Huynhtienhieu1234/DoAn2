@@ -148,6 +148,81 @@ namespace QuanLyDangKyNgayLD.Areas.SinhVien.Controllers
                 }, JsonRequestBehavior.AllowGet);
             }
         }
+        //// Đăng ký ngày lao động
+        [HttpPost]
+        public ActionResult DangKy(int id)
+        {
+                            
+            using (var db = DbContextFactory.Create())
+            {
+                string username = Session["Username"]?.ToString();
+                
+                if (string.IsNullOrEmpty(username))
+                {
+                    throw new Exception("Lỗi không lưu sesion");
+                }
+                
+                var user = db.TaiKhoans.FirstOrDefault(tk => tk.Username == username);
+                
+                if (username == null)
+                    return Json(new { success = false, message = "Vui lòng đăng nhập lại!" });
+
+                if(user == null)
+                    return Json(new { success = false, message = "Tài khoản không tồn tại!" });
+
+               
+                // Lấy MSSV từ bảng SinhVien
+                var sv = db.SinhViens
+                      .Include("TaiKhoan1")
+                      .FirstOrDefault(tk => tk.TaiKhoan == user.TaiKhoan_id );
+
+                if (sv == null)
+                    return Json(new { success = false, message = "Không tìm thấy sinh viên tương ứng!" + username});
+
+
+                // Kiểm tra đợt lao động tồn tại
+                var dot = db.TaoDotNgayLaoDongs.FirstOrDefault(x => x.TaoDotLaoDong_id == id && x.Ngayxoa == null);
+                if (dot == null)
+                    return Json(new { success = false, message = "Đợt lao động không tồn tại!" });
+
+                // Kiểm tra đã đăng ký chưa
+                var phieu = db.PhieuDangKies.FirstOrDefault(p => p.TaoDotLaoDong_id == id && p.MSSV == sv.MSSV);
+                if (phieu != null && phieu.TrangThai == "DangKy")
+                    return Json(new { success = false, message = "Bạn đã đăng ký đợt này rồi!" });
+
+                if (phieu == null)
+                {
+                    // Tạo phiếu mới
+                    var phieuMoi = new PhieuDangKy
+                    {
+                        PhieuDangKy_id = (db.PhieuDangKies.Max(p => (int?)p.PhieuDangKy_id) ?? 0) + 1,
+                        MSSV = sv.MSSV,
+                        TaoDotLaoDong_id = id,
+                        ThoiGian = DateTime.Now,
+                        LaoDongCaNhan = dot.LoaiLaoDong == "Cá nhân",
+                        LaoDongTheoLop = dot.LoaiLaoDong == "Theo lớp",
+                        TrangThai = "DangKy"
+                    };
+                    db.PhieuDangKies.Add(phieuMoi);
+                }
+                else
+                {
+                    // Nếu trước đó đã hủy thì cho đăng ký lại
+                    phieu.TrangThai = "DangKy";
+                    phieu.ThoiGian = DateTime.Now;
+                }
+
+                db.SaveChanges();
+
+                return Json(new { success = true, message = "Đăng ký thành công!" });
+            }
+        }
+
+
+
+
+
+
 
 
 

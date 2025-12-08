@@ -3,6 +3,7 @@ using System.Web.Mvc;
 using System.Web.Security;
 using QuanLyDangKyNgayLD.Models;
 using QuanLyDangKyNgayLD.Factories;
+using QuanLyDangKyNgayLD.Logs; // thêm namespace để dùng LoginLogger
 
 namespace QuanLyDangKyNgayLD.Controllers
 {
@@ -13,6 +14,7 @@ namespace QuanLyDangKyNgayLD.Controllers
         {
             return View();
         }
+
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -36,6 +38,9 @@ namespace QuanLyDangKyNgayLD.Controllers
             using (var db = DbContextFactory.Create())
             {
                 var user = db.TaiKhoans.FirstOrDefault(u => u.Username == model.Username);
+
+
+
                 if (user == null)
                 {
                     ModelState.AddModelError("", "Tài khoản không tồn tại.");
@@ -70,12 +75,16 @@ namespace QuanLyDangKyNgayLD.Controllers
 
                 // ✅ Đăng nhập thành công
                 Session["UserID"] = user.TaiKhoan_id;
+
                 Session["Username"] = user.Username;
 
                 var role = db.VaiTroes.FirstOrDefault(r => r.VaiTro_id == user.VaiTro_id);
                 Session["Role"] = role?.TenVaiTro;
 
                 FormsAuthentication.SetAuthCookie(user.Username, false);
+
+                // 🔥 Ghi log đăng nhập ra file txt
+                LoginLogger.WriteLog(user.Username);
 
                 switch (user.VaiTro_id)
                 {
@@ -90,7 +99,6 @@ namespace QuanLyDangKyNgayLD.Controllers
             }
         }
 
-
         public ActionResult Logout()
         {
             FormsAuthentication.SignOut();
@@ -98,7 +106,5 @@ namespace QuanLyDangKyNgayLD.Controllers
             Session.Abandon();
             return RedirectToAction("Login", "Login"); // quay về giao diện Login.cshtml
         }
-
-
     }
 }
