@@ -261,6 +261,20 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
             }
         }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         // AJAX: Chi tiết sinh viên
         [HttpGet]
         public ActionResult DetailsAjax(int id)
@@ -346,6 +360,37 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
         }
 
 
+        // AJAX: Lấy danh sách sinh viên đã xóa
+        [HttpGet]
+        public ActionResult GetDeletedList()
+        {
+            try
+            {
+                using (var db = DbContextFactory.Create())
+                {
+                    var list = db.SinhViens
+                        .Include(s => s.Lop)
+                        .Where(s => s.Deleted_at != null)
+                        .ToList() // lấy ra trước
+                        .Select(s => new
+                        {
+                            s.MSSV,
+                            s.HoTen,
+                            Lop = s.Lop != null ? s.Lop.TenLop : "Chưa có",
+                            Deleted_at = s.Deleted_at.HasValue
+                                ? s.Deleted_at.Value.ToString("dd/MM/yyyy HH:mm")
+                                : ""
+                        })
+                        .ToList();
+
+                    return Json(list, JsonRequestBehavior.AllowGet);
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Lỗi server: " + ex.Message }, JsonRequestBehavior.AllowGet);
+            }
+        }
 
 
 

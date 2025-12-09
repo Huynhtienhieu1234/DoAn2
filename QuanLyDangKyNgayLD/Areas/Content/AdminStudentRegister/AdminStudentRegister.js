@@ -14,6 +14,9 @@ document.addEventListener("DOMContentLoaded", function () {
     function setupEventListeners() {
         // === NÚT TRÊN THANH CÔNG CỤ (ĐÃ ĐỔI THEO ID MỚI) ===
         document.getElementById("btnAdd")?.addEventListener("click", () => showModal("createStudentModal"));
+
+
+
         document.getElementById("btnViewDeleted")?.addEventListener("click", () => showModal("deletedStudentsModal"));
 
         // Nút Nhập Excel (bạn đang dùng id exportAllAccounts → sửa thành đúng)
@@ -94,6 +97,65 @@ document.addEventListener("DOMContentLoaded", function () {
         tbody.classList.remove('loading');
     }
 
+    // ============= Danh sách xóa =============
+
+    showModal("deletedStudentsModal");
+    loadDeletedStudents();
+    function loadDeletedStudents() {
+        const tbody = document.getElementById("deletedStudentsTableBody");
+        tbody.innerHTML = `
+        <tr><td colspan="6" class="text-center text-muted py-4">Đang tải dữ liệu...</td></tr>
+    `;
+
+        fetch("/Admin/AdminStudent/GetDeletedList")
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                return response.text(); // đọc thô trước
+            })
+            .then(text => {
+                try {
+                    const data = JSON.parse(text);
+
+                    if (!Array.isArray(data) || data.length === 0) {
+                        tbody.innerHTML = `
+                        <tr><td colspan="6" class="text-center text-muted py-4">Không có sinh viên nào đã xóa.</td></tr>
+                    `;
+                        return;
+                    }
+
+                    tbody.innerHTML = "";
+                    data.forEach((sv, index) => {
+                        const row = document.createElement("tr");
+                        row.innerHTML = `
+                        <td>${index + 1}</td>
+                        <td>${sv.MSSV}</td>
+                        <td>${sv.HoTen}</td>
+                        <td>${sv.Lop}</td>
+                        <td>${sv.Deleted_at}</td>
+                        <td>
+                            <button class="btn btn-sm btn-success" onclick="restoreStudent(${sv.MSSV})">
+                                <i class="fas fa-undo-alt me-1"></i> Khôi phục
+                            </button>
+                        </td>
+                    `;
+                        tbody.appendChild(row);
+                    });
+                } catch (parseErr) {
+                    console.error("Phản hồi không phải JSON:", text);
+                    tbody.innerHTML = `
+                    <tr><td colspan="6" class="text-center text-danger py-4">Server trả về dữ liệu không hợp lệ.</td></tr>
+                `;
+                }
+            })
+            .catch(err => {
+                console.error("Lỗi khi tải danh sách đã xóa:", err);
+                tbody.innerHTML = `
+                <tr><td colspan="6" class="text-center text-danger py-4">Lỗi khi tải dữ liệu (${err.message}).</td></tr>
+            `;
+            });
+    }
 
 
 
@@ -456,7 +518,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // ============= CHỈNH SỬA =============
 
-    // ================== CHỈNH SỬA SINH VIÊN ==================
 
     // Parse JSON Date (/Date(…)/)
     function parseJsonDate(jsonDate) {

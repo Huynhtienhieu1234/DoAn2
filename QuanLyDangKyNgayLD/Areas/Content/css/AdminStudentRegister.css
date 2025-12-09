@@ -1954,3 +1954,9 @@ table {
 .modal-dialog.modal-dialog-centered.modal-lg {
     width: 10000px;
 }
+
+
+
+.modal-content.shadow-lg {
+    width: 100pc;
+}
