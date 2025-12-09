@@ -247,8 +247,8 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                         if (!long.TryParse(rawPassword, out _))
                             return Json(new { success = false, message = "MSSV phải là số nguyên dương!" });
 
-                        if (rawPassword.Length < 6 || rawPassword.Length > 10)
-                            return Json(new { success = false, message = "MSSV thường có từ 6-10 chữ số!" });
+                        if (rawPassword.Length < 6 || rawPassword.Length > 20)
+                            return Json(new { success = false, message = "MSSV thường có từ 6-20 chữ số!" });
                     }
                     else
                     {
