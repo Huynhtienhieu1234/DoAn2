@@ -236,7 +236,7 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-bold">Ngày sinh</label>
-                            <input type="date" id="editNgaySinh" name="NgaySinh" class="form-control form-control-sm" />
+                            <input type="text" id="editNgaySinh" name="NgaySinh" class="form-control form-control-sm" placeholder="dd/MM/yyyy" />
                         </div>
 
                         <div class="col-md-6">
@@ -303,10 +303,13 @@
 
 <!-- ====================== MODAL CHI TIẾT ====================== -->
 <div class="modal fade" id="detailStudentModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <!-- thêm modal-lg để rộng hơn -->
         <div class="modal-content shadow-lg">
             <div class="modal-header bg-info text-white">
-                <h5 class="modal-title"><i class="fa fa-info-circle me-2"></i> Thông tin sinh viên</h5>
+                <h5 class="modal-title">
+                    <i class="fa fa-info-circle me-2"></i> Thông tin sinh viên
+                </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
@@ -332,7 +335,6 @@
                     <dt class="col-sm-4">SĐT</dt>
                     <dd class="col-sm-8" id="detailSDT"></dd>
 
-                    <!-- Bổ sung Khoa -->
                     <dt class="col-sm-4">Khoa</dt>
                     <dd class="col-sm-8" id="detailKhoa"></dd>
 
@@ -340,16 +342,17 @@
                     <dd class="col-sm-8" id="detailLop"></dd>
                 </dl>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-            </div>
+
         </div>
     </div>
 </div>
 
+
 <!-- ====================== MODAL XÓA ====================== -->
 <div class="modal fade" id="deleteStudentModal" tabindex="-1" data-bs-backdrop="static">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+
+
         <div class="modal-content shadow-lg">
             <div class="modal-header bg-danger text-white">
                 <h5 class="modal-title"><i class="fas fa-trash me-2"></i> Xác nhận xóa sinh viên</h5>

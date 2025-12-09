@@ -166,6 +166,17 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                     if (sv == null)
                         return Json(new { success = false, message = "Không tìm thấy sinh viên." });
 
+                    // Kiểm tra số điện thoại
+                    if (!string.IsNullOrEmpty(model.SoDienThoaiSinhVien))
+                    {
+                        var phoneRegex = new System.Text.RegularExpressions.Regex(@"^\d{10}$");
+                        if (!phoneRegex.IsMatch(model.SoDienThoaiSinhVien))
+                        {
+                            return Json(new { success = false, message = "Số điện thoại phải có đúng 10 chữ số!" });
+                        }
+                    }
+
+                    // Cập nhật dữ liệu
                     sv.HoTen = model.HoTen;
                     sv.NgaySinh = model.NgaySinh;
                     sv.GioiTinh = model.GioiTinh;
@@ -197,25 +208,32 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
             {
                 using (var db = DbContextFactory.Create())
                 {
-                    var sv = db.SinhViens.FirstOrDefault(s => s.MSSV == id);
+                    var sv = db.SinhViens
+                        .Include(s => s.TaiKhoan1)
+                        .FirstOrDefault(s => s.MSSV == id && s.Deleted_at == null);
+
                     if (sv == null)
                         return Json(new { success = false, message = "Không tìm thấy sinh viên." });
 
-                    var tk = db.TaiKhoans.Find(sv.TaiKhoan);
-                    if (tk != null)
-                        tk.Deleted_at = DateTime.Now;
+                    // Đánh dấu xóa cho SinhVien
+                    sv.Deleted_at = DateTime.Now;
+
+                    // Nếu có tài khoản liên kết thì cũng đánh dấu xóa
+                    if (sv.TaiKhoan1 != null)
+                    {
+                        sv.TaiKhoan1.Deleted_at = DateTime.Now;
+                    }
 
                     db.SaveChanges();
 
-                    return Json(new { success = true, message = "Xóa sinh viên thành công!" });
+                    return Json(new { success = true, message = "Xóa sinh viên và tài khoản thành công!" });
                 }
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = "Lỗi: " + ex.Message });
+                return Json(new { success = false, message = "Lỗi server: " + ex.Message });
             }
         }
-
         // POST: Khôi phục sinh viên
         [HttpPost]
         public ActionResult RestoreAjax(int id)
@@ -247,30 +265,38 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
         [HttpGet]
         public ActionResult DetailsAjax(int id)
         {
-            using (var db = DbContextFactory.Create())
+            try
             {
-                var sv = db.SinhViens
-                    .Include(s => s.Lop)
-                    .Where(s => s.MSSV == id)
-                    .Select(s => new
+                using (var db = DbContextFactory.Create())
+                {
+                    var svRaw = db.SinhViens
+                        .Include(s => s.Lop)
+                        .FirstOrDefault(s => s.MSSV == id);
+
+                    if (svRaw == null)
+                        return Json(new { success = false, message = "Không tìm thấy sinh viên." }, JsonRequestBehavior.AllowGet);
+
+                    var sv = new
                     {
-                        s.MSSV,
-                        s.HoTen,
-                        s.NgaySinh,
-                        s.GioiTinh,
-                        s.QueQuan,
-                        s.Email,
-                        s.SoDienThoaiSinhVien,
-                        Lop = s.Lop != null ? s.Lop.TenLop : "Chưa có"
-                    })
-                    .FirstOrDefault();
+                        svRaw.MSSV,
+                        svRaw.HoTen,
+                        NgaySinh = svRaw.NgaySinh?.ToString("dd/MM/yyyy") ?? "",
+                        svRaw.GioiTinh,
+                        svRaw.QueQuan,
+                        svRaw.Email,
+                        svRaw.SoDienThoaiSinhVien,
+                        Lop = svRaw.Lop != null ? svRaw.Lop.TenLop : "Chưa có"
+                    };
 
-                if (sv == null)
-                    return Json(new { success = false, message = "Không tìm thấy sinh viên." }, JsonRequestBehavior.AllowGet);
-
-                return Json(new { success = true, data = sv }, JsonRequestBehavior.AllowGet);
+                    return Json(new { success = true, data = sv }, JsonRequestBehavior.AllowGet);
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Lỗi server: " + ex.Message }, JsonRequestBehavior.AllowGet);
             }
         }
+
 
 
 
@@ -298,6 +324,11 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                 return Json(new { success = true, items = students }, JsonRequestBehavior.AllowGet);
             }
         }
+
+
+
+
+
 
         // Xử lý tác vụ 
         [HttpGet]

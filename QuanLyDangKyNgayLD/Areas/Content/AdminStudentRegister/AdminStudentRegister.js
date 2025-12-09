@@ -419,14 +419,30 @@ document.addEventListener("DOMContentLoaded", function () {
     function handleConfirmDelete() {
         const btn = this;
         showLoading(btn, "Đang xóa...");
+
         const fd = new FormData();
-        fd.append("mssv", currentDeleteMSSV);
+        fd.append("id", currentDeleteMSSV); // đảm bảo trùng tên tham số controller
+
         fetch("/Admin/AdminStudent/DeleteAjax", { method: "POST", body: fd })
-            .then(r => r.json())
-            .then(d => {
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
                 hideModal("deleteStudentModal");
-                showToast(d.success ? "Xóa thành công!" : d.message, d.success ? "success" : "error");
-                if (d.success) loadStudents(currentPage);
+                if (data.success) {
+                    showToast("Xóa thành công!", "success");
+                    loadStudents(currentPage);
+                } else {
+                    showToast(data.message || "Có lỗi xảy ra!", "error");
+                }
+            })
+            .catch(err => {
+                console.error("Lỗi khi xóa:", err);
+                hideModal("deleteStudentModal");
+                showToast("Lỗi kết nối hoặc server: " + err.message, "error");
             })
             .finally(() => resetButton(btn, "Xác nhận xóa"));
     }
@@ -435,20 +451,51 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 
+
+
+
     // ============= CHỈNH SỬA =============
+
+    // ================== CHỈNH SỬA SINH VIÊN ==================
+
+    // Parse JSON Date (/Date(…)/)
+    function parseJsonDate(jsonDate) {
+        const timestamp = parseInt(jsonDate.replace(/[^0-9]/g, ""), 10);
+        return new Date(timestamp);
+    }
+
+    // Format Date sang dd/MM/yyyy
+    function formatDateToDMY(date) {
+        if (!date || isNaN(date.getTime())) return "";
+        const day = String(date.getDate()).padStart(2, "0");
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const year = date.getFullYear();
+        return `${day}/${month}/${year}`;
+    }
+
+    // Format dd/MM/yyyy → yyyy-MM-dd
+    function convertDMYtoYMD(dmy) {
+        const parts = dmy.split("/");
+        if (parts.length === 3) {
+            return `${parts[2]}-${parts[1].padStart(2, "0")}-${parts[0].padStart(2, "0")}`;
+        }
+        return dmy;
+    }
 
     // Sự kiện đổi Khoa trong modal chỉnh sửa
     document.getElementById("editKhoa")?.addEventListener("change", function () {
         const khoaId = this.value;
         const lopSelect = document.getElementById("editLop");
-        lopSelect.innerHTML = '<option value="">-- Chọn lớp --</option>';
+        if (lopSelect) {
+            lopSelect.innerHTML = '<option value="">-- Chọn lớp --</option>';
+        }
 
         if (!khoaId) return;
 
         fetch(`/Admin/AdminStudent/GetLopByKhoa?khoaId=${encodeURIComponent(khoaId)}`)
             .then(r => r.json())
             .then(data => {
-                if (Array.isArray(data)) {
+                if (lopSelect && Array.isArray(data)) {
                     data.forEach(lop => {
                         const opt = document.createElement("option");
                         opt.value = lop.Lop_id;
@@ -470,138 +517,48 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Reset khi mở modal
     document.getElementById('editStudentModal')?.addEventListener('show.bs.modal', function () {
-        document.getElementById("editLop").removeAttribute("data-old-value");
+        const editLop = document.getElementById("editLop");
+        if (editLop) {
+            editLop.removeAttribute("data-old-value");
+        }
     });
-
-    // Hàm format ngày từ bất kỳ định dạng nào sang yyyy-MM-dd (cho input type="date")
-    function formatDateToYMD(dateString) {
-        if (!dateString || dateString === "" || dateString === "undefined") return "";
-
-        let date = null;
-
-        try {
-            // Trường hợp 1: Định dạng JSON Date: /Date(1672444800000)/
-            if (dateString.includes("/Date(")) {
-                const timestamp = parseInt(dateString.match(/\d+/)[0]);
-                date = new Date(timestamp);
-            }
-            // Trường hợp 2: Định dạng ISO: 2023-12-31T00:00:00
-            else if (dateString.includes("T")) {
-                date = new Date(dateString);
-            }
-            // Trường hợp 3: Định dạng dd/MM/yyyy
-            else if (dateString.includes("/")) {
-                const parts = dateString.split("/");
-                if (parts.length === 3) {
-                    const day = parseInt(parts[0]);
-                    const month = parseInt(parts[1]) - 1; // Tháng trong JS là 0-11
-                    const year = parseInt(parts[2]);
-                    date = new Date(year, month, day);
-                }
-            }
-            // Trường hợp 4: Định dạng yyyy-MM-dd (đã đúng)
-            else if (dateString.includes("-") && dateString.length === 10) {
-                return dateString; // Đã đúng định dạng
-            }
-            // Trường hợp 5: Thử parse trực tiếp
-            else {
-                date = new Date(dateString);
-            }
-
-            if (date && !isNaN(date.getTime())) {
-                const year = date.getFullYear();
-                const month = String(date.getMonth() + 1).padStart(2, "0");
-                const day = String(date.getDate()).padStart(2, "0");
-                return `${year}-${month}-${day}`;
-            }
-        } catch (e) {
-            console.log("Lỗi định dạng ngày:", e, "Chuỗi:", dateString);
-        }
-
-        return ""; // Trả về rỗng nếu không parse được
-    }
-
-    // Hàm format ngày để hiển thị dd/MM/yyyy
-    function formatDateToDMY(dateString) {
-        if (!dateString || dateString === "" || dateString === "undefined") return "-";
-
-        let date = null;
-
-        try {
-            if (dateString.includes("/Date(")) {
-                const timestamp = parseInt(dateString.match(/\d+/)[0]);
-                date = new Date(timestamp);
-            }
-            else if (dateString.includes("T")) {
-                date = new Date(dateString);
-            }
-            else if (dateString.includes("/")) {
-                const parts = dateString.split("/");
-                if (parts.length === 3) {
-                    const day = parseInt(parts[0]);
-                    const month = parseInt(parts[1]) - 1;
-                    const year = parseInt(parts[2]);
-                    date = new Date(year, month, day);
-                }
-            }
-            else if (dateString.includes("-") && dateString.length === 10) {
-                const parts = dateString.split("-");
-                if (parts.length === 3) {
-                    const year = parseInt(parts[0]);
-                    const month = parseInt(parts[1]) - 1;
-                    const day = parseInt(parts[2]);
-                    date = new Date(year, month, day);
-                }
-            }
-            else {
-                date = new Date(dateString);
-            }
-
-            if (date && !isNaN(date.getTime())) {
-                const day = String(date.getDate()).padStart(2, "0");
-                const month = String(date.getMonth() + 1).padStart(2, "0");
-                const year = date.getFullYear();
-                return `${day}/${month}/${year}`;
-            }
-        } catch (e) {
-            console.log("Lỗi định dạng ngày hiển thị:", e);
-        }
-
-        return dateString || "-"; // Trả về chuỗi gốc nếu không parse được
-    }
 
     // Hàm mở modal chỉnh sửa
     function handleEdit() {
         const d = this.dataset;
+        console.log("Dataset khi edit:", d);
 
-        console.log("Dataset khi edit:", d); // Debug để xem có dữ liệu gì
-
-        // Điền thông tin cơ bản
         document.getElementById("editMSSV").value = d.id || "";
         document.getElementById("editHoTen").value = d.hoten || "";
-
-        // Xử lý Ngày sinh - CHUYỂN SANG yyyy-MM-dd CHO INPUT DATE
-        const ngaySinhFormatted = formatDateToYMD(d.ngaysinh);
-        document.getElementById("editNgaySinh").value = ngaySinhFormatted;
-
         document.getElementById("editGioiTinh").value = d.gioitinh || "Nam";
         document.getElementById("editQueQuan").value = d.quequan || "";
         document.getElementById("editEmail").value = d.email || "";
         document.getElementById("editSDT").value = d.sdt || "";
         document.getElementById("editKhoa").value = d.khoa || "";
 
-        const lopSelect = document.getElementById("editLop");
-
-        // Reset dropdown lớp
-        lopSelect.innerHTML = '<option value="">-- Chọn lớp --</option>';
-
-        // Lưu giá trị lớp cũ
-        if (d.lop && d.lop !== "undefined") {
-            lopSelect.setAttribute("data-old-value", d.lop);
+        // Ngày sinh hiển thị dd/MM/yyyy
+        const editNgaySinh = document.getElementById("editNgaySinh");
+        if (editNgaySinh && d.ngaysinh) {
+            let date = null;
+            if (d.ngaysinh.includes("/Date(")) {
+                date = parseJsonDate(d.ngaysinh);
+            } else {
+                date = new Date(d.ngaysinh);
+            }
+            editNgaySinh.value = formatDateToDMY(date);
         }
 
-        // Nếu có Khoa thì load lớp theo khoa
-        if (d.khoa && d.khoa !== "undefined") {
+        // Lớp
+        const lopSelect = document.getElementById("editLop");
+        if (lopSelect) {
+            lopSelect.innerHTML = '<option value="">-- Chọn lớp --</option>';
+            if (d.lop && d.lop !== "undefined") {
+                lopSelect.setAttribute("data-old-value", d.lop);
+            }
+        }
+
+        // Load lớp theo khoa
+        if (d.khoa && d.khoa !== "undefined" && lopSelect) {
             fetch(`/Admin/AdminStudent/GetLopByKhoa?khoaId=${encodeURIComponent(d.khoa)}`)
                 .then(r => r.json())
                 .then(data => {
@@ -612,35 +569,14 @@ document.addEventListener("DOMContentLoaded", function () {
                             opt.textContent = lop.TenLop;
                             lopSelect.appendChild(opt);
                         });
-
-                        // Chọn lớp cũ sau khi load xong
                         if (d.lop && d.lop !== "undefined") {
-                            setTimeout(() => {
-                                lopSelect.value = d.lop;
-                            }, 100);
+                            lopSelect.value = d.lop;
                         }
                     }
                 })
                 .catch(() => {
                     console.log("Không tải được danh sách lớp");
-                    // Fallback: tạo option với lớp cũ
-                    if (d.lop && d.lop !== "undefined") {
-                        const opt = document.createElement("option");
-                        opt.value = d.lop;
-                        opt.textContent = "Lớp cũ";
-                        lopSelect.appendChild(opt);
-                        lopSelect.value = d.lop;
-                    }
                 });
-        } else {
-            // Nếu không có Khoa, vẫn set giá trị Lớp nếu có
-            if (d.lop && d.lop !== "undefined") {
-                const opt = document.createElement("option");
-                opt.value = d.lop;
-                opt.textContent = "Lớp cũ";
-                lopSelect.appendChild(opt);
-                lopSelect.value = d.lop;
-            }
         }
 
         showModal("editStudentModal");
@@ -652,32 +588,73 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const form = this;
         const btn = form.querySelector("button[type=submit]");
-        showLoading(btn, "Đang lưu...");
+        const formData = new FormData(form);
 
-        // Kiểm tra định dạng ngày trước khi submit (tùy chọn)
+        // ===== Kiểm tra ngày sinh =====
         const ngaySinhInput = document.getElementById("editNgaySinh");
-        if (ngaySinhInput.value) {
-            // Chuyển đổi từ yyyy-MM-dd sang định dạng phù hợp với server nếu cần
-            // Hoặc để nguyên vì input type="date" đã là yyyy-MM-dd
+        let ngaySinhValue = "";
+
+        if (ngaySinhInput && ngaySinhInput.value) {
+            const val = ngaySinhInput.value.trim();
+            if (val.includes("/")) {
+                ngaySinhValue = convertDMYtoYMD(val); // dd/MM/yyyy → yyyy-MM-dd
+            } else {
+                ngaySinhValue = val;
+            }
+
+            const date = new Date(ngaySinhValue);
+            if (isNaN(date.getTime())) {
+                showToast("Ngày sinh không hợp lệ!", "error");
+                ngaySinhInput.focus();
+                return;
+            }
         }
 
+        // ===== Kiểm tra số điện thoại =====
+        const sdtInput = document.getElementById("editSDT");
+        if (sdtInput && sdtInput.value) {
+            const phoneRegex = /^\d{10}$/;
+            if (!phoneRegex.test(sdtInput.value.trim())) {
+                showToast("Số điện thoại phải có đúng 10 chữ số!", "error");
+                sdtInput.focus();
+                return;
+            }
+        }
+
+        showLoading(btn, "Đang lưu...");
+
+        // Tạo FormData mới với dữ liệu đã xử lý
+        const fd = new FormData();
+        for (let [key, value] of formData.entries()) {
+            fd.append(key, value);
+        }
+        if (ngaySinhValue) {
+            fd.set("NgaySinh", ngaySinhValue);
+        }
+
+        // ===== Gửi request =====
         fetch("/Admin/AdminStudent/EditAjax", {
             method: "POST",
-            body: new FormData(form)
+            body: fd
         })
             .then(response => {
-                if (!response.ok) throw new Error("Lỗi mạng hoặc sai đường dẫn API");
+                if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 return response.json();
             })
             .then(data => {
-                hideModal("editStudentModal");
-                showToast(
-                    data.success ? "Cập nhật thành công!" : data.message,
-                    data.success ? "success" : "error"
-                );
-                if (data.success) loadStudents(currentPage);
+                console.log("Phản hồi từ server:", data);
+
+                if (data.success) {
+                    hideModal("editStudentModal"); // chỉ đóng khi thành công
+                    showToast("Cập nhật thành công!", "success");
+                    loadStudents(currentPage);
+                } else {
+                    showToast(data.message || "Có lỗi xảy ra!", "error");
+                    // KHÔNG đóng modal, để người dùng sửa lại
+                }
             })
             .catch(err => {
+                console.error("Lỗi khi gửi request:", err);
                 showToast("Có lỗi xảy ra: " + err.message, "error");
             })
             .finally(() => {
@@ -685,39 +662,43 @@ document.addEventListener("DOMContentLoaded", function () {
             });
     }
 
-    // ============= CHI TIẾT =============
+
+
+  
+    // ============= CHI TIẾT SINH VIÊN =============
     function handleDetail() {
         const mssv = this.dataset.id;
-
-        // Hiển thị loading trong modal
         const detailModal = document.getElementById("detailStudentModal");
         const modalBody = detailModal.querySelector('.modal-body');
-        const originalContent = modalBody.innerHTML;
 
+        // Hiển thị loading
         modalBody.innerHTML = `
-    <div class="text-center py-5">
-        <div class="spinner-wave mx-auto mb-3">
-            <div></div><div></div><div></div>
+        <div class="text-center py-5">
+            <div class="spinner-wave mx-auto mb-3">
+                <div></div><div></div><div></div>
+            </div>
+            <div class="text-muted">Đang tải thông tin sinh viên...</div>
         </div>
-        <div class="text-muted">Đang tải thông tin sinh viên...</div>
-    </div>
-`;
+    `;
 
-        // Hiển thị modal
         showModal("detailStudentModal");
 
         // Gọi API lấy chi tiết
         fetch(`/Admin/AdminStudent/DetailsAjax?id=${mssv}`)
-            .then(r => r.json())
+            .then(response => {
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                return response.json();
+            })
             .then(data => {
-                if (data.success) {
-                    const sv = data.data;
+                if (!data.success || !data.data) {
+                    throw new Error(data.message || "Không thể tải thông tin sinh viên");
+                }
 
-                    // Định dạng ngày sinh để hiển thị dd/MM/yyyy
-                    let formattedNgaySinh = formatDateToDMY(sv.NgaySinh);
+                const sv = data.data;
+                const formattedNgaySinh = sv.NgaySinh || "-";
 
-                    // Hiển thị thông tin
-                    modalBody.innerHTML = `
+                // Hiển thị thông tin chi tiết + nút chỉnh sửa
+                modalBody.innerHTML = `
                 <div class="row">
                     <div class="col-md-6">
                         <div class="mb-3">
@@ -756,27 +737,49 @@ document.addEventListener("DOMContentLoaded", function () {
                         </div>
                     </div>
                 </div>
-            `;
-                } else {
-                    // Hiển thị lỗi
-                    modalBody.innerHTML = `
-                <div class="alert alert-danger">
-                    <i class="fas fa-exclamation-triangle me-2"></i>
-                    ${data.message || "Không thể tải thông tin sinh viên"}
+                <div class="text-end mt-3">
+                    <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Đóng</button>
+                    <button type="button" class="btn btn-primary" id="btnEditDetail">
+                        <i class="fa fa-edit me-1"></i> Chỉnh sửa
+                    </button>
                 </div>
             `;
+
+                // Gắn sự kiện cho nút Chỉnh sửa
+                const btnEdit = document.getElementById("btnEditDetail");
+                if (btnEdit) {
+                    btnEdit.onclick = function () {
+                        hideModal("detailStudentModal");
+
+                        // Điền dữ liệu vào modal chỉnh sửa
+                        document.getElementById("editMSSV").value = sv.MSSV || "";
+                        document.getElementById("editHoTen").value = sv.HoTen || "";
+                        document.getElementById("editNgaySinh").value = sv.NgaySinh || "";
+                        document.getElementById("editGioiTinh").value = sv.GioiTinh || "Nam";
+                        document.getElementById("editQueQuan").value = sv.QueQuan || "";
+                        document.getElementById("editEmail").value = sv.Email || "";
+                        document.getElementById("editSDT").value = sv.SoDienThoaiSinhVien || "";
+                        document.getElementById("editKhoa").value = sv.Khoa || "";
+                        document.getElementById("editLop").value = sv.Lop || "";
+
+                        // Mở modal chỉnh sửa
+                        showModal("editStudentModal");
+                    };
                 }
             })
             .catch(err => {
-                console.error("Lỗi tải chi tiết:", err);
+                console.error("Lỗi khi tải chi tiết sinh viên:", err);
                 modalBody.innerHTML = `
-            <div class="alert alert-danger">
-                <i class="fas fa-exclamation-triangle me-2"></i>
-                Lỗi kết nối khi tải thông tin
-            </div>
-        `;
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    ${err.message || "Lỗi kết nối khi tải thông tin"}
+                </div>
+            `;
             });
     }
+
+
+
 
 
 
