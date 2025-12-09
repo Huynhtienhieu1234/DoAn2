@@ -4,16 +4,14 @@ using System.Linq;
 using System.Web;
 using System.Web.Mvc;
 
-namespace QuanLyDangKyNgayLD.Areas.SinhVien.Controllers
+namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
 {
     public class MainSinhVienController : Controller
     {
-        // GET: SinhVien/Index
-
+        // GET: Student/MainSinhVien
         public ActionResult Index()
         {
             return View();
         }
-
     }
 }

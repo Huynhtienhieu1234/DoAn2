@@ -21,7 +21,7 @@ function parseDate(dateStr) {
 
 // Hàm load dữ liệu từ server
 function loadDataToTable(page, keyword = "", buoi = "", trangThai = "") {
-    $.get("/SinhVien/StudentRegisterWord/LoadDotLaoDong", {
+    $.get("/Student/StudentRegisterWord/LoadDotLaoDong", {
         page: page,
         pageSize: pageSize,
         keyword: keyword,
@@ -208,7 +208,7 @@ document.addEventListener("DOMContentLoaded", function () {
 // === ĐĂNG KÝ & HỦY ĐĂNG KÝ ===
 function dangKy(id) {
     if (confirm("Bạn có chắc chắn muốn đăng ký đợt lao động này?")) {
-        $.post("/SinhVien/StudentRegisterWord/DangKy", { id: id }, function (res) {
+        $.post("/Student/StudentRegisterWord/DangKy", { id: id }, function (res) {
             if (res.success) {
                 alert(res.message || "Đăng ký thành công!");
 

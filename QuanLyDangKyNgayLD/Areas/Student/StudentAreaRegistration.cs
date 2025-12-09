@@ -1,22 +1,22 @@
 ﻿using System.Web.Mvc;
 
-namespace QuanLyDangKyNgayLD.Areas.SinhVien
+namespace QuanLyDangKyNgayLD.Areas.Student
 {
-    public class SinhVienAreaRegistration : AreaRegistration 
+    public class StudentAreaRegistration : AreaRegistration 
     {
         public override string AreaName 
         {
             get 
             {
-                return "SinhVien";
+                return "Student";
             }
         }
 
         public override void RegisterArea(AreaRegistrationContext context) 
         {
             context.MapRoute(
-                "SinhVien_default",
-                "SinhVien/{controller}/{action}/{id}",
+                "Student_default",
+                "Student/{controller}/{action}/{id}",
                 new { action = "Index", id = UrlParameter.Optional }
             );
         }

@@ -1,13 +1,16 @@
 ﻿using QuanLyDangKyNgayLD.Factories;
 using QuanLyDangKyNgayLD.Models;
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Web;
 using System.Web.Mvc;
 
-namespace QuanLyDangKyNgayLD.Areas.SinhVien.Controllers
+namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
 {
     public class StudentRegisterWordController : Controller
     {
+        // GET: Student/StudentRegisterWord
         private const int ITEMS_PER_PAGE = 5;
 
         // Trang Index hiển thị View
@@ -152,32 +155,32 @@ namespace QuanLyDangKyNgayLD.Areas.SinhVien.Controllers
         [HttpPost]
         public ActionResult DangKy(int id)
         {
-                            
+
             using (var db = DbContextFactory.Create())
             {
                 string username = Session["Username"]?.ToString();
-                
+
                 if (string.IsNullOrEmpty(username))
                 {
                     throw new Exception("Lỗi không lưu sesion");
                 }
-                
+
                 var user = db.TaiKhoans.FirstOrDefault(tk => tk.Username == username);
-                
+
                 if (username == null)
                     return Json(new { success = false, message = "Vui lòng đăng nhập lại!" });
 
-                if(user == null)
+                if (user == null)
                     return Json(new { success = false, message = "Tài khoản không tồn tại!" });
 
-               
+
                 // Lấy MSSV từ bảng SinhVien
                 var sv = db.SinhViens
                       .Include("TaiKhoan1")
-                      .FirstOrDefault(tk => tk.TaiKhoan == user.TaiKhoan_id );
+                      .FirstOrDefault(tk => tk.TaiKhoan == user.TaiKhoan_id);
 
                 if (sv == null)
-                    return Json(new { success = false, message = "Không tìm thấy sinh viên tương ứng!" + username});
+                    return Json(new { success = false, message = "Không tìm thấy sinh viên tương ứng!" + username });
 
 
                 // Kiểm tra đợt lao động tồn tại
@@ -217,14 +220,6 @@ namespace QuanLyDangKyNgayLD.Areas.SinhVien.Controllers
                 return Json(new { success = true, message = "Đăng ký thành công!" });
             }
         }
-
-
-
-
-
-
-
-
 
     }
 }

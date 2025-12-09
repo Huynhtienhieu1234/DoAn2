@@ -9,38 +9,26 @@
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <!-- CSS riêng -->
-    <link rel="stylesheet" href="~/Areas/SinhVien/Content/Css/Dashboard.css">
+    <link rel="stylesheet" href="~/Areas/Student/Content/Css/Dashboard.css">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <!--biểu tượng-->
     <link rel="icon" type="image/png" href="https://cdn.jsdelivr.net/gh/Huynhtienhieu1234/UploadAnh/logoxoanen.png" />
-    <!--Css sidebar-->
-    <link rel="stylesheet" href="~/Areas/SinhVien/Content/Css/Siderbarmain.css">
-
-    <!--links javascript-->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-
-
-
 
     <title>Trang Thông Tin Sinh Viên</title>
-
 </head>
 
 <body>
     <!-- Header -->
     <nav>
         <div class="nav-content">
-            <a href="@Url.Action("Index","MainSinhVien",new{area="SinhVien"})" >
-                <img src="https://cdn.jsdelivr.net/gh/Huynhtienhieu1234/UploadAnh/sinhvien/LogoTruong.png"
-                     alt="Logo" class="logo">
+            <a>
+                <img src="https://cdn.jsdelivr.net/gh/Huynhtienhieu1234/UploadAnh/sinhvien/LogoTruong.png" alt="Logo" class="logo">
             </a>
-
             <div class="nav-content-text"></div>
             <div class="user-menu" id="userMenu">
                 <img src="../image/Avarta.png" alt="User Avatar" class="user-avatar">
-                <span class="user-name"></span>
+                <span class="user-name">Huỳnh Tiến Hiểu</span>
                 <i class="fa fa-caret-down"></i>
                 <ul class="dropdown-menu" id="dropdownMenu">
                     <li><a class="a-color" href="Trangthongtinquanly.html">Thông tin cá nhân</a></li>
@@ -49,59 +37,15 @@
                         <a class="a-color" href="@Url.Action("Logout", "Login", new { area = "" })">
                             <i class="fa fa-sign-out"></i> Đăng xuất
                         </a>
-
                     </li>
                 </ul>
             </div>
         </div>
     </nav>
 
-    <!-- Sidebar -->
-    <div class="sidebar">
-        <ul class="nav flex-column">
-            <li class="nav-item">
-                <a href="@Url.Action("Index","MainSinhVien",new{area="SinhVien"})" class="nav-link">
-                    <i class="fa fa-home"></i> Trang chủ
-                </a>
-            </li>
-              <li class="nav-item">
-                <a href="#" class="nav-link">
-                    <i class="fa fa-user-plus"></i> Đăng Ký Lao Động
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="#" class="nav-link">
-                    <i class="fa fa-chart-bar"></i> Thống Kê
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="#" class="nav-link">
-                    <i class="fa fa-calendar-alt"></i> Lịch Lao Động
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="#" class="nav-link">
-                    <i class="fa fa-user-check"></i> Điểm Danh Lao Động
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="#" class="nav-link">
-                    <i class="fa fa-bell"></i> Thông Báo
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="#" class="nav-link">
-                    <i class="fa fa-clipboard-check"></i> Xác Nhận Hoàn Thành
-                </a>
-            </li>
-        </ul>
-    </div>
-
-    <!-- Nội dung chính -->
-    <div class="content">
-        <div class="container-fluid">
-            @RenderBody()
-        </div>
+    <!-- Đây là nơi render nội dung động -->
+    <div class="container-fluid">
+        @RenderBody()
     </div>
 
     <script>
