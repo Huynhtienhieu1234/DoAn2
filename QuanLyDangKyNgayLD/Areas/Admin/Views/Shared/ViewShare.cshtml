@@ -1,22 +1,30 @@
 ﻿@{
-    Layout = null;
+    var controller = ViewContext.RouteData.Values["controller"]?.ToString();
 }
 
-<!DOCTYPE html>
-<html lang="vi">
 <head>
     <meta charset="utf-8">
-    <title> Trang Quản Trị</title>
+    <title>Trang Quản Trị</title>
 
     <!-- Font + Bootstrap + Icon -->
     <link rel="icon" type="image/png" href="https://cdn.jsdelivr.net/gh/Huynhtienhieu1234/UploadAnh/logoxoanen.png" />
-
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="~/Areas/Content/admin.css" />
+
+    <!-- Load CSS theo controller -->
+    @if (controller == "AdminStudent")
+    {
+        <link rel="stylesheet" href="~/Areas/Content/AdminStudentRegister.css" />
+    }
+    else
+    {
+        <link rel="stylesheet" href="~/Areas/Content/admin.css" />
+    }
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/Areas/Content/Js/adminCommon.js"></script>
+
     <style>
         nav.navbar.navbar-main.navbar-expand-lg.px-0.mx-4.shadow-none.border-radius-xl.my-3 {
             margin-left: 0 !important;
@@ -491,9 +499,11 @@
             }
         }
     </style>
+
+    @RenderSection("Styles", required: false)
 </head>
 
-@RenderSection("Scripts", required: false)
+
 
 <body>
     <!-- Overlay loading đăng xuất -->

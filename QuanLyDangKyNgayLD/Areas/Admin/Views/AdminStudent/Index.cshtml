@@ -3,37 +3,57 @@
     ViewBag.Title = "Quản lý Sinh viên";
     Layout = "~/Areas/Admin/Views/Shared/ViewShare.cshtml";
 }
-<link href="~/Areas/Content/adminpage.css" rel="stylesheet" type="text/css" />
+@section Styles {
+    <link rel="stylesheet" href="~/Areas/Content/css/AdminStudentRegister.css" />
+}
 
 <!-- THANH CÔNG CỤ -->
 <nav class="navbar navbar-expand-lg toolbar shadow-sm mb-3">
     <div class="container-fluid p-0">
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <!-- Bên trái -->
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 <li class="nav-item">
-                    <button class="btn btn-outline-primary btn-sm me-2" id="btnAddStudent">
+                    <button class="btn btn-outline-primary btn-sm me-2" id="btnAdd">
                         <i class="fa fa-plus me-1"></i> Thêm sinh viên
                     </button>
                 </li>
                 <li class="nav-item">
-                    <button class="btn btn-outline-success btn-sm me-2" id="btnImportExcel">
-                        <i class="fa fa-file-excel me-1"></i> Nhập từ Excel
-                    </button>
-                </li>
-                <li class="nav-item">
-                    <button class="btn btn-outline-secondary btn-sm me-2" id="btnViewDeletedStudent">
+                    <button class="btn btn-outline-secondary btn-sm me-2" id="btnViewDeleted">
                         <i class="fas fa-trash-restore me-1"></i> Sinh viên đã xóa
                     </button>
                 </li>
             </ul>
+
+            <!-- Bên phải -->
             <form class="toolbar-flex align-items-center" role="search">
-                <div class="input-group input-group-sm shadow-sm me-2" style="min-width: 220px;">
+                <select id="roleFilter" class="form-select form-select-sm me-2 shadow-sm" style="min-width: 140px; cursor:pointer">
+                    <option value="">-- Lọc theo Khoa --</option>
+                    <option value="TatCa">Tất cả</option>
+                    <option value="CongNgheKyThuat">Công nghệ và kỹ thuật</option>
+                    <option value="NgoaiNgu">Khoa Ngoại ngữ</option>
+                    <option value="KinhTeLuat">Khoa Kinh tế - Luật</option>
+                    <option value="NongNghiepTaiNguyenMoiTruong">Nông nghiệp, Tài nguyên và Môi trường</option>
+                    <option value="VanHoaDuLichCongTacXaHoi">Văn hóa - Du lịch và Công tác xã hội</option>
+                    <option value="SuPhamToanTin">Sư phạm Toán - Tin</option>
+                    <option value="SuPhamKhoaHocTuNhien">Sư phạm Khoa học tự nhiên</option>
+                    <option value="SuPhamKhoaHocXaHoi">Sư phạm Khoa học xã hội</option>
+                    <option value="GiaoDucTieuHocMamNon">Giáo dục Tiểu học - Mầm non</option>
+                    <option value="GiaoDucTheChatSuPhamNgheThuat">Giáo dục Thể chất - Sư phạm Nghệ thuật</option>
+                </select>
+
+
+                <div class="input-group input-group-sm shadow-sm me-2" style="min-width: 180px;">
                     <span class="input-group-text bg-white border-end-0">
                         <i class="fa fa-search text-muted"></i>
                     </span>
-                    <input type="text" id="searchStudentBox" class="form-control border-start-0" placeholder="Tìm kiếm MSSV, họ tên...">
+                    <input type="text" id="searchBox" class="form-control border-start-0" placeholder="Tìm kiếm...">
                 </div>
-                <button class="btn btn-outline-success btn-sm shadow-sm" id="exportAllStudents" type="button">
+
+                <button class="btn btn-outline-success btn-sm shadow-sm" id="exportAllAccounts" type="button">
+                    <i class="fa fa-file-excel me-1"></i> Nhập Excel
+                </button>
+                <button class="btn btn-outline-success btn-sm shadow-sm" id="exportAllAccounts" type="button">
                     <i class="fa fa-file-excel me-1"></i> Xuất Excel
                 </button>
             </form>
@@ -100,6 +120,22 @@
                     <div class="mb-3"><label class="form-label fw-bold">Quê quán</label><input name="QueQuan" class="form-control form-control-lg" /></div>
                     <div class="mb-3"><label class="form-label fw-bold">Email</label><input type="email" name="Email" class="form-control form-control-lg" /></div>
                     <div class="mb-3"><label class="form-label fw-bold">SĐT</label><input name="SoDienThoaiSinhVien" class="form-control form-control-lg" /></div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Khoa</label>
+                        <select name="Khoa" class="form-select form-select-lg">
+                            <option value="">-- Chọn khoa --</option>
+                            <option value="CongNgheKyThuat">Công nghệ và kỹ thuật</option>
+                            <option value="NgoaiNgu">Khoa Ngoại ngữ</option>
+                            <option value="KinhTeLuat">Khoa Kinh tế - Luật</option>
+                            <option value="NongNghiepTaiNguyenMoiTruong">Nông nghiệp, Tài nguyên và Môi trường</option>
+                            <option value="VanHoaDuLichCongTacXaHoi">Văn hóa - Du lịch và Công tác xã hội</option>
+                            <option value="SuPhamToanTin">Sư phạm Toán - Tin</option>
+                            <option value="SuPhamKhoaHocTuNhien">Sư phạm Khoa học tự nhiên</option>
+                            <option value="SuPhamKhoaHocXaHoi">Sư phạm Khoa học xã hội</option>
+                            <option value="GiaoDucTieuHocMamNon">Giáo dục Tiểu học - Mầm non</option>
+                            <option value="GiaoDucTheChatSuPhamNgheThuat">Giáo dục Thể chất - Sư phạm Nghệ thuật</option>
+                        </select>
+                    </div>
                     <div class="mb-3">
                         <label class="form-label fw-bold">Lớp</label>
                         <select name="Lop_id" class="form-select form-select-lg">

@@ -87,38 +87,56 @@
     window.addEventListener('load', animateNumbers);
 
     // Biểu đồ cột với animation mặc định của Chart.js
-    new Chart(document.getElementById('barChart'), {
-        type: 'bar',
-        data: {
-            labels: data.labels,
-            datasets: [{
-                label: 'Số lượng',
-                data: data.values,
-                backgroundColor: ['#007bff', '#28a745', '#ffc107', '#17a2b8']
-            }]
+new Chart(document.getElementById('barChart'), {
+    type: 'bar',
+    data: {
+        labels: ['Tài khoản', 'Sinh viên', 'Đợt lao động', 'Hoàn thành'],
+        datasets: [{
+            label: 'Số lượng',
+            data: [
+                @Model.TongTaiKhoan,
+                @Model.TongSinhVien,
+                @Model.TongDotLaoDong,
+                @Model.TongHoanThanh
+            ],
+            backgroundColor: [
+                '#007bff', // Tài khoản - xanh dương
+                '#28a745', // Sinh viên - xanh lá
+                '#ffc107', // Đợt lao động - vàng
+                '#17a2b8'  // Hoàn thành - xanh ngọc
+            ],
+            borderColor: [
+                '#0056b3',
+                '#1e7e34',
+                '#d39e00',
+                '#117a8b'
+            ],
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: {
+            duration: 2000,
+            easing: 'easeInOutQuart'
         },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false, // Cho phép resize theo container
-            animation: {
-                duration: 2000, // Thời gian animation (ms)
-                easing: 'easeInOutQuart' // Hiệu ứng mượt mà
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        callback: function(value) {
-                            return value.toLocaleString(); // Format số với dấu phẩy
-                        }
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    callback: function(value) {
+                        return value.toLocaleString();
                     }
                 }
-            },
-            plugins: {
-                legend: { position: 'top' }
             }
+        },
+        plugins: {
+            legend: { display: false } // Ẩn chú thích nếu không cần
         }
-    });
+    }
+});
+
 
     // CSS animation cho card (fade in và scale nhẹ) và chart container
     const style = document.createElement('style');

@@ -1,5 +1,5 @@
 ﻿// ~/Areas/Content/AdminStudentRegister/AdminStudentRegister.js
-// HOÀN HẢO – ĐÃ FIX LỖI DẤU NHÁY + CHẠY NGON 100%
+// ĐÃ ĐỒNG BỘ HOÀN TOÀN VỚI THANH CÔNG CỤ MỚI (LỌC KHOA + NHẬP/XUẤT EXCEL)
 
 document.addEventListener("DOMContentLoaded", function () {
     let currentDeleteMSSV = null;
@@ -10,21 +10,34 @@ document.addEventListener("DOMContentLoaded", function () {
     loadStudents();
 
     function setupEventListeners() {
-        document.getElementById("btnAddStudent")?.addEventListener("click", () => showModal("createStudentModal"));
-        document.getElementById("btnImportExcel")?.addEventListener("click", () => showModal("importExcelModal"));
-        document.getElementById("btnViewDeletedStudent")?.addEventListener("click", () => showModal("deletedStudentsModal"));
-        document.getElementById("exportAllStudents")?.addEventListener("click", exportAllStudents);
+        // === NÚT TRÊN THANH CÔNG CỤ (ĐÃ ĐỔI THEO ID MỚI) ===
+        document.getElementById("btnAdd")?.addEventListener("click", () => showModal("createStudentModal"));
+        document.getElementById("btnViewDeleted")?.addEventListener("click", () => showModal("deletedStudentsModal"));
 
+        // Nút Nhập Excel (bạn đang dùng id exportAllAccounts → sửa thành đúng)
+        document.querySelector('button[id="exportAllAccounts"]:nth-of-type(1)')?.addEventListener("click", () => showModal("importExcelModal"));
+
+        // Nút Xuất Excel
+        document.querySelector('button[id="exportAllAccounts"]:nth-of-type(2)')?.addEventListener("click", exportAllStudents);
+
+        // Form xử lý
         document.getElementById("createStudentForm")?.addEventListener("submit", handleCreateSubmit);
         document.getElementById("editStudentForm")?.addEventListener("submit", handleEditSubmit);
         document.getElementById("confirmDeleteStudentBtn")?.addEventListener("click", handleConfirmDelete);
         document.getElementById("importForm")?.addEventListener("submit", handleImportExcel);
 
-        document.getElementById("searchStudentBox")?.addEventListener("input", debounce(() => {
+        // Lọc theo Khoa + Tìm kiếm
+        document.getElementById("roleFilter")?.addEventListener("change", () => {
+            currentPage = 1;
+            loadStudents();
+        });
+
+        document.getElementById("searchBox")?.addEventListener("input", debounce(() => {
             currentPage = 1;
             loadStudents();
         }, 400));
 
+        // Xử lý nút trong bảng
         document.getElementById("studentTableBody")?.addEventListener("click", function (e) {
             const btn = e.target.closest("button");
             if (!btn) return;
@@ -34,6 +47,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
+    // ============= THÊM MỚI =============
     function handleCreateSubmit(e) {
         e.preventDefault();
         const form = this;
@@ -47,7 +61,7 @@ document.addEventListener("DOMContentLoaded", function () {
             .then(d => {
                 if (d.success) {
                     hideModal("createStudentModal");
-                    showToast(d.message || "Thêm thành công!", "success");
+                    showToast(d.message || "Thêm sinh viên thành công!", "success");
                     loadStudents();
                 } else showToast(d.message || "Thêm thất bại!", "error");
             })
@@ -55,6 +69,7 @@ document.addEventListener("DOMContentLoaded", function () {
             .finally(() => resetButton(btn, "Lưu"));
     }
 
+    // ============= CHỈNH SỬA =============
     function handleEdit() {
         const d = this.dataset;
         document.getElementById("editMSSV").value = d.id;
@@ -79,6 +94,7 @@ document.addEventListener("DOMContentLoaded", function () {
             .finally(() => resetButton(btn, "Lưu thay đổi"));
     }
 
+    // ============= XÓA =============
     function handleDelete() {
         currentDeleteMSSV = this.dataset.id;
         const row = this.closest("tr");
@@ -102,16 +118,18 @@ document.addEventListener("DOMContentLoaded", function () {
             .finally(() => resetButton(btn, "Xác nhận xóa"));
     }
 
+    // ============= CHI TIẾT =============
     function handleDetail() {
         const row = this.closest("tr");
         document.getElementById("detailMSSV").textContent = row.cells[1].textContent;
         document.getElementById("detailHoTen").textContent = row.cells[2].textContent;
         document.getElementById("detailGioiTinh").textContent = row.cells[3].textContent;
-        document.getElementById("detailKhoa") && (document.getElementById("detailKhoa").textContent = row.cells[4].textContent);
+        if (document.getElementById("detailKhoa")) document.getElementById("detailKhoa").textContent = row.cells[4].textContent;
         document.getElementById("detailLop").textContent = row.cells[5].textContent;
         showModal("detailStudentModal");
     }
 
+    // ============= IMPORT EXCEL =============
     function handleImportExcel(e) {
         e.preventDefault();
         const fileInput = document.getElementById("excelFileInput");
@@ -137,13 +155,20 @@ document.addEventListener("DOMContentLoaded", function () {
             });
     }
 
+    // ============= LOAD + LỌC KHOA =============
     function loadStudents(page = 1) {
         currentPage = page;
-        const keyword = document.getElementById("searchStudentBox")?.value.trim() || "";
+        const keyword = document.getElementById("searchBox")?.value.trim() || "";
+        const khoaFilter = document.getElementById("roleFilter")?.value || "";
         const tbody = document.getElementById("studentTableBody");
         tbody.innerHTML = `<tr><td colspan="7" class="text-center py-5"><i class="fa fa-spinner fa-spin fa-2x"></i><br>Đang tải dữ liệu...</td></tr>`;
 
-        fetch(`/Admin/AdminStudent/LoadStudents?page=${page}&pageSize=${pageSize}&keyword=${encodeURIComponent(keyword)}`)
+        let url = `/Admin/AdminStudent/LoadStudents?page=${page}&pageSize=${pageSize}&keyword=${encodeURIComponent(keyword)}`;
+        if (khoaFilter && khoaFilter !== "TatCa") {
+            url += `&khoa=${encodeURIComponent(khoaFilter)}`;
+        }
+
+        fetch(url)
             .then(r => r.json())
             .then(data => {
                 renderStudentTable(data.items || [], page);
@@ -191,6 +216,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }).join("");
     }
 
+    // ============= PHÂN TRANG =============
     function setupPagination(page, totalPages) {
         const container = document.getElementById("pageNumbersStudent");
         const prevBtn = document.getElementById("prevStudent");
@@ -236,9 +262,15 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function exportAllStudents() {
-        window.location.href = "/Admin/AdminStudent/ExportAllStudents";
+        const khoaFilter = document.getElementById("roleFilter")?.value || "";
+        let url = "/Admin/AdminStudent/ExportAllStudents";
+        if (khoaFilter && khoaFilter !== "TatCa") {
+            url += `?khoa=${encodeURIComponent(khoaFilter)}`;
+        }
+        window.location.href = url;
     }
 
+    // ============= UTILITY =============
     function showModal(id) { bootstrap.Modal.getOrCreateInstance(document.getElementById(id)).show(); }
     function hideModal(id) { bootstrap.Modal.getInstance(document.getElementById(id))?.hide(); }
     function showLoading(btn, txt) { btn.disabled = true; btn.innerHTML = `<span class="spinner-border spinner-border-sm me-1"></span>${txt}`; }
