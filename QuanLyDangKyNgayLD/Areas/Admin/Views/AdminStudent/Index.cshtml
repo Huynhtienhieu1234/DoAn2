@@ -9,11 +9,15 @@
 <nav class="navbar navbar-expand-lg toolbar shadow-sm mb-3">
     <div class="container-fluid p-0">
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            <!-- Bên trái -->
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 <li class="nav-item">
                     <button class="btn btn-outline-primary btn-sm me-2" id="btnAddStudent">
                         <i class="fa fa-plus me-1"></i> Thêm sinh viên
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="btn btn-outline-success btn-sm me-2" id="btnImportExcel">
+                        <i class="fa fa-file-excel me-1"></i> Nhập từ Excel
                     </button>
                 </li>
                 <li class="nav-item">
@@ -22,14 +26,12 @@
                     </button>
                 </li>
             </ul>
-
-            <!-- Bên phải -->
             <form class="toolbar-flex align-items-center" role="search">
-                <div class="input-group input-group-sm shadow-sm me-2" style="min-width: 200px;">
+                <div class="input-group input-group-sm shadow-sm me-2" style="min-width: 220px;">
                     <span class="input-group-text bg-white border-end-0">
                         <i class="fa fa-search text-muted"></i>
                     </span>
-                    <input type="text" id="searchStudentBox" class="form-control border-start-0" placeholder="Tìm kiếm MSSV, Họ tên...">
+                    <input type="text" id="searchStudentBox" class="form-control border-start-0" placeholder="Tìm kiếm MSSV, họ tên...">
                 </div>
                 <button class="btn btn-outline-success btn-sm shadow-sm" id="exportAllStudents" type="button">
                     <i class="fa fa-file-excel me-1"></i> Xuất Excel
@@ -47,60 +49,19 @@
                 <th width="6%">STT</th>
                 <th>MSSV</th>
                 <th>Họ tên</th>
-                <th>Ngày sinh</th>
                 <th>Giới tính</th>
-                <th>Quê quán</th>
-                <th>Email</th>
-                <th>SĐT</th>
+                <th>Khoa</th>
                 <th>Lớp</th>
-                <th width="22%" class="action-header">Tác vụ</th>
+                <th width="24%" class="action-header">Tác vụ</th>
             </tr>
         </thead>
         <tbody id="studentTableBody">
-            @if (Model != null && Model.Any())
-            {
-                var i = 1;
-                foreach (var sv in Model)
-                {
-                    <tr>
-                        <td>@i</td>
-                        <td>@sv.MSSV</td>
-                        <td>@sv.HoTen</td>
-                        <td>@(sv.NgaySinh.HasValue ? sv.NgaySinh.Value.ToString("dd/MM/yyyy") : "-")</td>
-                        <td>@sv.GioiTinh</td>
-                        <td>@sv.QueQuan</td>
-                        <td>@sv.Email</td>
-                        <td>@sv.SoDienThoaiSinhVien</td>
-                        <td>@(sv.Lop != null ? sv.Lop.TenLop : "Chưa có")</td>
-                        <td>
-                            <button class="btn btn-sm btn-warning btn-edit-student me-1"
-                                    data-id="@sv.MSSV"
-                                    data-hoten="@sv.HoTen"
-                                    data-ngaysinh="@sv.NgaySinh"
-                                    data-gioitinh="@sv.GioiTinh"
-                                    data-quequan="@sv.QueQuan"
-                                    data-email="@sv.Email"
-                                    data-sdt="@sv.SoDienThoaiSinhVien"
-                                    data-lop="@sv.Lop_id">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="btn btn-sm btn-danger btn-delete-student me-1" data-id="@sv.MSSV">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                            <button class="btn btn-sm btn-info btn-detail-student me-1 text-white" data-id="@sv.MSSV">
-                                <i class="fas fa-info-circle"></i>
-                            </button>
-                        </td>
-                    </tr>
-                    i++;
-                }
-            }
-            else
-            {
-                <tr class="no-data-row">
-                    <td colspan="10" class="text-muted py-4">Không có dữ liệu</td>
-                </tr>
-            }
+            <tr>
+                <td colspan="7" class="text-center py-5">
+                    <i class="fa fa-spinner fa-spin fa-2x"></i><br>
+                    <small class="text-muted">Đang tải dữ liệu...</small>
+                </td>
+            </tr>
         </tbody>
     </table>
 </div>
@@ -114,51 +75,106 @@
     </div>
 </div>
 
-<!-- MODAL THÊM SINH VIÊN -->
-<div class="modal fade" id="createStudentModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content shadow">
-            <form id="createStudentForm" method="post" action="/Admin/SinhVien/CreateAjax">
+<!-- ====================== MODAL THÊM SINH VIÊN ====================== -->
+<div class="modal fade" id="createStudentModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow-lg border-0">
+            <form id="createStudentForm" method="post" action="/Admin/SinhVien/CreateAjax" enctype="multipart/form-data">
                 @Html.AntiForgeryToken()
                 <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title">Thêm Sinh Viên Mới</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <h5 class="modal-title fw-bold"><i class="fas fa-user-plus me-2"></i> Thêm sinh viên mới</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">MSSV</label>
-                        <input name="MSSV" class="form-control" required />
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Họ tên</label>
-                        <input name="HoTen" class="form-control" required />
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Ngày sinh</label>
-                        <input type="date" name="NgaySinh" class="form-control" />
-                    </div>
+                <div class="modal-body py-4">
+                    <!-- Các field giống hệt modal cũ nhưng đẹp hơn -->
+                    <div class="mb-3"><label class="form-label fw-bold">MSSV <span class="text-danger">*</span></label><input name="MSSV" class="form-control form-control-lg" required /></div>
+                    <div class="mb-3"><label class="form-label fw-bold">Họ tên <span class="text-danger">*</span></label><input name="HoTen" class="form-control form-control-lg" required /></div>
+                    <div class="mb-3"><label class="form-label fw-bold">Ngày sinh</label><input type="date" name="NgaySinh" class="form-control form-control-lg" /></div>
                     <div class="mb-3">
                         <label class="form-label fw-bold">Giới tính</label>
-                        <select name="GioiTinh" class="form-select">
+                        <select name="GioiTinh" class="form-select form-select-lg">
                             <option value="Nam">Nam</option>
                             <option value="Nữ">Nữ</option>
                         </select>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Quê quán</label>
-                        <input name="QueQuan" class="form-control" />
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Email</label>
-                        <input type="email" name="Email" class="form-control" />
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">SĐT</label>
-                        <input name="SoDienThoaiSinhVien" class="form-control" />
-                    </div>
+                    <div class="mb-3"><label class="form-label fw-bold">Quê quán</label><input name="QueQuan" class="form-control form-control-lg" /></div>
+                    <div class="mb-3"><label class="form-label fw-bold">Email</label><input type="email" name="Email" class="form-control form-control-lg" /></div>
+                    <div class="mb-3"><label class="form-label fw-bold">SĐT</label><input name="SoDienThoaiSinhVien" class="form-control form-control-lg" /></div>
                     <div class="mb-3">
                         <label class="form-label fw-bold">Lớp</label>
-                        <select name="Lop_id" class="form-select">
+                        <select name="Lop_id" class="form-select form-select-lg">
+                            <option value="">-- Chọn lớp --</option>
+                            @foreach (var lop in ViewBag.LopList as List<QuanLyDangKyNgayLD.Models.Lop>)
+                            {
+                                <option value="@lop.Lop_id">@lop.TenLop</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-success btn-lg px-5"><i class="fas fa-save me-2"></i> Lưu</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ====================== MODAL IMPORT EXCEL ====================== -->
+<div class="modal fade" id="importExcelModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow-lg">
+            <form id="importForm" enctype="multipart/form-data">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title"><i class="fa fa-file-excel me-2"></i> Nhập danh sách sinh viên từ Excel</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center py-5">
+                    <i class="fa fa-file-excel text-success mb-4" style="font-size: 4rem;"></i>
+                    <p class="fw-bold">Chọn file Excel (.xlsx) để nhập dữ liệu</p>
+                    <input type="file" name="excelFile" id="excelFileInput" accept=".xlsx, .xls" class="form-control form-control-lg" required />
+                    <small class="text-muted d-block mt-3">
+                        File mẫu: <a href="/Template/SinhVien_Template.xlsx" class="text-decoration-underline">Tải về tại đây</a>
+                    </small>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-success btn-lg px-5" id="btnSubmitImport">
+                        <i class="fa fa-upload me-2"></i> Nhập dữ liệu
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ====================== MODAL CHỈNH SỬA ====================== -->
+<div class="modal fade" id="editStudentModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow-lg">
+            <form id="editStudentForm" method="post" action="/Admin/SinhVien/EditAjax">
+                @Html.AntiForgeryToken()
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title"><i class="fa fa-edit me-2"></i> Chỉnh sửa sinh viên</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="editMSSV" name="MSSV" />
+                    <div class="mb-3"><label class="form-label fw-bold">Họ tên</label><input type="text" id="editHoTen" name="HoTen" class="form-control" required /></div>
+                    <div class="mb-3"><label class="form-label fw-bold">Ngày sinh</label><input type="date" id="editNgaySinh" name="NgaySinh" class="form-control" /></div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Giới tính</label>
+                        <select id="editGioiTinh" name="GioiTinh" class="form-select">
+                            <option value="Nam">Nam</option>
+                            <option value="Nữ">Nữ</option>
+                        </select>
+                    </div>
+                    <div class="mb-3"><label class="form-label fw-bold">Quê quán</label><input type="text" id="editQueQuan" name="QueQuan" class="form-control" /></div>
+                    <div class="mb-3"><label class="form-label fw-bold">Email</label><input type="email" id="editEmail" name="Email" class="form-control" /></div>
+                    <div class="mb-3"><label class="form-label fw-bold">SĐT</label><input type="text" id="editSDT" name="SoDienThoaiSinhVien" class="form-control" /></div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Lớp</label>
+                        <select id="editLop" name="Lop_id" class="form-select">
                             <option value="">-- Chọn lớp --</option>
                             @foreach (var lop in ViewBag.LopList as List<QuanLyDangKyNgayLD.Models.Lop>)
                             {
@@ -168,14 +184,101 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        <i class="fa fa-times me-1"></i> Hủy
-                    </button>
-                    <button type="submit" class="btn btn-success">
-                        <i class="fa fa-check me-1"></i> Lưu
-                    </button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-primary"><i class="fa fa-save me-1"></i> Lưu thay đổi</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
+
+<!-- ====================== MODAL CHI TIẾT ====================== -->
+<div class="modal fade" id="detailStudentModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow-lg">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title"><i class="fa fa-info-circle me-2"></i> Thông tin sinh viên</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-4">MSSV</dt>
+                    <dd class="col-sm-8" id="detailMSSV"></dd>
+                    <dt class="col-sm-4">Họ tên</dt>
+                    <dd class="col-sm-8" id="detailHoTen"></dd>
+                    <dt class="col-sm-4">Ngày sinh</dt>
+                    <dd class="col-sm-8" id="detailNgaySinh"></dd>
+                    <dt class="col-sm-4">Giới tính</dt>
+                    <dd class="col-sm-8" id="detailGioiTinh"></dd>
+                    <dt class="col-sm-4">Quê quán</dt>
+                    <dd class="col-sm-8" id="detailQueQuan"></dd>
+                    <dt class="col-sm-4">Email</dt>
+                    <dd class="col-sm-8" id="detailEmail"></dd>
+                    <dt class="col-sm-4">SĐT</dt>
+                    <dd class="col-sm-8" id="detailSDT"></dd>
+                    <dt class="col-sm-4">Lớp</dt>
+                    <dd class="col-sm-8" id="detailLop"></dd>
+                </dl>
+            </div>
+            <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button></div>
+        </div>
+    </div>
+</div>
+
+<!-- ====================== MODAL XÓA ====================== -->
+<div class="modal fade" id="deleteStudentModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow-lg">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title"><i class="fas fa-trash me-2"></i> Xác nhận xóa sinh viên</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <i class="fas fa-exclamation-triangle text-danger mb-3" style="font-size: 3.5rem;"></i>
+                <h6 class="fw-bold" id="deleteStudentText"></h6>
+                <p class="text-muted">Hành động này không thể hoàn tác!</p>
+            </div>
+            <div class="modal-footer justify-content-center">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy bỏ</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteStudentBtn">Xác nhận xóa</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ====================== MODAL DANH SÁCH ĐÃ XÓA ====================== -->
+<div class="modal fade" id="deletedStudentsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content shadow-lg">
+            <div class="modal-header bg-secondary text-white">
+                <h5 class="modal-title"><i class="fas fa-trash-restore me-2"></i> Sinh viên đã xóa</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive" style="max-height: 500px;">
+                    <table class="table table-bordered table-hover align-middle">
+                        <thead class="table-light sticky-top">
+                            <tr>
+                                <th>STT</th>
+                                <th>MSSV</th>
+                                <th>Họ tên</th>
+                                <th>Lớp</th>
+                                <th>Ngày xóa</th>
+                                <th>Tác vụ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="deletedStudentsTableBody">
+                            <tr><td colspan="6" class="text-center text-muted py-4">Đang tải dữ liệu...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="~/Areas/Content/AdminStudentRegister/AdminStudentRegister.js"></script>
+<script src="~/Areas/Content/Js/adminCommon.js"></script>

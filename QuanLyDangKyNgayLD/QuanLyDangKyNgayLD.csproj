@@ -132,6 +132,7 @@
     <Content Include="Areas\Content\adminpage.css" />
     <Content Include="Areas\Content\Js\adminCommon.js" />
     <Content Include="Areas\Content\Js\adminWordRegistor.js" />
+    <Content Include="Areas\Content\AdminStudentRegister\AdminStudentRegister.js" />
     <Content Include="Areas\Student\Content\Css\Dashboard.css" />
     <Content Include="Areas\Student\Views\MainSinhVien\Index.cshtml" />
     <None Include="Areas\Student\Views\Shared\Viewsiderbar.cshtml" />

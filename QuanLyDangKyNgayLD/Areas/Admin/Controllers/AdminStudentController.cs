@@ -50,10 +50,48 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
             }
         }
 
+
+        // AJAX: Load danh sách sinh viên (phục vụ fetch)
+        [HttpGet]
+        public ActionResult LoadStudents(int page = 1, int pageSize = 5, string keyword = "")
+        {
+            using (var db = DbContextFactory.Create())
+            {
+                var query = db.SinhViens
+                              .Include(s => s.Lop)
+                              .Include(s => s.Lop.Khoa);
+
+                if (!string.IsNullOrWhiteSpace(keyword))
+                {
+                    query = query.Where(s => (s.HoTen ?? "").Contains(keyword) ||
+                                             s.MSSV.ToString().Contains(keyword));
+                }
+
+                int totalItems = query.Count();
+                int totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
+
+                var students = query
+                    .OrderBy(s => s.MSSV)
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .Select(s => new
+                    {
+                        s.MSSV,
+                        s.HoTen,
+                        s.GioiTinh,
+                        s.Lop_id,
+                        TenLop = s.Lop != null ? s.Lop.TenLop : "Chưa có",
+                        TenKhoa = s.Lop != null && s.Lop.Khoa != null ? s.Lop.Khoa.TenKhoa : "Chưa có khoa"
+                    })
+                    .ToList();
+
+                return Json(new { success = true, items = students, page, totalPages, totalItems }, JsonRequestBehavior.AllowGet);
+            }
+        }
+
         // POST: Thêm sinh viên (tạo luôn tài khoản)
         [HttpPost]
         [ValidateAntiForgeryToken]
-
         public ActionResult CreateAjax(QuanLyDangKyNgayLD.Models.SinhVien model)
         {
             try
@@ -63,13 +101,24 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                     if (!ModelState.IsValid)
                         return Json(new { success = false, message = "Dữ liệu không hợp lệ." });
 
-                    if (db.SinhViens.Any(s => s.MSSV == model.MSSV))
-                        return Json(new { success = false, message = "MSSV đã tồn tại." });
+                    // ✅ Kiểm tra MSSV trùng trong bảng SinhVien
+                    if (db.SinhViens.Any(s => s.MSSV == model.MSSV && s.Deleted_at == null))
+                        return Json(new { success = false, message = "MSSV đã tồn tại trong hệ thống!" });
+
+                    // ✅ Kiểm tra Username trùng trong bảng TaiKhoan
+                    string username = model.MSSV.ToString();
+                    if (db.TaiKhoans.Any(t => t.Username == username && t.Deleted_at == null))
+                        return Json(new { success = false, message = "Tài khoản với MSSV này đã tồn tại!" });
+
+                    // ✅ Kiểm tra Email trùng trong bảng TaiKhoan
+                    if (!string.IsNullOrWhiteSpace(model.Email) &&
+                        db.TaiKhoans.Any(t => t.Email == model.Email && t.Deleted_at == null))
+                        return Json(new { success = false, message = "Email này đã được sử dụng!" });
 
                     // ✅ Tạo tài khoản cho sinh viên
                     var taiKhoan = new TaiKhoan
                     {
-                        Username = model.MSSV.ToString(),
+                        Username = username,
                         Password = PasswordHelper.HashPassword("123456"), // mật khẩu mặc định
                         Email = model.Email,
                         VaiTro_id = db.VaiTroes.FirstOrDefault(v => v.TenVaiTro == "SinhVien")?.VaiTro_id,
@@ -91,6 +140,7 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                 return Json(new { success = false, message = "Lỗi: " + ex.Message });
             }
         }
+
 
         // POST: Chỉnh sửa sinh viên
         [HttpPost]
