@@ -21,7 +21,7 @@ namespace QuanLyDangKyNgayLD.Models
         }
     
         public int PhieuDangKy_id { get; set; }
-        public Nullable<int> MSSV { get; set; }
+        public long MSSV { get; set; }
         public Nullable<bool> LaoDongTheoLop { get; set; }
         public Nullable<bool> LaoDongCaNhan { get; set; }
         public Nullable<System.DateTime> ThoiGian { get; set; }

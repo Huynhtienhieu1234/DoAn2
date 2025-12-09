@@ -21,7 +21,7 @@ namespace QuanLyDangKyNgayLD.Models
         }
     
         public int id { get; set; }
-        public Nullable<int> MSSV { get; set; }
+        public long MSSV { get; set; }
         public Nullable<int> phieuduyet { get; set; }
         public Nullable<int> NguoiXacNhan { get; set; }
         public Nullable<System.DateTime> ThoiGian { get; set; }
@@ -32,6 +32,5 @@ namespace QuanLyDangKyNgayLD.Models
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<SoNgayLaoDong> SoNgayLaoDongs { get; set; }
         public virtual QuanLy QuanLy { get; set; }
-        public virtual SinhVien SinhVien { get; set; }
     }
 }

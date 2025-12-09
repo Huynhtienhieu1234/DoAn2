@@ -15,11 +15,10 @@ namespace QuanLyDangKyNgayLD.Models
     public partial class SoNgayLaoDong
     {
         public int SoNgayLaoDong_id { get; set; }
-        public Nullable<int> MSSV { get; set; }
+        public long MSSV { get; set; }
         public Nullable<int> TongSoNgay { get; set; }
         public Nullable<int> Ma_phieu_xac_nhan { get; set; }
     
         public virtual PhieuXacNhanHoanThanh PhieuXacNhanHoanThanh { get; set; }
-        public virtual SinhVien SinhVien { get; set; }
     }
 }

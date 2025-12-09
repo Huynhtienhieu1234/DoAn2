@@ -12,14 +12,12 @@ namespace QuanLyDangKyNgayLD.Models
     using System;
     using System.Collections.Generic;
     
-    public partial class DanhSachDiemDanh
+    public partial class sysdiagram
     {
-        public int DanhSachDiemDanh_id { get; set; }
-        public long MSSV { get; set; }
-        public int Dot_id { get; set; }
-        public string MaDiemDanh { get; set; }
-        public System.DateTime ThoiGian { get; set; }
-    
-        public virtual TaoDotNgayLaoDong TaoDotNgayLaoDong { get; set; }
+        public string name { get; set; }
+        public int principal_id { get; set; }
+        public int diagram_id { get; set; }
+        public Nullable<int> version { get; set; }
+        public byte[] definition { get; set; }
     }
 }

@@ -83,47 +83,141 @@ document.addEventListener("DOMContentLoaded", function () {
                 loadAccounts();
             });
         }
+                
     }
+    // Ẩn/hiện + tắt validate trường mật khẩu khi chọn Sinh viên hoặc Lớp phó lao động
+    const roleSelect = document.getElementById("createRole");
+    const passwordGroup = document.querySelector("#createModal .password-group");
+    const passwordInput = document.getElementById("createPassword");
+
+    if (roleSelect && passwordGroup && passwordInput) {
+
+        function togglePasswordField() {
+            const roleId = parseInt(roleSelect.value);
+            const isStudentRole = roleId === 3 || roleId === 4;
+
+            if (isStudentRole) {
+                passwordGroup.classList.add("d-none");
+                passwordInput.removeAttribute("required");
+                passwordInput.disabled = true;
+                passwordInput.value = "";
+
+                let hint = document.querySelector("#createModal .password-hint");
+                if (!hint) {
+                    hint = document.createElement("div");
+                    hint.className = "text-success password-hint mt-2";
+                    hint.innerHTML = `
+                    <i class="fas fa-check-circle"></i> 
+                    <strong>Mật khẩu mặc định = MSSV</strong><br>
+                    <small>Sinh viên đăng nhập lần đầu bằng: <code>MSSV / MSSV</code></small>
+                `;
+                    passwordGroup.after(hint);
+                }
+                hint.style.display = "block";
+
+                document.querySelector(".password-required-mark")?.classList.add("d-none");
+            } else {
+                passwordGroup.classList.remove("d-none");
+                passwordInput.setAttribute("required", "required");
+                passwordInput.disabled = false;
+
+                const hint = document.querySelector("#createModal .password-hint");
+                if (hint) hint.remove();
+
+                document.querySelector(".password-required-mark")?.classList.remove("d-none");
+            }
+        }
+
+        // Nút hiện/ẩn mật khẩu
+        document.getElementById("toggleCreatePassword")?.addEventListener("click", function () {
+            const input = document.getElementById("createPassword");
+            const icon = this.querySelector("i");
+            if (!input || !icon) return;
+            if (input.type === "password") {
+                input.type = "text";
+                icon.classList.replace("fa-eye", "fa-eye-slash");
+            } else {
+                input.type = "password";
+                icon.classList.replace("fa-eye-slash", "fa-eye");
+            }
+        });
+
+        // Khởi chạy khi mở modal hoặc đổi vai trò
+        togglePasswordField();
+        roleSelect.addEventListener("change", togglePasswordField);
+
+        // FIX: Khi bấm nút "Thêm" → reset trạng thái
+        document.getElementById("btnAdd")?.addEventListener("click", () => {
+            setTimeout(togglePasswordField, 150);
+        });
+
+        // FIX: Khi modal hiện xong (Bootstrap event)
+        document.getElementById("createModal")?.addEventListener("shown.bs.modal", () => {
+            setTimeout(togglePasswordField, 100);
+        });
+    }
+   
+
+
+
+
+
+
 
     // ==================================================================
     // 4. XỬ LÝ THÊM MỚI TÀI KHOẢN
     // ==================================================================
     function handleAddAccount() {
-        const form = document.getElementById("createForm");
-        if (form) form.reset(); // reset form thêm mới
-        showModal("createModal"); // mở modal thêm mới
+        document.getElementById("createForm")?.reset();
+        if (typeof togglePasswordField === "function") togglePasswordField(); // reset lại trạng thái
+        showModal("createModal");
     }
     function handleCreateSubmit(e) {
         e.preventDefault();
         const form = this;
-        const btn = document.querySelector("#createModal .btn-success"); // nút Lưu
+        const btn = document.querySelector("#createModal .btn-success");
 
-        // Kiểm tra hợp lệ trước khi gửi
+        // Khai báo roleSelect trước khi dùng
+        const roleSelect = document.getElementById("createRole");
+
+        // Kiểm tra form hợp lệ
         if (!form.checkValidity()) {
             form.reportValidity();
             return;
         }
 
+        // Validate MSSV nếu là Sinh viên hoặc Lớp phó lao động
+        const roleText = roleSelect?.options[roleSelect.selectedIndex]?.text.trim();
+        const isStudentRole = roleText === "Sinh viên" || roleText === "Lớp phó lao động";
+        const usernameInput = document.getElementById("createUsername");
+
+        if (isStudentRole && usernameInput) {
+            const mssv = usernameInput.value.trim();
+            if (!/^\d+$/.test(mssv)) {
+                showToast("MSSV phải là số nguyên dương! (ví dụ: 2113001)", "error");
+                usernameInput.focus();
+                return;
+            }
+            if (mssv.length < 6 || mssv.length > 10) {
+                showToast("MSSV thường có từ 6-10 chữ số!", "warning");
+                usernameInput.focus();
+                return;
+            }
+        }
+
+        // Chuẩn bị dữ liệu gửi form
         const formData = new FormData(form);
         const token = form.querySelector('input[name="__RequestVerificationToken"]')?.value;
-
         if (!token) {
             showToast("Thiếu token bảo mật!", "error");
             return;
         }
 
         showLoading(btn, "Đang thêm...");
-
         fetch(form.action, {
-
             method: "POST",
             body: formData,
-            headers: {
-                "X-RequestVerificationToken": token
-            }
-
-
-
+            headers: { "X-RequestVerificationToken": token }
         })
             .then(response => {
                 if (!response.ok) throw new Error("Phản hồi không hợp lệ từ server");
@@ -148,6 +242,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 resetButton(btn, "Lưu", '<i class="fa fa-check me-1"></i>');
             });
     }
+
 
 
 

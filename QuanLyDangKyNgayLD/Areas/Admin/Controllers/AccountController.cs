@@ -1,10 +1,10 @@
-﻿using System.Linq;
-using System.Web.Mvc;
-using System.Data.Entity;
+﻿using QuanLyDangKyNgayLD.Factories;
 using QuanLyDangKyNgayLD.Models;
-using QuanLyDangKyNgayLD.Factories;
-using System.Net;
 using System;
+using System.Data.Entity;
+using System.Linq;
+using System.Net;
+using System.Web.Mvc;
 
 
 namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
@@ -211,125 +211,118 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult CreateAjax(TaiKhoan model)
         {
-            try
+            if (!ModelState.IsValid)
+                return Json(new { success = false, message = "Dữ liệu không hợp lệ." });
+
+            using (var db = DbContextFactory.Create())
+            using (var transaction = db.Database.BeginTransaction())
             {
-                if (!ModelState.IsValid)
-                    return Json(new { success = false, message = "Dữ liệu không hợp lệ." });
-
-                using (var db = DbContextFactory.Create())
-                using (var transaction = db.Database.BeginTransaction())
+                try
                 {
-                    try
+                    // 1. Kiểm tra trùng Username
+                    if (db.TaiKhoans.Any(t => t.Username == model.Username && t.Deleted_at == null))
+                        return Json(new { success = false, message = "Tên đăng nhập (MSSV) đã được sử dụng!" });
+
+                    // 2. Kiểm tra trùng Email
+                    if (!string.IsNullOrWhiteSpace(model.Email) &&
+                        db.TaiKhoans.Any(t => t.Email == model.Email && t.Deleted_at == null))
+                        return Json(new { success = false, message = "Email này đã được sử dụng." });
+
+                    // 3. Xử lý Vai trò
+                    if (!int.TryParse(model.VaiTro_id?.ToString(), out int roleId) || roleId <= 0)
+                        return Json(new { success = false, message = "Vui lòng chọn vai trò!" });
+
+                    var role = db.VaiTroes.FirstOrDefault(v => v.VaiTro_id == roleId);
+                    if (role == null)
+                        return Json(new { success = false, message = "Vai trò không tồn tại!" });
+
+                    bool isStudentRole = role.VaiTro_id == 3 || role.VaiTro_id == 4;
+
+                    // 4. Xác định mật khẩu
+                    string rawPassword;
+                    if (isStudentRole)
                     {
-                        // 1. Kiểm tra trùng Username (là MSSV)
-                        if (db.TaiKhoans.Any(t => t.Username == model.Username && t.Deleted_at == null))
-                            return Json(new { success = false, message = "MSSV này đã được sử dụng!" });
+                        rawPassword = model.Username.Trim();
 
-                        // 2. Kiểm tra trùng Email
-                        if (!string.IsNullOrWhiteSpace(model.Email) &&
-                            db.TaiKhoans.Any(t => t.Email == model.Email && t.Deleted_at == null))
-                            return Json(new { success = false, message = "Email đã được sử dụng." });
+                        if (!long.TryParse(rawPassword, out _))
+                            return Json(new { success = false, message = "MSSV phải là số nguyên dương!" });
 
-                        // 3. Xử lý VaiTro_id
-                        if (!int.TryParse(model.VaiTro_id?.ToString(), out int roleId) || roleId <= 0)
-                            return Json(new { success = false, message = "Vui lòng chọn vai trò!" });
+                        if (rawPassword.Length < 6 || rawPassword.Length > 10)
+                            return Json(new { success = false, message = "MSSV thường có từ 6-10 chữ số!" });
+                    }
+                    else
+                    {
+                        if (string.IsNullOrWhiteSpace(model.Password))
+                            return Json(new { success = false, message = "Mật khẩu không được để trống!" });
 
-                        // 4. Lấy tên vai trò để kiểm tra
-                        var roleName = db.VaiTroes
-                            .Where(v => v.VaiTro_id == roleId)
-                            .Select(v => v.TenVaiTro)
-                            .FirstOrDefault();
+                        rawPassword = model.Password.Trim();
+                        if (rawPassword.Length < 6)
+                            return Json(new { success = false, message = "Mật khẩu phải ít nhất 6 ký tự!" });
+                    }
 
-                        // 5. Nếu là Sinh viên hoặc Lớp phó lao động → MẬT KHẨU MẶC ĐỊNH = MSSV (Username)
-                        string rawPassword;
-                        if (roleName == "Sinh viên" || roleName == "Lớp phó lao động")
+                    // 5. Hash mật khẩu
+                    string hashedPassword = PasswordHelper.HashPassword(rawPassword);
+
+                    // 6. Tạo tài khoản
+                    var taiKhoan = new TaiKhoan
+                    {
+                        Username = model.Username.Trim(),
+                        Email = model.Email?.Trim(),
+                        Password = hashedPassword,
+                        VaiTro_id = roleId,
+                        Deleted_at = null
+                    };
+
+                    db.TaiKhoans.Add(taiKhoan);
+                    db.SaveChanges();
+
+                    // 7. Nếu là Sinh viên/Lớp phó lao động thì tạo bản ghi SinhVien
+                    if (isStudentRole)
+                    {
+                        if (db.SinhViens.Any(s => s.MSSV.ToString() == taiKhoan.Username && s.Deleted_at == null))
                         {
-                            rawPassword = model.Username.Trim(); // Mật khẩu = MSSV
-
-                            // Kiểm tra MSSV có phải là số không (bắt buộc)
-                            if (!int.TryParse(rawPassword, out _))
-                                return Json(new { success = false, message = "MSSV phải là số!" });
+                            transaction.Rollback();
+                            return Json(new { success = false, message = "Sinh viên với MSSV này đã tồn tại trong hệ thống!" });
                         }
-                        else
+
+                        var sinhVien = new SinhVien
                         {
-                            // Với các vai trò khác: bắt buộc nhập mật khẩu
-                            if (string.IsNullOrWhiteSpace(model.Password))
-                                return Json(new { success = false, message = "Mật khẩu không được để trống." });
-
-                            rawPassword = model.Password.Trim();
-                        }
-
-                        // 6. Hash mật khẩu
-                        string hashedPassword = PasswordHelper.HashPassword(rawPassword);
-
-                        // 7. Tạo tài khoản
-                        var taiKhoan = new TaiKhoan
-                        {
-                            Username = model.Username.Trim(),
-                            Email = model.Email?.Trim(),
-                            Password = hashedPassword,
-                            VaiTro_id = roleId,
+                            MSSV = Convert.ToInt64(taiKhoan.Username),   // MSSV liên kết với Username
+                            Email = taiKhoan.Email,
+                            TaiKhoan = taiKhoan.TaiKhoan_id,
                             Deleted_at = null
+                            // HoTen có thể null vì DB đã cho phép
                         };
 
-                        db.TaiKhoans.Add(taiKhoan);
-                        db.SaveChanges(); // Lưu để lấy TaiKhoan_id
-
-                        // 8. TỰ ĐỘNG TẠO BẢN GHI SINH VIÊN nếu là Sinh viên hoặc Lớp phó lao động
-                        if (roleName == "Sinh viên" || roleName == "Lớp phó lao động")
-                        {
-                            // Kiểm tra trùng MSSV trong bảng SinhVien
-                            if (db.SinhViens.Any(s => s.MSSV.ToString() == taiKhoan.Username && s.Deleted_at == null))
-                            {
-                                transaction.Rollback();
-                                return Json(new { success = false, message = "Sinh viên với MSSV này đã tồn tại!" });
-                            }
-
-                            var sinhVien = new SinhVien
-                            {
-                                MSSV = Convert.ToInt32(taiKhoan.Username),
-                                HoTen = null,                    // Để trống, sinh viên tự cập nhật sau
-                                Email = taiKhoan.Email,
-                                TaiKhoan = taiKhoan.TaiKhoan_id,
-                                NgaySinh = null,
-                                GioiTinh = null,
-                                QueQuan = null,
-                                SoDienThoaiSinhVien = null,
-                                Lop_id = null,
-                                Anh_id = null,
-                                Deleted_at = null
-                            };
-
-                            db.SinhViens.Add(sinhVien);
-                            db.SaveChanges();
-                        }
-
-                        transaction.Commit();
-
-                        // Thông báo mật khẩu mặc định cho admin biết
-                        string msg = roleName == "Sinh viên" || roleName == "Lớp phó lao động"
-                            ? $"Thêm sinh viên thành công! Mật khẩu mặc định: {rawPassword}"
-                            : "Thêm tài khoản thành công!";
-
-                        return Json(new
-                        {
-                            success = true,
-                            message = msg
-                        });
+                        db.SinhViens.Add(sinhVien);
+                        db.SaveChanges();
                     }
-                    catch (Exception ex)
-                    {
-                        transaction.Rollback();
-                        return Json(new { success = false, message = "Lỗi hệ thống: " + ex.Message });
-                    }
+
+                    transaction.Commit();
+
+                    string successMessage = isStudentRole
+                        ? $"Thêm sinh viên thành công! Mật khẩu đăng nhập mặc định: <strong>{rawPassword}</strong>"
+                        : "Thêm tài khoản thành công!";
+
+                    return Json(new { success = true, message = successMessage });
+                }
+                catch (System.Data.Entity.Validation.DbEntityValidationException ex)
+                {
+                    transaction.Rollback();
+                    var errors = ex.EntityValidationErrors
+                        .SelectMany(eve => eve.ValidationErrors
+                            .Select(ve => new { Property = ve.PropertyName, Error = ve.ErrorMessage }))
+                        .ToList();
+
+                    return Json(new { success = false, message = "Validation failed", details = errors });
+                }
+                catch (Exception ex)
+                {
+                    transaction.Rollback();
+                    return Json(new { success = false, message = "Lỗi hệ thống: " + ex.Message });
                 }
             }
-            catch (Exception ex)
-            {
-                return Json(new { success = false, message = "Lỗi: " + ex.Message });
-            }
         }
-
 
         // GET: Chỉnh sửa
         public ActionResult Edit(int? id)
@@ -507,7 +500,7 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                 return Json(new { success = true, data = taiKhoan }, JsonRequestBehavior.AllowGet);
             }
         }
- 
+
 
         [HttpGet]
         public ActionResult LoadAccounts(int page = 1, int pageSize = 5, string keyword = "", string role = "")
@@ -535,7 +528,8 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                 var accounts = query.OrderBy(t => t.TaiKhoan_id)
                                  .Skip((page - 1) * pageSize)
                                  .Take(pageSize)
-                                 .Select(t => new {
+                                 .Select(t => new
+                                 {
                                      t.TaiKhoan_id,
                                      t.Username,
                                      t.Email,
@@ -559,7 +553,8 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                 if (!string.IsNullOrWhiteSpace(role) && role != "Tất Cả")
                     query = query.Where(t => t.VaiTro.TenVaiTro == role);
 
-                var accounts = query.Select(t => new {
+                var accounts = query.Select(t => new
+                {
                     t.Username,
                     t.Email,
                     RoleName = t.VaiTro != null ? t.VaiTro.TenVaiTro : "Chưa có vai trò"

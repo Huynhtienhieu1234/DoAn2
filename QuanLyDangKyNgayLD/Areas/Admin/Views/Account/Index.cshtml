@@ -122,60 +122,114 @@
         <button class="btn btn-secondary btn-sm ms-1" id="next">&gt;</button>
     </div>
 </div>
-
 <!-- MODAL THÊM TÀI KHOẢN -->
-<div class="modal fade" id="createModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content shadow">
-            <form id="createForm" method="post" action="/Admin/Account/CreateAjax">
+<div class="modal fade" id="createModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow-lg border-0">
+            <form id="createForm" method="post" action="/Admin/Account/CreateAjax" novalidate>
                 @Html.AntiForgeryToken()
+
                 <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title">Thêm Tài Khoản Mới</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <h5 class="modal-title fw-bold">
+                        <i class="fas fa-user-plus me-2"></i> Thêm tài khoản mới
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
 
-                <div class="modal-body">
+                <div class="modal-body py-4">
 
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Tên đăng nhập</label>
-                        <input name="Username" class="form-control" required maxlength="50" />
+                    <!-- TÊN ĐĂNG NHẬP -->
+                    <div class="mb-4">
+                        <label for="createUsername" class="form-label fw-bold">
+                            Tên đăng nhập <span class="text-danger">*</span>
+                        </label>
+                        <div class="form-text text-muted mb-2">
+                            <i class="fas fa-info-circle text-primary"></i>
+                            Với <strong>Sinh viên</strong> hoặc <strong>Lớp phó lao động</strong>: nhập <strong>MSSV</strong> (VD: 2113001)
+                        </div>
+                        <input type="text"
+                               name="Username"
+                               id="createUsername"
+                               class="form-control form-control-lg"
+                               placeholder="Nhập MSSV hoặc tên tài khoản"
+                               required
+                               maxlength="20"
+                               autocomplete="off" />
                     </div>
 
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Email</label>
-                        <input type="email" name="Email" class="form-control" required maxlength="100" />
+                    <!-- EMAIL -->
+                    <div class="mb-4">
+                        <label for="createEmail" class="form-label fw-bold">
+                            Email <span class="text-danger">*</span>
+                        </label>
+                        <input type="email"
+                               name="Email"
+                               id="createEmail"
+                               class="form-control form-control-lg"
+                               placeholder="abc@example.com"
+                               required
+                               maxlength="100"
+                               autocomplete="off" />
                     </div>
 
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Loại tài khoản</label>
-                        <select name="VaiTro_id" class="form-select" required>
-                            <option value="">-- Lọc theo vai trò --</option>
+                    <!-- VAI TRÒ -->
+                    <div class="mb-4">
+                        <label for="createRole" class="form-label fw-bold">
+                            Vai trò <span class="text-danger">*</span>
+                        </label>
+                        <select name="VaiTro_id" id="createRole" class="form-select form-select-lg" required>
+                            <option value="">-- Chọn vai trò --</option>
                             <option value="1">Admin</option>
                             <option value="2">Quản lý</option>
                             <option value="3">Sinh viên</option>
                             <option value="4">Lớp phó lao động</option>
                         </select>
-
                     </div>
 
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Mật khẩu</label>
-                        <input type="password" name="Password" class="form-control" required minlength="6" />
+                    <!-- MẬT KHẨU -->
+                    <div class="mb-4 password-group">
+                        <label for="createPassword" class="form-label fw-bold">
+                            Mật khẩu <span class="text-danger password-required-mark">*</span>
+                        </label>
+                        <div class="input-group">
+                            <input type="password"
+                                   name="Password"
+                                   id="createPassword"
+                                   class="form-control form-control-lg"
+                                   placeholder="Chỉ cần nhập khi chọn Admin hoặc Quản lý"
+                                   minlength="6"
+                                   autocomplete="new-password" />
+                            <button class="btn btn-outline-secondary btn-lg border" type="button" id="toggleCreatePassword" title="Hiện/ẩn mật khẩu">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+
+                        <!-- Gợi ý khi là Sinh viên -->
+                        <small class="text-success password-hint mt-3 d-block" style="display: none;">
+                            <i class="fas fa-check-circle fa-beat"></i>
+                            <strong class="fs-6">Mật khẩu mặc định = MSSV</strong><br>
+                            <span class="text-muted">Sinh viên đăng nhập lần đầu bằng: <code class="bg-light px-2 py-1 rounded">MSSV / MSSV</code></span>
+                        </small>
                     </div>
+
                 </div>
 
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        <i class="fa fa-times me-1"></i> Hủy
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i> Hủy
                     </button>
-                    <button type="submit" class="btn btn-success">
-                        <i class="fa fa-check me-1"></i> Lưu
+                    <button type="submit" class="btn btn-success btn-lg px-5">
+                        <i class="fas fa-save me-2"></i> Lưu tài khoản
                     </button>
                 </div>
             </form>
         </div>
     </div>
 </div>
+
+
+
+
 <!-- Modal Chỉnh sửa -->
 <div class="modal fade" id="editModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog modal-dialog-centered">
@@ -206,7 +260,7 @@
                         <input type="email" class="form-control" id="editEmail" name="Email" required maxlength="100" />
                     </div>
                     <!-- Mật khẩu -->
-                    <div class="mb-3" >
+                    <div class="mb-3">
                         <label for="editPassword" class="form-label fw-bold">Mật khẩu</label>
                         <div class="position-relative w-100" style="cursor:pointer">
                             <input type="password" class="form-control w-100" id="editPassword" name="Password"
@@ -221,7 +275,7 @@
 
 
                     <!-- Vai trò -->
-                    <div class="mb-3" >
+                    <div class="mb-3">
                         <label for="editRole" class="form-label fw-bold">Vai trò</label>
                         <select style="cursor:pointer" id="editRole" name="VaiTro_id" class="form-select" required>
                             <option value="">-- Chọn vai trò --</option>

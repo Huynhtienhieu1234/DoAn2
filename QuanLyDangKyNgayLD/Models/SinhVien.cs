@@ -14,15 +14,7 @@ namespace QuanLyDangKyNgayLD.Models
     
     public partial class SinhVien
     {
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
-        public SinhVien()
-        {
-            this.DanhSachDiemDanhs = new HashSet<DanhSachDiemDanh>();
-            this.PhieuXacNhanHoanThanhs = new HashSet<PhieuXacNhanHoanThanh>();
-            this.SoNgayLaoDongs = new HashSet<SoNgayLaoDong>();
-        }
-    
-        public int MSSV { get; set; }
+        public long MSSV { get; set; }
         public string HoTen { get; set; }
         public Nullable<System.DateTime> NgaySinh { get; set; }
         public string QueQuan { get; set; }
@@ -35,13 +27,7 @@ namespace QuanLyDangKyNgayLD.Models
         public Nullable<System.DateTime> Deleted_at { get; set; }
     
         public virtual Anh Anh { get; set; }
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<DanhSachDiemDanh> DanhSachDiemDanhs { get; set; }
         public virtual Lop Lop { get; set; }
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<PhieuXacNhanHoanThanh> PhieuXacNhanHoanThanhs { get; set; }
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<SoNgayLaoDong> SoNgayLaoDongs { get; set; }
         public virtual TaiKhoan TaiKhoan1 { get; set; }
     }
 }

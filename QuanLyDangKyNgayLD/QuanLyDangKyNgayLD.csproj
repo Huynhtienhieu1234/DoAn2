@@ -222,6 +222,9 @@
     <Compile Include="Models\SoNgayLaoDong.cs">
       <DependentUpon>QuanLyDangKyLaoDong.tt</DependentUpon>
     </Compile>
+    <Compile Include="Models\sysdiagram.cs">
+      <DependentUpon>QuanLyDangKyLaoDong.tt</DependentUpon>
+    </Compile>
     <Compile Include="Models\TaiKhoan.cs">
       <DependentUpon>QuanLyDangKyLaoDong.tt</DependentUpon>
     </Compile>
@@ -244,13 +247,6 @@
     <Content Include="Areas\Admin\Views\Shared\ViewShare.cshtml" />
     <Content Include="Areas\Admin\Views\Account\Index.cshtml" />
     <Content Include="Areas\Admin\Views\AdminWordRegister\Index.cshtml" />
-    <EntityDeploy Include="Models\QuanLyDangKyLaoDong.edmx">
-      <Generator>EntityModelCodeGenerator</Generator>
-      <LastGenOutput>QuanLyDangKyLaoDong.Designer.cs</LastGenOutput>
-    </EntityDeploy>
-    <Content Include="Models\QuanLyDangKyLaoDong.edmx.diagram">
-      <DependentUpon>QuanLyDangKyLaoDong.edmx</DependentUpon>
-    </Content>
     <Content Include="Areas\QuanLy\Views\QuanLy\Index.cshtml" />
     <Content Include="Areas\QuanLy\Views\Shared\View.cshtml" />
     <Content Include="Areas\QuanLy\Views\QuanLyWordRegister\Index.cshtml" />
@@ -259,6 +255,13 @@
     <Content Include="Areas\Student\Views\Shared\ViewSinhvien.cshtml" />
     <Content Include="Areas\Student\Views\web.config" />
     <Content Include="Areas\Student\Views\StudentRegisterWord\Index.cshtml" />
+    <EntityDeploy Include="Models\QuanLyDangKyLaoDong.edmx">
+      <Generator>EntityModelCodeGenerator</Generator>
+      <LastGenOutput>QuanLyDangKyLaoDong.Designer.cs</LastGenOutput>
+    </EntityDeploy>
+    <Content Include="Models\QuanLyDangKyLaoDong.edmx.diagram">
+      <DependentUpon>QuanLyDangKyLaoDong.edmx</DependentUpon>
+    </Content>
     <None Include="packages.config" />
     <Content Include="Views\Login\Login.cshtml" />
     <Content Include="Views\ForgotPassword\ForgotPassword.cshtml" />
