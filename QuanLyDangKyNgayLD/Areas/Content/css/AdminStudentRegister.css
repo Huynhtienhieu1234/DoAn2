@@ -200,7 +200,7 @@ body {
     }
 
     .table tbody td {
-        padding: 16px 14px;
+        padding: 5px 14px;
         vertical-align: middle;
         border-bottom: 1px solid #e0f7fa;
         color: var(--text);
@@ -1152,12 +1152,12 @@ table {
     }
 
     table th:nth-child(5), table td:nth-child(5) {
-        width: 29%;
+        width: 14%;
         min-width: 90px;
     }
 
     table th:nth-child(6), table td:nth-child(6) {
-        width: 27%;
+        width: 16%;
         min-width: 220px;
     }
 
@@ -1464,30 +1464,488 @@ table {
 
 /* ====================== NÚT TÁC VỤ CHUNG ====================== */
 
-/* Làm modal nhỏ gọn hơn */
+/* Modal nhỏ hơn nữa */
 #createStudentModal .modal-dialog {
-    max-width: 600px; /* giảm từ 700px xuống 600px */
-    width: 70%; /* chiếm 70% màn hình ngang */
+    max-width: 500px; /* Giảm từ 600px xuống 500px */
+    width: 60%; /* Chiếm 60% màn hình ngang */
 }
 
-/* Giữ form gọn gàng */
+/* Gọn form, giảm khoảng cách và kích thước */
 #createStudentModal .modal-body .mb-3 {
     display: flex;
     align-items: center;
-    gap: 10px; /* giảm khoảng cách */
+    gap: 8px; /* Giảm khoảng cách giữa label và input */
     flex-wrap: wrap;
+    margin-bottom: 0.75rem; /* Giảm khoảng cách giữa các dòng */
 }
 
 #createStudentModal .modal-body .form-label {
-    min-width: 120px; /* label hẹp hơn */
+    min-width: 100px; /* Label nhỏ hơn */
     margin-bottom: 0;
-    font-size: 0.95rem; /* chữ label nhỏ hơn một chút */
+    font-size: 0.9rem;
 }
 
 #createStudentModal .modal-body .form-control,
 #createStudentModal .modal-body .form-select {
     flex: 1;
-    min-width: 180px; /* input hẹp hơn */
-    font-size: 0.95rem; /* chữ input nhỏ hơn */
-    padding: 0.4rem 0.6rem; /* giảm padding để gọn */
+    min-width: 160px;
+    font-size: 0.9rem;
+    padding: 0.35rem 0.5rem;
+}
+.truncate {
+    max-width: 180px; /* giới hạn chiều rộng cột */
+    white-space: nowrap; /* không xuống dòng */
+    overflow: hidden; /* ẩn phần dư */
+    text-overflow: ellipsis; /* thêm dấu ... */
+}
+/**/
+/* ====================== HIỆU ỨNG LOADING MƯỢT MÀ ====================== */
+#accountTableBody.loading {
+    opacity: 0.6;
+    filter: blur(1px);
+    transition: opacity 0.4s ease, filter 0.4s ease;
+}
+
+/* Overlay loading */
+.loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    border-radius: 12px;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+    .loading-overlay.active {
+        opacity: 1;
+        visibility: visible;
+    }
+
+/* Spinner đẹp */
+.spinner-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+.spinner-wave {
+    width: 50px;
+    height: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+}
+
+    .spinner-wave div {
+        width: 6px;
+        height: 30px;
+        background: linear-gradient(135deg, #667eea, #5a67d8);
+        border-radius: 4px;
+        animation: wave 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+    }
+
+        .spinner-wave div:nth-child(1) {
+            animation-delay: -0.24s;
+        }
+
+        .spinner-wave div:nth-child(2) {
+            animation-delay: -0.12s;
+        }
+
+        .spinner-wave div:nth-child(3) {
+            animation-delay: 0s;
+        }
+
+@keyframes wave {
+    0%, 100% {
+        transform: scaleY(0.3);
+        opacity: 0.5;
+    }
+
+    50% {
+        transform: scaleY(1);
+        opacity: 1;
+    }
+}
+
+.spinner-text {
+    color: #667eea;
+    font-weight: 600;
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+}
+
+/* ====================== PHÂN TRANG SIÊU ĐẸP - CẬP NHẬT MÀU #667eea ====================== */
+#paginationStudent {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+    backdrop-filter: blur(10px);
+    border: 1.5px solid rgba(178, 235, 242, 0.5);
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+    #paginationStudent:hover {
+        box-shadow: 0 10px 28px rgba(0, 0, 0, 0.12);
+        transform: translateY(-2px);
+    }
+
+/* Nút Prev / Next */
+#prevStudent,
+#nextStudent {
+    background: linear-gradient(135deg, #667eea, #5a67d8) !important;
+    color: white !important;
+    border: none !important;
+    border-radius: var(--radius-sm) !important;
+    width: 42px;
+    height: 42px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+    #prevStudent::before,
+    #nextStudent::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+        transition: left 0.7s;
+    }
+
+    #prevStudent:hover:not(:disabled),
+    #nextStudent:hover:not(:disabled) {
+        background: linear-gradient(135deg, #5a67d8, #4c51bf) !important;
+        transform: translateY(-3px) scale(1.05);
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    #prevStudent:hover::before,
+    #nextStudent:hover::before {
+        left: 100%;
+    }
+
+    #prevStudent:active,
+    #nextStudent:active {
+        transform: translateY(-1px) scale(0.98);
+        transition: transform 0.1s;
+    }
+
+    #prevStudent:disabled,
+    #nextStudent:disabled {
+        background: #e0e0e0 !important;
+        color: #999 !important;
+        cursor: not-allowed !important;
+        transform: none !important;
+        box-shadow: none !important;
+    }
+
+/* Nút số trang */
+#pageNumbersStudent button {
+    background: white;
+    color: #667eea;
+    border: 1.8px solid #c3dafe;
+    border-radius: var(--radius-sm);
+    min-width: 44px;
+    height: 44px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.06);
+    position: relative;
+    overflow: hidden;
+}
+
+    #pageNumbersStudent button::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), transparent);
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+
+    #pageNumbersStudent button:hover {
+        background: #ebf4ff;
+        border-color: #667eea;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(102, 126, 234, 0.2);
+    }
+
+        #pageNumbersStudent button:hover::before {
+            opacity: 1;
+        }
+
+    #pageNumbersStudent button.active {
+        background: #667eea !important;
+        color: white !important;
+        font-weight: bold !important;
+        border: none !important;
+        box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+        animation: pulse 2s infinite;
+    }
+
+        #pageNumbersStudent button.active:hover {
+            background: #5a67d8 !important;
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 10px 24px rgba(102, 126, 234, 0.5);
+        }
+
+@keyframes pulse {
+    0%, 100% {
+        box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+    }
+
+    50% {
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+    }
+}
+
+/* Dấu ... */
+#pageNumbersStudent span {
+    color: #78909c;
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+/* Responsive cho phân trang */
+@media (max-width: 768px) {
+    #paginationStudent {
+        padding: 10px;
+        gap: 6px;
+    }
+
+    #prevStudent, #nextStudent {
+        width: 38px;
+        height: 38px;
+        font-size: 1rem;
+    }
+
+    #pageNumbersStudent button {
+        min-width: 38px;
+        height: 38px;
+        font-size: 0.9rem;
+    }
+}
+.spinner-wave {
+    width: 50px;
+    height: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+}
+
+    .spinner-wave div {
+        width: 6px;
+        height: 30px;
+        background: linear-gradient(135deg, #667eea, #5a67d8);
+        border-radius: 4px;
+        animation: wave 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+    }
+
+        .spinner-wave div:nth-child(1) {
+            animation-delay: -0.24s;
+        }
+
+        .spinner-wave div:nth-child(2) {
+            animation-delay: -0.12s;
+        }
+
+        .spinner-wave div:nth-child(3) {
+            animation-delay: 0s;
+        }
+
+@keyframes wave {
+    0%, 100% {
+        transform: scaleY(0.3);
+        opacity: 0.5;
+    }
+
+    50% {
+        transform: scaleY(1);
+        opacity: 1;
+    }
+}
+/* ====================== NÚT TÁC VỤ TRONG BẢNG - MÀU GỐC ====================== */
+
+/* Nút Sửa (Edit) */
+.btn-edit-student {
+    background: linear-gradient(135deg, #4facfe, #00f2fe) !important;
+    color: white !important;
+}
+
+    .btn-edit-student:hover {
+        box-shadow: 0 8px 20px rgba(79, 172, 254, 0.4) !important;
+    }
+
+/* Nút Xóa (Delete) */
+.btn-delete-student {
+    background: linear-gradient(135deg, #ff6b6b, #ee5a52) !important;
+    color: white !important;
+}
+
+    .btn-delete-student:hover {
+        box-shadow: 0 8px 20px rgba(255, 107, 107, 0.4) !important;
+    }
+
+/* Nút Chi tiết (Detail) */
+.btn-detail-student {
+    background: linear-gradient(135deg, #f093fb, #f5576c) !important;
+    color: white !important;
+}
+
+    .btn-detail-student:hover {
+        box-shadow: 0 8px 20px rgba(245, 87, 108, 0.4) !important;
+    }
+
+/* Style chung cho nút tác vụ */
+.btn-edit-student,
+.btn-delete-student,
+.btn-detail-student {
+    width: 40px;
+    height: 40px;
+    border-radius: 14px; /* var(--radius-md) */
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    margin: 0 3px;
+    cursor: pointer;
+}
+
+    .btn-edit-student i,
+    .btn-delete-student i,
+    .btn-detail-student i {
+        font-size: 1.1rem;
+        transition: all 0.3s ease;
+    }
+
+    /* Hiệu ứng hover */
+    .btn-edit-student:hover,
+    .btn-delete-student:hover,
+    .btn-detail-student:hover {
+        transform: translateY(-2px);
+    }
+
+        .btn-edit-student:hover i,
+        .btn-delete-student:hover i,
+        .btn-detail-student:hover i {
+            transform: scale(1.1);
+        }
+
+/* Responsive cho nút */
+@media (max-width: 768px) {
+    .btn-edit-student,
+    .btn-delete-student,
+    .btn-detail-student {
+        width: 36px;
+        height: 36px;
+    }
+
+        .btn-edit-student i,
+        .btn-delete-student i,
+        .btn-detail-student i {
+            font-size: 1rem;
+        }
+}
+
+@media (max-width: 576px) {
+    .btn-edit-student,
+    .btn-delete-student,
+    .btn-detail-student {
+        width: 32px;
+        height: 32px;
+        margin: 0 2px;
+    }
+
+        .btn-edit-student i,
+        .btn-delete-student i,
+        .btn-detail-student i {
+            font-size: 0.9rem;
+        }
+}
+/* ====================== SỬA LỖI MÀU NÚT PHÂN TRANG ====================== */
+
+/* Ghi đè Bootstrap để đảm bảo nút phân trang hiển thị đúng màu */
+#pageNumbersStudent button.btn-primary {
+    background: #667eea !important;
+    color: white !important;
+    border: none !important;
+    box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4) !important;
+}
+
+#pageNumbersStudent button.btn-outline-secondary {
+    background: white !important;
+    color: #667eea !important;
+    border: 1.8px solid #c3dafe !important;
+}
+
+/* Đảm bảo hover hoạt động */
+#pageNumbersStudent button.btn-primary:hover {
+    background: #5a67d8 !important;
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 10px 24px rgba(102, 126, 234, 0.5) !important;
+}
+
+#pageNumbersStudent button.btn-outline-secondary:hover {
+    background: #ebf4ff !important;
+    border-color: #667eea !important;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(102, 126, 234, 0.2) !important;
+}
+
+/* Animation cho nút active */
+#pageNumbersStudent button.btn-primary {
+    animation: pulse 2s infinite !important;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4) !important;
+    }
+
+    50% {
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6) !important;
+    }
+}
+
+/* Responsive cho nút phân trang */
+@media (max-width: 768px) {
+    #pageNumbersStudent button {
+        min-width: 38px !important;
+        height: 38px !important;
+        font-size: 0.9rem !important;
+    }
 }

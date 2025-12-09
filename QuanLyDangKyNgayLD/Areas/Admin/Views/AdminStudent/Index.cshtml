@@ -97,64 +97,92 @@
 
 <!-- ====================== MODAL THÊM SINH VIÊN ====================== -->
 <div class="modal fade" id="createStudentModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <!-- modal-lg cho rộng vừa -->
         <div class="modal-content shadow-lg border-0">
             <form id="createStudentForm" method="post" action="/Admin/SinhVien/CreateAjax" enctype="multipart/form-data">
                 @Html.AntiForgeryToken()
                 <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title fw-bold"><i class="fas fa-user-plus me-2"></i> Thêm sinh viên mới</h5>
+                    <h5 class="modal-title fw-bold">
+                        <i class="fas fa-user-plus me-2"></i> Thêm sinh viên mới
+                    </h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
+
                 <div class="modal-body py-4">
-                    <!-- Các field giống hệt modal cũ nhưng đẹp hơn -->
-                    <div class="mb-3"><label class="form-label fw-bold">MSSV <span class="text-danger">*</span></label><input name="MSSV" class="form-control form-control-lg" required /></div>
-                    <div class="mb-3"><label class="form-label fw-bold">Họ tên <span class="text-danger">*</span></label><input name="HoTen" class="form-control form-control-lg" required /></div>
-                    <div class="mb-3"><label class="form-label fw-bold">Ngày sinh</label><input type="date" name="NgaySinh" class="form-control form-control-lg" /></div>
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Giới tính</label>
-                        <select name="GioiTinh" class="form-select form-select-lg">
-                            <option value="Nam">Nam</option>
-                            <option value="Nữ">Nữ</option>
-                        </select>
-                    </div>
-                    <div class="mb-3"><label class="form-label fw-bold">Quê quán</label><input name="QueQuan" class="form-control form-control-lg" /></div>
-                    <div class="mb-3"><label class="form-label fw-bold">Email</label><input type="email" name="Email" class="form-control form-control-lg" /></div>
-                    <div class="mb-3"><label class="form-label fw-bold">SĐT</label><input name="SoDienThoaiSinhVien" class="form-control form-control-lg" /></div>
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Khoa</label>
-                        <select name="Khoa" class="form-select form-select-lg">
-                            <option value="">-- Chọn khoa --</option>
-                            <option value="CongNgheKyThuat">Công nghệ và kỹ thuật</option>
-                            <option value="NgoaiNgu">Khoa Ngoại ngữ</option>
-                            <option value="KinhTeLuat">Khoa Kinh tế - Luật</option>
-                            <option value="NongNghiepTaiNguyenMoiTruong">Nông nghiệp, Tài nguyên và Môi trường</option>
-                            <option value="VanHoaDuLichCongTacXaHoi">Văn hóa - Du lịch và Công tác xã hội</option>
-                            <option value="SuPhamToanTin">Sư phạm Toán - Tin</option>
-                            <option value="SuPhamKhoaHocTuNhien">Sư phạm Khoa học tự nhiên</option>
-                            <option value="SuPhamKhoaHocXaHoi">Sư phạm Khoa học xã hội</option>
-                            <option value="GiaoDucTieuHocMamNon">Giáo dục Tiểu học - Mầm non</option>
-                            <option value="GiaoDucTheChatSuPhamNgheThuat">Giáo dục Thể chất - Sư phạm Nghệ thuật</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Lớp</label>
-                        <select name="Lop_id" class="form-select form-select-lg">
-                            <option value="">-- Chọn lớp --</option>
-                            @foreach (var lop in ViewBag.LopList as List<QuanLyDangKyNgayLD.Models.Lop>)
-                            {
-                                <option value="@lop.Lop_id">@lop.TenLop</option>
-                            }
-                        </select>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">MSSV <span class="text-danger">*</span></label>
+                            <input name="MSSV" type="text" class="form-control form-control-sm" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Họ tên <span class="text-danger">*</span></label>
+                            <input name="HoTen" type="text" class="form-control form-control-sm" required />
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Ngày sinh</label>
+                            <input type="date" name="NgaySinh" class="form-control form-control-sm" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Giới tính</label>
+                            <select name="GioiTinh" class="form-select form-select-sm">
+                                <option value="Nam">Nam</option>
+                                <option value="Nữ">Nữ</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Quê quán</label>
+                            <input name="QueQuan" type="text" class="form-control form-control-sm" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Email</label>
+                            <input type="email" name="Email" class="form-control form-control-sm" />
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">SĐT</label>
+                            <input name="SoDienThoaiSinhVien" type="text" class="form-control form-control-sm" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Khoa</label>
+                            <select id="createKhoa" name="Khoa" class="form-select form-select-sm">
+                                <option value="">-- Chọn khoa --</option>
+                                <option value="1">Công nghệ và kỹ thuật</option>
+                                <option value="2">Khoa Ngoại ngữ</option>
+                                <option value="3">Khoa Kinh tế - Luật</option>
+                                <option value="4">Nông nghiệp, Tài nguyên và Môi trường</option>
+                                <option value="5">Văn hóa - Du lịch và Công tác xã hội</option>
+                                <option value="6">Sư phạm Toán - Tin</option>
+                                <option value="7">Sư phạm Khoa học tự nhiên</option>
+                                <option value="8">Sư phạm Khoa học xã hội</option>
+                                <option value="9">Giáo dục Tiểu học - Mầm non</option>
+                                <option value="10">Giáo dục Thể chất - Sư phạm Nghệ thuật</option>
+                            </select>
+
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-bold">Lớp</label>
+                            <select id="createLop" name="Lop_id" class="form-select form-select-sm">
+                                <option value="">-- Chọn lớp --</option>
+                            </select>
+                        </div>
+
                     </div>
                 </div>
+
                 <div class="modal-footer bg-light">
                     <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Hủy</button>
-                    <button type="submit" class="btn btn-success btn-lg px-5"><i class="fas fa-save me-2"></i> Lưu</button>
+                    <button type="submit" class="btn btn-success px-5">
+                        <i class="fas fa-save me-2"></i> Lưu
+                    </button>
                 </div>
             </form>
         </div>
     </div>
 </div>
+
 
 <!-- ====================== MODAL IMPORT EXCEL ====================== -->
 <div class="modal fade" id="importExcelModal" tabindex="-1" aria-hidden="true">
@@ -186,7 +214,8 @@
 
 <!-- ====================== MODAL CHỈNH SỬA ====================== -->
 <div class="modal fade" id="editStudentModal" tabindex="-1" data-bs-backdrop="static">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <!-- modal-lg cho rộng vừa -->
         <div class="modal-content shadow-lg">
             <form id="editStudentForm" method="post" action="/Admin/SinhVien/EditAjax">
                 @Html.AntiForgeryToken()
@@ -194,39 +223,64 @@
                     <h5 class="modal-title"><i class="fa fa-edit me-2"></i> Chỉnh sửa sinh viên</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
+
                 <div class="modal-body">
                     <input type="hidden" id="editMSSV" name="MSSV" />
-                    <div class="mb-3"><label class="form-label fw-bold">Họ tên</label><input type="text" id="editHoTen" name="HoTen" class="form-control" required /></div>
-                    <div class="mb-3"><label class="form-label fw-bold">Ngày sinh</label><input type="date" id="editNgaySinh" name="NgaySinh" class="form-control" /></div>
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Giới tính</label>
-                        <select id="editGioiTinh" name="GioiTinh" class="form-select">
-                            <option value="Nam">Nam</option>
-                            <option value="Nữ">Nữ</option>
-                        </select>
-                    </div>
-                    <div class="mb-3"><label class="form-label fw-bold">Quê quán</label><input type="text" id="editQueQuan" name="QueQuan" class="form-control" /></div>
-                    <div class="mb-3"><label class="form-label fw-bold">Email</label><input type="email" id="editEmail" name="Email" class="form-control" /></div>
-                    <div class="mb-3"><label class="form-label fw-bold">SĐT</label><input type="text" id="editSDT" name="SoDienThoaiSinhVien" class="form-control" /></div>
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Lớp</label>
-                        <select id="editLop" name="Lop_id" class="form-select">
-                            <option value="">-- Chọn lớp --</option>
-                            @foreach (var lop in ViewBag.LopList as List<QuanLyDangKyNgayLD.Models.Lop>)
-                            {
-                                <option value="@lop.Lop_id">@lop.TenLop</option>
-                            }
-                        </select>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Họ tên</label>
+                            <input type="text" id="editHoTen" name="HoTen" class="form-control form-control-sm" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Ngày sinh</label>
+                            <input type="date" id="editNgaySinh" name="NgaySinh" class="form-control form-control-sm" />
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Giới tính</label>
+                            <select id="editGioiTinh" name="GioiTinh" class="form-select form-select-sm">
+                                <option value="Nam">Nam</option>
+                                <option value="Nữ">Nữ</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Quê quán</label>
+                            <input type="text" id="editQueQuan" name="QueQuan" class="form-control form-control-sm" />
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Email</label>
+                            <input type="email" id="editEmail" name="Email" class="form-control form-control-sm" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">SĐT</label>
+                            <input type="text" id="editSDT" name="SoDienThoaiSinhVien" class="form-control form-control-sm" />
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label fw-bold">Lớp</label>
+                            <select id="editLop" name="Lop_id" class="form-select form-select-sm">
+                                <option value="">-- Chọn lớp --</option>
+                                @foreach (var lop in ViewBag.LopList as List<QuanLyDangKyNgayLD.Models.Lop>)
+                                {
+                                    <option value="@lop.Lop_id">@lop.TenLop</option>
+                                }
+                            </select>
+                        </div>
                     </div>
                 </div>
+
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                    <button type="submit" class="btn btn-primary"><i class="fa fa-save me-1"></i> Lưu thay đổi</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fa fa-save me-1"></i> Lưu thay đổi
+                    </button>
                 </div>
             </form>
         </div>
     </div>
 </div>
+
 
 <!-- ====================== MODAL CHI TIẾT ====================== -->
 <div class="modal fade" id="detailStudentModal" tabindex="-1">
@@ -240,23 +294,36 @@
                 <dl class="row mb-0">
                     <dt class="col-sm-4">MSSV</dt>
                     <dd class="col-sm-8" id="detailMSSV"></dd>
+
                     <dt class="col-sm-4">Họ tên</dt>
                     <dd class="col-sm-8" id="detailHoTen"></dd>
+
                     <dt class="col-sm-4">Ngày sinh</dt>
                     <dd class="col-sm-8" id="detailNgaySinh"></dd>
+
                     <dt class="col-sm-4">Giới tính</dt>
                     <dd class="col-sm-8" id="detailGioiTinh"></dd>
+
                     <dt class="col-sm-4">Quê quán</dt>
                     <dd class="col-sm-8" id="detailQueQuan"></dd>
+
                     <dt class="col-sm-4">Email</dt>
                     <dd class="col-sm-8" id="detailEmail"></dd>
+
                     <dt class="col-sm-4">SĐT</dt>
                     <dd class="col-sm-8" id="detailSDT"></dd>
+
+                    <!-- Bổ sung Khoa -->
+                    <dt class="col-sm-4">Khoa</dt>
+                    <dd class="col-sm-8" id="detailKhoa"></dd>
+
                     <dt class="col-sm-4">Lớp</dt>
                     <dd class="col-sm-8" id="detailLop"></dd>
                 </dl>
             </div>
-            <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button></div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            </div>
         </div>
     </div>
 </div>

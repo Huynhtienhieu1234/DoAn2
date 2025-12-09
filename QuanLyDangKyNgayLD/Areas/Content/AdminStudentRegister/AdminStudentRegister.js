@@ -1,10 +1,12 @@
 ﻿// ~/Areas/Content/AdminStudentRegister/AdminStudentRegister.js
 // ĐÃ ĐỒNG BỘ HOÀN TOÀN VỚI THANH CÔNG CỤ MỚI (LỌC KHOA + NHẬP/XUẤT EXCEL)
+// 🎯 ĐÃ THÊM HIỆU ỨNG LOADING MƯỢT MÀ
 
 document.addEventListener("DOMContentLoaded", function () {
     let currentDeleteMSSV = null;
     let currentPage = 1;
     const pageSize = 5;
+    let isLoading = false; // Biến kiểm soát trạng thái loading
 
     setupEventListeners();
     loadStudents();
@@ -47,7 +49,75 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
+    // ============= HIỆU ỨNG LOADING =============
+    function showTableLoading() {
+        if (isLoading) return;
+        isLoading = true;
+
+        const tbody = document.getElementById("studentTableBody");
+        const loadingOverlay = document.getElementById("loadingOverlay");
+
+        // Thêm class loading cho smooth transition
+        tbody.classList.add('loading');
+
+        // Hiện overlay loading
+        if (loadingOverlay) {
+            loadingOverlay.classList.add('active');
+        }
+
+        // Hiệu ứng fade out cho bảng cũ
+        setTimeout(() => {
+            tbody.style.opacity = '0.3';
+            tbody.style.filter = 'blur(2px)';
+        }, 50);
+    }
+
+    function hideTableLoading() {
+        isLoading = false;
+
+        const tbody = document.getElementById("studentTableBody");
+        const loadingOverlay = document.getElementById("loadingOverlay");
+
+        // Ẩn overlay loading
+        if (loadingOverlay) {
+            loadingOverlay.classList.remove('active');
+        }
+
+        // Hiệu ứng fade in cho bảng mới
+        tbody.style.opacity = '1';
+        tbody.style.filter = 'none';
+        tbody.classList.remove('loading');
+    }
+
     // ============= THÊM MỚI =============
+
+    document.getElementById("createKhoa").addEventListener("change", function () {
+        const khoaId = this.value;
+        const lopSelect = document.getElementById("createLop");
+
+        // Xóa option cũ
+        lopSelect.innerHTML = '<option value="">-- Chọn lớp --</option>';
+
+        if (!khoaId) return;
+
+        // Gọi API lấy danh sách lớp theo khoa
+        fetch(`/Admin/AdminStudent/GetLopByKhoa?khoaId=${encodeURIComponent(khoaId)}`)
+            .then(r => r.json())
+            .then(data => {
+                if (Array.isArray(data)) {
+                    data.forEach(lop => {
+                        const opt = document.createElement("option");
+                        opt.value = lop.Lop_id;
+                        opt.textContent = lop.TenLop;
+                        lopSelect.appendChild(opt);
+                    });
+                }
+            })
+            .catch(() => {
+                showToast("Không tải được danh sách lớp!", "error");
+            });
+    });
+
     function handleCreateSubmit(e) {
         e.preventDefault();
         const form = this;
@@ -63,7 +133,18 @@ document.addEventListener("DOMContentLoaded", function () {
                     hideModal("createStudentModal");
                     showToast(d.message || "Thêm sinh viên thành công!", "success");
                     loadStudents();
-                } else showToast(d.message || "Thêm thất bại!", "error");
+
+                    // 🔧 Reset toàn bộ ô nhập
+                    form.reset();
+
+                    // 🔧 Reset lại dropdown lớp về mặc định
+                    const lopSelect = document.getElementById("createLop");
+                    if (lopSelect) {
+                        lopSelect.innerHTML = '<option value="">-- Chọn lớp --</option>';
+                    }
+                } else {
+                    showToast(d.message || "Thêm thất bại!", "error");
+                }
             })
             .catch(() => showToast("Lỗi server!", "error"))
             .finally(() => resetButton(btn, "Lưu"));
@@ -158,32 +239,52 @@ document.addEventListener("DOMContentLoaded", function () {
     // ============= LOAD + LỌC KHOA =============
     function loadStudents(page = 1) {
         currentPage = page;
+
+        // Hiệu ứng loading
+        showTableLoading();
+
         const keyword = document.getElementById("searchBox")?.value.trim() || "";
         const khoaFilter = document.getElementById("roleFilter")?.value || "";
         const tbody = document.getElementById("studentTableBody");
-        tbody.innerHTML = `<tr><td colspan="7" class="text-center py-5"><i class="fa fa-spinner fa-spin fa-2x"></i><br>Đang tải dữ liệu...</td></tr>`;
+
+        // Hiển thị loading spinner trong bảng
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center py-5">
+            <div class="spinner-wave mx-auto mb-2">
+                <div></div><div></div><div></div>
+            </div>
+            <div class="text-muted">Đang tải dữ liệu...</div>
+        </td></tr>`;
 
         let url = `/Admin/AdminStudent/LoadStudents?page=${page}&pageSize=${pageSize}&keyword=${encodeURIComponent(keyword)}`;
         if (khoaFilter && khoaFilter !== "TatCa") {
             url += `&khoa=${encodeURIComponent(khoaFilter)}`;
         }
 
-        fetch(url)
-            .then(r => r.json())
-            .then(data => {
-                renderStudentTable(data.items || [], page);
-                setupPagination(data.page || 1, data.totalPages || 1);
-            })
-            .catch(err => {
-                console.error("Load error:", err);
-                tbody.innerHTML = `<tr><td colspan="7" class="text-danger text-center py-4">Lỗi tải dữ liệu</td></tr>`;
-            });
+        // Thêm delay nhỏ để hiệu ứng loading rõ hơn
+        setTimeout(() => {
+            fetch(url)
+                .then(r => r.json())
+                .then(data => {
+                    renderStudentTable(data.items || [], page);
+                    setupPagination(data.page || 1, data.totalPages || 1);
+
+                    // Ẩn loading sau khi render xong
+                    setTimeout(hideTableLoading, 100);
+                })
+                .catch(err => {
+                    console.error("Load error:", err);
+                    tbody.innerHTML = `<tr><td colspan="7" class="text-danger text-center py-4">Lỗi tải dữ liệu</td></tr>`;
+                    hideTableLoading();
+                });
+        }, 300); // Delay nhỏ để hiệu ứng loading hiển thị
     }
 
     function renderStudentTable(items, page) {
         const tbody = document.getElementById("studentTableBody");
         if (!items || items.length === 0) {
-            tbody.innerHTML = `<tr class="no-data-row"><td colspan="7" class="text-muted py-4">Không có dữ liệu</td></tr>`;
+            tbody.innerHTML = `<tr class="no-data-row"><td colspan="7" class="text-muted py-4">
+                <i class="fas fa-inbox me-2"></i>Không có dữ liệu
+            </td></tr>`;
             return;
         }
 
@@ -191,24 +292,25 @@ document.addEventListener("DOMContentLoaded", function () {
             const stt = (page - 1) * pageSize + i + 1;
             return `
                 <tr>
-                    <td>${stt}</td>
-                    <td>${s.MSSV || "-"}</td>
-                    <td>${s.HoTen || "-"}</td>
+                    <td class="stt-cell">${stt}</td>
+                    <td class="fw-bold">${s.MSSV || "-"}</td>
+                    <td class="truncate" title="${s.HoTen || "-"}">${s.HoTen || "-"}</td>
                     <td>${s.GioiTinh || "-"}</td>
-                    <td>${s.TenKhoa || "-"}</td>
-                    <td>${s.TenLop || "Chưa có"}</td>
+                    <td class="truncate" title="${s.TenKhoa || "-"}">${s.TenKhoa || "-"}</td>
+                    <td class="truncate" title="${s.TenLop || 'Chưa có'}">${s.TenLop || 'Chưa có'}</td>
+
                     <td class="action-cell">
-                        <button class="btn btn-sm btn-warning btn-edit-student me-1" title="Sửa"
+                        <button class="btn btn-sm btn-edit-student me-1" title="Sửa"
                             data-id="${s.MSSV}"
                             data-hoten="${s.HoTen || ""}"
                             data-gioitinh="${s.GioiTinh || ""}"
                             data-lop="${s.Lop_id || ""}">
                             <i class="fas fa-edit"></i>
                         </button>
-                        <button class="btn btn-sm btn-danger btn-delete-student me-1" title="Xóa" data-id="${s.MSSV}">
+                        <button class="btn btn-sm btn-delete-student me-1" title="Xóa" data-id="${s.MSSV}">
                             <i class="fas fa-trash"></i>
                         </button>
-                        <button class="btn btn-sm btn-info btn-detail-student me-1 text-white" title="Chi tiết" data-id="${s.MSSV}">
+                        <button class="btn btn-sm btn-detail-student me-1" title="Chi tiết" data-id="${s.MSSV}">
                             <i class="fas fa-info-circle"></i>
                         </button>
                     </td>
@@ -230,8 +332,19 @@ document.addEventListener("DOMContentLoaded", function () {
 
         prevBtn.disabled = page <= 1;
         nextBtn.disabled = page >= totalPages;
-        prevBtn.onclick = () => loadStudents(page - 1);
-        nextBtn.onclick = () => loadStudents(page + 1);
+
+        // Thêm hiệu ứng loading cho nút prev/next
+        prevBtn.onclick = () => {
+            if (prevBtn.disabled || isLoading) return;
+            showTableLoading();
+            loadStudents(page - 1);
+        };
+
+        nextBtn.onclick = () => {
+            if (nextBtn.disabled || isLoading) return;
+            showTableLoading();
+            loadStudents(page + 1);
+        };
 
         const max = 7;
         let start = Math.max(1, page - Math.floor(max / 2));
@@ -250,9 +363,14 @@ document.addEventListener("DOMContentLoaded", function () {
             b.className = "btn btn-sm mx-1";
             b.classList.add(p === page ? "btn-primary" : "btn-outline-secondary");
             b.textContent = p;
-            b.onclick = () => loadStudents(p);
+            b.onclick = () => {
+                if (isLoading) return;
+                showTableLoading();
+                loadStudents(p);
+            };
             container.appendChild(b);
         }
+
         function addEllipsis() {
             const s = document.createElement("span");
             s.className = "mx-2 text-muted";

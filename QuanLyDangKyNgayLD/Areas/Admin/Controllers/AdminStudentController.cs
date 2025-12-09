@@ -115,6 +115,13 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                         db.TaiKhoans.Any(t => t.Email == model.Email && t.Deleted_at == null))
                         return Json(new { success = false, message = "Email này đã được sử dụng!" });
 
+                    // ✅ Kiểm tra số điện thoại
+                    if (string.IsNullOrWhiteSpace(model.SoDienThoaiSinhVien))
+                        return Json(new { success = false, message = "Số điện thoại không được để trống!" });
+
+                    if (!System.Text.RegularExpressions.Regex.IsMatch(model.SoDienThoaiSinhVien, @"^\d{10}$"))
+                        return Json(new { success = false, message = "Số điện thoại phải đủ 10 chữ số!" });
+
                     // ✅ Tạo tài khoản cho sinh viên
                     var taiKhoan = new TaiKhoan
                     {
@@ -279,5 +286,30 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                 return Json(new { success = true, items = students }, JsonRequestBehavior.AllowGet);
             }
         }
+
+        // Xử lý tác vụ 
+        [HttpGet]
+        public JsonResult GetLopByKhoa(int khoaId)
+        {
+            using (var db = DbContextFactory.Create())
+            {
+                var dsLop = db.Lops
+                              .Where(l => l.Khoa_id == khoaId)
+                              .Select(l => new { l.Lop_id, l.TenLop })
+                              .ToList();
+
+                return Json(dsLop, JsonRequestBehavior.AllowGet);
+            }
+        }
+
+
+
+
+
+
+
+
+
+
     }
 }
