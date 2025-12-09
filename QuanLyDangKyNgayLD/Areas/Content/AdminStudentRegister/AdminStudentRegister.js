@@ -93,12 +93,17 @@ document.addEventListener("DOMContentLoaded", function () {
         tbody.style.filter = 'none';
         tbody.classList.remove('loading');
     }
+
+
+
+
     // ============= THÊM MỚI =============
 
     // Thêm sự kiện khi modal tạo mới được mở (để reset form)
     document.getElementById('createStudentModal')?.addEventListener('show.bs.modal', function () {
         // Reset dropdown Khoa về mặc định
-        document.getElementById("createKhoa").value = "";
+        const createKhoa = document.getElementById("createKhoa");
+        if (createKhoa) createKhoa.value = "";
 
         // Reset dropdown Lớp
         const lopSelect = document.getElementById("createLop");
@@ -107,63 +112,181 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         // Reset ngày sinh để trống
-        document.getElementById("createNgaySinh").value = "";
+        const createNgaySinh = document.getElementById("createNgaySinh");
+        if (createNgaySinh) createNgaySinh.value = "";
 
         // Reset giới tính về Nam
-        document.getElementById("createGioiTinh").value = "Nam";
+        const createGioiTinh = document.querySelector("select[name='GioiTinh']");
+        if (createGioiTinh) createGioiTinh.value = "Nam";
+
+        // Reset các trường input khác
+        const createMSSV = document.querySelector("input[name='MSSV']");
+        if (createMSSV) createMSSV.value = "";
+
+        const createHoTen = document.querySelector("input[name='HoTen']");
+        if (createHoTen) createHoTen.value = "";
+
+        const createQueQuan = document.querySelector("input[name='QueQuan']");
+        if (createQueQuan) createQueQuan.value = "";
+
+        const createEmail = document.querySelector("input[name='Email']");
+        if (createEmail) createEmail.value = "";
+
+        const createSDT = document.querySelector("input[name='SoDienThoaiSinhVien']");
+        if (createSDT) createSDT.value = "";
     });
 
     // Sự kiện chọn Khoa trong modal tạo mới
-    document.getElementById("createKhoa")?.addEventListener("change", function () {
-        const khoaId = this.value;
-        const lopSelect = document.getElementById("createLop");
+    const createKhoaElement = document.getElementById("createKhoa");
+    if (createKhoaElement) {
+        createKhoaElement.addEventListener("change", function () {
+            const khoaId = this.value;
+            const lopSelect = document.getElementById("createLop");
 
-        // Xóa option cũ
-        if (lopSelect) {
-            lopSelect.innerHTML = '<option value="">-- Chọn lớp --</option>';
-        }
+            // Xóa option cũ nếu tồn tại
+            if (lopSelect) {
+                lopSelect.innerHTML = '<option value="">-- Chọn lớp --</option>';
+            }
 
-        if (!khoaId) return;
+            if (!khoaId) return;
 
-        // Gọi API lấy danh sách lớp theo khoa
-        fetch(`/Admin/AdminStudent/GetLopByKhoa?khoaId=${encodeURIComponent(khoaId)}`)
-            .then(r => {
-                if (!r.ok) throw new Error(`HTTP ${r.status}`);
-                return r.json();
-            })
-            .then(data => {
-                if (Array.isArray(data) && data.length > 0) {
-                    data.forEach(lop => {
-                        const opt = document.createElement("option");
-                        opt.value = lop.Lop_id;
-                        opt.textContent = lop.TenLop;
-                        if (lopSelect) lopSelect.appendChild(opt);
-                    });
-                } else {
-                    // Nếu không có lớp nào
+            // Gọi API lấy danh sách lớp theo khoa
+            fetch(`/Admin/AdminStudent/GetLopByKhoa?khoaId=${encodeURIComponent(khoaId)}`)
+                .then(r => {
+                    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+                    return r.json();
+                })
+                .then(data => {
+                    if (lopSelect) {
+                        if (Array.isArray(data) && data.length > 0) {
+                            data.forEach(lop => {
+                                const opt = document.createElement("option");
+                                opt.value = lop.Lop_id;
+                                opt.textContent = lop.TenLop;
+                                lopSelect.appendChild(opt);
+                            });
+                        } else {
+                            // Nếu không có lớp nào
+                            const opt = document.createElement("option");
+                            opt.value = "";
+                            opt.textContent = "Khoa này chưa có lớp";
+                            opt.disabled = true;
+                            lopSelect.appendChild(opt);
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error("Lỗi tải danh sách lớp:", error);
+                    showToast("Không tải được danh sách lớp! Vui lòng thử lại.", "error");
+
+                    // Thêm option lỗi
                     if (lopSelect) {
                         const opt = document.createElement("option");
                         opt.value = "";
-                        opt.textContent = "Khoa này chưa có lớp";
+                        opt.textContent = "Lỗi tải danh sách lớp";
                         opt.disabled = true;
                         lopSelect.appendChild(opt);
                     }
-                }
-            })
-            .catch(error => {
-                console.error("Lỗi tải danh sách lớp:", error);
-                showToast("Không tải được danh sách lớp! Vui lòng thử lại.", "error");
+                });
+        });
+    }
 
-                // Thêm option lỗi
-                if (lopSelect) {
-                    const opt = document.createElement("option");
-                    opt.value = "";
-                    opt.textContent = "Lỗi tải danh sách lớp";
-                    opt.disabled = true;
-                    lopSelect.appendChild(opt);
+    // Hàm kiểm tra email hợp lệ
+    function isValidEmail(email) {
+        if (!email) return true; // Email không bắt buộc
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    }
+
+    // Hàm kiểm tra định dạng ngày dd/MM/yyyy
+    function isValidDateDDMMYYYY(dateString) {
+        if (!dateString) return true; // Ngày không bắt buộc
+
+        const regex = /^(\d{2})\/(\d{2})\/(\d{4})$/;
+        const match = dateString.match(regex);
+
+        if (!match) return false;
+
+        const day = parseInt(match[1], 10);
+        const month = parseInt(match[2], 10);
+        const year = parseInt(match[3], 10);
+
+        // Kiểm tra tháng hợp lệ
+        if (month < 1 || month > 12) return false;
+
+        // Kiểm tra ngày hợp lệ
+        const daysInMonth = new Date(year, month, 0).getDate();
+        if (day < 1 || day > daysInMonth) return false;
+
+        // Kiểm tra năm hợp lệ (ví dụ: không quá năm hiện tại + 1)
+        const currentYear = new Date().getFullYear();
+        if (year < 1900 || year > currentYear + 1) return false;
+
+        return true;
+    }
+
+    // Hàm chuyển đổi từ dd/MM/yyyy sang yyyy-MM-dd cho server
+    function convertDDMMYYYYtoYYYYMMDD(dateString) {
+        if (!dateString) return "";
+
+        const parts = dateString.split('/');
+        if (parts.length === 3) {
+            return `${parts[2]}-${parts[1]}-${parts[0]}`;
+        }
+        return dateString;
+    }
+
+    // Thêm sự kiện cho ô MSSV để chỉ cho phép nhập số
+    const createMSSVElement = document.querySelector("input[name='MSSV']");
+    if (createMSSVElement) {
+        createMSSVElement.addEventListener("input", function (e) {
+            this.value = this.value.replace(/\D/g, '');
+        });
+    }
+
+    // Thêm sự kiện cho ô số điện thoại
+    const createSDTElement = document.querySelector("input[name='SoDienThoaiSinhVien']");
+    if (createSDTElement) {
+        createSDTElement.addEventListener("input", function (e) {
+            this.value = this.value.replace(/\D/g, '');
+
+            // Giới hạn 10 số
+            if (this.value.length > 10) {
+                this.value = this.value.slice(0, 10);
+            }
+        });
+    }
+
+    // Thêm sự kiện cho ô ngày sinh để tự động định dạng dd/MM/yyyy
+    const createNgaySinhElement = document.getElementById("createNgaySinh");
+    if (createNgaySinhElement) {
+        createNgaySinhElement.addEventListener("input", function (e) {
+            let value = this.value.replace(/\D/g, '');
+
+            // Tự động thêm dấu /
+            if (value.length > 2 && value.length <= 4) {
+                value = value.substring(0, 2) + '/' + value.substring(2);
+            } else if (value.length > 4) {
+                value = value.substring(0, 2) + '/' + value.substring(2, 4) + '/' + value.substring(4, 8);
+            }
+
+            this.value = value;
+        });
+    }
+
+    // Thêm sự kiện khi nhấn Enter trong form
+    const createStudentForm = document.getElementById("createStudentForm");
+    if (createStudentForm) {
+        createStudentForm.addEventListener("keypress", function (e) {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                const submitBtn = this.querySelector("button[type='submit']");
+                if (submitBtn) {
+                    submitBtn.click();
                 }
-            });
-    });
+            }
+        });
+    }
 
     function handleCreateSubmit(e) {
         e.preventDefault();
@@ -177,69 +300,56 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         // Kiểm tra các trường bắt buộc thủ công
-        const mssv = document.getElementById("createMSSV")?.value.trim();
-        const hoTen = document.getElementById("createHoTen")?.value.trim();
-        const khoaId = document.getElementById("createKhoa")?.value;
-        const lopId = document.getElementById("createLop")?.value;
-        const sdt = document.getElementById("createSDT")?.value.trim();
+        const mssvInput = document.querySelector("input[name='MSSV']");
+        const hoTenInput = document.querySelector("input[name='HoTen']");
+        const khoaSelect = document.getElementById("createKhoa");
+        const lopSelect = document.getElementById("createLop");
+
+        const mssv = mssvInput?.value.trim();
+        const hoTen = hoTenInput?.value.trim();
+        const khoaId = khoaSelect?.value;
+        const lopId = lopSelect?.value;
 
         if (!mssv) {
             showToast("Vui lòng nhập MSSV!", "error");
-            document.getElementById("createMSSV")?.focus();
+            mssvInput?.focus();
             return;
         }
 
         if (!hoTen) {
             showToast("Vui lòng nhập họ tên!", "error");
-            document.getElementById("createHoTen")?.focus();
+            hoTenInput?.focus();
             return;
         }
 
         if (!khoaId) {
             showToast("Vui lòng chọn khoa!", "error");
-            document.getElementById("createKhoa")?.focus();
+            khoaSelect?.focus();
             return;
         }
 
         if (!lopId) {
             showToast("Vui lòng chọn lớp!", "error");
-            document.getElementById("createLop")?.focus();
+            lopSelect?.focus();
             return;
         }
 
-        if (!sdt) {
-            showToast("Vui lòng nhập số điện thoại!", "error");
-            document.getElementById("createSDT")?.focus();
-            return;
-        }
-
-        // Kiểm tra định dạng số điện thoại
-        const phoneRegex = /^\d{10}$/;
-        if (!phoneRegex.test(sdt)) {
-            showToast("Số điện thoại phải có đúng 10 chữ số!", "error");
-            document.getElementById("createSDT")?.focus();
+        // Kiểm tra định dạng ngày sinh
+        const ngaySinhInput = document.getElementById("createNgaySinh");
+        const ngaySinh = ngaySinhInput?.value.trim();
+        if (ngaySinh && !isValidDateDDMMYYYY(ngaySinh)) {
+            showToast("Ngày sinh không hợp lệ! Vui lòng nhập đúng định dạng dd/MM/yyyy", "error");
+            ngaySinhInput?.focus();
             return;
         }
 
         // Kiểm tra email nếu có
-        const email = document.getElementById("createEmail")?.value.trim();
+        const emailInput = document.querySelector("input[name='Email']");
+        const email = emailInput?.value.trim();
         if (email && !isValidEmail(email)) {
             showToast("Email không hợp lệ!", "error");
-            document.getElementById("createEmail")?.focus();
+            emailInput?.focus();
             return;
-        }
-
-        // Xử lý ngày sinh: nếu có thì chuyển sang định dạng yyyy-MM-dd cho server
-        const ngaySinhInput = document.getElementById("createNgaySinh");
-        if (ngaySinhInput.value) {
-            // Định dạng đã là yyyy-MM-dd từ input type="date", nên không cần chuyển đổi
-            // Nhưng kiểm tra xem có hợp lệ không
-            const date = new Date(ngaySinhInput.value);
-            if (isNaN(date.getTime())) {
-                showToast("Ngày sinh không hợp lệ!", "error");
-                ngaySinhInput.focus();
-                return;
-            }
         }
 
         // Hiển thị loading
@@ -247,6 +357,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // Tạo FormData
         const fd = new FormData(form);
+
+        // Chuyển đổi ngày sinh từ dd/MM/yyyy sang yyyy-MM-dd cho server
+        if (ngaySinh) {
+            fd.set("NgaySinh", convertDDMMYYYYtoYYYYMMDD(ngaySinh));
+        }
 
         // Gửi request
         fetch("/Admin/AdminStudent/CreateAjax", {
@@ -275,7 +390,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                     // Nếu lỗi trùng MSSV, focus vào ô MSSV
                     if (d.message && d.message.includes("MSSV")) {
-                        document.getElementById("createMSSV")?.focus();
+                        mssvInput?.focus();
                     }
                 }
             })
@@ -287,39 +402,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 resetButton(btn, "Lưu");
             });
     }
-
-    // Hàm kiểm tra email hợp lệ
-    function isValidEmail(email) {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return emailRegex.test(email);
-    }
-
-    // Thêm sự kiện cho ô MSSV để chỉ cho phép nhập số
-    document.getElementById("createMSSV")?.addEventListener("input", function (e) {
-        this.value = this.value.replace(/\D/g, '');
-    });
-
-    // Thêm sự kiện cho ô số điện thoại để chỉ cho phép nhập số
-    document.getElementById("createSDT")?.addEventListener("input", function (e) {
-        this.value = this.value.replace(/\D/g, '');
-
-        // Giới hạn 10 số
-        if (this.value.length > 10) {
-            this.value = this.value.slice(0, 10);
-        }
-    });
-
-    // Thêm sự kiện khi nhấn Enter trong form
-    document.getElementById("createStudentForm")?.addEventListener("keypress", function (e) {
-        if (e.key === "Enter") {
-            e.preventDefault();
-            const submitBtn = this.querySelector("button[type='submit']");
-            if (submitBtn) {
-                submitBtn.click();
-            }
-        }
-    });
-
 
 
 
