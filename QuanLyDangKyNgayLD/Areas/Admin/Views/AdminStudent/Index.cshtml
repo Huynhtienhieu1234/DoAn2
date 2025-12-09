@@ -122,8 +122,11 @@
 
                         <div class="col-md-6">
                             <label class="form-label fw-bold">Ngày sinh</label>
-                            <input type="date" name="NgaySinh" class="form-control form-control-sm" />
+                            <input type="text" id="createNgaySinh" name="NgaySinh"
+                                   class="form-control form-control-sm"
+                                   placeholder="dd/MM/yyyy" />
                         </div>
+
                         <div class="col-md-6">
                             <label class="form-label fw-bold">Giới tính</label>
                             <select name="GioiTinh" class="form-select form-select-sm">
@@ -256,8 +259,24 @@
                             <label class="form-label fw-bold">SĐT</label>
                             <input type="text" id="editSDT" name="SoDienThoaiSinhVien" class="form-control form-control-sm" />
                         </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Khoa</label>
+                            <select id="editKhoa" name="Khoa" class="form-select form-select-sm">
+                                <option value="">-- Chọn khoa --</option>
+                                <option value="1">Công nghệ và kỹ thuật</option>
+                                <option value="2">Khoa Ngoại ngữ</option>
+                                <option value="3">Khoa Kinh tế - Luật</option>
+                                <option value="4">Nông nghiệp, Tài nguyên và Môi trường</option>
+                                <option value="5">Văn hóa - Du lịch và Công tác xã hội</option>
+                                <option value="6">Sư phạm Toán - Tin</option>
+                                <option value="7">Sư phạm Khoa học tự nhiên</option>
+                                <option value="8">Sư phạm Khoa học xã hội</option>
+                                <option value="9">Giáo dục Tiểu học - Mầm non</option>
+                                <option value="10">Giáo dục Thể chất - Sư phạm Nghệ thuật</option>
+                            </select>
+                        </div>
 
-                        <div class="col-12">
+                        <div class="col-md-6">
                             <label class="form-label fw-bold">Lớp</label>
                             <select id="editLop" name="Lop_id" class="form-select form-select-sm">
                                 <option value="">-- Chọn lớp --</option>

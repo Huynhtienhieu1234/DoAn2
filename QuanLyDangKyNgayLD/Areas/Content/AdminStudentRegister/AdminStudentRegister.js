@@ -24,6 +24,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // Form xử lý
         document.getElementById("createStudentForm")?.addEventListener("submit", handleCreateSubmit);
+
+
+
+
+
         document.getElementById("editStudentForm")?.addEventListener("submit", handleEditSubmit);
         document.getElementById("confirmDeleteStudentBtn")?.addEventListener("click", handleConfirmDelete);
         document.getElementById("importForm")?.addEventListener("submit", handleImportExcel);
@@ -88,33 +93,75 @@ document.addEventListener("DOMContentLoaded", function () {
         tbody.style.filter = 'none';
         tbody.classList.remove('loading');
     }
-
     // ============= THÊM MỚI =============
 
-    document.getElementById("createKhoa").addEventListener("change", function () {
+    // Thêm sự kiện khi modal tạo mới được mở (để reset form)
+    document.getElementById('createStudentModal')?.addEventListener('show.bs.modal', function () {
+        // Reset dropdown Khoa về mặc định
+        document.getElementById("createKhoa").value = "";
+
+        // Reset dropdown Lớp
+        const lopSelect = document.getElementById("createLop");
+        if (lopSelect) {
+            lopSelect.innerHTML = '<option value="">-- Chọn lớp --</option>';
+        }
+
+        // Reset ngày sinh để trống
+        document.getElementById("createNgaySinh").value = "";
+
+        // Reset giới tính về Nam
+        document.getElementById("createGioiTinh").value = "Nam";
+    });
+
+    // Sự kiện chọn Khoa trong modal tạo mới
+    document.getElementById("createKhoa")?.addEventListener("change", function () {
         const khoaId = this.value;
         const lopSelect = document.getElementById("createLop");
 
         // Xóa option cũ
-        lopSelect.innerHTML = '<option value="">-- Chọn lớp --</option>';
+        if (lopSelect) {
+            lopSelect.innerHTML = '<option value="">-- Chọn lớp --</option>';
+        }
 
         if (!khoaId) return;
 
         // Gọi API lấy danh sách lớp theo khoa
         fetch(`/Admin/AdminStudent/GetLopByKhoa?khoaId=${encodeURIComponent(khoaId)}`)
-            .then(r => r.json())
+            .then(r => {
+                if (!r.ok) throw new Error(`HTTP ${r.status}`);
+                return r.json();
+            })
             .then(data => {
-                if (Array.isArray(data)) {
+                if (Array.isArray(data) && data.length > 0) {
                     data.forEach(lop => {
                         const opt = document.createElement("option");
                         opt.value = lop.Lop_id;
                         opt.textContent = lop.TenLop;
-                        lopSelect.appendChild(opt);
+                        if (lopSelect) lopSelect.appendChild(opt);
                     });
+                } else {
+                    // Nếu không có lớp nào
+                    if (lopSelect) {
+                        const opt = document.createElement("option");
+                        opt.value = "";
+                        opt.textContent = "Khoa này chưa có lớp";
+                        opt.disabled = true;
+                        lopSelect.appendChild(opt);
+                    }
                 }
             })
-            .catch(() => {
-                showToast("Không tải được danh sách lớp!", "error");
+            .catch(error => {
+                console.error("Lỗi tải danh sách lớp:", error);
+                showToast("Không tải được danh sách lớp! Vui lòng thử lại.", "error");
+
+                // Thêm option lỗi
+                if (lopSelect) {
+                    const opt = document.createElement("option");
+                    opt.value = "";
+                    opt.textContent = "Lỗi tải danh sách lớp";
+                    opt.disabled = true;
+                    lopSelect.appendChild(opt);
+                }
             });
     });
 
@@ -122,58 +169,161 @@ document.addEventListener("DOMContentLoaded", function () {
         e.preventDefault();
         const form = this;
         const btn = form.querySelector("button[type=submit]");
-        if (!form.checkValidity()) { form.reportValidity(); return; }
 
-        const fd = new FormData(form);
+        // Kiểm tra validation của form
+        if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+
+        // Kiểm tra các trường bắt buộc thủ công
+        const mssv = document.getElementById("createMSSV")?.value.trim();
+        const hoTen = document.getElementById("createHoTen")?.value.trim();
+        const khoaId = document.getElementById("createKhoa")?.value;
+        const lopId = document.getElementById("createLop")?.value;
+        const sdt = document.getElementById("createSDT")?.value.trim();
+
+        if (!mssv) {
+            showToast("Vui lòng nhập MSSV!", "error");
+            document.getElementById("createMSSV")?.focus();
+            return;
+        }
+
+        if (!hoTen) {
+            showToast("Vui lòng nhập họ tên!", "error");
+            document.getElementById("createHoTen")?.focus();
+            return;
+        }
+
+        if (!khoaId) {
+            showToast("Vui lòng chọn khoa!", "error");
+            document.getElementById("createKhoa")?.focus();
+            return;
+        }
+
+        if (!lopId) {
+            showToast("Vui lòng chọn lớp!", "error");
+            document.getElementById("createLop")?.focus();
+            return;
+        }
+
+        if (!sdt) {
+            showToast("Vui lòng nhập số điện thoại!", "error");
+            document.getElementById("createSDT")?.focus();
+            return;
+        }
+
+        // Kiểm tra định dạng số điện thoại
+        const phoneRegex = /^\d{10}$/;
+        if (!phoneRegex.test(sdt)) {
+            showToast("Số điện thoại phải có đúng 10 chữ số!", "error");
+            document.getElementById("createSDT")?.focus();
+            return;
+        }
+
+        // Kiểm tra email nếu có
+        const email = document.getElementById("createEmail")?.value.trim();
+        if (email && !isValidEmail(email)) {
+            showToast("Email không hợp lệ!", "error");
+            document.getElementById("createEmail")?.focus();
+            return;
+        }
+
+        // Xử lý ngày sinh: nếu có thì chuyển sang định dạng yyyy-MM-dd cho server
+        const ngaySinhInput = document.getElementById("createNgaySinh");
+        if (ngaySinhInput.value) {
+            // Định dạng đã là yyyy-MM-dd từ input type="date", nên không cần chuyển đổi
+            // Nhưng kiểm tra xem có hợp lệ không
+            const date = new Date(ngaySinhInput.value);
+            if (isNaN(date.getTime())) {
+                showToast("Ngày sinh không hợp lệ!", "error");
+                ngaySinhInput.focus();
+                return;
+            }
+        }
+
+        // Hiển thị loading
         showLoading(btn, "Đang lưu...");
-        fetch("/Admin/AdminStudent/CreateAjax", { method: "POST", body: fd })
-            .then(r => r.json())
+
+        // Tạo FormData
+        const fd = new FormData(form);
+
+        // Gửi request
+        fetch("/Admin/AdminStudent/CreateAjax", {
+            method: "POST",
+            body: fd
+        })
+            .then(r => {
+                if (!r.ok) {
+                    throw new Error(`HTTP ${r.status}: ${r.statusText}`);
+                }
+                return r.json();
+            })
             .then(d => {
                 if (d.success) {
+                    // Đóng modal
                     hideModal("createStudentModal");
+
+                    // Hiển thị thông báo thành công
                     showToast(d.message || "Thêm sinh viên thành công!", "success");
+
+                    // Tải lại danh sách
                     loadStudents();
-
-                    // 🔧 Reset toàn bộ ô nhập
-                    form.reset();
-
-                    // 🔧 Reset lại dropdown lớp về mặc định
-                    const lopSelect = document.getElementById("createLop");
-                    if (lopSelect) {
-                        lopSelect.innerHTML = '<option value="">-- Chọn lớp --</option>';
-                    }
                 } else {
+                    // Hiển thị lỗi từ server
                     showToast(d.message || "Thêm thất bại!", "error");
+
+                    // Nếu lỗi trùng MSSV, focus vào ô MSSV
+                    if (d.message && d.message.includes("MSSV")) {
+                        document.getElementById("createMSSV")?.focus();
+                    }
                 }
             })
-            .catch(() => showToast("Lỗi server!", "error"))
-            .finally(() => resetButton(btn, "Lưu"));
-    }
-
-    // ============= CHỈNH SỬA =============
-    function handleEdit() {
-        const d = this.dataset;
-        document.getElementById("editMSSV").value = d.id;
-        document.getElementById("editHoTen").value = d.hoten || "";
-        document.getElementById("editGioiTinh").value = d.gioitinh || "Nam";
-        document.getElementById("editLop").value = d.lop || "";
-        showModal("editStudentModal");
-    }
-
-    function handleEditSubmit(e) {
-        e.preventDefault();
-        const form = this;
-        const btn = form.querySelector("button[type=submit]");
-        showLoading(btn, "Đang lưu...");
-        fetch("/Admin/AdminStudent/EditAjax", { method: "POST", body: new FormData(form) })
-            .then(r => r.json())
-            .then(d => {
-                hideModal("editStudentModal");
-                showToast(d.success ? "Cập nhật thành công!" : d.message, d.success ? "success" : "error");
-                if (d.success) loadStudents(currentPage);
+            .catch(error => {
+                console.error("Lỗi server:", error);
+                showToast("Lỗi kết nối đến server! Vui lòng thử lại.", "error");
             })
-            .finally(() => resetButton(btn, "Lưu thay đổi"));
+            .finally(() => {
+                resetButton(btn, "Lưu");
+            });
     }
+
+    // Hàm kiểm tra email hợp lệ
+    function isValidEmail(email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    }
+
+    // Thêm sự kiện cho ô MSSV để chỉ cho phép nhập số
+    document.getElementById("createMSSV")?.addEventListener("input", function (e) {
+        this.value = this.value.replace(/\D/g, '');
+    });
+
+    // Thêm sự kiện cho ô số điện thoại để chỉ cho phép nhập số
+    document.getElementById("createSDT")?.addEventListener("input", function (e) {
+        this.value = this.value.replace(/\D/g, '');
+
+        // Giới hạn 10 số
+        if (this.value.length > 10) {
+            this.value = this.value.slice(0, 10);
+        }
+    });
+
+    // Thêm sự kiện khi nhấn Enter trong form
+    document.getElementById("createStudentForm")?.addEventListener("keypress", function (e) {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            const submitBtn = this.querySelector("button[type='submit']");
+            if (submitBtn) {
+                submitBtn.click();
+            }
+        }
+    });
+
+
+
+
+
 
     // ============= XÓA =============
     function handleDelete() {
@@ -199,16 +349,384 @@ document.addEventListener("DOMContentLoaded", function () {
             .finally(() => resetButton(btn, "Xác nhận xóa"));
     }
 
+
+
+
+
+    // ============= CHỈNH SỬA =============
+
+    // Sự kiện đổi Khoa trong modal chỉnh sửa
+    document.getElementById("editKhoa")?.addEventListener("change", function () {
+        const khoaId = this.value;
+        const lopSelect = document.getElementById("editLop");
+        lopSelect.innerHTML = '<option value="">-- Chọn lớp --</option>';
+
+        if (!khoaId) return;
+
+        fetch(`/Admin/AdminStudent/GetLopByKhoa?khoaId=${encodeURIComponent(khoaId)}`)
+            .then(r => r.json())
+            .then(data => {
+                if (Array.isArray(data)) {
+                    data.forEach(lop => {
+                        const opt = document.createElement("option");
+                        opt.value = lop.Lop_id;
+                        opt.textContent = lop.TenLop;
+                        lopSelect.appendChild(opt);
+                    });
+
+                    // Giữ lại lớp cũ nếu có
+                    const oldLopId = lopSelect.getAttribute("data-old-value");
+                    if (oldLopId) {
+                        lopSelect.value = oldLopId;
+                    }
+                }
+            })
+            .catch(() => {
+                showToast("Không tải được danh sách lớp!", "error");
+            });
+    });
+
+    // Reset khi mở modal
+    document.getElementById('editStudentModal')?.addEventListener('show.bs.modal', function () {
+        document.getElementById("editLop").removeAttribute("data-old-value");
+    });
+
+    // Hàm format ngày từ bất kỳ định dạng nào sang yyyy-MM-dd (cho input type="date")
+    function formatDateToYMD(dateString) {
+        if (!dateString || dateString === "" || dateString === "undefined") return "";
+
+        let date = null;
+
+        try {
+            // Trường hợp 1: Định dạng JSON Date: /Date(1672444800000)/
+            if (dateString.includes("/Date(")) {
+                const timestamp = parseInt(dateString.match(/\d+/)[0]);
+                date = new Date(timestamp);
+            }
+            // Trường hợp 2: Định dạng ISO: 2023-12-31T00:00:00
+            else if (dateString.includes("T")) {
+                date = new Date(dateString);
+            }
+            // Trường hợp 3: Định dạng dd/MM/yyyy
+            else if (dateString.includes("/")) {
+                const parts = dateString.split("/");
+                if (parts.length === 3) {
+                    const day = parseInt(parts[0]);
+                    const month = parseInt(parts[1]) - 1; // Tháng trong JS là 0-11
+                    const year = parseInt(parts[2]);
+                    date = new Date(year, month, day);
+                }
+            }
+            // Trường hợp 4: Định dạng yyyy-MM-dd (đã đúng)
+            else if (dateString.includes("-") && dateString.length === 10) {
+                return dateString; // Đã đúng định dạng
+            }
+            // Trường hợp 5: Thử parse trực tiếp
+            else {
+                date = new Date(dateString);
+            }
+
+            if (date && !isNaN(date.getTime())) {
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, "0");
+                const day = String(date.getDate()).padStart(2, "0");
+                return `${year}-${month}-${day}`;
+            }
+        } catch (e) {
+            console.log("Lỗi định dạng ngày:", e, "Chuỗi:", dateString);
+        }
+
+        return ""; // Trả về rỗng nếu không parse được
+    }
+
+    // Hàm format ngày để hiển thị dd/MM/yyyy
+    function formatDateToDMY(dateString) {
+        if (!dateString || dateString === "" || dateString === "undefined") return "-";
+
+        let date = null;
+
+        try {
+            if (dateString.includes("/Date(")) {
+                const timestamp = parseInt(dateString.match(/\d+/)[0]);
+                date = new Date(timestamp);
+            }
+            else if (dateString.includes("T")) {
+                date = new Date(dateString);
+            }
+            else if (dateString.includes("/")) {
+                const parts = dateString.split("/");
+                if (parts.length === 3) {
+                    const day = parseInt(parts[0]);
+                    const month = parseInt(parts[1]) - 1;
+                    const year = parseInt(parts[2]);
+                    date = new Date(year, month, day);
+                }
+            }
+            else if (dateString.includes("-") && dateString.length === 10) {
+                const parts = dateString.split("-");
+                if (parts.length === 3) {
+                    const year = parseInt(parts[0]);
+                    const month = parseInt(parts[1]) - 1;
+                    const day = parseInt(parts[2]);
+                    date = new Date(year, month, day);
+                }
+            }
+            else {
+                date = new Date(dateString);
+            }
+
+            if (date && !isNaN(date.getTime())) {
+                const day = String(date.getDate()).padStart(2, "0");
+                const month = String(date.getMonth() + 1).padStart(2, "0");
+                const year = date.getFullYear();
+                return `${day}/${month}/${year}`;
+            }
+        } catch (e) {
+            console.log("Lỗi định dạng ngày hiển thị:", e);
+        }
+
+        return dateString || "-"; // Trả về chuỗi gốc nếu không parse được
+    }
+
+    // Hàm mở modal chỉnh sửa
+    function handleEdit() {
+        const d = this.dataset;
+
+        console.log("Dataset khi edit:", d); // Debug để xem có dữ liệu gì
+
+        // Điền thông tin cơ bản
+        document.getElementById("editMSSV").value = d.id || "";
+        document.getElementById("editHoTen").value = d.hoten || "";
+
+        // Xử lý Ngày sinh - CHUYỂN SANG yyyy-MM-dd CHO INPUT DATE
+        const ngaySinhFormatted = formatDateToYMD(d.ngaysinh);
+        document.getElementById("editNgaySinh").value = ngaySinhFormatted;
+
+        document.getElementById("editGioiTinh").value = d.gioitinh || "Nam";
+        document.getElementById("editQueQuan").value = d.quequan || "";
+        document.getElementById("editEmail").value = d.email || "";
+        document.getElementById("editSDT").value = d.sdt || "";
+        document.getElementById("editKhoa").value = d.khoa || "";
+
+        const lopSelect = document.getElementById("editLop");
+
+        // Reset dropdown lớp
+        lopSelect.innerHTML = '<option value="">-- Chọn lớp --</option>';
+
+        // Lưu giá trị lớp cũ
+        if (d.lop && d.lop !== "undefined") {
+            lopSelect.setAttribute("data-old-value", d.lop);
+        }
+
+        // Nếu có Khoa thì load lớp theo khoa
+        if (d.khoa && d.khoa !== "undefined") {
+            fetch(`/Admin/AdminStudent/GetLopByKhoa?khoaId=${encodeURIComponent(d.khoa)}`)
+                .then(r => r.json())
+                .then(data => {
+                    if (Array.isArray(data)) {
+                        data.forEach(lop => {
+                            const opt = document.createElement("option");
+                            opt.value = lop.Lop_id;
+                            opt.textContent = lop.TenLop;
+                            lopSelect.appendChild(opt);
+                        });
+
+                        // Chọn lớp cũ sau khi load xong
+                        if (d.lop && d.lop !== "undefined") {
+                            setTimeout(() => {
+                                lopSelect.value = d.lop;
+                            }, 100);
+                        }
+                    }
+                })
+                .catch(() => {
+                    console.log("Không tải được danh sách lớp");
+                    // Fallback: tạo option với lớp cũ
+                    if (d.lop && d.lop !== "undefined") {
+                        const opt = document.createElement("option");
+                        opt.value = d.lop;
+                        opt.textContent = "Lớp cũ";
+                        lopSelect.appendChild(opt);
+                        lopSelect.value = d.lop;
+                    }
+                });
+        } else {
+            // Nếu không có Khoa, vẫn set giá trị Lớp nếu có
+            if (d.lop && d.lop !== "undefined") {
+                const opt = document.createElement("option");
+                opt.value = d.lop;
+                opt.textContent = "Lớp cũ";
+                lopSelect.appendChild(opt);
+                lopSelect.value = d.lop;
+            }
+        }
+
+        showModal("editStudentModal");
+    }
+
+    // Submit form chỉnh sửa
+    function handleEditSubmit(e) {
+        e.preventDefault();
+
+        const form = this;
+        const btn = form.querySelector("button[type=submit]");
+        showLoading(btn, "Đang lưu...");
+
+        // Kiểm tra định dạng ngày trước khi submit (tùy chọn)
+        const ngaySinhInput = document.getElementById("editNgaySinh");
+        if (ngaySinhInput.value) {
+            // Chuyển đổi từ yyyy-MM-dd sang định dạng phù hợp với server nếu cần
+            // Hoặc để nguyên vì input type="date" đã là yyyy-MM-dd
+        }
+
+        fetch("/Admin/AdminStudent/EditAjax", {
+            method: "POST",
+            body: new FormData(form)
+        })
+            .then(response => {
+                if (!response.ok) throw new Error("Lỗi mạng hoặc sai đường dẫn API");
+                return response.json();
+            })
+            .then(data => {
+                hideModal("editStudentModal");
+                showToast(
+                    data.success ? "Cập nhật thành công!" : data.message,
+                    data.success ? "success" : "error"
+                );
+                if (data.success) loadStudents(currentPage);
+            })
+            .catch(err => {
+                showToast("Có lỗi xảy ra: " + err.message, "error");
+            })
+            .finally(() => {
+                resetButton(btn, "Lưu thay đổi");
+            });
+    }
+
     // ============= CHI TIẾT =============
     function handleDetail() {
-        const row = this.closest("tr");
-        document.getElementById("detailMSSV").textContent = row.cells[1].textContent;
-        document.getElementById("detailHoTen").textContent = row.cells[2].textContent;
-        document.getElementById("detailGioiTinh").textContent = row.cells[3].textContent;
-        if (document.getElementById("detailKhoa")) document.getElementById("detailKhoa").textContent = row.cells[4].textContent;
-        document.getElementById("detailLop").textContent = row.cells[5].textContent;
+        const mssv = this.dataset.id;
+
+        // Hiển thị loading trong modal
+        const detailModal = document.getElementById("detailStudentModal");
+        const modalBody = detailModal.querySelector('.modal-body');
+        const originalContent = modalBody.innerHTML;
+
+        modalBody.innerHTML = `
+    <div class="text-center py-5">
+        <div class="spinner-wave mx-auto mb-3">
+            <div></div><div></div><div></div>
+        </div>
+        <div class="text-muted">Đang tải thông tin sinh viên...</div>
+    </div>
+`;
+
+        // Hiển thị modal
         showModal("detailStudentModal");
+
+        // Gọi API lấy chi tiết
+        fetch(`/Admin/AdminStudent/DetailsAjax?id=${mssv}`)
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    const sv = data.data;
+
+                    // Định dạng ngày sinh để hiển thị dd/MM/yyyy
+                    let formattedNgaySinh = formatDateToDMY(sv.NgaySinh);
+
+                    // Hiển thị thông tin
+                    modalBody.innerHTML = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-primary">MSSV:</label>
+                            <div class="bg-light p-2 rounded">${sv.MSSV || "-"}</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-primary">Họ tên:</label>
+                            <div class="bg-light p-2 rounded">${sv.HoTen || "-"}</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-primary">Ngày sinh:</label>
+                            <div class="bg-light p-2 rounded">${formattedNgaySinh}</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-primary">Giới tính:</label>
+                            <div class="bg-light p-2 rounded">${sv.GioiTinh || "-"}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-primary">Quê quán:</label>
+                            <div class="bg-light p-2 rounded">${sv.QueQuan || "-"}</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-primary">Email:</label>
+                            <div class="bg-light p-2 rounded">${sv.Email || "-"}</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-primary">Số điện thoại:</label>
+                            <div class="bg-light p-2 rounded">${sv.SoDienThoaiSinhVien || "-"}</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-primary">Lớp:</label>
+                            <div class="bg-light p-2 rounded">${sv.Lop || "Chưa có"}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+                } else {
+                    // Hiển thị lỗi
+                    modalBody.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    ${data.message || "Không thể tải thông tin sinh viên"}
+                </div>
+            `;
+                }
+            })
+            .catch(err => {
+                console.error("Lỗi tải chi tiết:", err);
+                modalBody.innerHTML = `
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                Lỗi kết nối khi tải thông tin
+            </div>
+        `;
+            });
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     // ============= IMPORT EXCEL =============
     function handleImportExcel(e) {
@@ -235,6 +753,22 @@ document.addEventListener("DOMContentLoaded", function () {
                 fileInput.value = "";
             });
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     // ============= LOAD + LỌC KHOA =============
     function loadStudents(page = 1) {
@@ -279,44 +813,64 @@ document.addEventListener("DOMContentLoaded", function () {
         }, 300); // Delay nhỏ để hiệu ứng loading hiển thị
     }
 
+
+
+    // ============= RENDER BẢNG SINH VIÊN =============
     function renderStudentTable(items, page) {
         const tbody = document.getElementById("studentTableBody");
         if (!items || items.length === 0) {
-            tbody.innerHTML = `<tr class="no-data-row"><td colspan="7" class="text-muted py-4">
-                <i class="fas fa-inbox me-2"></i>Không có dữ liệu
-            </td></tr>`;
+            tbody.innerHTML = `
+            <tr class="no-data-row">
+                <td colspan="7" class="text-muted py-4">
+                    <i class="fas fa-inbox me-2"></i>Không có dữ liệu
+                </td>
+            </tr>`;
             return;
         }
 
         tbody.innerHTML = items.map((s, i) => {
             const stt = (page - 1) * pageSize + i + 1;
             return `
-                <tr>
-                    <td class="stt-cell">${stt}</td>
-                    <td class="fw-bold">${s.MSSV || "-"}</td>
-                    <td class="truncate" title="${s.HoTen || "-"}">${s.HoTen || "-"}</td>
-                    <td>${s.GioiTinh || "-"}</td>
-                    <td class="truncate" title="${s.TenKhoa || "-"}">${s.TenKhoa || "-"}</td>
-                    <td class="truncate" title="${s.TenLop || 'Chưa có'}">${s.TenLop || 'Chưa có'}</td>
+            <tr>
+                <td class="stt-cell">${stt}</td>
+                <td class="fw-bold">${s.MSSV || "-"}</td>
+                <td class="truncate" title="${s.HoTen || "-"}">${s.HoTen || "-"}</td>
+                <td>${s.GioiTinh || "-"}</td>
+                <td class="truncate" title="${s.TenKhoa || "-"}">${s.TenKhoa || "-"}</td>
+                <td class="truncate" title="${s.TenLop || "Chưa có"}">${s.TenLop || "Chưa có"}</td>
 
-                    <td class="action-cell">
-                        <button class="btn btn-sm btn-edit-student me-1" title="Sửa"
-                            data-id="${s.MSSV}"
-                            data-hoten="${s.HoTen || ""}"
-                            data-gioitinh="${s.GioiTinh || ""}"
-                            data-lop="${s.Lop_id || ""}">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="btn btn-sm btn-delete-student me-1" title="Xóa" data-id="${s.MSSV}">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                        <button class="btn btn-sm btn-detail-student me-1" title="Chi tiết" data-id="${s.MSSV}">
-                            <i class="fas fa-info-circle"></i>
-                        </button>
-                    </td>
-                </tr>`;
+                <td class="action-cell">
+                    <button class="btn btn-sm btn-warning btn-edit-student me-1" title="Sửa"
+                        data-id="${s.MSSV}"
+                        data-hoten="${s.HoTen || ""}"
+                        data-gioitinh="${s.GioiTinh || ""}"
+                        data-lop="${s.Lop_id || ""}"
+                        data-khoa="${s.Khoa_id || ""}"
+                        data-email="${s.Email || ""}"
+                        data-sdt="${s.SoDienThoaiSinhVien || ""}"
+                        data-quequan="${s.QueQuan || ""}"
+                        data-ngaysinh="${s.NgaySinh || ""}">
+                        <i class="fas fa-edit"></i>
+                    </button>
+
+                    <button class="btn btn-sm btn-danger btn-delete-student me-1" title="Xóa"
+                        data-id="${s.MSSV}">
+                        <i class="fas fa-trash"></i>
+                    </button>
+
+                    <button class="btn btn-sm btn-info btn-detail-student me-1 text-white" title="Chi tiết"
+                        data-id="${s.MSSV}">
+                        <i class="fas fa-info-circle"></i>
+                    </button>
+                </td>
+            </tr>`;
         }).join("");
     }
+
+
+
+
+
 
     // ============= PHÂN TRANG =============
     function setupPagination(page, totalPages) {

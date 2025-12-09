@@ -52,6 +52,7 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
 
 
         // AJAX: Load danh sách sinh viên (phục vụ fetch)
+        // Trong AdminStudentController.cs, sửa action LoadStudents
         [HttpGet]
         public ActionResult LoadStudents(int page = 1, int pageSize = 5, string keyword = "")
         {
@@ -79,17 +80,20 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                         s.MSSV,
                         s.HoTen,
                         s.GioiTinh,
+                        s.NgaySinh,
+                        s.QueQuan,
+                        s.Email,
+                        s.SoDienThoaiSinhVien,
                         s.Lop_id,
                         TenLop = s.Lop != null ? s.Lop.TenLop : "Chưa có",
-                        TenKhoa = s.Lop != null && s.Lop.Khoa != null ? s.Lop.Khoa.TenKhoa : "Chưa có khoa"
+                        TenKhoa = s.Lop != null && s.Lop.Khoa != null ? s.Lop.Khoa.TenKhoa : "Chưa có khoa",
+                        Khoa_id = s.Lop != null && s.Lop.Khoa != null ? s.Lop.Khoa.Khoa_id : (int?)null // Thêm Khoa_id
                     })
                     .ToList();
 
                 return Json(new { success = true, items = students, page, totalPages, totalItems }, JsonRequestBehavior.AllowGet);
             }
-        }
-
-        // POST: Thêm sinh viên (tạo luôn tài khoản)
+        }        // POST: Thêm sinh viên (tạo luôn tài khoản)
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult CreateAjax(QuanLyDangKyNgayLD.Models.SinhVien model)
@@ -181,6 +185,10 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
             }
         }
 
+
+
+
+
         // POST: Xóa mềm sinh viên (đánh dấu Deleted_at trong tài khoản)
         [HttpPost]
         public ActionResult DeleteAjax(int id)
@@ -263,6 +271,10 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                 return Json(new { success = true, data = sv }, JsonRequestBehavior.AllowGet);
             }
         }
+
+
+
+
 
         // AJAX: Xuất danh sách sinh viên
         [HttpGet]
