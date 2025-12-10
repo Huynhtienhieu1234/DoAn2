@@ -29,18 +29,19 @@
             <form class="toolbar-flex align-items-center" role="search">
                 <select id="roleFilter" class="form-select form-select-sm me-2 shadow-sm" style="min-width: 140px; cursor:pointer">
                     <option value="">-- Lọc theo Khoa --</option>
-                    <option value="TatCa">Tất cả</option>
-                    <option value="CongNgheKyThuat">Công nghệ và kỹ thuật</option>
-                    <option value="NgoaiNgu">Khoa Ngoại ngữ</option>
-                    <option value="KinhTeLuat">Khoa Kinh tế - Luật</option>
-                    <option value="NongNghiepTaiNguyenMoiTruong">Nông nghiệp, Tài nguyên và Môi trường</option>
-                    <option value="VanHoaDuLichCongTacXaHoi">Văn hóa - Du lịch và Công tác xã hội</option>
-                    <option value="SuPhamToanTin">Sư phạm Toán - Tin</option>
-                    <option value="SuPhamKhoaHocTuNhien">Sư phạm Khoa học tự nhiên</option>
-                    <option value="SuPhamKhoaHocXaHoi">Sư phạm Khoa học xã hội</option>
-                    <option value="GiaoDucTieuHocMamNon">Giáo dục Tiểu học - Mầm non</option>
-                    <option value="GiaoDucTheChatSuPhamNgheThuat">Giáo dục Thể chất - Sư phạm Nghệ thuật</option>
+                    <option value="0">Tất cả</option>
+                    <option value="1">Công nghệ và kỹ thuật</option>
+                    <option value="2">Khoa Ngoại ngữ</option>
+                    <option value="3">Khoa Kinh tế - Luật</option>
+                    <option value="4">Nông nghiệp, Tài nguyên và Môi trường</option>
+                    <option value="5">Văn hóa - Du lịch và Công tác xã hội</option>
+                    <option value="6">Sư phạm Toán - Tin</option>
+                    <option value="7">Sư phạm Khoa học tự nhiên</option>
+                    <option value="8">Sư phạm Khoa học xã hội</option>
+                    <option value="9">Giáo dục Tiểu học - Mầm non</option>
+                    <option value="10">Giáo dục Thể chất - Sư phạm Nghệ thuật</option>
                 </select>
+
 
 
                 <div class="input-group input-group-sm shadow-sm me-2" style="min-width: 180px;">
@@ -190,7 +191,7 @@
 <!-- ====================== MODAL IMPORT EXCEL ====================== -->
 <div class="modal fade" id="importExcelModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content shadow-lg">
+        <div class="modal-content shadow-lg ">
             <form id="importForm" enctype="multipart/form-data">
                 <div class="modal-header bg-success text-white">
                     <h5 class="modal-title"><i class="fa fa-file-excel me-2"></i> Nhập danh sách sinh viên từ Excel</h5>
@@ -219,7 +220,7 @@
 <div class="modal fade" id="editStudentModal" tabindex="-1" data-bs-backdrop="static">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <!-- modal-lg cho rộng vừa -->
-        <div class="modal-content shadow-lg">
+        <div class="modal-content shadow-lg edit">
             <form id="editStudentForm" method="post" action="/Admin/SinhVien/EditAjax">
                 @Html.AntiForgeryToken()
                 <div class="modal-header bg-primary text-white">
@@ -305,7 +306,7 @@
 <div class="modal fade" id="detailStudentModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <!-- thêm modal-lg để rộng hơn -->
-        <div class="modal-content shadow-lg">
+        <div class="modal-content shadow-lg detail">
             <div class="modal-header bg-info text-white">
                 <h5 class="modal-title">
                     <i class="fa fa-info-circle me-2"></i> Thông tin sinh viên
@@ -375,7 +376,7 @@
 <!-- ====================== MODAL DANH SÁCH ĐÃ XÓA ====================== -->
 <div class="modal fade" id="deletedStudentsModal" tabindex="-1">
     <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content shadow-lg">
+        <div class="modal-content shadow-lg background ">
             <div class="modal-header bg-secondary text-white">
                 <h5 class="modal-title"><i class="fas fa-trash-restore me-2"></i> Sinh viên đã xóa</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
@@ -405,6 +406,34 @@
         </div>
     </div>
 </div>
+
+<!-- ====================== MODAL XÁC NHẬN TÙY CHỈNH ====================== -->
+<div class="modal fade" id="customConfirmModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow-lg">
+            <div class="modal-header bg-warning text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-question-circle me-2"></i> Xác nhận
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center py-4">
+                <i class="fas fa-exclamation-triangle text-warning mb-3" style="font-size: 3rem;"></i>
+                <h6 class="fw-bold mb-1" id="confirmTitle"></h6>
+                <p class="text-muted mb-0" id="confirmMessage"></p>
+            </div>
+            <div class="modal-footer justify-content-center">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" id="confirmCancelBtn">
+                    <i class="fas fa-times me-1"></i> Hủy
+                </button>
+                <button type="button" class="btn btn-success" id="confirmOkBtn">
+                    <i class="fas fa-check me-1"></i> Xác nhận
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 
 <script src="~/Areas/Content/AdminStudentRegister/AdminStudentRegister.js"></script>
 <script src="~/Areas/Content/Js/adminCommon.js"></script>

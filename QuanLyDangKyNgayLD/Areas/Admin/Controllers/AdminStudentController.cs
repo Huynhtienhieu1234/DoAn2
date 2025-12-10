@@ -234,6 +234,7 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                 return Json(new { success = false, message = "Lỗi server: " + ex.Message });
             }
         }
+     
         // POST: Khôi phục sinh viên
         [HttpPost]
         public ActionResult RestoreAjax(int id)
@@ -246,13 +247,17 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                     if (sv == null)
                         return Json(new { success = false, message = "Không tìm thấy sinh viên." });
 
+                    // Gỡ xóa mềm cho SinhVien
+                    sv.Deleted_at = null;
+
+                    // Gỡ xóa mềm cho TàiKhoan nếu có
                     var tk = db.TaiKhoans.Find(sv.TaiKhoan);
                     if (tk != null)
                         tk.Deleted_at = null;
 
                     db.SaveChanges();
 
-                    return Json(new { success = true, message = "Khôi phục sinh viên thành công!" });
+                    return Json(new { success = true, message = "Khôi phục sinh viên và tài khoản thành công!" });
                 }
             }
             catch (Exception ex)
@@ -391,8 +396,41 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                 return Json(new { success = false, message = "Lỗi server: " + ex.Message }, JsonRequestBehavior.AllowGet);
             }
         }
+        //Xóa tất cả sinh viên đã xóa
 
+        [HttpPost]
+        public ActionResult DeletePermanentAjax(int id)
+        {
+            try
+            {
+                using (var db = DbContextFactory.Create())
+                {
+                    var sv = db.SinhViens.Include(s => s.TaiKhoan1)
+                                         .FirstOrDefault(s => s.MSSV == id);
 
+                    if (sv == null)
+                        return Json(new { success = false, message = "Không tìm thấy sinh viên." });
+
+                    // Xóa hẳn sinh viên
+                    db.SinhViens.Remove(sv);
+
+                    // Nếu có tài khoản thì cũng xóa hẳn
+                    if (sv.TaiKhoan1 != null)
+                    {
+                        db.TaiKhoans.Remove(sv.TaiKhoan1);
+                    }
+
+                    db.SaveChanges();
+                    return Json(new { success = true, message = "Đã xóa hẳn sinh viên và tài khoản." });
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Lỗi server: " + ex.Message });
+            }
+        }
+
+        // xử lý khoi phục
 
 
 

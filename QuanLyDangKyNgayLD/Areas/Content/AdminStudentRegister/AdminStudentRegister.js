@@ -1,25 +1,235 @@
 ﻿// ~/Areas/Content/AdminStudentRegister/AdminStudentRegister.js
 // ĐÃ ĐỒNG BỘ HOÀN TOÀN VỚI THANH CÔNG CỤ MỚI (LỌC KHOA + NHẬP/XUẤT EXCEL)
 // 🎯 ĐÃ THÊM HIỆU ỨNG LOADING MƯỢT MÀ
+// 🎯 ĐÃ TỐI ƯU HỆ THỐNG LỌC KHOA
+
+// ==================== CÁC HÀM GLOBAL (CÓ THỂ GỌI TỪ ONCLICK) ====================
+
+// ============= UTILITY FUNCTIONS GLOBAL =============
+function showModal(id) {
+    bootstrap.Modal.getOrCreateInstance(document.getElementById(id)).show();
+}
+
+function hideModal(id) {
+    bootstrap.Modal.getInstance(document.getElementById(id))?.hide();
+}
+
+function showLoading(btn, txt) {
+    btn.disabled = true;
+    btn.innerHTML = `<span class="spinner-border spinner-border-sm me-1"></span>${txt}`;
+}
+
+function resetButton(btn, txt) {
+    btn.disabled = false;
+    btn.innerHTML = txt;
+}
+
+function debounce(fn, wait) {
+    let t;
+    return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), wait); };
+}
+
+// Hàm hiển thị modal xác nhận tùy chỉnh
+function showCustomConfirmModal(title, message, onConfirm) {
+    const confirmTitle = document.getElementById("confirmTitle");
+    const confirmMessage = document.getElementById("confirmMessage");
+    const confirmOkBtn = document.getElementById("confirmOkBtn");
+
+    // Cập nhật nội dung
+    confirmTitle.textContent = title;
+    confirmMessage.textContent = message;
+
+    // Xóa event listener cũ bằng cách clone element
+    const newOkBtn = confirmOkBtn.cloneNode(true);
+    confirmOkBtn.parentNode.replaceChild(newOkBtn, confirmOkBtn);
+
+    // Gắn event listener mới
+    newOkBtn.addEventListener("click", function () {
+        hideModal("customConfirmModal");
+        if (typeof onConfirm === "function") {
+            onConfirm();
+        }
+    });
+
+    // Hiển thị modal
+    showModal("customConfirmModal");
+}
+
+// Hàm khôi phục sinh viên
+function restoreStudent(mssv) {
+    showCustomConfirmModal(
+        "Khôi phục sinh viên",
+        `Bạn có chắc muốn khôi phục sinh viên này?`,
+        function () {
+            const fd = new FormData();
+            fd.append("id", mssv);
+
+            fetch("/Admin/AdminStudent/RestoreAjax", { method: "POST", body: fd })
+                .then(r => r.json())
+                .then(d => {
+                    showToast(d.success ? "Khôi phục thành công!" : d.message, d.success ? "success" : "error");
+                    if (d.success) {
+                        loadDeletedStudents();
+                        if (typeof loadStudents === "function") {
+                            loadStudents(1);
+                        }
+                    }
+                })
+                .catch(err => {
+                    console.error("Lỗi khi khôi phục:", err);
+                    showToast("Lỗi server: " + err.message, "error");
+                });
+        }
+    );
+}
+
+// Hàm xóa hẳn sinh viên
+function deletePermanent(mssv) {
+    showCustomConfirmModal(
+        "Xóa vĩnh viễn sinh viên",
+        `Bạn có chắc muốn xóa hẳn sinh viên này? Hành động này không thể hoàn tác!`,
+        function () {
+            const fd = new FormData();
+            fd.append("id", mssv);
+
+            fetch("/Admin/AdminStudent/DeletePermanentAjax", { method: "POST", body: fd })
+                .then(r => r.json())
+                .then(d => {
+                    showToast(d.success ? "Đã xóa hẳn!" : d.message, d.success ? "success" : "error");
+                    if (d.success) loadDeletedStudents();
+                })
+                .catch(err => {
+                    console.error("Lỗi khi xóa hẳn:", err);
+                    showToast("Lỗi server: " + err.message, "error");
+                });
+        }
+    );
+}
+
+// Hàm hiển thị toast (dùng chung cho cả onclick lẫn các sự kiện khác)
+function showToast(msg, type = "info") {
+    if (window.showToast) window.showToast(msg, type);
+    else alert(msg);
+}
+
+// Hàm load danh sách sinh viên đã xóa - ĐƯỢC DI CHUYỂN RA NGOÀI
+function loadDeletedStudents() {
+    const tbody = document.getElementById("deletedStudentsTableBody");
+    if (!tbody) return;
+
+    tbody.innerHTML = `
+        <tr><td colspan="6" class="text-center text-muted py-4">Đang tải dữ liệu...</td></tr>
+    `;
+
+    fetch("/Admin/AdminStudent/GetDeletedList")
+        .then(response => {
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            return response.text();
+        })
+        .then(text => {
+            try {
+                const data = JSON.parse(text);
+
+                if (!Array.isArray(data) || data.length === 0) {
+                    tbody.innerHTML = `
+                        <tr><td colspan="6" class="text-center text-muted py-4">
+                            <i class="fas fa-inbox me-2"></i>Không có sinh viên nào đã xóa.
+                        </td></tr>
+                    `;
+                    return;
+                }
+
+                tbody.innerHTML = "";
+                data.forEach((sv, index) => {
+                    const row = document.createElement("tr");
+                    row.innerHTML = `
+                        <td class="fw-medium">${index + 1}</td>
+                        <td><span class="badge bg-secondary">${sv.MSSV}</span></td>
+                        <td class="fw-medium">${sv.HoTen ?? "Chưa có"}</td>
+                        <td><span class="badge bg-info text-dark">${sv.Lop ?? "Chưa có"}</span></td>
+                        <td><small class="text-muted">${sv.Deleted_at}</small></td>
+                        <td>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-sm btn-success d-flex align-items-center px-3 py-2 rounded-3 shadow-sm"
+                                        onclick="restoreStudent('${sv.MSSV}')"
+                                        title="Khôi phục sinh viên này">
+                                    <i class="fas fa-undo-alt me-2"></i>
+                                    <span>Khôi phục</span>
+                                </button>
+                                <button class="btn btn-sm btn-danger d-flex align-items-center px-3 py-2 rounded-3 shadow-sm"
+                                        onclick="deletePermanent('${sv.MSSV}')"
+                                        title="Xóa vĩnh viễn khỏi hệ thống">
+                                    <i class="fas fa-trash-alt me-2"></i>
+                                    <span>Xóa hẳn</span>
+                                </button>
+                            </div>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            } catch (parseErr) {
+                console.error("Phản hồi không phải JSON:", text);
+                tbody.innerHTML = `
+                    <tr><td colspan="6" class="text-center text-danger py-4">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Server trả về dữ liệu không hợp lệ.
+                    </td></tr>
+                `;
+            }
+        })
+        .catch(err => {
+            console.error("Lỗi khi tải danh sách đã xóa:", err);
+            tbody.innerHTML = `
+                <tr><td colspan="6" class="text-center text-danger py-4">
+                    <i class="fas fa-exclamation-circle me-2"></i>Lỗi khi tải dữ liệu (${err.message}).
+                </td></tr>
+            `;
+        });
+}
+
+// ==================== KHI TRANG TẢI XONG ====================
 
 document.addEventListener("DOMContentLoaded", function () {
     let currentDeleteMSSV = null;
     let currentPage = 1;
     const pageSize = 5;
-    let isLoading = false; // Biến kiểm soát trạng thái loading
+    let isLoading = false;
+
+    // Biến cache và quản lý state cho hệ thống lọc
+    let khoaLopCache = {};
+    let currentFilterState = {
+        khoa: '',
+        search: ''
+    };
+
+    // Mapping tên khoa theo giá trị
+    const khoaMapping = {
+        "0": "Tất cả",
+        "1": "Công nghệ và kỹ thuật",
+        "2": "Khoa Ngoại ngữ",
+        "3": "Khoa Kinh tế - Luật",
+        "4": "Nông nghiệp, Tài nguyên và Môi trường",
+        "5": "Văn hóa - Du lịch và Công tác xã hội",
+        "6": "Sư phạm Toán - Tin",
+        "7": "Sư phạm Khoa học tự nhiên",
+        "8": "Sư phạm Khoa học xã hội",
+        "9": "Giáo dục Tiểu học - Mầm non",
+        "10": "Giáo dục Thể chất - Sư phạm Nghệ thuật"
+    };
 
     setupEventListeners();
     loadStudents();
+    initFilterSystem();
 
     function setupEventListeners() {
-        // === NÚT TRÊN THANH CÔNG CỤ (ĐÃ ĐỔI THEO ID MỚI) ===
+        // === NÚT TRÊN THANH CÔNG CỤ ===
         document.getElementById("btnAdd")?.addEventListener("click", () => showModal("createStudentModal"));
 
+        document.getElementById("btnViewDeleted")?.addEventListener("click", () => {
+            showModal("deletedStudentsModal");
+            loadDeletedStudents();
+        });
 
-
-        document.getElementById("btnViewDeleted")?.addEventListener("click", () => showModal("deletedStudentsModal"));
-
-        // Nút Nhập Excel (bạn đang dùng id exportAllAccounts → sửa thành đúng)
+        // Nút Nhập Excel
         document.querySelector('button[id="exportAllAccounts"]:nth-of-type(1)')?.addEventListener("click", () => showModal("importExcelModal"));
 
         // Nút Xuất Excel
@@ -27,25 +237,27 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // Form xử lý
         document.getElementById("createStudentForm")?.addEventListener("submit", handleCreateSubmit);
-
-
-
-
-
         document.getElementById("editStudentForm")?.addEventListener("submit", handleEditSubmit);
         document.getElementById("confirmDeleteStudentBtn")?.addEventListener("click", handleConfirmDelete);
         document.getElementById("importForm")?.addEventListener("submit", handleImportExcel);
 
-        // Lọc theo Khoa + Tìm kiếm
-        document.getElementById("roleFilter")?.addEventListener("change", () => {
-            currentPage = 1;
-            loadStudents();
-        });
+        // ============= LỌC THEO KHOA + TÌM KIẾM - TỐI ƯU =============
+        const roleFilter = document.getElementById("roleFilter");
+        if (roleFilter) {
+            roleFilter.addEventListener("change", function () {
+                handleFilterChange();
+            });
+        }
 
-        document.getElementById("searchBox")?.addEventListener("input", debounce(() => {
-            currentPage = 1;
-            loadStudents();
-        }, 400));
+        const searchBox = document.getElementById("searchBox");
+        if (searchBox) {
+            searchBox.addEventListener("input", debounce(() => {
+                handleSearchChange();
+            }, 400));
+        }
+
+        // Thêm nút xóa lọc
+        addClearFilterButton();
 
         // Xử lý nút trong bảng
         document.getElementById("studentTableBody")?.addEventListener("click", function (e) {
@@ -65,15 +277,12 @@ document.addEventListener("DOMContentLoaded", function () {
         const tbody = document.getElementById("studentTableBody");
         const loadingOverlay = document.getElementById("loadingOverlay");
 
-        // Thêm class loading cho smooth transition
         tbody.classList.add('loading');
 
-        // Hiện overlay loading
         if (loadingOverlay) {
             loadingOverlay.classList.add('active');
         }
 
-        // Hiệu ứng fade out cho bảng cũ
         setTimeout(() => {
             tbody.style.opacity = '0.3';
             tbody.style.filter = 'blur(2px)';
@@ -86,102 +295,32 @@ document.addEventListener("DOMContentLoaded", function () {
         const tbody = document.getElementById("studentTableBody");
         const loadingOverlay = document.getElementById("loadingOverlay");
 
-        // Ẩn overlay loading
         if (loadingOverlay) {
             loadingOverlay.classList.remove('active');
         }
 
-        // Hiệu ứng fade in cho bảng mới
         tbody.style.opacity = '1';
         tbody.style.filter = 'none';
         tbody.classList.remove('loading');
     }
 
-    // ============= Danh sách xóa =============
-
-    showModal("deletedStudentsModal");
-    loadDeletedStudents();
-    function loadDeletedStudents() {
-        const tbody = document.getElementById("deletedStudentsTableBody");
-        tbody.innerHTML = `
-        <tr><td colspan="6" class="text-center text-muted py-4">Đang tải dữ liệu...</td></tr>
-    `;
-
-        fetch("/Admin/AdminStudent/GetDeletedList")
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}`);
-                }
-                return response.text(); // đọc thô trước
-            })
-            .then(text => {
-                try {
-                    const data = JSON.parse(text);
-
-                    if (!Array.isArray(data) || data.length === 0) {
-                        tbody.innerHTML = `
-                        <tr><td colspan="6" class="text-center text-muted py-4">Không có sinh viên nào đã xóa.</td></tr>
-                    `;
-                        return;
-                    }
-
-                    tbody.innerHTML = "";
-                    data.forEach((sv, index) => {
-                        const row = document.createElement("tr");
-                        row.innerHTML = `
-                        <td>${index + 1}</td>
-                        <td>${sv.MSSV}</td>
-                        <td>${sv.HoTen}</td>
-                        <td>${sv.Lop}</td>
-                        <td>${sv.Deleted_at}</td>
-                        <td>
-                            <button class="btn btn-sm btn-success" onclick="restoreStudent(${sv.MSSV})">
-                                <i class="fas fa-undo-alt me-1"></i> Khôi phục
-                            </button>
-                        </td>
-                    `;
-                        tbody.appendChild(row);
-                    });
-                } catch (parseErr) {
-                    console.error("Phản hồi không phải JSON:", text);
-                    tbody.innerHTML = `
-                    <tr><td colspan="6" class="text-center text-danger py-4">Server trả về dữ liệu không hợp lệ.</td></tr>
-                `;
-                }
-            })
-            .catch(err => {
-                console.error("Lỗi khi tải danh sách đã xóa:", err);
-                tbody.innerHTML = `
-                <tr><td colspan="6" class="text-center text-danger py-4">Lỗi khi tải dữ liệu (${err.message}).</td></tr>
-            `;
-            });
-    }
-
-
-
     // ============= THÊM MỚI =============
-
-    // Thêm sự kiện khi modal tạo mới được mở (để reset form)
     document.getElementById('createStudentModal')?.addEventListener('show.bs.modal', function () {
-        // Reset dropdown Khoa về mặc định
         const createKhoa = document.getElementById("createKhoa");
         if (createKhoa) createKhoa.value = "";
 
-        // Reset dropdown Lớp
         const lopSelect = document.getElementById("createLop");
         if (lopSelect) {
             lopSelect.innerHTML = '<option value="">-- Chọn lớp --</option>';
+            lopSelect.disabled = true;
         }
 
-        // Reset ngày sinh để trống
         const createNgaySinh = document.getElementById("createNgaySinh");
         if (createNgaySinh) createNgaySinh.value = "";
 
-        // Reset giới tính về Nam
         const createGioiTinh = document.querySelector("select[name='GioiTinh']");
         if (createGioiTinh) createGioiTinh.value = "Nam";
 
-        // Reset các trường input khác
         const createMSSV = document.querySelector("input[name='MSSV']");
         if (createMSSV) createMSSV.value = "";
 
@@ -198,71 +337,23 @@ document.addEventListener("DOMContentLoaded", function () {
         if (createSDT) createSDT.value = "";
     });
 
-    // Sự kiện chọn Khoa trong modal tạo mới
     const createKhoaElement = document.getElementById("createKhoa");
     if (createKhoaElement) {
         createKhoaElement.addEventListener("change", function () {
             const khoaId = this.value;
             const lopSelect = document.getElementById("createLop");
-
-            // Xóa option cũ nếu tồn tại
-            if (lopSelect) {
-                lopSelect.innerHTML = '<option value="">-- Chọn lớp --</option>';
-            }
-
-            if (!khoaId) return;
-
-            // Gọi API lấy danh sách lớp theo khoa
-            fetch(`/Admin/AdminStudent/GetLopByKhoa?khoaId=${encodeURIComponent(khoaId)}`)
-                .then(r => {
-                    if (!r.ok) throw new Error(`HTTP ${r.status}`);
-                    return r.json();
-                })
-                .then(data => {
-                    if (lopSelect) {
-                        if (Array.isArray(data) && data.length > 0) {
-                            data.forEach(lop => {
-                                const opt = document.createElement("option");
-                                opt.value = lop.Lop_id;
-                                opt.textContent = lop.TenLop;
-                                lopSelect.appendChild(opt);
-                            });
-                        } else {
-                            // Nếu không có lớp nào
-                            const opt = document.createElement("option");
-                            opt.value = "";
-                            opt.textContent = "Khoa này chưa có lớp";
-                            opt.disabled = true;
-                            lopSelect.appendChild(opt);
-                        }
-                    }
-                })
-                .catch(error => {
-                    console.error("Lỗi tải danh sách lớp:", error);
-                    showToast("Không tải được danh sách lớp! Vui lòng thử lại.", "error");
-
-                    // Thêm option lỗi
-                    if (lopSelect) {
-                        const opt = document.createElement("option");
-                        opt.value = "";
-                        opt.textContent = "Lỗi tải danh sách lớp";
-                        opt.disabled = true;
-                        lopSelect.appendChild(opt);
-                    }
-                });
+            loadLopByKhoa(khoaId, lopSelect, null, true);
         });
     }
 
-    // Hàm kiểm tra email hợp lệ
     function isValidEmail(email) {
-        if (!email) return true; // Email không bắt buộc
+        if (!email) return true;
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return emailRegex.test(email);
     }
 
-    // Hàm kiểm tra định dạng ngày dd/MM/yyyy
     function isValidDateDDMMYYYY(dateString) {
-        if (!dateString) return true; // Ngày không bắt buộc
+        if (!dateString) return true;
 
         const regex = /^(\d{2})\/(\d{2})\/(\d{4})$/;
         const match = dateString.match(regex);
@@ -273,21 +364,17 @@ document.addEventListener("DOMContentLoaded", function () {
         const month = parseInt(match[2], 10);
         const year = parseInt(match[3], 10);
 
-        // Kiểm tra tháng hợp lệ
         if (month < 1 || month > 12) return false;
 
-        // Kiểm tra ngày hợp lệ
         const daysInMonth = new Date(year, month, 0).getDate();
         if (day < 1 || day > daysInMonth) return false;
 
-        // Kiểm tra năm hợp lệ (ví dụ: không quá năm hiện tại + 1)
         const currentYear = new Date().getFullYear();
         if (year < 1900 || year > currentYear + 1) return false;
 
         return true;
     }
 
-    // Hàm chuyển đổi từ dd/MM/yyyy sang yyyy-MM-dd cho server
     function convertDDMMYYYYtoYYYYMMDD(dateString) {
         if (!dateString) return "";
 
@@ -298,7 +385,6 @@ document.addEventListener("DOMContentLoaded", function () {
         return dateString;
     }
 
-    // Thêm sự kiện cho ô MSSV để chỉ cho phép nhập số
     const createMSSVElement = document.querySelector("input[name='MSSV']");
     if (createMSSVElement) {
         createMSSVElement.addEventListener("input", function (e) {
@@ -306,26 +392,22 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // Thêm sự kiện cho ô số điện thoại
     const createSDTElement = document.querySelector("input[name='SoDienThoaiSinhVien']");
     if (createSDTElement) {
         createSDTElement.addEventListener("input", function (e) {
             this.value = this.value.replace(/\D/g, '');
 
-            // Giới hạn 10 số
             if (this.value.length > 10) {
                 this.value = this.value.slice(0, 10);
             }
         });
     }
 
-    // Thêm sự kiện cho ô ngày sinh để tự động định dạng dd/MM/yyyy
     const createNgaySinhElement = document.getElementById("createNgaySinh");
     if (createNgaySinhElement) {
         createNgaySinhElement.addEventListener("input", function (e) {
             let value = this.value.replace(/\D/g, '');
 
-            // Tự động thêm dấu /
             if (value.length > 2 && value.length <= 4) {
                 value = value.substring(0, 2) + '/' + value.substring(2);
             } else if (value.length > 4) {
@@ -336,7 +418,6 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // Thêm sự kiện khi nhấn Enter trong form
     const createStudentForm = document.getElementById("createStudentForm");
     if (createStudentForm) {
         createStudentForm.addEventListener("keypress", function (e) {
@@ -355,13 +436,11 @@ document.addEventListener("DOMContentLoaded", function () {
         const form = this;
         const btn = form.querySelector("button[type=submit]");
 
-        // Kiểm tra validation của form
         if (!form.checkValidity()) {
             form.reportValidity();
             return;
         }
 
-        // Kiểm tra các trường bắt buộc thủ công
         const mssvInput = document.querySelector("input[name='MSSV']");
         const hoTenInput = document.querySelector("input[name='HoTen']");
         const khoaSelect = document.getElementById("createKhoa");
@@ -396,7 +475,6 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        // Kiểm tra định dạng ngày sinh
         const ngaySinhInput = document.getElementById("createNgaySinh");
         const ngaySinh = ngaySinhInput?.value.trim();
         if (ngaySinh && !isValidDateDDMMYYYY(ngaySinh)) {
@@ -405,7 +483,6 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        // Kiểm tra email nếu có
         const emailInput = document.querySelector("input[name='Email']");
         const email = emailInput?.value.trim();
         if (email && !isValidEmail(email)) {
@@ -414,18 +491,14 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        // Hiển thị loading
         showLoading(btn, "Đang lưu...");
 
-        // Tạo FormData
         const fd = new FormData(form);
 
-        // Chuyển đổi ngày sinh từ dd/MM/yyyy sang yyyy-MM-dd cho server
         if (ngaySinh) {
             fd.set("NgaySinh", convertDDMMYYYYtoYYYYMMDD(ngaySinh));
         }
 
-        // Gửi request
         fetch("/Admin/AdminStudent/CreateAjax", {
             method: "POST",
             body: fd
@@ -438,19 +511,12 @@ document.addEventListener("DOMContentLoaded", function () {
             })
             .then(d => {
                 if (d.success) {
-                    // Đóng modal
                     hideModal("createStudentModal");
-
-                    // Hiển thị thông báo thành công
                     showToast(d.message || "Thêm sinh viên thành công!", "success");
-
-                    // Tải lại danh sách
                     loadStudents();
                 } else {
-                    // Hiển thị lỗi từ server
                     showToast(d.message || "Thêm thất bại!", "error");
 
-                    // Nếu lỗi trùng MSSV, focus vào ô MSSV
                     if (d.message && d.message.includes("MSSV")) {
                         mssvInput?.focus();
                     }
@@ -464,10 +530,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 resetButton(btn, "Lưu");
             });
     }
-
-
-
-
 
     // ============= XÓA =============
     function handleDelete() {
@@ -483,7 +545,7 @@ document.addEventListener("DOMContentLoaded", function () {
         showLoading(btn, "Đang xóa...");
 
         const fd = new FormData();
-        fd.append("id", currentDeleteMSSV); // đảm bảo trùng tên tham số controller
+        fd.append("id", currentDeleteMSSV);
 
         fetch("/Admin/AdminStudent/DeleteAjax", { method: "POST", body: fd })
             .then(response => {
@@ -509,23 +571,12 @@ document.addEventListener("DOMContentLoaded", function () {
             .finally(() => resetButton(btn, "Xác nhận xóa"));
     }
 
-
-
-
-
-
-
-
     // ============= CHỈNH SỬA =============
-
-
-    // Parse JSON Date (/Date(…)/)
     function parseJsonDate(jsonDate) {
         const timestamp = parseInt(jsonDate.replace(/[^0-9]/g, ""), 10);
         return new Date(timestamp);
     }
 
-    // Format Date sang dd/MM/yyyy
     function formatDateToDMY(date) {
         if (!date || isNaN(date.getTime())) return "";
         const day = String(date.getDate()).padStart(2, "0");
@@ -534,7 +585,6 @@ document.addEventListener("DOMContentLoaded", function () {
         return `${day}/${month}/${year}`;
     }
 
-    // Format dd/MM/yyyy → yyyy-MM-dd
     function convertDMYtoYMD(dmy) {
         const parts = dmy.split("/");
         if (parts.length === 3) {
@@ -543,40 +593,12 @@ document.addEventListener("DOMContentLoaded", function () {
         return dmy;
     }
 
-    // Sự kiện đổi Khoa trong modal chỉnh sửa
     document.getElementById("editKhoa")?.addEventListener("change", function () {
         const khoaId = this.value;
         const lopSelect = document.getElementById("editLop");
-        if (lopSelect) {
-            lopSelect.innerHTML = '<option value="">-- Chọn lớp --</option>';
-        }
-
-        if (!khoaId) return;
-
-        fetch(`/Admin/AdminStudent/GetLopByKhoa?khoaId=${encodeURIComponent(khoaId)}`)
-            .then(r => r.json())
-            .then(data => {
-                if (lopSelect && Array.isArray(data)) {
-                    data.forEach(lop => {
-                        const opt = document.createElement("option");
-                        opt.value = lop.Lop_id;
-                        opt.textContent = lop.TenLop;
-                        lopSelect.appendChild(opt);
-                    });
-
-                    // Giữ lại lớp cũ nếu có
-                    const oldLopId = lopSelect.getAttribute("data-old-value");
-                    if (oldLopId) {
-                        lopSelect.value = oldLopId;
-                    }
-                }
-            })
-            .catch(() => {
-                showToast("Không tải được danh sách lớp!", "error");
-            });
+        loadLopByKhoa(khoaId, lopSelect);
     });
 
-    // Reset khi mở modal
     document.getElementById('editStudentModal')?.addEventListener('show.bs.modal', function () {
         const editLop = document.getElementById("editLop");
         if (editLop) {
@@ -584,7 +606,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    // Hàm mở modal chỉnh sửa
     function handleEdit() {
         const d = this.dataset;
         console.log("Dataset khi edit:", d);
@@ -609,41 +630,35 @@ document.addEventListener("DOMContentLoaded", function () {
             editNgaySinh.value = formatDateToDMY(date);
         }
 
-        // Lớp
+        // Load lớp theo khoa - TỐI ƯU
         const lopSelect = document.getElementById("editLop");
+        const khoaId = d.khoa;
+
         if (lopSelect) {
             lopSelect.innerHTML = '<option value="">-- Chọn lớp --</option>';
-            if (d.lop && d.lop !== "undefined") {
-                lopSelect.setAttribute("data-old-value", d.lop);
-            }
-        }
 
-        // Load lớp theo khoa
-        if (d.khoa && d.khoa !== "undefined" && lopSelect) {
-            fetch(`/Admin/AdminStudent/GetLopByKhoa?khoaId=${encodeURIComponent(d.khoa)}`)
-                .then(r => r.json())
-                .then(data => {
-                    if (Array.isArray(data)) {
-                        data.forEach(lop => {
-                            const opt = document.createElement("option");
-                            opt.value = lop.Lop_id;
-                            opt.textContent = lop.TenLop;
-                            lopSelect.appendChild(opt);
-                        });
-                        if (d.lop && d.lop !== "undefined") {
-                            lopSelect.value = d.lop;
-                        }
-                    }
-                })
-                .catch(() => {
-                    console.log("Không tải được danh sách lớp");
-                });
+            if (khoaId && khoaId !== "undefined") {
+                // Đặt giá trị lớp cũ vào data attribute
+                if (d.lop && d.lop !== "undefined") {
+                    lopSelect.setAttribute("data-old-value", d.lop);
+                }
+
+                // Load danh sách lớp
+                loadLopByKhoa(khoaId, lopSelect, d.lop);
+            } else {
+                // Nếu không có khoa, disable dropdown lớp
+                lopSelect.disabled = true;
+                const opt = document.createElement("option");
+                opt.value = "";
+                opt.textContent = "Vui lòng chọn khoa trước";
+                opt.disabled = true;
+                lopSelect.appendChild(opt);
+            }
         }
 
         showModal("editStudentModal");
     }
 
-    // Submit form chỉnh sửa
     function handleEditSubmit(e) {
         e.preventDefault();
 
@@ -706,12 +721,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 console.log("Phản hồi từ server:", data);
 
                 if (data.success) {
-                    hideModal("editStudentModal"); // chỉ đóng khi thành công
+                    hideModal("editStudentModal");
                     showToast("Cập nhật thành công!", "success");
                     loadStudents(currentPage);
                 } else {
                     showToast(data.message || "Có lỗi xảy ra!", "error");
-                    // KHÔNG đóng modal, để người dùng sửa lại
                 }
             })
             .catch(err => {
@@ -723,9 +737,6 @@ document.addEventListener("DOMContentLoaded", function () {
             });
     }
 
-
-
-  
     // ============= CHI TIẾT SINH VIÊN =============
     function handleDetail() {
         const mssv = this.dataset.id;
@@ -839,41 +850,6 @@ document.addEventListener("DOMContentLoaded", function () {
             });
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     // ============= IMPORT EXCEL =============
     function handleImportExcel(e) {
         e.preventDefault();
@@ -900,34 +876,184 @@ document.addEventListener("DOMContentLoaded", function () {
             });
     }
 
+    // ============= HỆ THỐNG LỌC TỐI ƯU =============
+    function handleFilterChange() {
+        const roleFilter = document.getElementById("roleFilter");
+        if (!roleFilter) return;
 
+        currentPage = 1;
+        currentFilterState.khoa = roleFilter.value;
+        saveFilterState();
+        showTableLoading();
+        loadStudents();
+        updateFilterUI();
+    }
 
+    function handleSearchChange() {
+        const searchBox = document.getElementById("searchBox");
+        if (!searchBox) return;
 
+        currentPage = 1;
+        currentFilterState.search = searchBox.value.trim();
+        saveFilterState();
+        showTableLoading();
+        loadStudents();
+        updateFilterUI();
+    }
 
+    function saveFilterState() {
+        const filterState = {
+            khoa: currentFilterState.khoa || "0",
+            search: currentFilterState.search,
+            page: currentPage,
+            timestamp: Date.now()
+        };
 
+        localStorage.setItem('studentFilterState', JSON.stringify(filterState));
+        updateURLParams();
+    }
 
+    function restoreFilterState() {
+        try {
+            const saved = JSON.parse(localStorage.getItem('studentFilterState') || '{}');
+            const roleFilter = document.getElementById("roleFilter");
+            const searchBox = document.getElementById("searchBox");
 
+            if (saved.khoa !== undefined && roleFilter) {
+                roleFilter.value = saved.khoa || "0";
+                currentFilterState.khoa = saved.khoa || "0";
+            } else {
+                currentFilterState.khoa = "0";
+            }
 
+            if (saved.search !== undefined && searchBox) {
+                searchBox.value = saved.search;
+                currentFilterState.search = saved.search;
+            }
 
+            if (saved.page) {
+                currentPage = parseInt(saved.page);
+            }
+        } catch (e) {
+            console.log("Không thể khôi phục trạng thái lọc:", e);
+            currentFilterState.khoa = "0";
+        }
+    }
 
+    function updateURLParams() {
+        const params = new URLSearchParams(window.location.search);
 
+        // SỬA 1: Kiểm tra !== "0" thay vì !== ""
+        if (currentFilterState.khoa && currentFilterState.khoa !== "0") {
+            params.set('khoa', currentFilterState.khoa);
+        } else {
+            params.delete('khoa');
+        }
 
+        if (currentFilterState.search) {
+            params.set('search', currentFilterState.search);
+        } else {
+            params.delete('search');
+        }
 
+        if (currentPage > 1) {
+            params.set('page', currentPage);
+        } else {
+            params.delete('page');
+        }
 
+        const newUrl = `${window.location.pathname}?${params.toString()}`;
+        window.history.replaceState({}, '', newUrl);
+    }
 
+    function loadLopByKhoa(khoaId, targetSelect, selectedLopId = null, isCreateModal = false) {
+        if (!targetSelect) return;
+
+        // Reset dropdown
+        targetSelect.innerHTML = '<option value="">-- Chọn lớp --</option>';
+        targetSelect.disabled = true;
+
+        // SỬA 2: Kiểm tra !== "0" thay vì !== ""
+        if (!khoaId || khoaId === "" || khoaId === "0") {
+            if (isCreateModal) {
+                const opt = document.createElement("option");
+                opt.value = "";
+                opt.textContent = "Vui lòng chọn khoa";
+                opt.disabled = true;
+                targetSelect.appendChild(opt);
+            }
+            return;
+        }
+
+        // Kiểm tra cache trước
+        if (khoaLopCache[khoaId]) {
+            populateLopSelect(targetSelect, khoaLopCache[khoaId], selectedLopId);
+            targetSelect.disabled = false;
+            return;
+        }
+
+        // Hiển thị loading
+        const loadingOption = document.createElement("option");
+        loadingOption.value = "";
+        loadingOption.textContent = "Đang tải danh sách lớp...";
+        loadingOption.disabled = true;
+        targetSelect.appendChild(loadingOption);
+
+        fetch(`/Admin/AdminStudent/GetLopByKhoa?khoaId=${encodeURIComponent(khoaId)}`)
+            .then(r => {
+                if (!r.ok) throw new Error(`HTTP ${r.status}`);
+                return r.json();
+            })
+            .then(data => {
+                // Lưu vào cache
+                khoaLopCache[khoaId] = data;
+                populateLopSelect(targetSelect, data, selectedLopId);
+                targetSelect.disabled = false;
+            })
+            .catch(error => {
+                console.error("Lỗi tải danh sách lớp:", error);
+                const errorOption = document.createElement("option");
+                errorOption.value = "";
+                errorOption.textContent = "Không thể tải danh sách lớp";
+                errorOption.disabled = true;
+                targetSelect.innerHTML = '';
+                targetSelect.appendChild(errorOption);
+                targetSelect.disabled = false;
+            });
+    }
+
+    function populateLopSelect(selectElement, lopData, selectedId = null) {
+        selectElement.innerHTML = '<option value="">-- Chọn lớp --</option>';
+
+        if (!Array.isArray(lopData) || lopData.length === 0) {
+            const opt = document.createElement("option");
+            opt.value = "";
+            opt.textContent = "Khoa này chưa có lớp";
+            opt.disabled = true;
+            selectElement.appendChild(opt);
+            return;
+        }
+
+        lopData.forEach(lop => {
+            const opt = document.createElement("option");
+            opt.value = lop.Lop_id || lop.id || lop.MaLop;
+            opt.textContent = lop.TenLop || lop.name;
+            if (selectedId && (lop.Lop_id == selectedId || lop.id == selectedId || lop.MaLop == selectedId)) {
+                opt.selected = true;
+            }
+            selectElement.appendChild(opt);
+        });
+    }
 
     // ============= LOAD + LỌC KHOA =============
     function loadStudents(page = 1) {
         currentPage = page;
-
-        // Hiệu ứng loading
         showTableLoading();
 
-        const keyword = document.getElementById("searchBox")?.value.trim() || "";
-        const khoaFilter = document.getElementById("roleFilter")?.value || "";
+        const keyword = currentFilterState.search;
+        const khoaFilter = currentFilterState.khoa || "0";
         const tbody = document.getElementById("studentTableBody");
 
-        // Hiển thị loading spinner trong bảng
         tbody.innerHTML = `<tr><td colspan="7" class="text-center py-5">
             <div class="spinner-wave mx-auto mb-2">
                 <div></div><div></div><div></div>
@@ -935,40 +1061,72 @@ document.addEventListener("DOMContentLoaded", function () {
             <div class="text-muted">Đang tải dữ liệu...</div>
         </td></tr>`;
 
-        let url = `/Admin/AdminStudent/LoadStudents?page=${page}&pageSize=${pageSize}&keyword=${encodeURIComponent(keyword)}`;
-        if (khoaFilter && khoaFilter !== "TatCa") {
+        // Xây dựng URL
+        let url = `/Admin/AdminStudent/LoadStudents?page=${page}&pageSize=${pageSize}`;
+
+        if (keyword) {
+            url += `&keyword=${encodeURIComponent(keyword)}`;
+        }
+
+        // SỬA 3: Không gửi tham số khoa nếu là "0" (Tất cả)
+        if (khoaFilter && khoaFilter !== "0") {
             url += `&khoa=${encodeURIComponent(khoaFilter)}`;
         }
 
-        // Thêm delay nhỏ để hiệu ứng loading rõ hơn
+        // Thêm timestamp để tránh cache
+        url += `&_t=${Date.now()}`;
+
         setTimeout(() => {
             fetch(url)
-                .then(r => r.json())
+                .then(r => {
+                    if (!r.ok) throw new Error(`HTTP ${r.status}: ${r.statusText}`);
+                    return r.json();
+                })
                 .then(data => {
-                    renderStudentTable(data.items || [], page);
+                    // SỬA 4: Bỏ lọc khi chọn "0"
+                    const filteredItems = validateFilteredData(data.items || [], khoaFilter);
+
+                    renderStudentTable(filteredItems, page);
                     setupPagination(data.page || 1, data.totalPages || 1);
 
-                    // Ẩn loading sau khi render xong
                     setTimeout(hideTableLoading, 100);
                 })
                 .catch(err => {
                     console.error("Load error:", err);
-                    tbody.innerHTML = `<tr><td colspan="7" class="text-danger text-center py-4">Lỗi tải dữ liệu</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="7" class="text-danger text-center py-4">Lỗi tải dữ liệu: ${err.message}</td></tr>`;
                     hideTableLoading();
                 });
-        }, 300); // Delay nhỏ để hiệu ứng loading hiển thị
+        }, 300);
     }
 
+    function validateFilteredData(items, khoaFilter) {
+        // SỬA 5: Kiểm tra !== "0"
+        if (!khoaFilter || khoaFilter === "" || khoaFilter === "0") return items;
 
+        // Lọc lại phía client để đảm bảo
+        return items.filter(item => {
+            const itemKhoaId = item.Khoa_id || item.MaKhoa || item.Khoa;
+            return itemKhoaId == khoaFilter;
+        });
+    }
 
     // ============= RENDER BẢNG SINH VIÊN =============
     function renderStudentTable(items, page) {
         const tbody = document.getElementById("studentTableBody");
         if (!items || items.length === 0) {
+            // SỬA 6: Kiểm tra !== "0"
+            const noDataMessage = (currentFilterState.khoa && currentFilterState.khoa !== "0") || currentFilterState.search ?
+                '<small class="text-muted">Thử thay đổi bộ lọc hoặc tìm kiếm</small>' :
+                '';
+
             tbody.innerHTML = `
             <tr class="no-data-row">
-                <td colspan="7" class="text-muted py-4">
-                    <i class="fas fa-inbox me-2"></i>Không có dữ liệu
+                <td colspan="7" class="text-muted py-4 text-center">
+                    <div class="py-3">
+                        <i class="fas fa-inbox fa-2x text-muted mb-2"></i>
+                        <div class="fw-medium">Không có dữ liệu</div>
+                        ${noDataMessage}
+                    </div>
                 </td>
             </tr>`;
             return;
@@ -1011,12 +1169,152 @@ document.addEventListener("DOMContentLoaded", function () {
                 </td>
             </tr>`;
         }).join("");
+
+        // Cập nhật UI filter sau khi render
+        updateFilterUI();
     }
 
+    // ============= CẬP NHẬT UI FILTER =============
+    function updateFilterUI() {
+        // Cập nhật trạng thái active cho dropdown
+        const roleFilter = document.getElementById("roleFilter");
+        const searchBox = document.getElementById("searchBox");
 
+        if (roleFilter && currentFilterState.khoa) {
+            roleFilter.value = currentFilterState.khoa;
+        }
 
+        if (searchBox && currentFilterState.search) {
+            searchBox.value = currentFilterState.search;
+        }
 
+        // HIỂN THỊ BADGE FILTER - COMMENT HOẶC XÓA DÒNG NÀY
+        // updateFilterBadge(); // <-- BỎ COMMENT NÀY ĐỂ ẨN BADGE
 
+        // Hiển thị/ẩn nút xóa filter
+        updateClearFilterButton();
+    }
+
+    function updateFilterBadge() {
+        const badgeContainer = document.getElementById("filterBadgeContainer");
+        if (!badgeContainer) return;
+
+        let badgeHTML = '';
+
+        // SỬA 7: Kiểm tra !== "0"
+        if (currentFilterState.khoa && currentFilterState.khoa !== "0") {
+            const khoaName = khoaMapping[currentFilterState.khoa] || `Khoa ${currentFilterState.khoa}`;
+            badgeHTML += `<span class="badge bg-info me-2">
+            <i class="fas fa-filter me-1"></i>${khoaName}
+        </span>`;
+        }
+
+        if (currentFilterState.search) {
+            badgeHTML += `<span class="badge bg-warning text-dark me-2">
+            <i class="fas fa-search me-1"></i>"${currentFilterState.search}"
+        </span>`;
+        }
+
+        badgeContainer.innerHTML = badgeHTML;
+    }
+
+    // ============= NÚT XÓA BỘ LỌC =============
+    function addClearFilterButton() {
+        const filterContainer = document.querySelector('.filter-container');
+        if (!filterContainer || document.getElementById('clearFilterBtn')) return;
+
+        const clearBtn = document.createElement('button');
+        clearBtn.id = 'clearFilterBtn';
+        clearBtn.className = 'btn btn-outline-danger btn-sm ms-2';
+        clearBtn.innerHTML = '<i class="fas fa-times me-1"></i>Xóa lọc';
+        clearBtn.title = 'Xóa tất cả bộ lọc';
+        clearBtn.onclick = clearAllFilters;
+        clearBtn.style.display = 'none';
+
+        filterContainer.appendChild(clearBtn);
+    }
+
+    function updateClearFilterButton() {
+        const clearBtn = document.getElementById('clearFilterBtn');
+        if (!clearBtn) return;
+
+        // SỬA 8: Kiểm tra !== "0"
+        const hasActiveFilter = (currentFilterState.khoa && currentFilterState.khoa !== "0") || currentFilterState.search;
+        clearBtn.style.display = hasActiveFilter ? 'inline-block' : 'none';
+    }
+
+    function clearAllFilters() {
+        const roleFilter = document.getElementById("roleFilter");
+        const searchBox = document.getElementById("searchBox");
+
+        if (roleFilter) {
+            roleFilter.value = "0";
+            currentFilterState.khoa = "0";
+        }
+
+        if (searchBox) {
+            searchBox.value = "";
+            currentFilterState.search = "";
+        }
+
+        currentPage = 1;
+        saveFilterState();
+        showTableLoading();
+        loadStudents();
+        updateFilterUI();
+    }
+
+    // ============= KHỞI TẠO BỘ LỌC =============
+    function initFilterSystem() {
+        // Khôi phục filter từ localStorage
+        restoreFilterState();
+
+        // Kiểm tra URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlKhoa = urlParams.get('khoa');
+        const urlSearch = urlParams.get('search');
+        const urlPage = urlParams.get('page');
+
+        if (urlKhoa !== null) {
+            const roleFilter = document.getElementById("roleFilter");
+            if (roleFilter) {
+                roleFilter.value = urlKhoa || "0";
+                currentFilterState.khoa = urlKhoa || "0";
+            }
+        } else {
+            currentFilterState.khoa = "0";
+        }
+
+        if (urlSearch !== null) {
+            const searchBox = document.getElementById("searchBox");
+            if (searchBox) {
+                searchBox.value = urlSearch;
+                currentFilterState.search = urlSearch;
+            }
+        }
+
+        if (urlPage) {
+            currentPage = parseInt(urlPage);
+        }
+
+        // Thêm container cho badge filter
+        addFilterBadgeContainer();
+
+        // Cập nhật UI ban đầu
+        updateFilterUI();
+    }
+
+    function addFilterBadgeContainer() {
+        const tableHeader = document.querySelector('.card-header') ||
+            document.querySelector('.table-responsive')?.previousElementSibling;
+        if (!tableHeader || document.getElementById("filterBadgeContainer")) return;
+
+        const badgeContainer = document.createElement('div');
+        badgeContainer.id = 'filterBadgeContainer';
+        badgeContainer.className = 'mt-2';
+
+        tableHeader.appendChild(badgeContainer);
+    }
 
     // ============= PHÂN TRANG =============
     function setupPagination(page, totalPages) {
@@ -1033,7 +1331,6 @@ document.addEventListener("DOMContentLoaded", function () {
         prevBtn.disabled = page <= 1;
         nextBtn.disabled = page >= totalPages;
 
-        // Thêm hiệu ứng loading cho nút prev/next
         prevBtn.onclick = () => {
             if (prevBtn.disabled || isLoading) return;
             showTableLoading();
@@ -1080,22 +1377,25 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function exportAllStudents() {
-        const khoaFilter = document.getElementById("roleFilter")?.value || "";
-        let url = "/Admin/AdminStudent/ExportAllStudents";
-        if (khoaFilter && khoaFilter !== "TatCa") {
-            url += `?khoa=${encodeURIComponent(khoaFilter)}`;
-        }
-        window.location.href = url;
-    }
+        const khoaFilter = currentFilterState.khoa || "0";
+        const searchText = currentFilterState.search;
 
-    // ============= UTILITY =============
-    function showModal(id) { bootstrap.Modal.getOrCreateInstance(document.getElementById(id)).show(); }
-    function hideModal(id) { bootstrap.Modal.getInstance(document.getElementById(id))?.hide(); }
-    function showLoading(btn, txt) { btn.disabled = true; btn.innerHTML = `<span class="spinner-border spinner-border-sm me-1"></span>${txt}`; }
-    function resetButton(btn, txt) { btn.disabled = false; btn.innerHTML = txt; }
-    function showToast(msg, type = "info") { if (window.showToast) window.showToast(msg, type); else alert(msg); }
-    function debounce(fn, wait) {
-        let t;
-        return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), wait); };
+        let url = "/Admin/AdminStudent/ExportAllStudents";
+        let params = [];
+
+        // SỬA 9: Không gửi tham số khoa nếu là "0" (Tất cả)
+        if (khoaFilter && khoaFilter !== "0") {
+            params.push(`khoa=${encodeURIComponent(khoaFilter)}`);
+        }
+
+        if (searchText) {
+            params.push(`keyword=${encodeURIComponent(searchText)}`);
+        }
+
+        if (params.length > 0) {
+            url += `?${params.join('&')}`;
+        }
+
+        window.location.href = url;
     }
 });
