@@ -51,10 +51,18 @@
                     <input type="text" id="searchBox" class="form-control border-start-0" placeholder="Tìm kiếm...">
                 </div>
 
-                <button class="btn btn-outline-success btn-sm shadow-sm" id="exportAllAccounts" type="button">
+                <!-- Nút mở modal -->
+                <button class="btn btn-outline-success btn-sm shadow-sm"
+                        id="btnOpenImportExcel"
+                        type="button"
+                        data-bs-toggle="modal"
+                        data-bs-target="#importExcelModal">
                     <i class="fa fa-file-excel me-1"></i> Nhập Excel
                 </button>
-                <button class="btn btn-outline-success btn-sm shadow-sm" id="exportAllAccounts" type="button">
+
+
+
+                <button class="btn btn-outline-success btn-sm shadow-sm" id="exportAllAccountstudent" type="button">
                     <i class="fa fa-file-excel me-1"></i> Xuất Excel
                 </button>
             </form>
@@ -186,6 +194,7 @@
         </div>
     </div>
 </div>
+
 
 
 <!-- ====================== MODAL IMPORT EXCEL ====================== -->
@@ -434,6 +443,7 @@
     </div>
 </div>
 
-
+<script src="~/Areas/Content/AdminStudentRegister/AdminExportStudent.js"></script>
+<script src="~/Areas/Content/AdminStudentRegister/AdminImportStudent.js"></script>
 <script src="~/Areas/Content/AdminStudentRegister/AdminStudentRegister.js"></script>
 <script src="~/Areas/Content/Js/adminCommon.js"></script>

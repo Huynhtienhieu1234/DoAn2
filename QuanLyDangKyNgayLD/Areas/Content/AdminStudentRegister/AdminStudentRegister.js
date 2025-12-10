@@ -229,17 +229,13 @@ document.addEventListener("DOMContentLoaded", function () {
             loadDeletedStudents();
         });
 
-        // Nút Nhập Excel
-        document.querySelector('button[id="exportAllAccounts"]:nth-of-type(1)')?.addEventListener("click", () => showModal("importExcelModal"));
-
-        // Nút Xuất Excel
-        document.querySelector('button[id="exportAllAccounts"]:nth-of-type(2)')?.addEventListener("click", exportAllStudents);
+  
 
         // Form xử lý
         document.getElementById("createStudentForm")?.addEventListener("submit", handleCreateSubmit);
         document.getElementById("editStudentForm")?.addEventListener("submit", handleEditSubmit);
         document.getElementById("confirmDeleteStudentBtn")?.addEventListener("click", handleConfirmDelete);
-        document.getElementById("importForm")?.addEventListener("submit", handleImportExcel);
+    
 
         // ============= LỌC THEO KHOA + TÌM KIẾM - TỐI ƯU =============
         const roleFilter = document.getElementById("roleFilter");
@@ -849,33 +845,7 @@ document.addEventListener("DOMContentLoaded", function () {
             `;
             });
     }
-
-    // ============= IMPORT EXCEL =============
-    function handleImportExcel(e) {
-        e.preventDefault();
-        const fileInput = document.getElementById("excelFileInput");
-        const btn = document.getElementById("btnSubmitImport");
-        if (!fileInput?.files?.length) {
-            showToast("Vui lòng chọn file Excel!", "warning");
-            return;
-        }
-        const fd = new FormData();
-        fd.append("excelFile", fileInput.files[0]);
-        showLoading(btn, "Đang nhập...");
-        fetch("/Admin/AdminStudent/ImportExcel", { method: "POST", body: fd })
-            .then(r => r.json())
-            .then(d => {
-                hideModal("importExcelModal");
-                showToast(d.success ? `Nhập thành công ${d.inserted || 0} bản ghi!` : d.message, d.success ? "success" : "error");
-                if (d.success) loadStudents();
-            })
-            .catch(() => showToast("Lỗi upload file!", "error"))
-            .finally(() => {
-                resetButton(btn, "Nhập dữ liệu");
-                fileInput.value = "";
-            });
-    }
-
+   
     // ============= HỆ THỐNG LỌC TỐI ƯU =============
     function handleFilterChange() {
         const roleFilter = document.getElementById("roleFilter");
@@ -1376,26 +1346,4 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    function exportAllStudents() {
-        const khoaFilter = currentFilterState.khoa || "0";
-        const searchText = currentFilterState.search;
-
-        let url = "/Admin/AdminStudent/ExportAllStudents";
-        let params = [];
-
-        // SỬA 9: Không gửi tham số khoa nếu là "0" (Tất cả)
-        if (khoaFilter && khoaFilter !== "0") {
-            params.push(`khoa=${encodeURIComponent(khoaFilter)}`);
-        }
-
-        if (searchText) {
-            params.push(`keyword=${encodeURIComponent(searchText)}`);
-        }
-
-        if (params.length > 0) {
-            url += `?${params.join('&')}`;
-        }
-
-        window.location.href = url;
-    }
 });

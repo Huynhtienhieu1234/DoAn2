@@ -1,9 +1,14 @@
-﻿using System;
-using System.Linq;
-using System.Web.Mvc;
-using System.Data.Entity;
-using QuanLyDangKyNgayLD.Models;
+﻿using OfficeOpenXml;
+using OfficeOpenXml.Style;
 using QuanLyDangKyNgayLD.Factories;
+using QuanLyDangKyNgayLD.Models;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data.Entity;
+using System.Linq;
+using System.Web;
+using System.Web.Mvc;
 
 namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
 {
@@ -60,7 +65,8 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
             {
                 var query = db.SinhViens
                               .Include(s => s.Lop)
-                              .Include(s => s.Lop.Khoa);
+                              .Include(s => s.Lop.Khoa)
+                              .Where(s => s.Deleted_at == null); // ✅ lọc bỏ sinh viên đã xóa mềm
 
                 if (!string.IsNullOrWhiteSpace(keyword))
                 {
@@ -87,13 +93,14 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                         s.Lop_id,
                         TenLop = s.Lop != null ? s.Lop.TenLop : "Chưa có",
                         TenKhoa = s.Lop != null && s.Lop.Khoa != null ? s.Lop.Khoa.TenKhoa : "Chưa có khoa",
-                        Khoa_id = s.Lop != null && s.Lop.Khoa != null ? s.Lop.Khoa.Khoa_id : (int?)null // Thêm Khoa_id
+                        Khoa_id = s.Lop != null && s.Lop.Khoa != null ? s.Lop.Khoa.Khoa_id : (int?)null
                     })
                     .ToList();
 
                 return Json(new { success = true, items = students, page, totalPages, totalItems }, JsonRequestBehavior.AllowGet);
             }
-        }        // POST: Thêm sinh viên (tạo luôn tài khoản)
+        }
+        // POST: Thêm sinh viên (tạo luôn tài khoản)
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult CreateAjax(QuanLyDangKyNgayLD.Models.SinhVien model)
@@ -272,14 +279,6 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
 
 
 
-
-
-
-
-
-
-
-
         // AJAX: Chi tiết sinh viên
         [HttpGet]
         public ActionResult DetailsAjax(int id)
@@ -319,30 +318,223 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
 
 
 
-
-
-        // AJAX: Xuất danh sách sinh viên
+        // GET: Xuất danh sách sinh viên ra Excel
         [HttpGet]
-        public ActionResult ExportAllStudents(string keyword = "")
+        public ActionResult ExportAllStudentsToExcel(string keyword = "")
         {
             using (var db = DbContextFactory.Create())
             {
-                var query = db.SinhViens.Include(s => s.Lop);
+                var query = db.SinhViens
+                              .Include(s => s.Lop)
+                              .Include(s => s.Lop.Khoa)
+                              .Where(s => s.Deleted_at == null); // lọc bỏ sinh viên đã xóa mềm
 
                 if (!string.IsNullOrWhiteSpace(keyword))
-                    query = query.Where(s => s.HoTen.Contains(keyword) || s.MSSV.ToString().Contains(keyword));
-
-                var students = query.Select(s => new
                 {
-                    s.MSSV,
-                    s.HoTen,
-                    s.Email,
-                    Lop = s.Lop != null ? s.Lop.TenLop : "Chưa có"
-                }).ToList();
+                    query = query.Where(s => (s.HoTen ?? "").Contains(keyword) ||
+                                             s.MSSV.ToString().Contains(keyword));
+                }
 
-                return Json(new { success = true, items = students }, JsonRequestBehavior.AllowGet);
+                var students = query.OrderBy(s => s.MSSV).ToList();
+
+                using (var package = new OfficeOpenXml.ExcelPackage())
+                {
+                    var ws = package.Workbook.Worksheets.Add("DanhSachSinhVien");
+
+                    // ======= Header =======
+                    string[] headers = { "STT", "MSSV", "Họ tên", "Email", "Ngày sinh", "Quê quán", "Số điện thoại", "Giới tính", "Lớp", "Khoa" };
+                    for (int col = 1; col <= headers.Length; col++)
+                    {
+                        ws.Cells[1, col].Value = headers[col - 1];
+                        ws.Cells[1, col].Style.Font.Bold = true;
+                        ws.Cells[1, col].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                        ws.Cells[1, col].Style.VerticalAlignment = ExcelVerticalAlignment.Center;
+                        ws.Cells[1, col].Style.Fill.PatternType = ExcelFillStyle.Solid;
+                        ws.Cells[1, col].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGray);
+                        ws.Cells[1, col].Style.Border.BorderAround(ExcelBorderStyle.Thin);
+                    }
+
+                    // ======= Dữ liệu =======
+                    int row = 2;
+                    int stt = 1;
+                    foreach (var s in students)
+                    {
+                        ws.Cells[row, 1].Value = stt;
+                        ws.Cells[row, 2].Value = s.MSSV;
+                        ws.Cells[row, 3].Value = s.HoTen;
+                        ws.Cells[row, 4].Value = s.Email ?? "";
+                        ws.Cells[row, 5].Value = s.NgaySinh?.ToString("dd/MM/yyyy") ?? "";
+                        ws.Cells[row, 6].Value = s.QueQuan ?? "";
+                        ws.Cells[row, 7].Value = s.SoDienThoaiSinhVien ?? "";
+                        ws.Cells[row, 8].Value = s.GioiTinh ?? "";
+                        ws.Cells[row, 9].Value = s.Lop?.TenLop ?? "Chưa có";
+                        ws.Cells[row, 10].Value = s.Lop?.Khoa?.TenKhoa ?? "Chưa có khoa";
+
+                        for (int col = 1; col <= headers.Length; col++)
+                        {
+                            ws.Cells[row, col].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                            ws.Cells[row, col].Style.VerticalAlignment = ExcelVerticalAlignment.Center;
+                            ws.Cells[row, col].Style.Border.BorderAround(ExcelBorderStyle.Thin);
+                        }
+
+                        ws.Cells[row, 1].Style.Font.Bold = true; // STT in đậm
+                        ws.Cells[row, 2].Style.Font.Bold = true; // MSSV in đậm
+
+                        row++;
+                        stt++;
+                    }
+
+                    // Auto-fit cột
+                    ws.Cells[ws.Dimension.Address].AutoFitColumns();
+
+                    // Xuất file
+                    var fileBytes = package.GetAsByteArray();
+                    string fileName = $"DanhSachSinhVien_{DateTime.Now:ddMMyy}.xlsx";
+
+
+                    return File(fileBytes,
+                                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                                fileName);
+                }
             }
         }
+
+
+
+
+
+        // POST: Nhập danh sách sinh viên từ file Excel
+        [HttpPost]
+        public ActionResult ImportExcel(HttpPostedFileBase excelFile)
+        {
+            if (excelFile == null || excelFile.ContentLength == 0)
+                return Json(new { success = false, message = "Vui lòng chọn file Excel." });
+
+            if (!excelFile.FileName.EndsWith(".xlsx"))
+                return Json(new { success = false, message = "Chỉ hỗ trợ file .xlsx." });
+
+            try
+            {
+                using (var package = new OfficeOpenXml.ExcelPackage(excelFile.InputStream))
+                {
+                    var worksheet = package.Workbook.Worksheets.FirstOrDefault();
+                    if (worksheet == null)
+                        return Json(new { success = false, message = "Không tìm thấy sheet nào trong file." });
+
+                    var rowCount = worksheet.Dimension.Rows;
+                    var students = new List<SinhVien>();
+                    var errorList = new List<string>();
+
+                    using (var db = DbContextFactory.Create())
+                    {
+                        var allLops = db.Lops.Include("Khoa").ToList();
+                        var vaiTroSinhVien = db.VaiTroes.FirstOrDefault(v => v.TenVaiTro == "SinhVien");
+
+                        // ✅ Kiểm tra nếu có cột STT
+                        int offset = 0;
+                        var firstCell = worksheet.Cells[1, 1].Text?.Trim().ToLower();
+                        if (firstCell == "stt")
+                        {
+                            offset = 1;
+                        }
+
+                        for (int row = 2; row <= rowCount; row++) // bỏ dòng tiêu đề
+                        {
+                            var mssvText = worksheet.Cells[row, 1 + offset].Text?.Trim();
+                            var hoTen = worksheet.Cells[row, 2 + offset].Text?.Trim();
+                            var tenLop = worksheet.Cells[row, 3 + offset].Text?.Trim();
+                            var tenKhoa = worksheet.Cells[row, 4 + offset].Text?.Trim();
+
+                            // ✅ Nếu phát hiện trống bất kỳ cột nào → báo lỗi chi tiết
+                            var missingFields = new List<string>();
+                            if (string.IsNullOrEmpty(mssvText)) missingFields.Add("MSSV");
+                            if (string.IsNullOrEmpty(hoTen)) missingFields.Add("Họ tên");
+                            if (string.IsNullOrEmpty(tenLop)) missingFields.Add("Tên lớp");
+                            if (string.IsNullOrEmpty(tenKhoa)) missingFields.Add("Tên khoa");
+
+                            if (missingFields.Any())
+                            {
+                                errorList.Add($"Dòng {row}: Thiếu dữ liệu ở các cột: {string.Join(", ", missingFields)}");
+                                continue;
+                            }
+
+                            if (!long.TryParse(mssvText, out long mssv))
+                            {
+                                errorList.Add($"Dòng {row}: MSSV không hợp lệ ({mssvText})");
+                                continue;
+                            }
+
+                            var lop = allLops.FirstOrDefault(l =>
+                                l.TenLop.Equals(tenLop, StringComparison.OrdinalIgnoreCase));
+
+                            if (lop == null)
+                            {
+                                errorList.Add($"Dòng {row}: Không tìm thấy lớp '{tenLop}'");
+                                continue;
+                            }
+
+                            if (!lop.Khoa.TenKhoa.Equals(tenKhoa, StringComparison.OrdinalIgnoreCase))
+                            {
+                                errorList.Add($"Dòng {row}: Tên khoa trong Excel là '{tenKhoa}' nhưng lớp '{tenLop}' thực tế thuộc khoa '{lop.Khoa.TenKhoa}'");
+                                // vẫn nhập sinh viên, dùng khoa đúng từ lớp
+                            }
+
+                            bool existsMssv = db.SinhViens.Any(s => s.MSSV == mssv);
+                            if (existsMssv)
+                            {
+                                errorList.Add($"Dòng {row}: MSSV {mssv} đã tồn tại");
+                                continue;
+                            }
+
+                            bool existsName = db.SinhViens.Any(s => s.HoTen.Equals(hoTen, StringComparison.OrdinalIgnoreCase));
+                            if (existsName)
+                            {
+                                errorList.Add($"Dòng {row}: Họ tên '{hoTen}' đã tồn tại trong hệ thống");
+                                continue;
+                            }
+
+                            // ✅ Tạo tài khoản cho sinh viên
+                            var taiKhoan = new TaiKhoan
+                            {
+                                Username = mssv.ToString(),
+                                Password = PasswordHelper.HashPassword("123456"), // mật khẩu mặc định
+                                Email = null,
+                                VaiTro_id = vaiTroSinhVien?.VaiTro_id,
+                                Deleted_at = null
+                            };
+
+                            // ✅ Tạo sinh viên và gắn tài khoản
+                            var newStudent = new SinhVien
+                            {
+                                MSSV = mssv,
+                                HoTen = hoTen,
+                                Lop_id = lop.Lop_id,
+                                GioiTinh = "Nam",
+                                TaiKhoan1 = taiKhoan
+                            };
+
+                            db.SinhViens.Add(newStudent);
+                            db.SaveChanges();
+                            students.Add(newStudent);
+                        }
+                    }
+
+                    return Json(new
+                    {
+                        success = true,
+                        successCount = students.Count,
+                        errorCount = errorList.Count,
+                        errorList = errorList
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Lỗi khi xử lý file: " + ex.Message });
+            }
+        }
+
+
 
 
 
