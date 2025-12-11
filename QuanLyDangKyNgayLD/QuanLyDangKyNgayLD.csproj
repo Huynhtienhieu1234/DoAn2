@@ -152,11 +152,11 @@
     <Content Include="Areas\Content\AdminStudentRegister\AdminStudentRegister.js" />
     <Content Include="Areas\Student\Content\Css\Dashboard.css" />
     <Content Include="Areas\Student\Content\Css\Toast.css" />
+    <Content Include="Areas\Student\Content\Js\Register\DeleteRegister.js" />
     <Content Include="Areas\Student\Content\Js\StudentMain\StudentInfo.js" />
     <Content Include="Areas\Student\Content\Js\StudentMain\StudentMain.js" />
     <Content Include="Areas\Student\Content\Js\Viewsider.js" />
     <Content Include="Areas\Student\Views\MainSinhVien\Index.cshtml" />
-    <Content Include="Areas\Student\Views\MainSinhVien\UpdateForm.cshtml" />
     <Content Include="Areas\Student\Views\MainSinhVien\Detail.cshtml" />
     <None Include="Areas\Student\Views\Shared\Viewsiderbar.cshtml" />
     <Content Include="Areas\Student\Content\Css\Siderbarmain.css" />

@@ -18,7 +18,8 @@
     <!--links javascript-->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-
+    <!-- JavaScript -->
+    <script src="~/Areas/Student/Content/Js/Viewsider.js"></script>
     <!--csss-->
     <link rel="stylesheet" href="~/Areas/Student/Content/Css/Toast.css">
 
@@ -28,6 +29,48 @@
 
 
 </head>
+
+
+<!-- TOAST SIÊU ĐẸP CÓ HIỆU ỨNG CHẠY -->
+<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999;">
+    @if (TempData["Message"] != null)
+    {
+        var type = (TempData["MessageType"]?.ToString() ?? "info").ToLower();
+        var bgClass = type == "success" ? "bg-success" :
+                     (type.Contains("error") || type.Contains("danger") ? "bg-danger" : "bg-primary");
+
+        <div class="toast custom-toast text-white @bgClass border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex flex-column w-100">
+                <!-- Nội dung + nút đóng cùng một hàng -->
+                <div class="toast-body fw-bold d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center">
+                        @if (type == "success")
+                        {
+                            <i class="fas fa-check-circle me-2 fs-4"></i>
+                        }
+                        else if (type.Contains("error") || type.Contains("danger"))
+                        {
+                            <i class="fas fa-exclamation-triangle me-2 fs-4"></i>
+                        }
+                        else
+                        {
+                            <i class="fas fa-info-circle me-2 fs-4"></i>
+                        }
+                        @TempData["Message"]
+                    </div>
+                    <!-- ✅ Nút đóng nằm trong nội dung -->
+                    <button type="button" class="btn-close btn-close-white ms-3" data-bs-dismiss="toast"></button>
+                </div>
+
+                <!-- Thanh tiến trình chạy -->
+                <div class="progress toast-progress">
+                    <div class="progress-bar bg-light" role="progressbar"></div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
 <body>
     <!-- Bong bóng chat -->
     <div id="chatBubble" class="chat-bubble">
@@ -100,48 +143,8 @@
     </div>
 
 
-    <!-- TOAST SIÊU ĐẸP CÓ HIỆU ỨNG CHẠY -->
-    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999;">
-        @if (TempData["Message"] != null)
-        {
-            var type = (TempData["MessageType"]?.ToString() ?? "info").ToLower();
-            var bgClass = type == "success" ? "bg-success" :
-                         (type.Contains("error") || type.Contains("danger") ? "bg-danger" : "bg-primary");
-
-            <div class="toast custom-toast text-white @bgClass border-0" role="alert" aria-live="assertive" aria-atomic="true">
-                <div class="d-flex flex-column w-100">
-                    <!-- Nội dung + nút đóng cùng một hàng -->
-                    <div class="toast-body fw-bold d-flex align-items-center justify-content-between">
-                        <div class="d-flex align-items-center">
-                            @if (type == "success")
-                            {
-                                <i class="fas fa-check-circle me-2 fs-4"></i>
-                            }
-                            else if (type.Contains("error") || type.Contains("danger"))
-                            {
-                                <i class="fas fa-exclamation-triangle me-2 fs-4"></i>
-                            }
-                            else
-                            {
-                                <i class="fas fa-info-circle me-2 fs-4"></i>
-                            }
-                            @TempData["Message"]
-                        </div>
-                        <!-- ✅ Nút đóng nằm trong nội dung -->
-                        <button type="button" class="btn-close btn-close-white ms-3" data-bs-dismiss="toast"></button>
-                    </div>
-
-                    <!-- Thanh tiến trình chạy -->
-                    <div class="progress toast-progress">
-                        <div class="progress-bar bg-light" role="progressbar"></div>
-                    </div>
-                </div>
-            </div>
-        }
-    </div>
 
 
-    <!-- JavaScript -->
-    <script src="~/Areas/Student/Content/Js/Viewsider.js"></script>
+
 </body>
 </html>

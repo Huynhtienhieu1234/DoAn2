@@ -3,7 +3,7 @@ using System.Web.Mvc;
 using System.Web.Security;
 using QuanLyDangKyNgayLD.Models;
 using QuanLyDangKyNgayLD.Factories;
-using QuanLyDangKyNgayLD.Logs; // thêm namespace để dùng LoginLogger
+using QuanLyDangKyNgayLD.Logs;
 
 namespace QuanLyDangKyNgayLD.Controllers
 {
@@ -14,7 +14,6 @@ namespace QuanLyDangKyNgayLD.Controllers
         {
             return View();
         }
-
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -38,8 +37,6 @@ namespace QuanLyDangKyNgayLD.Controllers
             using (var db = DbContextFactory.Create())
             {
                 var user = db.TaiKhoans.FirstOrDefault(u => u.Username == model.Username);
-
-
 
                 if (user == null)
                 {
@@ -73,13 +70,19 @@ namespace QuanLyDangKyNgayLD.Controllers
                     return View(model);
                 }
 
-                // ✅ Đăng nhập thành công
+                // ✅ Đăng nhập thành công - SET SESSION
                 Session["UserID"] = user.TaiKhoan_id;
-
                 Session["Username"] = user.Username;
+                
+                // ✅ QUAN TRỌNG: Set User object với đầy đủ VaiTro
+                var userWithRole = db.TaiKhoans
+                    .Include("VaiTro")
+                    .FirstOrDefault(u => u.TaiKhoan_id == user.TaiKhoan_id);
+                
+                Session["User"] = userWithRole;
 
-                var role = db.VaiTroes.FirstOrDefault(r => r.VaiTro_id == user.VaiTro_id);
-                Session["Role"] = role?.TenVaiTro;
+                // ✅ Cũng set Role để safe
+                Session["Role"] = userWithRole?.VaiTro?.TenVaiTro;
 
                 FormsAuthentication.SetAuthCookie(user.Username, false);
 
@@ -104,7 +107,7 @@ namespace QuanLyDangKyNgayLD.Controllers
             FormsAuthentication.SignOut();
             Session.Clear();
             Session.Abandon();
-            return RedirectToAction("Login", "Login"); // quay về giao diện Login.cshtml
+            return RedirectToAction("Login", "Login");
         }
     }
 }

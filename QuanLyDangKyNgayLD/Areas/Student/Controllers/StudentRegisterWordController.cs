@@ -10,8 +10,28 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
 {
     public class StudentRegisterWordController : Controller
     {
-        // GET: Student/StudentRegisterWord
         private const int ITEMS_PER_PAGE = 5;
+
+        // Hàm helper lấy vai trò thực tế từ Session
+        private string GetUserRoleFromSession()
+        {
+            var user = Session["User"] as TaiKhoan;
+            if (user == null) return null;
+
+            // Ưu tiên lấy từ VaiTro.TenVaiTro
+            if (user.VaiTro != null && !string.IsNullOrEmpty(user.VaiTro.TenVaiTro))
+            {
+                return user.VaiTro.TenVaiTro.Trim();
+            }
+
+            // Nếu không có thì try lấy từ VaiTro_id
+            if (user.VaiTro_id == 3)
+            {
+                return "SinhVien";
+            }
+
+            return null;
+        }
 
         // Trang Index hiển thị View
         public ActionResult Index(int page = 1, string buoi = "", string trangthai = "")
@@ -19,20 +39,21 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
             using (var db = DbContextFactory.Create())
             {
                 var user = Session["User"] as TaiKhoan;
+                var userRole = GetUserRoleFromSession();
 
                 IQueryable<TaoDotNgayLaoDong> query = db.TaoDotNgayLaoDongs
                                                         .Where(d => d.Ngayxoa == null);
 
                 // Lọc theo vai trò
-                if (user != null)
+                if (!string.IsNullOrEmpty(userRole))
                 {
-                    if (user.VaiTro.TenVaiTro == "SinhVien")
+                    if (userRole == "SinhVien") // Sinh viên: chỉ lấy Cá Nhân
                     {
-                        query = query.Where(d => d.LoaiLaoDong == "Cá nhân");
+                        query = query.Where(d => d.LoaiLaoDong.Trim().Length != 3);
                     }
-                    else if (user.VaiTro.TenVaiTro == "LopPhoLaoDong")
+                    else if (userRole == "LopPhoLaoDong") // Lớp phó: lấy cả Lớp và Cá Nhân
                     {
-                        // lớp phó lao động thấy tất cả
+                        query = query.Where(d => d.LoaiLaoDong.Trim().Length == 3 || d.LoaiLaoDong.Trim().Length != 3);
                     }
                 }
 
@@ -46,6 +67,7 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
                 else if (trangthai == "0")
                     query = query.Where(x => x.TrangThaiDuyet == false);
 
+                // Phân trang
                 int totalItems = query.Count();
                 int totalPages = (int)Math.Ceiling((double)totalItems / ITEMS_PER_PAGE);
 
@@ -57,55 +79,63 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
                                  .Take(ITEMS_PER_PAGE)
                                  .ToList();
 
+                // Chuẩn hóa loại lao động
+                items.ForEach(x => x.LoaiLaoDong = x.LoaiLaoDong.Trim().Length == 3 ? "Lớp" : "Cá Nhân");
+
                 ViewBag.CurrentPage = page;
                 ViewBag.TotalPages = totalPages;
                 ViewBag.TotalItems = totalItems;
                 ViewBag.Buoi = buoi;
                 ViewBag.TrangThai = trangthai;
+                ViewBag.Role = userRole;
 
                 return View(items);
             }
         }
 
-
-
         [HttpGet]
-        public ActionResult LoadDotLaoDong(
-            int page = 1,
-            int pageSize = 5,
-            string buoi = "",
-            string trangThai = "")
+        public ActionResult LoadDotLaoDong(int page = 1, int pageSize = 5, string buoi = "", string trangThai = "")
         {
             using (var db = DbContextFactory.Create())
             {
-                var user = Session["User"] as TaiKhoan;
+                var userRole = GetUserRoleFromSession();
 
                 var today = DateTime.Today;
                 var currentMonth = today.Month;
                 var currentYear = today.Year;
 
                 IQueryable<TaoDotNgayLaoDong> query = db.TaoDotNgayLaoDongs
-                    .Where(d => d.Ngayxoa == null);
+                                                        .Where(d => d.Ngayxoa == null);
 
-                // CHỈ LẤY ĐỢT TRONG THÁNG HIỆN TẠI
+                // Chỉ lấy trong tháng hiện tại
                 query = query.Where(x => x.NgayLaoDong.HasValue &&
-                                        x.NgayLaoDong.Value.Month == currentMonth &&
-                                        x.NgayLaoDong.Value.Year == currentYear);
+                                         x.NgayLaoDong.Value.Month == currentMonth &&
+                                         x.NgayLaoDong.Value.Year == currentYear);
 
-                // Lọc theo vai trò: sinh viên chỉ thấy cá nhân
-                if (user != null && user.VaiTro.TenVaiTro == "SinhVien")
+                // Lọc theo vai trò
+                if (!string.IsNullOrEmpty(userRole))
                 {
-                    query = query.Where(d => d.LoaiLaoDong == "Cá nhân");
+                    if (userRole == "SinhVien") // Sinh viên: chỉ lấy Cá Nhân
+                    {
+                        query = query.Where(d => d.LoaiLaoDong.Trim().Length != 3);
+                    }
+                    else if (userRole == "LopPhoLaoDong") // Lớp phó: lấy cả Lớp và Cá Nhân
+                    {
+                        query = query.Where(d => d.LoaiLaoDong.Trim().Length == 3 || d.LoaiLaoDong.Trim().Length != 3);
+                    }
                 }
 
+                // Lọc theo buổi
                 if (!string.IsNullOrWhiteSpace(buoi))
                     query = query.Where(x => x.Buoi == buoi);
 
+                // Lọc theo trạng thái duyệt
                 if (trangThai == "1")
                     query = query.Where(x => x.TrangThaiDuyet == true);
                 else if (trangThai == "0")
                     query = query.Where(x => x.TrangThaiDuyet == false);
 
+                // Phân trang
                 int totalItems = query.Count();
                 int totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
 
@@ -114,15 +144,13 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
                                     .Take(pageSize)
                                     .ToList();
 
-                // ĐẾM SỐ LƯỢNG SINH VIÊN ĐÃ ĐĂNG KÝ (theo PhieuDangKy)
+                // Đếm số lượng đã đăng ký
                 var dotIds = rawItems.Select(x => x.TaoDotLaoDong_id).ToList();
-
                 var dangKyCount = db.PhieuDangKies
                     .Where(p => dotIds.Contains(p.TaoDotLaoDong_id ?? 0))
                     .GroupBy(p => p.TaoDotLaoDong_id)
                     .ToDictionary(g => g.Key ?? 0, g => g.Count());
 
-                // Đảm bảo mọi đợt đều có số lượng (nếu chưa ai đăng ký → 0)
                 foreach (var id in dotIds)
                     if (!dangKyCount.ContainsKey(id))
                         dangKyCount[id] = 0;
@@ -132,7 +160,7 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
                     x.TaoDotLaoDong_id,
                     x.DotLaoDong,
                     x.Buoi,
-                    x.LoaiLaoDong,
+                    LoaiLaoDong = x.LoaiLaoDong.Trim().Length == 3 ? "Lớp" : "Cá Nhân",
                     GiaTri = x.GiaTri ?? 0,
                     NgayLaoDong = x.NgayLaoDong.HasValue ? x.NgayLaoDong.Value.ToString("dd/MM/yyyy") : "",
                     x.KhuVuc,
@@ -147,79 +175,92 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
                     success = true,
                     items,
                     page,
-                    totalPages
+                    totalPages,
+                    role = userRole,
+                    debugRole = userRole ?? "NULL"  // ✅ DEBUG: In giá trị role để kiểm tra
                 }, JsonRequestBehavior.AllowGet);
             }
         }
-        //// Đăng ký ngày lao động
+
         [HttpPost]
         public ActionResult DangKy(int id)
         {
-
             using (var db = DbContextFactory.Create())
             {
                 string username = Session["Username"]?.ToString();
-
                 if (string.IsNullOrEmpty(username))
-                {
-                    throw new Exception("Lỗi không lưu sesion");
-                }
+                    return Json(new { success = false, message = "Vui lòng đăng nhập lại!", type = "error" });
 
                 var user = db.TaiKhoans.FirstOrDefault(tk => tk.Username == username);
-
-                if (username == null)
-                    return Json(new { success = false, message = "Vui lòng đăng nhập lại!" });
-
                 if (user == null)
-                    return Json(new { success = false, message = "Tài khoản không tồn tại!" });
+                    return Json(new { success = false, message = "Tài khoản không tồn tại!", type = "error" });
 
-
-                // Lấy MSSV từ bảng SinhVien
-                var sv = db.SinhViens
-                      .Include("TaiKhoan1")
-                      .FirstOrDefault(tk => tk.TaiKhoan == user.TaiKhoan_id);
-
+                var sv = db.SinhViens.FirstOrDefault(tk => tk.TaiKhoan == user.TaiKhoan_id);
                 if (sv == null)
-                    return Json(new { success = false, message = "Không tìm thấy sinh viên tương ứng!" + username });
+                    return Json(new { success = false, message = "Không tìm thấy sinh viên tương ứng!", type = "error" });
 
-
-                // Kiểm tra đợt lao động tồn tại
                 var dot = db.TaoDotNgayLaoDongs.FirstOrDefault(x => x.TaoDotLaoDong_id == id && x.Ngayxoa == null);
                 if (dot == null)
-                    return Json(new { success = false, message = "Đợt lao động không tồn tại!" });
+                    return Json(new { success = false, message = "Đợt lao động không tồn tại!", type = "error" });
 
-                // Kiểm tra đã đăng ký chưa
                 var phieu = db.PhieuDangKies.FirstOrDefault(p => p.TaoDotLaoDong_id == id && p.MSSV == sv.MSSV);
+
                 if (phieu != null && phieu.TrangThai == "DangKy")
-                    return Json(new { success = false, message = "Bạn đã đăng ký đợt này rồi!" });
+                    return Json(new { success = false, message = "Bạn đã đăng ký đợt này rồi!", type = "error" });
 
                 if (phieu == null)
                 {
-                    // Tạo phiếu mới
                     var phieuMoi = new PhieuDangKy
                     {
                         PhieuDangKy_id = (db.PhieuDangKies.Max(p => (int?)p.PhieuDangKy_id) ?? 0) + 1,
                         MSSV = sv.MSSV,
                         TaoDotLaoDong_id = id,
                         ThoiGian = DateTime.Now,
-                        LaoDongCaNhan = dot.LoaiLaoDong == "Cá nhân",
-                        LaoDongTheoLop = dot.LoaiLaoDong == "Theo lớp",
+                        LaoDongCaNhan = true,
+                        LaoDongTheoLop = false,
                         TrangThai = "DangKy"
                     };
                     db.PhieuDangKies.Add(phieuMoi);
                 }
                 else
                 {
-                    // Nếu trước đó đã hủy thì cho đăng ký lại
                     phieu.TrangThai = "DangKy";
                     phieu.ThoiGian = DateTime.Now;
                 }
 
                 db.SaveChanges();
 
-                return Json(new { success = true, message = "Đăng ký thành công!" });
+                return Json(new { success = true, message = "Đăng ký thành công!", type = "success" });
             }
         }
 
+        [HttpPost]
+        public ActionResult HuyDangKy(int id)
+        {
+            using (var db = DbContextFactory.Create())
+            {
+                string username = Session["Username"]?.ToString();
+                if (string.IsNullOrEmpty(username))
+                    return Json(new { success = false, message = "Vui lòng đăng nhập lại!", type = "error" });
+
+                var user = db.TaiKhoans.FirstOrDefault(tk => tk.Username == username);
+                if (user == null)
+                    return Json(new { success = false, message = "Tài khoản không tồn tại!", type = "error" });
+
+                var sv = db.SinhViens.FirstOrDefault(tk => tk.TaiKhoan == user.TaiKhoan_id);
+                if (sv == null)
+                    return Json(new { success = false, message = "Không tìm thấy sinh viên!", type = "error" });
+
+                var phieu = db.PhieuDangKies.FirstOrDefault(p => p.TaoDotLaoDong_id == id && p.MSSV == sv.MSSV);
+
+                if (phieu == null || phieu.TrangThai != "DangKy")
+                    return Json(new { success = false, message = "Bạn chưa đăng ký hoặc đã hủy trước đó!", type = "error" });
+
+                db.PhieuDangKies.Remove(phieu);
+                db.SaveChanges();
+
+                return Json(new { success = true, message = "Đã hủy và xóa phiếu đăng ký thành công!", type = "success" });
+            }
+        }
     }
 }

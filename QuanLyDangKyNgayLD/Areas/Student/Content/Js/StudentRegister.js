@@ -1,25 +1,24 @@
 ﻿//==============================
-// ĐĂNG KÝ LAO ĐỘNG SINH VIÊN - PHIÊN BẢN HOÀN CHỈNH CUỐI CÙNG
+// ĐĂNG KÝ LAO ĐỘNG SINH VIÊN - PHIÊN BẢN HOÀN CHỈNH CUỐI CÙNG (ĐÃ FIX 2 NÚT)
 // Chỉ hiển thị trong tháng hiện tại | Cho đăng ký dù chưa duyệt | Khóa khi đã qua ngày
-// Hiển thị số lượng đã đăng ký / cần + đổi màu đỏ → xanh
+// Chỉ hiện 1 nút duy nhất: Đăng ký → Hủy → Đăng ký
 //==============================
-
 let currentPage = 1;
 const pageSize = 5;
 
-// Lấy tháng + năm hiện tại để lọc dữ liệu
+// Lấy tháng + năm hiện tại
 const today = new Date();
-const currentMonth = today.getMonth() + 1; // JS tháng bắt đầu từ 0
+const currentMonth = today.getMonth() + 1;
 const currentYear = today.getFullYear();
 
-// Hàm chuyển chuỗi dd/MM/yyyy → Date object
+// Hàm chuyển dd/MM/yyyy → Date
 function parseDate(dateStr) {
     if (!dateStr) return null;
     const [day, month, year] = dateStr.split('/');
     return new Date(year, month - 1, day);
 }
 
-// Hàm load dữ liệu từ server
+// Load dữ liệu
 function loadDataToTable(page, keyword = "", buoi = "", trangThai = "") {
     $.get("/Student/StudentRegisterWord/LoadDotLaoDong", {
         page: page,
@@ -32,37 +31,56 @@ function loadDataToTable(page, keyword = "", buoi = "", trangThai = "") {
             const tbody = document.getElementById("tableBody");
             tbody.innerHTML = "";
 
+            // ✅ DEBUG: In giá trị role từ server
+            console.log("Role từ server:", res.role);
+            console.log("Debug role:", res.debugRole);
+
             if (res.items && res.items.length > 0) {
+                showMainToast(`Lọc thành công: tìm thấy ${res.items.length} kết quả`, "success");
+
                 res.items.forEach((item, index) => {
-                    // === Trạng thái duyệt ===
+                    // Trạng thái duyệt
                     const trangThaiHTML = item.TrangThaiDuyet === true
                         ? `<span class="badge status-approved"><i class="fas fa-check-circle me-1"></i>Đã duyệt</span>`
                         : `<span class="badge status-pending"><i class="fas fa-clock me-1"></i>Chưa duyệt</span>`;
 
-                    // === Số lượng đã đăng ký / cần + đổi màu ===
+                    // Số lượng + màu
                     const daDangKy = item.SoLuongDaDangKy || 0;
                     const can = item.SoLuongSinhVien || 0;
                     const mauSoLuong = daDangKy >= can ? "text-success fw-bold" : "text-danger fw-bold";
 
-                    // === Kiểm tra ngày lao động đã qua chưa ===
+                    // Kiểm tra ngày đã qua chưa
                     const todayStart = new Date();
                     todayStart.setHours(0, 0, 0, 0);
                     const ngayLaoDongDate = parseDate(item.NgayLaoDong);
                     const isPast = ngayLaoDongDate < todayStart;
 
-                    // === Nút thao tác ===
-                    const thaoTacHTML = isPast
-                        ? `<span class="text-danger fw-bold">Đã kết thúc</span>`
-                        : `<div class="btn-group-action">
-                                <button class="btn btn-register me-2" onclick="dangKy(${item.TaoDotLaoDong_id})">
+                    // ✅ FIXED: Kiểm tra loại lao động (normalize để compare)
+                    const loaiLaoDongNormalized = item.LoaiLaoDong.toLowerCase().trim();
+                    const isSinhVien = res.role && res.role.trim() === "SinhVien";
+                    const isLoaiLop = loaiLaoDongNormalized === "lớp";
+
+                    // Nút thao tác
+                    let thaoTacHTML = "";
+                    if (isSinhVien && isLoaiLop) {
+                        thaoTacHTML = `<span class="text-danger fw-bold">Không được đăng ký</span>`;
+                    } else if (isPast) {
+                        thaoTacHTML = `<span class="text-danger fw-bold">Đã kết thúc</span>`;
+                    } else {
+                        thaoTacHTML = `
+                            <div class="btn-group-action">
+                                <button class="btn btn-register" onclick="dangKy(${item.TaoDotLaoDong_id})">
                                     <i class="fas fa-user-plus me-1"></i>Đăng ký
                                 </button>
-                                <button class="btn btn-cancel" onclick="huyDangKy(${item.TaoDotLaoDong_id})">
-                                    <i class="fas fa-user-minus me-1"></i>Hủy
-                                </button>
-                           </div>`;
+                            </div>`;
+                    }
 
-                    // === Thêm dòng vào bảng ===
+                    // ✅ FIXED: Ẩn hoàn toàn hàng "Lớp" nếu là sinh viên
+                    if (isSinhVien && isLoaiLop) {
+                        console.log(`Ẩn hàng "Lớp": ${item.DotLaoDong}`);
+                        return; // Skip hàng này
+                    }
+
                     tbody.innerHTML += `
                         <tr class="table-row-hover">
                             <td class="text-center fw-bold text-muted ps-4">${(page - 1) * pageSize + index + 1}</td>
@@ -90,6 +108,7 @@ function loadDataToTable(page, keyword = "", buoi = "", trangThai = "") {
                         </tr>`;
                 });
             } else {
+                showMainToast("Không tìm thấy dữ liệu phù hợp với bộ lọc!", "warning");
                 tbody.innerHTML = `
                     <tr>
                         <td colspan="9" class="text-center py-5">
@@ -104,10 +123,10 @@ function loadDataToTable(page, keyword = "", buoi = "", trangThai = "") {
 
             renderPagination(res.page || 1, res.totalPages || 1);
         } else {
-            showError("Không thể tải dữ liệu từ máy chủ.");
+            showMainToast("Không thể tải dữ liệu từ máy chủ.", "error");
         }
     }).fail(function () {
-        showError("Lỗi kết nối đến máy chủ.");
+        showMainToast("Lỗi kết nối đến máy chủ.", "error");
     });
 }
 
@@ -136,9 +155,7 @@ function renderPagination(page, totalPages) {
 
     if (start > 1) addPageButton(1);
     if (start > 2) addEllipsis();
-
     for (let i = start; i <= end; i++) addPageButton(i);
-
     if (end < totalPages - 1) addEllipsis();
     if (end < totalPages) addPageButton(totalPages);
 
@@ -205,84 +222,74 @@ document.addEventListener("DOMContentLoaded", function () {
     loadDataToTable(currentPage);
 });
 
-// === ĐĂNG KÝ & HỦY ĐĂNG KÝ ===
+// === ĐĂNG KÝ → CHỈ HIỆN NÚT HỦY ===
 function dangKy(id) {
-    if (confirm("Bạn có chắc chắn muốn đăng ký đợt lao động này?")) {
-        $.post("/Student/StudentRegisterWord/DangKy", { id: id }, function (res) {
-            if (res.success) {
-                alert(res.message || "Đăng ký thành công!");
+    showMainToast("Đang xử lý đăng ký...", "info");
 
-                // TỰ ĐỘNG CỘNG +1 SỐ LƯỢNG MÀ KHÔNG CẦN LOAD LẠI TOÀN BỘ TRANG
-                const row = document.querySelector(`button[onclick="dangKy(${id})"]`)?.closest('tr');
-                if (row) {
-                    const soLuongCell = row.cells[6]; // Cột "Số lượng SV" (0-based index)
-                    if (soLuongCell) {
-                        const span = soLuongCell.querySelector('span');
-                        if (span) {
-                            const text = span.innerText; // ví dụ: "5/20"
-                            const parts = text.split('/');
-                            const daDangKy = parseInt(parts[0]) + 1;
-                            const can = parseInt(parts[1]);
-                            span.innerText = daDangKy + "/" + can;
+    $.post("/Student/StudentRegisterWord/DangKy", { id: id }, function (res) {
+        if (!res.success) {
+            showMainToast(res.message || "Đăng ký thất bại!", "error");
+            return;
+        }
 
-                            // Đổi màu nếu đủ người
-                            if (daDangKy >= can) {
-                                span.className = "text-success fw-bold";
-                            }
+        showMainToast("Đăng ký thành công!", "success");
 
-                            // Đổi nút thành "Đã đăng ký"
-                            const thaoTacCell = row.cells[8]; // Cột thao tác
-                            thaoTacCell.innerHTML = `
-                                <div class="btn-group-action">
-                                    <button class="btn btn-success btn-sm" disabled>
-                                        <i class="fas fa-check me-1"></i>Đã đăng ký
-                                    </button>
-                                    <button class="btn btn-cancel btn-sm ms-2" onclick="huyDangKy(${id})">
-                                        <i class="fas fa-user-minus me-1"></i>Hủy
-                                    </button>
-                                </div>`;
-                        }
-                    }
-                }
+        const row = document.querySelector(`button[onclick="dangKy(${id})"]`)?.closest('tr');
+        if (!row) return;
 
-                // (Tùy chọn) Có thể load lại toàn trang nếu muốn đồng bộ 100%
-                // loadDataToTable(currentPage);
-            } else {
-                alert(res.message || "Đăng ký thất bại!");
-            }
-        }).fail(() => alert("Lỗi kết nối đến máy chủ!"));
-    }
+        // Cập nhật số lượng
+        const soLuongCell = row.cells[6];
+        const span = soLuongCell.querySelector('span');
+        const parts = span.innerText.split('/');
+        let daDangKy = parseInt(parts[0]) || 0;
+        const can = parseInt(parts[1]) || 0;
+        daDangKy++;
+        span.innerText = daDangKy + "/" + can;
+        span.className = daDangKy >= can ? "text-success fw-bold" : "text-danger fw-bold";
+
+        // Đổi thành nút Hủy
+        row.cells[8].innerHTML = `
+            <div class="btn-group-action">
+                <button class="btn btn-cancel" onclick="huyDangKy(${id})">
+                    <i class="fas fa-user-minus me-1"></i>Hủy đăng ký
+                </button>
+            </div>
+        `;
+    }).fail(() => showMainToast("Lỗi kết nối đến máy chủ!", "error"));
 }
-// Hủy đăng ký
-function huyDangKy(id) {
-    if (confirm("Bạn chắc chắn muốn hủy đăng ký?")) {
-        $.post("/SinhVien/StudentRegisterWord/HuyDangKy", { id: id }, function (res) {
-            if (res.success) {
-                alert("Hủy thành công!");
 
-                const row = document.querySelector(`button[onclick="huyDangKy(${id})"]`)?.closest('tr');
-                if (row) {
-                    const soLuongCell = row.cells[6];
-                    if (soLuongCell) {
-                        const span = soLuongCell.querySelector('span');
-                        if (span) {
-                            const text = span.innerText;
-                            const parts = text.split('/');
-                            const daDangKy = parseInt(parts[0]) - 1;
-                            const can = parseInt(parts[1]);
-                            span.innerText = daDangKy + "/" + can;
-                            if (daDangKy < can) span.className = "text-danger fw-bold";
-                        }
-                    }
-                    // Đổi lại nút Đăng ký
-                    row.cells[8].innerHTML = `
-                        <button class="btn btn-register me-2" onclick="dangKy(${id})">
-                            <i class="fas fa-user-plus me-1"></i>Đăng ký
-                        </button>`;
-                }
-            } else {
-                alert(res.message || "Hủy thất bại!");
-            }
-        });
-    }
+// === HỦY → QUAY LẠI NÚT ĐĂNG KÝ ===
+function huyDangKy(id) {
+    showMainToast("Đang hủy đăng ký...", "info");
+
+    $.post("/Student/StudentRegisterWord/HuyDangKy", { id: id }, function (res) {
+        if (!res.success) {
+            showMainToast(res.message || "Hủy thất bại!", "error");
+            return;
+        }
+
+        showMainToast("Hủy đăng ký thành công!", "success");
+
+        const row = document.querySelector(`button[onclick="huyDangKy(${id})"]`)?.closest('tr');
+        if (!row) return;
+
+        // Cập nhật số lượng
+        const soLuongCell = row.cells[6];
+        const span = soLuongCell.querySelector('span');
+        const parts = span.innerText.split('/');
+        let daDangKy = parseInt(parts[0]) || 0;
+        const can = parseInt(parts[1]) || 0;
+        daDangKy = Math.max(0, daDangKy - 1);
+        span.innerText = daDangKy + "/" + can;
+        span.className = daDangKy < can ? "text-danger fw-bold" : "text-success fw-bold";
+
+        // Quay lại nút Đăng ký
+        row.cells[8].innerHTML = `
+            <div class="btn-group-action">
+                <button class="btn btn-register" onclick="dangKy(${id})">
+                    <i class="fas fa-user-plus me-1"></i>Đăng ký
+                </button>
+            </div>
+        `;
+    }).fail(() => showMainToast("Lỗi kết nối đến máy chủ!", "error"));
 }
