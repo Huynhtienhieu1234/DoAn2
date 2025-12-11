@@ -8,7 +8,7 @@
 <div class="container mt-4">
     <div class="card shadow-sm">
         <div class="card-header bg-primary text-white">
-            <h4 class="mb-0">Chỉnh sửa thông tin sinh viên</h4>
+            <h4 class="mb-0">Thông tin sinh viên</h4>
         </div>
         <div class="card-body">
             @using (Html.BeginForm("UpdateInfo", "MainSinhVien", FormMethod.Post, new { area = "Student", enctype = "multipart/form-data" }))
@@ -68,24 +68,42 @@
                     </div>
                 </div>
 
-                <div class="mb-3">
-                    <label class="form-label">Quê quán</label>
-                    @Html.TextBoxFor(m => m.QueQuan, new { @class = "form-control", placeholder = "Nhập quê quán" })
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Quê quán</label>
+                        @Html.TextBoxFor(m => m.QueQuan, new { @class = "form-control", placeholder = "Nhập quê quán" })
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Khoa</label>
+                        @Html.TextBoxFor(m => m.Lop.Khoa.TenKhoa, new
+                        {
+                            @class = "form-control",
+                            placeholder = "Khoa",
+                            @readonly = "readonly"
+                        })
+                    </div>
                 </div>
-                <div class="col-md-6">
-                    <label class="form-label">Lớp</label>
-                    @Html.TextBoxFor(m => m.Lop.TenLop, new { @class = "form-control", placeholder = "Nhập lớp" })
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Lớp</label>
+                        @Html.TextBoxFor(m => m.Lop.TenLop, new
+                        {
+                            @class = "form-control",
+                            placeholder = "Lớp",
+                            @readonly = "readonly"
+                        })
+                    </div>
+     
                 </div>
-                <div class="col-md-6">
-                    <label class="form-label">Khoa</label>
-                    @Html.TextBoxFor(m => m.Lop.Khoa.TenKhoa, new { @class = "form-control", placeholder = "Khoa" })
-                </div>
+
+
                 <!-- Thông tin tài khoản -->
                 <h5 class="text-primary mt-4 mb-3">Thông tin tài khoản</h5>
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <label class="form-label">Tên tài khoản</label>
-                        @Html.TextBoxFor(m => m.TaiKhoan, new { @class = "form-control", placeholder = "Tên đăng nhập", @readonly = "readonly" })
+                        @Html.TextBoxFor(m => m.TaiKhoan1.Username, new { @class = "form-control", placeholder = "Tên đăng nhập", @readonly = "readonly" })
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Vai trò</label>
@@ -93,20 +111,18 @@
                     </div>
                 </div>
 
-                <div class="row mb-3">
-
-                    <div class="col-md-6">
-                        <label class="form-label">Mật khẩu</label>
-                        @Html.PasswordFor(m => m.TaiKhoan1.Password, new { @class = "form-control", placeholder = "Nhập mật khẩu mới" })
+         
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Mật khẩu mới</label>
+                            <input type="password" name="MatKhauMoi" id="matkhau" class="form-control" placeholder="Nhập mật khẩu mới" />
+                        </div>
                     </div>
-                </div>
 
 
+ 
 
-
-
-
-
+                <!-- Nút hành động -->
                 <div class="d-flex justify-content-between">
                     <a href="@Url.Action("Index","MainSinhVien", new { area="Student" })" class="btn btn-secondary">
                         Quay lại
@@ -117,6 +133,7 @@
         </div>
     </div>
 </div>
+
 
 <script>
     // Preview ảnh khi chọn file

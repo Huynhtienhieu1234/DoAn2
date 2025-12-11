@@ -8,6 +8,9 @@
     formData.append("GioiTinh", document.getElementById("gioitinh").value);
     formData.append("SoDienThoaiSinhVien", document.getElementById("sdt").value.trim());
 
+
+    formData.append("MatKhauMoi", document.getElementById("matkhau").value.trim());
+
     const avatarFile = document.getElementById("avatarFile").files[0];
     if (avatarFile) {
         formData.append("AvatarFile", avatarFile);
@@ -43,6 +46,7 @@ function refreshStudentInfo() {
                 document.getElementById("gioitinh").textContent = info.data.GioiTinh || "Chưa có dữ liệu";
                 document.getElementById("sdt").textContent = info.data.SoDienThoai || "Chưa có dữ liệu";
                 document.getElementById("lop").textContent = info.data.Lop || "Chưa có dữ liệu";
+                document.getElementById("khoa").textContent = info.data.Khoa || "Chưa có dữ liệu"; // ✅ thêm khoa
                 document.getElementById("vaitro").textContent = info.data.VaiTro || "Chưa có";
                 document.getElementById("avatarImg").src = info.data.Avatar;
             } else {

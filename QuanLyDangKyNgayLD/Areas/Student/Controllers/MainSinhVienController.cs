@@ -5,7 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
-
+using System.Data.Entity;
 namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
 {
     public class MainSinhVienController : Controller
@@ -42,9 +42,9 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
             using (var db = DbContextFactory.Create())
             {
                 var sv = db.SinhViens
-                           .Include("TaiKhoan1.VaiTro")
-                           .Include("Anh")
-                           .Include("Lop")
+                           .Include(s => s.TaiKhoan1.VaiTro)
+                           .Include(s => s.Anh)
+                           .Include(s => s.Lop.Khoa)   // ✅ load luôn Khoa qua Lop
                            .FirstOrDefault(s => s.TaiKhoan == userId);
 
                 if (sv == null)
@@ -67,7 +67,7 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
                 var sv = db.SinhViens
                            .Include("TaiKhoan1.VaiTro")
                            .Include("Anh")
-                           .Include("Lop")
+                           .Include("Lop.Khoa")   // ✅ Include thêm Khoa qua Lop
                            .FirstOrDefault(s => s.TaiKhoan == userId);
 
                 if (sv == null)
@@ -86,12 +86,14 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
                         GioiTinh = string.IsNullOrEmpty(sv.GioiTinh) ? "Chưa có dữ liệu" : sv.GioiTinh,
                         SoDienThoai = string.IsNullOrEmpty(sv.SoDienThoaiSinhVien) ? "Chưa có dữ liệu" : sv.SoDienThoaiSinhVien,
                         Lop = sv.Lop != null ? sv.Lop.TenLop : "Chưa có dữ liệu",
+                        Khoa = sv.Lop?.Khoa != null ? sv.Lop.Khoa.TenKhoa : "Chưa có dữ liệu",  // ✅ thêm tên khoa
                         VaiTro = sv.TaiKhoan1?.VaiTro?.TenVaiTro ?? "Chưa có",
                         Avatar = avatarUrl
                     }
                 }, JsonRequestBehavior.AllowGet);
             }
         }
+
 
         // Chỉnh thông tin sinh viên (form POST)
 
@@ -107,9 +109,11 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
             {
                 using (var db = DbContextFactory.Create())
                 {
-                    var sv = db.SinhViens.FirstOrDefault(s => s.TaiKhoan == userId);
+                    var sv = db.SinhViens.Include("TaiKhoan1")
+                                         .FirstOrDefault(s => s.TaiKhoan == userId);
                     if (sv != null)
                     {
+                        // cập nhật thông tin cá nhân
                         sv.MSSV = model.MSSV;
                         sv.HoTen = model.HoTen;
                         sv.Email = model.Email;
@@ -126,8 +130,6 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
                                 System.IO.Directory.CreateDirectory(uploadDir);
 
                             var fileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(AvatarFile.FileName);
-
-
                             var path = System.IO.Path.Combine(uploadDir, fileName);
                             AvatarFile.SaveAs(path);
 
@@ -136,6 +138,14 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
                             db.SaveChanges();
 
                             sv.Anh_id = anh.Anh_id;
+                        }
+
+                        // ✅ xử lý đổi mật khẩu nếu có nhập
+                        string matKhauMoi = Request.Form["MatKhauMoi"];
+                        if (!string.IsNullOrEmpty(matKhauMoi) && sv.TaiKhoan1 != null)
+                        {
+                            // ⚠️ Nên hash mật khẩu trước khi lưu
+                            sv.TaiKhoan1.Password = matKhauMoi;
                         }
 
                         db.SaveChanges();
@@ -161,6 +171,7 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
 
             return RedirectToAction("Detail", "MainSinhVien", new { area = "Student" });
         }
+
         // Tài khoản
         public ActionResult TaiKhoanInfo()
         {
@@ -191,61 +202,35 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
         // Đổi mật khẩu
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult DoiMatKhau(string MatKhauMoi, string ConfirmPassword)
+        public JsonResult DoiMatKhau(string MatKhauMoi)
         {
             var userId = Session["UserID"] as int?;
             if (userId == null)
-            {
-                TempData["Message"] = "Bạn chưa đăng nhập!";
-                TempData["MessageType"] = "error";
-                return RedirectToAction("Login", "Login", new { area = "" });
-            }
+                return Json(new { success = false, message = "Bạn chưa đăng nhập!" });
 
-            if (string.IsNullOrEmpty(MatKhauMoi) || string.IsNullOrEmpty(ConfirmPassword))
-            {
-                TempData["Message"] = "Vui lòng nhập đầy đủ mật khẩu mới và xác nhận!";
-                TempData["MessageType"] = "error";
-                return RedirectToAction("Detail", "MainSinhVien", new { area = "Student" });
-            }
+            if (string.IsNullOrEmpty(MatKhauMoi))
+                return Json(new { success = false, message = "Vui lòng nhập mật khẩu mới!" });
 
-            if (MatKhauMoi != ConfirmPassword)
+            using (var db = DbContextFactory.Create())
             {
-                TempData["Message"] = "Mật khẩu xác nhận không khớp!";
-                TempData["MessageType"] = "error";
-                return RedirectToAction("Detail", "MainSinhVien", new { area = "Student" });
-            }
+                var sv = db.SinhViens.Include("TaiKhoan1")
+                                     .FirstOrDefault(s => s.TaiKhoan == userId);
 
-            try
-            {
-                using (var db = DbContextFactory.Create())
+                if (sv != null && sv.TaiKhoan1 != null)
                 {
-                    var sv = db.SinhViens.Include("TaiKhoan1")
-                                         .FirstOrDefault(s => s.TaiKhoan == userId);
+                    // ⚠️ Nên hash mật khẩu trước khi lưu
+                    sv.TaiKhoan1.Password = MatKhauMoi;
+                    db.SaveChanges();
 
-                    if (sv != null && sv.TaiKhoan1 != null)
-                    {
-                        // ⚠️ Nên mã hoá mật khẩu trước khi lưu (ví dụ: Hash)
-                        sv.TaiKhoan1.Password = MatKhauMoi;
-
-                        db.SaveChanges();
-                        TempData["Message"] = "Đổi mật khẩu thành công!";
-                        TempData["MessageType"] = "success";
-                    }
-                    else
-                    {
-                        TempData["Message"] = "Không tìm thấy tài khoản!";
-                        TempData["MessageType"] = "error";
-                    }
+                    return Json(new { success = true, message = "Đổi mật khẩu thành công!" });
+                }
+                else
+                {
+                    return Json(new { success = false, message = "Không tìm thấy tài khoản!" });
                 }
             }
-            catch (Exception ex)
-            {
-                TempData["Message"] = "Có lỗi xảy ra khi đổi mật khẩu: " + ex.Message;
-                TempData["MessageType"] = "error";
-            }
-
-            return RedirectToAction("Detail", "MainSinhVien", new { area = "Student" });
         }
+
 
 
 
