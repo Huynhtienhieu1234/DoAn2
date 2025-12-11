@@ -3,9 +3,10 @@
     ViewBag.Title = "Trang Tài Khoản";
     Layout = "~/Areas/Admin/Views/Shared/ViewShare.cshtml";
 }
-<link href="~/Areas/Content/adminpage.css" rel="stylesheet" type="text/css" />
-
-<!-- THANH CÔNG CỤ -->
+@section Styles {
+    <link rel="stylesheet" href="~/Areas/Content/css/AdminCount.css" />
+}
+    <!-- THANH CÔNG CỤ -->
 <nav class="navbar navbar-expand-lg toolbar shadow-sm mb-3">
     <div class="container-fluid p-0">
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
@@ -132,7 +133,8 @@
 
 <!-- MODAL THÊM TÀI KHOẢN -->
 <div class="modal fade" id="createModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-xl"> <!-- rộng ngang -->
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <!-- rộng ngang -->
         <div class="modal-content shadow-lg border-0">
             <form id="createForm" method="post" action="@Url.Action("CreateAccountAjax", "Account", new { area = "Admin" })">
                 @Html.AntiForgeryToken()
@@ -186,7 +188,7 @@
                             </select>
                         </div>
 
-                 
+
                         <!-- MẬT KHẨU -->
                         <div class="col-md-6 mb-4 password-group">
                             <label for="createPassword" class="form-label fw-bold">
@@ -253,7 +255,7 @@
                         <label for="editEmail" class="form-label fw-bold">Email</label>
                         <input type="email" class="form-control" id="editEmail" name="Email" required maxlength="100" />
                     </div>
-     
+
                     <!-- Mật khẩu -->
                     <div class="mb-3">
                         <label for="editPassword" class="form-label fw-bold">Mật khẩu</label>

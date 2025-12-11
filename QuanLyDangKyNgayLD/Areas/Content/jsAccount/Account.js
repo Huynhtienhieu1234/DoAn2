@@ -124,6 +124,7 @@
        ========================== */
     let currentPage = 1;
     const pageSize = 5;
+    let totalPages = 1;
 
     function loadAccounts(page = 1) {
         const loading = document.getElementById("loadingIndicator");
@@ -140,6 +141,7 @@
             .then(res => {
                 const data = res.data;
                 currentPage = res.currentPage;
+                totalPages = res.totalPages || 1;
                 tableBody.innerHTML = "";
 
                 if (data.length === 0) {
@@ -148,12 +150,9 @@
                             <td colspan="6" class="text-muted py-4">Không có dữ liệu</td>
                         </tr>`;
                     pageNumbers.innerHTML = "";
-
-
-
-
                     prevBtn.disabled = true;
                     nextBtn.disabled = true;
+                    updatePrevNextButtons(prevBtn, nextBtn);
                     return;
                 }
 
@@ -175,18 +174,11 @@
                     tableBody.appendChild(row);
                 });
 
-                // Render nút số trang
-                pageNumbers.innerHTML = "";
-                for (let i = 1; i <= res.totalPages; i++) {
-                    const btn = document.createElement("button");
-                    btn.className = "btn btn-sm " + (i === res.currentPage ? "btn-primary" : "btn-outline-primary");
-                    btn.textContent = i;
-                    btn.addEventListener("click", () => loadAccounts(i));
-                    pageNumbers.appendChild(btn);
-                }
+                // Render phân trang
+                renderPagination(pageNumbers, currentPage, totalPages);
 
-                prevBtn.disabled = res.currentPage <= 1;
-                nextBtn.disabled = res.currentPage >= res.totalPages;
+                // Cập nhật trạng thái nút prev/next
+                updatePrevNextButtons(prevBtn, nextBtn);
             })
             .catch(() => showToast("Không thể tải dữ liệu mới!", "error"))
             .finally(() => {
@@ -194,13 +186,60 @@
             });
     }
 
-    document.getElementById("prev").addEventListener("click", () => {
-        if (currentPage > 1) loadAccounts(currentPage - 1);
-    });
-    document.getElementById("next").addEventListener("click", () => {
-        loadAccounts(currentPage + 1);
+    /* ==========================
+       RENDER PHÂN TRANG (DỰA TRÊN MẪU)
+       ========================== */
+    function renderPagination(container, currentPage, totalPages) {
+        const fragment = document.createDocumentFragment(); // tạo tạm để tránh flicker
+
+        for (let i = 1; i <= totalPages; i++) {
+            const btn = document.createElement("button");
+            btn.className = "btn btn-sm me-1 page-number";
+            btn.textContent = i;
+
+            if (i === currentPage) {
+                btn.classList.add("btn-primary");
+            } else {
+                btn.classList.add("btn-outline-primary");
+            }
+
+            btn.addEventListener("click", () => loadAccounts(i));
+            fragment.appendChild(btn);
+        }
+
+        container.innerHTML = "";
+        container.appendChild(fragment); // render một lần, mượt hơn
+    }
+
+    /* ==========================
+       CẬP NHẬT NÚT PREV/NEXT
+       ========================== */
+    function updatePrevNextButtons(prevBtn, nextBtn) {
+        // Cập nhật trạng thái nút prev/next
+        prevBtn.disabled = currentPage === 1;
+        nextBtn.disabled = currentPage === totalPages;
+
+        // Thêm class disabled cho Bootstrap
+        prevBtn.classList.toggle("disabled", currentPage === 1);
+        nextBtn.classList.toggle("disabled", currentPage === totalPages);
+    }
+
+    // Sự kiện cho nút prev/next (dựa trên mẫu)
+    document.getElementById("prev").addEventListener("click", function () {
+        if (currentPage > 1) {
+            currentPage--;
+            loadAccounts(currentPage);
+        }
     });
 
+    document.getElementById("next").addEventListener("click", function () {
+        if (currentPage < totalPages) {
+            currentPage++;
+            loadAccounts(currentPage);
+        }
+    });
+
+    // Load dữ liệu ban đầu
     loadAccounts(1);
 
     /* ==========================
@@ -208,13 +247,13 @@
        ========================== */
     function animateTable() {
         const tableBody = document.getElementById("accountTableBody");
-        tableBody.classList.add("fade-out");
+        tableBody.classList.remove("show");
+        tableBody.classList.add("fade-soft");
+
         setTimeout(() => {
-            tableBody.classList.remove("fade-out");
-            tableBody.classList.add("fade-in");
-            setTimeout(() => {
-                tableBody.classList.remove("fade-in");
-            }, 300);
-        }, 250);
+            tableBody.classList.add("show");
+        }, 50); 
     }
+
+
 });

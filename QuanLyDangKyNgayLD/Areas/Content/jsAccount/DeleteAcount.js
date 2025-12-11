@@ -167,12 +167,14 @@
        ========================== */
     function animateTable() {
         const tableBody = document.getElementById("accountTableBody");
-        tableBody.style.opacity = "0.5";
+        tableBody.classList.remove("show");
+        tableBody.classList.add("table-soft");
+
         setTimeout(() => {
-            tableBody.style.transition = "opacity 0.3s";
-            tableBody.style.opacity = "1";
-        }, 100);
+            tableBody.classList.add("show");
+        }, 50); // delay nhỏ để kích hoạt transition
     }
+
     function parseDotNetDate(dotNetDate) {
         if (!dotNetDate) return "Chưa xác định";
 

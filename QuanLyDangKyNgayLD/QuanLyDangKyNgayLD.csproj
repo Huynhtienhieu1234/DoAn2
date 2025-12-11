@@ -135,6 +135,7 @@
   <ItemGroup>
     <Content Include="Areas\Content\AdminStudentRegister\AdminExportStudent.js" />
     <Content Include="Areas\Content\AdminStudentRegister\AdminImportStudent.js" />
+    <Content Include="Areas\Content\css\AdminCount.css" />
     <Content Include="Areas\Content\css\AdminStudentRegister.css" />
     <Content Include="Areas\Content\css\admonWwordRegister.css" />
     <Content Include="Areas\Content\jsAccount\Account.js" />

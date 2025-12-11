@@ -112,57 +112,69 @@
         fetch(`/Admin/Account/GetAccounts?page=${page}&pageSize=${pageSize}`)
             .then(r => r.json())
             .then(res => {
-                const data = res.data;
-                currentPage = res.currentPage;
+                const data = res.data || [];
+                const totalPages = res.totalPages || 1;
+                currentPage = page; // cập nhật ngay theo tham số
+
                 tableBody.innerHTML = "";
 
                 if (data.length === 0) {
                     tableBody.innerHTML = `
-                        <tr class="no-data-row">
-                            <td colspan="6" class="text-muted py-4">Không có dữ liệu</td>
-                        </tr>`;
+                    <tr class="no-data-row">
+                        <td colspan="6" class="text-muted py-4 text-center">Không có dữ liệu</td>
+                    </tr>`;
                     pageNumbers.innerHTML = "";
                     prevBtn.disabled = true;
                     nextBtn.disabled = true;
+                    prevBtn.classList.add("disabled");
+                    nextBtn.classList.add("disabled");
                     return;
                 }
 
+                // Render dữ liệu bảng
                 data.forEach((acc, index) => {
                     const row = document.createElement("tr");
                     row.innerHTML = `
-                        <td class="stt-cell">${(currentPage - 1) * pageSize + index + 1}</td>
-                        <td>${acc.Username}</td>
-                        <td class="text-truncate" style="max-width:200px;" title="${acc.Email ?? ""}">
-                            ${acc.Email ?? ""}
-                        </td>
-                        <td>${acc.RoleName ?? "Chưa có vai trò"}</td>
-                        <td class="action-cell">
-                            <button class="btn btn-sm btn-warning btn-edit me-1" data-id="${acc.TaiKhoan_id}"><i class="fas fa-edit"></i></button>
-                            <button class="btn btn-sm btn-danger btn-delete me-1" data-id="${acc.TaiKhoan_id}"><i class="fas fa-trash"></i></button>
-                            <button class="btn btn-sm btn-info btn-detail me-1 text-white" data-id="${acc.TaiKhoan_id}"><i class="fas fa-info-circle"></i></button>
-                            <button class="btn btn-sm btn-secondary btn-reset" data-id="${acc.TaiKhoan_id}"><i class="fas fa-key"></i></button>
-                        </td>`;
+                    <td class="stt-cell text-center">${(currentPage - 1) * pageSize + index + 1}</td>
+                    <td>${acc.Username}</td>
+                    <td class="text-truncate" style="max-width:200px;" title="${acc.Email ?? ""}">
+                        ${acc.Email ?? ""}
+                    </td>
+                    <td>${acc.RoleName ?? "Chưa có vai trò"}</td>
+                    <td class="action-cell text-center">
+                        <button class="btn btn-sm btn-warning btn-edit me-1" data-id="${acc.TaiKhoan_id}"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-sm btn-danger btn-delete me-1" data-id="${acc.TaiKhoan_id}"><i class="fas fa-trash"></i></button>
+                        <button class="btn btn-sm btn-info btn-detail me-1 text-white" data-id="${acc.TaiKhoan_id}"><i class="fas fa-info-circle"></i></button>
+                        <button class="btn btn-sm btn-secondary btn-reset" data-id="${acc.TaiKhoan_id}"><i class="fas fa-key"></i></button>
+                    </td>`;
                     tableBody.appendChild(row);
                 });
 
-                // Render nút số trang
-                pageNumbers.innerHTML = "";
-                for (let i = 1; i <= res.totalPages; i++) {
+                // Render phân trang mượt hơn
+                const fragment = document.createDocumentFragment();
+                for (let i = 1; i <= totalPages; i++) {
                     const btn = document.createElement("button");
-                    btn.className = "btn btn-sm " + (i === res.currentPage ? "btn-primary" : "btn-outline-primary");
+                    btn.className = "btn btn-sm mx-1 page-number " +
+                        (i === currentPage ? "btn-primary" : "btn-outline-primary");
                     btn.textContent = i;
                     btn.addEventListener("click", () => loadAccounts(i));
-                    pageNumbers.appendChild(btn);
+                    fragment.appendChild(btn);
                 }
+                pageNumbers.innerHTML = "";
+                pageNumbers.appendChild(fragment);
 
-                prevBtn.disabled = res.currentPage <= 1;
-                nextBtn.disabled = res.currentPage >= res.totalPages;
+                // Cập nhật trạng thái prev/next
+                prevBtn.disabled = currentPage <= 1;
+                nextBtn.disabled = currentPage >= totalPages;
+                prevBtn.classList.toggle("disabled", currentPage <= 1);
+                nextBtn.classList.toggle("disabled", currentPage >= totalPages);
             })
             .catch(() => showToast("Không thể tải dữ liệu mới!", "error"))
             .finally(() => {
                 if (loading) loading.style.display = "none";
             });
     }
+
 
     document.getElementById("prev").addEventListener("click", () => {
         if (currentPage > 1) loadAccounts(currentPage - 1);
@@ -178,15 +190,14 @@
        ========================== */
     function animateTable() {
         const tableBody = document.getElementById("accountTableBody");
-        tableBody.classList.add("fade-out");
+        tableBody.classList.remove("show");
+        tableBody.classList.add("table-soft");
+
         setTimeout(() => {
-            tableBody.classList.remove("fade-out");
-            tableBody.classList.add("fade-in");
-            setTimeout(() => {
-                tableBody.classList.remove("fade-in");
-            }, 300);
-        }, 250);
+            tableBody.classList.add("show");
+        }, 50); // delay nhỏ để kích hoạt transition
     }
+
 
 
 
