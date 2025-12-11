@@ -1,103 +1,77 @@
 ﻿document.addEventListener("DOMContentLoaded", function () {
-    const btnAdd = document.getElementById("btnAdd");
-    const createModal = document.getElementById("createModal");
-    const form = document.getElementById("createForm");
-    const roleSelect = document.getElementById("createRole");
-    const passwordGroup = document.querySelector(".password-group");
-    const passwordInput = document.getElementById("createPassword");
-    const passwordHint = document.querySelector(".password-hint");
-    const usernameInput = document.getElementById("createUsername");
-    const toggleBtn = document.querySelector(".toggle-password");
-
-    /* ==========================
-       CHỈ CHO NHẬP SỐ (MSSV)
-       ========================== */
-    function restrictToDigits(e) {
-        e.target.value = e.target.value.replace(/\D/g, "");
-    }
-
-    /* ==========================
-       ẨN / HIỆN MẬT KHẨU THEO VAI TRÒ
-       ========================== */
-    function togglePasswordField() {
-        const role = roleSelect.value;
-        if (role === "3" || role === "4") {
-            passwordGroup.style.display = "none";
-            passwordInput.value = "";
-            passwordHint.style.display = "block";
-            if (toggleBtn) toggleBtn.style.display = "none";
-            usernameInput.addEventListener("input", restrictToDigits);
-        } else {
-            passwordGroup.style.display = "block";
-            passwordHint.style.display = "none";
-            if (toggleBtn) toggleBtn.style.display = "block";
-            usernameInput.removeEventListener("input", restrictToDigits);
-        }
-    }
-
-    /* ==========================
-       MỞ MODAL TẠO TÀI KHOẢN
-       ========================== */
-    if (btnAdd && createModal) {
-        btnAdd.addEventListener("click", function () {
-            form.reset();
-            togglePasswordField();
-
-            passwordInput.type = "password";
-            const icon = toggleBtn ? toggleBtn.querySelector("i") : null;
-            if (icon) {
-                icon.classList.remove("fa-eye-slash");
-                icon.classList.add("fa-eye");
-            }
-
-            document.querySelectorAll(".modal-backdrop").forEach(el => el.remove());
-            document.body.classList.remove("modal-open");
-            document.body.style = "";
-
-            const toastContainer = document.querySelector(".toast-container");
-            if (toastContainer) toastContainer.innerHTML = "";
-
-            const modal = bootstrap.Modal.getOrCreateInstance(createModal);
-            modal.show();
-        });
-    }
-
-    if (roleSelect) roleSelect.addEventListener("change", togglePasswordField);
+    const editModal = document.getElementById("editModal");
+    const editForm = document.getElementById("editForm");
+    const editId = document.getElementById("editId");
+    const editUsername = document.getElementById("editUsername");
+    const editEmail = document.getElementById("editEmail");
+    const editPassword = document.getElementById("editPassword");
+    const editRole = document.getElementById("editRole");
+    const toggleEye = document.getElementById("toggleEye");
 
     /* ==========================
        NÚT CON MẮT HIỆN/ẨN MẬT KHẨU
        ========================== */
-    if (toggleBtn && passwordInput) {
-        toggleBtn.addEventListener("click", function () {
-            const icon = toggleBtn.querySelector("i");
-            if (!icon) return;
-            if (passwordInput.type === "password") {
-                passwordInput.type = "text";
-                icon.classList.remove("fa-eye");
-                icon.classList.add("fa-eye-slash");
-            } else {
-                passwordInput.type = "password";
-                icon.classList.remove("fa-eye-slash");
-                icon.classList.add("fa-eye");
-            }
-        });
+    function togglePassword() {
+        if (editPassword.type === "password") {
+            editPassword.type = "text";
+            toggleEye.classList.remove("fa-eye");
+            toggleEye.classList.add("fa-eye-slash");
+        } else {
+            editPassword.type = "password";
+            toggleEye.classList.remove("fa-eye-slash");
+            toggleEye.classList.add("fa-eye");
+        }
     }
+    if (toggleEye) toggleEye.addEventListener("click", togglePassword);
 
     /* ==========================
-       SUBMIT FORM (AJAX)
+       MỞ MODAL CHỈNH SỬA (nạp dữ liệu)
        ========================== */
-    if (form) {
-        form.addEventListener("submit", function (e) {
+    document.addEventListener("click", function (e) {
+        if (e.target.closest(".btn-edit")) {
+            const btn = e.target.closest(".btn-edit");
+            const id = btn.dataset.id;
+
+            // 👉 Gọi API lấy thông tin tài khoản theo id
+            fetch(`/Admin/Account/GetAccountById?id=${id}`)
+                .then(r => r.json())
+                .then(acc => {
+                    if (!acc) {
+                        showToast("Không tìm thấy tài khoản!", "error");
+                        return;
+                    }
+
+                    // Nạp dữ liệu vào form
+                    editId.value = acc.TaiKhoan_id;
+                    editUsername.value = acc.Username;
+                    editEmail.value = acc.Email ?? "";
+                    editPassword.value = ""; // để trống nếu không đổi
+                    editRole.value = acc.VaiTro_id;
+
+                    // Mở modal
+                    const modal = bootstrap.Modal.getOrCreateInstance(editModal);
+                    modal.show();
+                })
+                .catch(() => showToast("Lỗi tải dữ liệu!", "error"));
+        }
+    });
+
+    /* ==========================
+       SUBMIT FORM CHỈNH SỬA (AJAX)
+       ========================== */
+    if (editForm) {
+        editForm.addEventListener("submit", function (e) {
             e.preventDefault();
-            const role = roleSelect.value;
+
             const data = {
-                Username: usernameInput.value.trim(),
-                Email: document.getElementById("createEmail").value.trim(),
-                VaiTro_id: role,
-                Password: (role === "3" || role === "4") ? "" : passwordInput.value.trim()
+                TaiKhoan_id: editId.value,
+                Username: editUsername.value.trim(),
+                Email: editEmail.value.trim(),
+                Password: editPassword.value.trim(), // để trống nếu không đổi
+                VaiTro_id: editRole.value
             };
 
-            fetch(form.action, {
+            fetch(editForm.action, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -109,8 +83,8 @@
                 .then(res => {
                     if (res.success) {
                         showToast(res.message, "success");
-                        bootstrap.Modal.getInstance(createModal).hide();
-                        loadAccounts(1); // load lại trang đầu
+                        bootstrap.Modal.getInstance(editModal).hide();
+                        loadAccounts(currentPage); // load lại bảng ở trang hiện tại
                     } else {
                         showToast(res.message, "error");
                     }
@@ -120,8 +94,8 @@
     }
 
     /* ==========================
-       LOAD DỮ LIỆU BẢNG + PHÂN TRANG
-       ========================== */
+    LOAD DỮ LIỆU BẢNG + PHÂN TRANG
+    ========================== */
     let currentPage = 1;
     const pageSize = 5;
 
@@ -213,4 +187,10 @@
             }, 300);
         }, 250);
     }
+
+
+
+
+
+
 });

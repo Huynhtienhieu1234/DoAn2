@@ -13,7 +13,7 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
     {
         private const int ITEMS_PER_PAGE = 100;
 
-        // GET: Admin/Account - Phân trang server-side
+        // GET: Admin/Account
         public ActionResult Index(int page = 1, string search = "", string role = "")
         {
             using (var db = DbContextFactory.Create())
@@ -60,198 +60,94 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                     .Select(v => new { ID = v.VaiTro_id, Name = v.TenVaiTro })
                     .ToList();
 
-
-
-
-
                 return View(accounts);
             }
         }
 
-        // AJAX: Lấy danh sách tài khoản đã xóa
-        public ActionResult GetDeletedAccounts()
+
+
+
+
+        // lấy dữ liêu
+        [HttpGet]
+        public ActionResult GetAccounts(int page = 1, int pageSize = 100)
         {
             using (var db = DbContextFactory.Create())
             {
-                var deletedAccounts = db.TaiKhoans
+                var query = db.TaiKhoans
                     .Include(t => t.VaiTro)
-                    .Where(t => t.Deleted_at != null)
-                    .OrderByDescending(t => t.Deleted_at)
-                    .Select(t => new
-                    {
-                        id = t.TaiKhoan_id,
-                        username = t.Username,
-                        email = t.Email,
-                        roleName = t.VaiTro.TenVaiTro,
-                        deletedAt = t.Deleted_at
+                    .Where(t => t.Deleted_at == null)
+                    .OrderByDescending(t => t.TaiKhoan_id);
+
+                int totalItems = query.Count();
+                int totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
+
+                if (page < 1) page = 1;
+                if (page > totalPages && totalPages > 0) page = totalPages;
+
+                var accounts = query
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .Select(t => new {
+                        t.TaiKhoan_id,
+                        t.Username,
+                        t.Email,
+                        RoleName = t.VaiTro.TenVaiTro
                     })
                     .ToList();
 
-                return Json(new { success = true, accounts = deletedAccounts }, JsonRequestBehavior.AllowGet);
-            }
-        }
-        // POST: Xóa mềm tài khoản
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id)
-        {
-            using (var db = DbContextFactory.Create())
-            {
-                var taiKhoan = db.TaiKhoans.Find(id);
-                if (taiKhoan == null)
+                return Json(new
                 {
-                    TempData["Message"] = "Không tìm thấy tài khoản cần xóa.";
-                    TempData["MessageType"] = "danger";
-                    return RedirectToAction("Index");
-                }
-
-                taiKhoan.Deleted_at = DateTime.Now;
-                db.SaveChanges();
-
-                TempData["Message"] = "Đã xóa tài khoản thành công!";
-                TempData["MessageType"] = "success";
-                return RedirectToAction("Index");
+                    data = accounts,
+                    currentPage = page,
+                    totalPages = totalPages,
+                    totalItems = totalItems
+                }, JsonRequestBehavior.AllowGet);
             }
         }
 
-        // AJAX: Xóa mềm
+
+
+
+
+
         [HttpPost]
-        public ActionResult DeleteAjax(int id)
+        public ActionResult CreateAccountAjax(TaiKhoan model)
         {
             try
             {
                 using (var db = DbContextFactory.Create())
+                using (var transaction = db.Database.BeginTransaction())
                 {
-                    var taiKhoan = db.TaiKhoans.Find(id);
-                    if (taiKhoan == null)
-                        return Json(new { success = false, message = "Không tìm thấy tài khoản." });
+                    if (!ModelState.IsValid)
+                        return Json(new { success = false, message = "Dữ liệu không hợp lệ." });
 
-                    taiKhoan.Deleted_at = DateTime.Now;
-                    db.SaveChanges();
-
-                    return Json(new { success = true, message = "Xóa tài khoản thành công!" });
-                }
-            }
-            catch (Exception ex)
-            {
-                return Json(new { success = false, message = "Lỗi: " + ex.Message });
-            }
-        }
-
-
-        // Khôi phục tài khoản
-        [HttpPost]
-        public ActionResult RestoreAccount(int id)
-        {
-            try
-            {
-                using (var db = DbContextFactory.Create())
-                {
-                    var taiKhoan = db.TaiKhoans.Find(id);
-                    if (taiKhoan == null)
-                        return Json(new { success = false, message = "Không tìm thấy tài khoản." });
-
-                    taiKhoan.Deleted_at = null;
-                    db.SaveChanges();
-
-                    return Json(new { success = true, message = "Khôi phục tài khoản thành công!" });
-                }
-            }
-            catch (Exception ex)
-            {
-                return Json(new { success = false, message = "Lỗi: " + ex.Message });
-            }
-        }
-
-
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public JsonResult Create(TaiKhoan taiKhoan)
-        {
-            using (var db = DbContextFactory.Create())
-            {
-                if (!ModelState.IsValid)
-                    return Json(new { success = false, message = "Dữ liệu không hợp lệ." });
-
-                if (db.TaiKhoans.Any(t => t.Username == taiKhoan.Username && t.Deleted_at == null))
-                    return Json(new { success = false, message = "Tên tài khoản đã tồn tại." });
-
-                if (db.TaiKhoans.Any(t => t.Email == taiKhoan.Email && t.Deleted_at == null))
-                    return Json(new { success = false, message = "Email đã tồn tại." });
-
-                int roleId;
-                try
-                {
-                    roleId = Convert.ToInt32(taiKhoan.VaiTro_id);
-                    taiKhoan.VaiTro_id = roleId;
-                }
-                catch
-                {
-                    return Json(new { success = false, message = "Vai trò không hợp lệ!" });
-                }
-
-                if (roleId <= 0)
-                {
-                    return Json(new { success = false, message = "Bạn phải chọn vai trò." });
-                }
-
-
-
-                taiKhoan.Deleted_at = null;
-                db.TaiKhoans.Add(taiKhoan);
-                db.SaveChanges();
-
-                return Json(new { success = true, message = "Tạo tài khoản thành công!" });
-            }
-        }
-
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult CreateAjax(TaiKhoan model)
-        {
-            if (!ModelState.IsValid)
-                return Json(new { success = false, message = "Dữ liệu không hợp lệ." });
-
-            using (var db = DbContextFactory.Create())
-            using (var transaction = db.Database.BeginTransaction())
-            {
-                try
-                {
-                    // 1. Kiểm tra trùng Username
+                    // Kiểm tra trùng Username
                     if (db.TaiKhoans.Any(t => t.Username == model.Username && t.Deleted_at == null))
-                        return Json(new { success = false, message = "Tên đăng nhập (MSSV) đã được sử dụng!" });
+                        return Json(new { success = false, message = "Tên tài khoản đã tồn tại." });
 
-                    // 2. Kiểm tra trùng Email
+                    // Kiểm tra trùng Email
                     if (!string.IsNullOrWhiteSpace(model.Email) &&
                         db.TaiKhoans.Any(t => t.Email == model.Email && t.Deleted_at == null))
-                        return Json(new { success = false, message = "Email này đã được sử dụng." });
+                        return Json(new { success = false, message = "Email đã tồn tại." });
 
-                    // 3. Xử lý Vai trò
-                    if (!int.TryParse(model.VaiTro_id?.ToString(), out int roleId) || roleId <= 0)
-                        return Json(new { success = false, message = "Vui lòng chọn vai trò!" });
-
-                    var role = db.VaiTroes.FirstOrDefault(v => v.VaiTro_id == roleId);
-                    if (role == null)
-                        return Json(new { success = false, message = "Vai trò không tồn tại!" });
-
-                    bool isStudentRole = role.VaiTro_id == 3 || role.VaiTro_id == 4;
-
-                    // 4. Xác định mật khẩu
+                    bool isStudentRole = model.VaiTro_id == 3 || model.VaiTro_id == 4;
                     string rawPassword;
+
                     if (isStudentRole)
                     {
+                        // MSSV bắt buộc là số
+                        if (string.IsNullOrWhiteSpace(model.Username) || !model.Username.All(char.IsDigit))
+                            return Json(new { success = false, message = "MSSV chỉ được phép nhập số, không chứa chữ cái!" });
+
                         rawPassword = model.Username.Trim();
 
-                        if (!long.TryParse(rawPassword, out _))
-                            return Json(new { success = false, message = "MSSV phải là số nguyên dương!" });
-
                         if (rawPassword.Length < 6 || rawPassword.Length > 20)
-                            return Json(new { success = false, message = "MSSV thường có từ 6-20 chữ số!" });
+                            return Json(new { success = false, message = "MSSV phải có từ 6 đến 20 chữ số!" });
                     }
                     else
                     {
+                        // Admin / Quản lý phải nhập mật khẩu
                         if (string.IsNullOrWhiteSpace(model.Password))
                             return Json(new { success = false, message = "Mật khẩu không được để trống!" });
 
@@ -260,23 +156,23 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                             return Json(new { success = false, message = "Mật khẩu phải ít nhất 6 ký tự!" });
                     }
 
-                    // 5. Hash mật khẩu
+                    // Hash mật khẩu
                     string hashedPassword = PasswordHelper.HashPassword(rawPassword);
 
-                    // 6. Tạo tài khoản
+                    // Tạo tài khoản
                     var taiKhoan = new TaiKhoan
                     {
                         Username = model.Username.Trim(),
                         Email = model.Email?.Trim(),
                         Password = hashedPassword,
-                        VaiTro_id = roleId,
+                        VaiTro_id = model.VaiTro_id,
                         Deleted_at = null
                     };
 
                     db.TaiKhoans.Add(taiKhoan);
                     db.SaveChanges();
 
-                    // 7. Nếu là Sinh viên/Lớp phó lao động thì tạo bản ghi SinhVien
+                    // Nếu là Sinh viên hoặc Lớp phó lao động thì thêm vào bảng SinhVien
                     if (isStudentRole)
                     {
                         if (db.SinhViens.Any(s => s.MSSV.ToString() == taiKhoan.Username && s.Deleted_at == null))
@@ -287,11 +183,10 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
 
                         var sinhVien = new SinhVien
                         {
-                            MSSV = Convert.ToInt64(taiKhoan.Username),   // MSSV liên kết với Username
+                            MSSV = Convert.ToInt64(taiKhoan.Username),
                             Email = taiKhoan.Email,
                             TaiKhoan = taiKhoan.TaiKhoan_id,
                             Deleted_at = null
-                            // HoTen có thể null vì DB đã cho phép
                         };
 
                         db.SinhViens.Add(sinhVien);
@@ -301,147 +196,10 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                     transaction.Commit();
 
                     string successMessage = isStudentRole
-                        ? $"Thêm sinh viên thành công! Mật khẩu đăng nhập mặc định: <strong>{rawPassword}</strong>"
+                        ? $"Thêm sinh viên thành công! Mật khẩu mặc định = MSSV: <strong>{rawPassword}</strong>"
                         : "Thêm tài khoản thành công!";
 
                     return Json(new { success = true, message = successMessage });
-                }
-                catch (System.Data.Entity.Validation.DbEntityValidationException ex)
-                {
-                    transaction.Rollback();
-                    var errors = ex.EntityValidationErrors
-                        .SelectMany(eve => eve.ValidationErrors
-                            .Select(ve => new { Property = ve.PropertyName, Error = ve.ErrorMessage }))
-                        .ToList();
-
-                    return Json(new { success = false, message = "Validation failed", details = errors });
-                }
-                catch (Exception ex)
-                {
-                    transaction.Rollback();
-                    return Json(new { success = false, message = "Lỗi hệ thống: " + ex.Message });
-                }
-            }
-        }
-
-        // GET: Chỉnh sửa
-        public ActionResult Edit(int? id)
-        {
-            if (id == null)
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-
-            using (var db = DbContextFactory.Create())
-            {
-                var taiKhoan = db.TaiKhoans
-                    .Include(t => t.VaiTro)
-                    .FirstOrDefault(t => t.TaiKhoan_id == id && t.Deleted_at == null);
-
-                if (taiKhoan == null)
-                    return HttpNotFound();
-
-                ViewBag.VaiTroList = new SelectList(db.VaiTroes, "VaiTro_id", "TenVaiTro", taiKhoan.VaiTro_id);
-                return View(taiKhoan);
-            }
-        }
-
-        // POST: Chỉnh sửa
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Edit(TaiKhoan model)
-        {
-            using (var db = DbContextFactory.Create())
-            {
-                if (model.TaiKhoan_id <= 0)
-                {
-                    TempData["Message"] = "ID tài khoản không hợp lệ.";
-                    TempData["MessageType"] = "danger";
-                    return RedirectToAction("Index");
-                }
-
-                var taiKhoan = db.TaiKhoans
-                    .FirstOrDefault(t => t.TaiKhoan_id == model.TaiKhoan_id && t.Deleted_at == null);
-
-                if (taiKhoan == null)
-                {
-                    TempData["Message"] = "Không tìm thấy tài khoản.";
-                    TempData["MessageType"] = "danger";
-                    return RedirectToAction("Index");
-                }
-
-                if (db.TaiKhoans.Any(t => t.Username == model.Username && t.TaiKhoan_id != model.TaiKhoan_id && t.Deleted_at == null))
-                {
-                    TempData["Message"] = "Tên tài khoản đã tồn tại.";
-                    TempData["MessageType"] = "warning";
-                    ViewBag.VaiTroList = new SelectList(db.VaiTroes, "VaiTro_id", "TenVaiTro", model.VaiTro_id);
-                    return View(model);
-                }
-
-                taiKhoan.Username = model.Username;
-                taiKhoan.Email = model.Email;
-                taiKhoan.VaiTro_id = model.VaiTro_id;
-
-                if (!string.IsNullOrWhiteSpace(model.Password))
-                    taiKhoan.Password = PasswordHelper.PreparePasswordForSave(model.Password);
-
-
-                db.SaveChanges();
-
-                TempData["Message"] = "Cập nhật tài khoản thành công!";
-                TempData["MessageType"] = "success";
-                return RedirectToAction("Index");
-            }
-        }
-        // AJAX: Chỉnh sửa tài khoản
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult EditAjax(TaiKhoan model)
-        {
-            try
-            {
-                using (var db = DbContextFactory.Create())
-                {
-                    var taiKhoan = db.TaiKhoans
-                        .Include(t => t.VaiTro)
-                        .FirstOrDefault(t => t.TaiKhoan_id == model.TaiKhoan_id && t.Deleted_at == null);
-
-                    if (taiKhoan == null)
-                        return Json(new { success = false, message = "Không tìm thấy tài khoản." });
-
-                    // ✅ Chỉ kiểm tra trùng tên nếu Username bị thay đổi
-                    if (model.Username != taiKhoan.Username)
-                    {
-                        bool usernameExists = db.TaiKhoans.Any(t =>
-                            t.Username == model.Username &&
-                            t.TaiKhoan_id != model.TaiKhoan_id &&
-                            t.Deleted_at == null);
-
-                        if (usernameExists)
-                            return Json(new { success = false, message = "Tên tài khoản đã tồn tại." });
-                    }
-
-                    // ✅ Cập nhật thông tin
-                    taiKhoan.Username = model.Username;
-                    taiKhoan.Email = model.Email;
-                    taiKhoan.VaiTro_id = model.VaiTro_id;
-
-                    if (!string.IsNullOrWhiteSpace(model.Password))
-                        taiKhoan.Password = PasswordHelper.PreparePasswordForSave(model.Password);
-
-                    db.SaveChanges();
-
-                    return Json(new
-                    {
-                        success = true,
-                        message = "Cập nhật tài khoản thành công!",
-                        data = new
-                        {
-                            taiKhoan.TaiKhoan_id,
-                            taiKhoan.Username,
-                            taiKhoan.Email,
-                            RoleName = taiKhoan.VaiTro?.TenVaiTro,
-                            VaiTro_id = taiKhoan.VaiTro_id
-                        }
-                    });
                 }
             }
             catch (Exception ex)
@@ -450,8 +208,217 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
             }
         }
 
+        // Chỉnh sửa
+        [HttpPost]
+        public ActionResult EditAjax(TaiKhoan model)
+        {
+            try
+            {
+                using (var db = DbContextFactory.Create())
+                using (var transaction = db.Database.BeginTransaction())
+                {
+                    if (!ModelState.IsValid)
+                        return Json(new { success = false, message = "Dữ liệu không hợp lệ." });
 
-        // AJAX: Reset mật khẩu
+                    var taiKhoan = db.TaiKhoans
+                        .Include(t => t.VaiTro)
+                        .FirstOrDefault(t => t.TaiKhoan_id == model.TaiKhoan_id && t.Deleted_at == null);
+
+                    if (taiKhoan == null)
+                        return Json(new { success = false, message = "Không tìm thấy tài khoản cần chỉnh sửa." });
+
+                    // Kiểm tra trùng Username (ngoại trừ chính nó)
+                    if (db.TaiKhoans.Any(t => t.Username == model.Username && t.TaiKhoan_id != model.TaiKhoan_id && t.Deleted_at == null))
+                        return Json(new { success = false, message = "Tên tài khoản đã tồn tại." });
+
+                    // Kiểm tra trùng Email (ngoại trừ chính nó)
+                    if (!string.IsNullOrWhiteSpace(model.Email) &&
+                        db.TaiKhoans.Any(t => t.Email == model.Email && t.TaiKhoan_id != model.TaiKhoan_id && t.Deleted_at == null))
+                        return Json(new { success = false, message = "Email đã tồn tại." });
+
+                    bool isStudentRole = model.VaiTro_id == 3 || model.VaiTro_id == 4;
+
+                    // Cập nhật thông tin cơ bản
+                    taiKhoan.Username = model.Username.Trim();
+                    taiKhoan.Email = model.Email?.Trim();
+                    taiKhoan.VaiTro_id = model.VaiTro_id;
+
+                    // Nếu không phải sinh viên thì cho phép đổi mật khẩu
+                    if (!isStudentRole && !string.IsNullOrWhiteSpace(model.Password))
+                    {
+                        if (model.Password.Trim().Length < 6)
+                            return Json(new { success = false, message = "Mật khẩu phải ít nhất 6 ký tự!" });
+
+                        taiKhoan.Password = PasswordHelper.HashPassword(model.Password.Trim());
+                    }
+
+                    db.SaveChanges();
+
+                    // Nếu là sinh viên thì cập nhật bảng SinhVien
+                    if (isStudentRole)
+                    {
+                        var sinhVien = db.SinhViens.FirstOrDefault(s => s.TaiKhoan == taiKhoan.TaiKhoan_id && s.Deleted_at == null);
+                        if (sinhVien != null)
+                        {
+                            sinhVien.MSSV = Convert.ToInt64(taiKhoan.Username);
+                            sinhVien.Email = taiKhoan.Email;
+                            db.SaveChanges();
+                        }
+                    }
+
+                    transaction.Commit();
+
+                    return Json(new { success = true, message = "Cập nhật tài khoản thành công!" });
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Lỗi: " + ex.Message });
+            }
+        }
+
+        [HttpGet]
+        public ActionResult GetAccountById(int id)
+        {
+            using (var db = DbContextFactory.Create())
+            {
+                var acc = db.TaiKhoans
+                    .Include(t => t.VaiTro)
+                    .Where(t => t.Deleted_at == null && t.TaiKhoan_id == id)
+                    .Select(t => new {
+                        t.TaiKhoan_id,
+                        t.Username,
+                        t.Email,
+                        t.VaiTro_id
+                    })
+                    .FirstOrDefault();
+
+                return Json(acc, JsonRequestBehavior.AllowGet);
+            }
+        }
+
+        // Xóa tài khoản
+        // Xóa mềm
+        [HttpPost]
+        public ActionResult DeleteAjax(int id)
+        {
+            try
+            {
+                using (var db = DbContextFactory.Create())
+                {
+                    var taiKhoan = db.TaiKhoans.FirstOrDefault(t => t.TaiKhoan_id == id && t.Deleted_at == null);
+                    if (taiKhoan == null)
+                        return Json(new { success = false, message = "Không tìm thấy tài khoản hoặc đã bị xóa." });
+
+                    taiKhoan.Deleted_at = DateTime.Now;
+                    db.SaveChanges();
+
+                    return Json(new { success = true, message = "Xóa tài khoản thành công (xóa mềm)." });
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Lỗi: " + ex.Message });
+            }
+        }
+
+        // Lấy danh sách tài khoản đã xóa
+        [HttpGet]
+        public ActionResult GetDeletedAccounts()
+        {
+            using (var db = DbContextFactory.Create())
+            {
+                var accounts = db.TaiKhoans
+                    .Include(t => t.VaiTro)
+                    .Where(t => t.Deleted_at != null)
+                    .OrderByDescending(t => t.Deleted_at)
+                    .Select(t => new {
+                        t.TaiKhoan_id,
+                        t.Username,
+                        t.Email,
+                        RoleName = t.VaiTro.TenVaiTro,
+                        DeletedAt = t.Deleted_at
+                    })
+                    .ToList();
+
+                return Json(accounts, JsonRequestBehavior.AllowGet);
+            }
+        }
+
+        // Khôi phục
+        [HttpPost]
+        public ActionResult RestoreAjax(int id)
+        {
+            try
+            {
+                using (var db = DbContextFactory.Create())
+                {
+                    var taiKhoan = db.TaiKhoans.FirstOrDefault(t => t.TaiKhoan_id == id && t.Deleted_at != null);
+                    if (taiKhoan == null)
+                        return Json(new { success = false, message = "Không tìm thấy tài khoản đã xóa." });
+
+                    taiKhoan.Deleted_at = null;
+                    db.SaveChanges();
+
+                    return Json(new { success = true, message = "Khôi phục tài khoản thành công." });
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Lỗi: " + ex.Message });
+            }
+        }
+
+        // Xóa hẳn
+        [HttpPost]
+        public ActionResult DeletePermanentAjax(int id)
+        {
+            try
+            {
+                using (var db = DbContextFactory.Create())
+                {
+                    var taiKhoan = db.TaiKhoans.FirstOrDefault(t => t.TaiKhoan_id == id && t.Deleted_at != null);
+                    if (taiKhoan == null)
+                        return Json(new { success = false, message = "Không tìm thấy tài khoản đã xóa." });
+
+                    db.TaiKhoans.Remove(taiKhoan);
+                    db.SaveChanges();
+
+                    return Json(new { success = true, message = "Đã xóa hẳn tài khoản khỏi hệ thống." });
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Lỗi: " + ex.Message });
+            }
+        }
+        // xem chi tiết
+        [HttpGet]
+        public ActionResult GetDetail(int id)
+        {
+            using (var db = DbContextFactory.Create())
+            {
+                var acc = db.TaiKhoans
+                    .Include(t => t.VaiTro)
+                    .FirstOrDefault(t => t.TaiKhoan_id == id && t.Deleted_at == null);
+
+                if (acc == null)
+                {
+                    return Json(new { success = false, message = "Không tìm thấy tài khoản." }, JsonRequestBehavior.AllowGet);
+                }
+
+                return Json(new
+                {
+                    success = true,
+                    TaiKhoan_id = acc.TaiKhoan_id,
+                    Username = acc.Username,
+                    Email = acc.Email,
+                    RoleName = acc.VaiTro != null ? acc.VaiTro.TenVaiTro : "Chưa có vai trò",
+
+                }, JsonRequestBehavior.AllowGet);
+            }
+        }
+        // Đặt lại mật khẩu mặc định
         [HttpPost]
         public ActionResult ResetPasswordAjax(int id)
         {
@@ -461,13 +428,16 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                 {
                     var taiKhoan = db.TaiKhoans.FirstOrDefault(t => t.TaiKhoan_id == id && t.Deleted_at == null);
                     if (taiKhoan == null)
-                        return Json(new { success = false, message = "Không tìm thấy tài khoản." });
+                        return Json(new { success = false, message = "Không tìm thấy tài khoản hoặc đã bị xóa." });
 
-                    taiKhoan.Password = PasswordHelper.HashPassword("123456");
+                    // Mật khẩu cố định
+                    string rawPassword = "123456";
+                    string hashedPassword = PasswordHelper.HashPassword(rawPassword);
 
+                    taiKhoan.Password = hashedPassword;
                     db.SaveChanges();
 
-                    return Json(new { success = true, message = "Đặt lại mật khẩu thành công! Mật khẩu mới: 123456" });
+                    return Json(new { success = true, message = "Đặt lại mật khẩu thành công! Mật khẩu mới = 123456" });
                 }
             }
             catch (Exception ex)
@@ -476,93 +446,11 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
             }
         }
 
-        // AJAX: Chi tiết tài khoản
-        [HttpGet]
-        public ActionResult DetailsAjax(int id)
-        {
-            using (var db = DbContextFactory.Create())
-            {
-                var taiKhoan = db.TaiKhoans
-                    .Include(t => t.VaiTro)
-                    .Where(t => t.TaiKhoan_id == id && t.Deleted_at == null)
-                    .Select(t => new
-                    {
-                        t.TaiKhoan_id,
-                        t.Username,
-                        t.Email,
-                        Role = t.VaiTro != null ? t.VaiTro.TenVaiTro : "Không có"
-                    })
-                    .FirstOrDefault();
-
-                if (taiKhoan == null)
-                    return Json(new { success = false, message = "Không tìm thấy tài khoản." }, JsonRequestBehavior.AllowGet);
-
-                return Json(new { success = true, data = taiKhoan }, JsonRequestBehavior.AllowGet);
-            }
-        }
 
 
-        [HttpGet]
-        public ActionResult LoadAccounts(int page = 1, int pageSize = 5, string keyword = "", string role = "")
-        {
-            using (var db = DbContextFactory.Create())
-            {
-                // Lấy danh sách tài khoản chưa bị xóa
-                var query = db.TaiKhoans.Include(t => t.VaiTro)
-                                        .Where(t => t.Deleted_at == null);
 
-                // Lọc theo từ khóa
-                if (!string.IsNullOrWhiteSpace(keyword))
-                    query = query.Where(t => t.Username.Contains(keyword) || t.Email.Contains(keyword));
 
-                // Lọc theo vai trò (trừ "Tất Cả")
-                if (!string.IsNullOrWhiteSpace(role) && role != "Tất Cả")
-                    query = query.Where(t => t.VaiTro.TenVaiTro == role);
 
-                // Tổng số bản ghi
-                var totalItems = query.Count();
-                int totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
-
-                // Lấy dữ liệu theo trang
-
-                var accounts = query.OrderBy(t => t.TaiKhoan_id)
-                                 .Skip((page - 1) * pageSize)
-                                 .Take(pageSize)
-                                 .Select(t => new
-                                 {
-                                     t.TaiKhoan_id,
-                                     t.Username,
-                                     t.Email,
-                                     VaiTro_id = (int?)t.VaiTro.VaiTro_id,   // nullable
-                                     RoleName = t.VaiTro != null ? t.VaiTro.TenVaiTro : "Chưa có vai trò"
-                                 })
-                                 .ToList();
-                return Json(new { success = true, items = accounts, page, totalPages }, JsonRequestBehavior.AllowGet);
-            }
-        }
-        [HttpGet]
-        public ActionResult ExportAllAccounts(string keyword = "", string role = "")
-        {
-            using (var db = DbContextFactory.Create())
-            {
-                var query = db.TaiKhoans.Include(t => t.VaiTro).Where(t => t.Deleted_at == null);
-
-                if (!string.IsNullOrWhiteSpace(keyword))
-                    query = query.Where(t => t.Username.Contains(keyword) || t.Email.Contains(keyword));
-
-                if (!string.IsNullOrWhiteSpace(role) && role != "Tất Cả")
-                    query = query.Where(t => t.VaiTro.TenVaiTro == role);
-
-                var accounts = query.Select(t => new
-                {
-                    t.Username,
-                    t.Email,
-                    RoleName = t.VaiTro != null ? t.VaiTro.TenVaiTro : "Chưa có vai trò"
-                }).ToList();
-
-                return Json(new { success = true, items = accounts }, JsonRequestBehavior.AllowGet);
-            }
-        }
 
 
     }

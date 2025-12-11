@@ -133,6 +133,10 @@
     <Content Include="Areas\Content\jsAccount\Account.js" />
     <Content Include="Areas\Content\admin.css" />
     <Content Include="Areas\Content\adminpage.css" />
+    <Content Include="Areas\Content\jsAccount\DeleteAcount.js" />
+    <Content Include="Areas\Content\jsAccount\DetailAcount.js" />
+    <Content Include="Areas\Content\jsAccount\EditAcount.js" />
+    <Content Include="Areas\Content\jsAccount\ResetpasswordAcount.js" />
     <Content Include="Areas\Content\Js\adminCommon.js" />
     <Content Include="Areas\Content\Js\adminWordRegistor.js" />
     <Content Include="Areas\Content\AdminStudentRegister\AdminStudentRegister.js" />

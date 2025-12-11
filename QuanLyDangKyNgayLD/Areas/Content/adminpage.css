@@ -868,3 +868,17 @@ btn-reset {
 }
 
 
+/*Load page*/
+/* Hiệu ứng mờ khi chuyển trang dữ liệu */
+#accountTableBody {
+    opacity: 1;
+    transition: opacity 0.3s ease-in-out;
+}
+
+    #accountTableBody.fade-out {
+        opacity: 0;
+    }
+
+    #accountTableBody.fade-in {
+        opacity: 1;
+    }
