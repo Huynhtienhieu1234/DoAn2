@@ -1,30 +1,41 @@
-﻿
+﻿@model QuanLyDangKyNgayLD.Models.SinhVien
 @{
-    ViewBag.Title = "Trang Thông Tin Sinh Viên";
-
+    ViewBag.Title = "Trang Sinh Viên";
     Layout = "~/Areas/Student/Views/Shared/ViewSinhvien.cshtml";
 }
 
 <div class="container student-dashboard mt-5">
     <div class="row g-4">
-        <!-- Cột trái: Thông tin quản lý -->
+        <!-- Cột trái: Thông tin sinh viên -->
         <div class="col-lg-4">
             <div class="card info-card h-100">
                 <div class="card-body text-center">
                     <h4 class="mb-4">Thông tin sinh viên</h4>
 
-                    <img src="~/image/Avarta.png" class="avatar-img rounded-circle mb-3" alt="Avatar quản lý" />
+                    <img src="~/image/Avarta.png" class="avatar-img rounded-circle mb-3" alt="Avatar" />
 
-                    <a href="~/HTML/Trangthongtinquanly.html" class="d-block mb-4 text-primary fw-medium">
+                    <a href="@Url.Action("Index","MainSinhVien", new { area="Student" })"
+                       class="d-block mb-4 text-primary fw-medium">
                         Xem chi tiết
                     </a>
 
-                    <ul class="list-group list-group-flush">
-                        <li class="list-group-item"><strong>MSQL:</strong> 2025001</li>
-                        <li class="list-group-item"><strong>Họ và Tên:</strong> Huỳnh Tiến Hiểu</li>
-                        <li class="list-group-item"><strong>Email:</strong> hienht@example.com</li>
-                        <li class="list-group-item"><strong>Vai trò:</strong> Quản lý</li>
-                    </ul>
+                    @if (Model != null)
+                    {
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item">
+                                <strong>MSSV:</strong> @(Model.MSSV != 0 ? Model.MSSV.ToString() : "Chưa có dữ liệu")
+                            </li>
+
+                            <li class="list-group-item"><strong>Họ và Tên:</strong> @(string.IsNullOrEmpty(Model.HoTen) ? "Chưa có dữ liệu" : Model.HoTen)</li>
+                            <li class="list-group-item"><strong>Email:</strong> @(string.IsNullOrEmpty(Model.Email) ? "Chưa có dữ liệu" : Model.Email)</li>
+                            <li class="list-group-item"><strong>Vai trò:</strong> @(Model.TaiKhoan1?.VaiTro?.TenVaiTro ?? "Chưa có")</li>
+                        </ul>
+
+                    }
+                    else
+                    {
+                        <p class="text-danger">Chưa có thông tin sinh viên!</p>
+                    }
                 </div>
             </div>
         </div>
@@ -32,7 +43,7 @@
         <!-- Cột phải: Các chức năng -->
         <div class="col-lg-8">
             <div class="row g-4">
-                <!-- Tạo lịch -->
+                <!-- Đăng Ký Lao Động -->
                 <div class="col-md-4 col-sm-6">
                     <a href="@Url.Action("Index", "StudentRegisterWord", new { area = "Student" })"
                        class="func-card text-white d-block">
@@ -60,7 +71,7 @@
 
                 <!-- Điểm Danh -->
                 <div class="col-md-4 col-sm-6">
-                    <a href="~/HTML/DiemDanh.html" class="func-card  text-white d-block">
+                    <a href="~/HTML/DiemDanh.html" class="func-card text-white d-block">
                         <h6 class="fw-bold mb-3">Điểm Danh Lao Động</h6>
                         <img src="https://cdn.jsdelivr.net/gh/Huynhtienhieu1234/UploadAnh/sinhvien/Duyet1.png" class="func-icon" alt="Điểm danh" />
                     </a>
@@ -68,7 +79,7 @@
 
                 <!-- Thông báo -->
                 <div class="col-md-4 col-sm-6">
-                    <a href="~/HTML/ThongBao.html" class="func-card  text-white d-block">
+                    <a href="~/HTML/ThongBao.html" class="func-card text-white d-block">
                         <h6 class="fw-bold mb-3">Thông báo</h6>
                         <img src="https://cdn.jsdelivr.net/gh/Huynhtienhieu1234/UploadAnh/sinhvien/icons8-bell.gif" class="func-icon" alt="Thông báo" />
                     </a>
@@ -76,17 +87,12 @@
 
                 <!-- Xác nhận hoàn thành -->
                 <div class="col-md-4 col-sm-6">
-                    <a href="~/HTML/XacNhanHoanThanh.html" class="func-card  text-white d-block">
+                    <a href="~/HTML/XacNhanHoanThanh.html" class="func-card text-white d-block">
                         <h6 class="fw-bold mb-3">Xác nhận hoàn thành</h6>
                         <img src="https://cdn.jsdelivr.net/gh/Huynhtienhieu1234/UploadAnh/sinhvien/Duyet.png" class="func-icon" alt="Xác nhận" />
                     </a>
                 </div>
-
             </div>
         </div>
     </div>
 </div>
-
-
-
-

@@ -1,66 +1,90 @@
-﻿<!DOCTYPE html>
-<html lang="vi">
-
-<head>
+﻿<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <!-- CSS riêng -->
     <link rel="stylesheet" href="~/Areas/Student/Content/Css/Dashboard.css">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <!--biểu tượng-->
     <link rel="icon" type="image/png" href="https://cdn.jsdelivr.net/gh/Huynhtienhieu1234/UploadAnh/logoxoanen.png" />
-
     <title>Trang Thông Tin Sinh Viên</title>
 </head>
 
 <body>
     <!-- Header -->
     <nav>
-        <div class="nav-content">
+        <div class="nav-content d-flex align-items-center justify-content-between">
             <a>
                 <img src="https://cdn.jsdelivr.net/gh/Huynhtienhieu1234/UploadAnh/sinhvien/LogoTruong.png" alt="Logo" class="logo">
             </a>
             <div class="nav-content-text"></div>
-            <div class="user-menu" id="userMenu">
-                <img src="../image/Avarta.png" alt="User Avatar" class="user-avatar">
-                <span class="user-name">Huỳnh Tiến Hiểu</span>
-                <i class="fa fa-caret-down"></i>
-                <ul class="dropdown-menu" id="dropdownMenu">
-                    <li><a class="a-color" href="Trangthongtinquanly.html">Thông tin cá nhân</a></li>
-                    <li><a class="a-color" href="DoiMatKhau.html">Đổi mật khẩu</a></li>
-                    <li>
-                        <a class="a-color" href="@Url.Action("Logout", "Login", new { area = "" })">
-                            <i class="fa fa-sign-out"></i> Đăng xuất
-                        </a>
-                    </li>
-                </ul>
+
+            <!-- Nút thoát -->
+            <div class="logout-btn">
+                <a href="javascript:void(0)" class="text-danger" title="Đăng xuất" id="logoutIcon">
+                    <i class="fa fa-sign-out fa-2x"></i>
+                </a>
             </div>
         </div>
     </nav>
 
-    <!-- Đây là nơi render nội dung động -->
+    <!-- Render nội dung động -->
     <div class="container-fluid">
         @RenderBody()
     </div>
 
+    <!-- Toast container -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastContainer"></div>
+
+    <!-- Modal xác nhận thoát -->
+    <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="logoutModalLabel">Xác nhận thoát</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    Bạn có chắc chắn muốn đăng xuất không?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <a href="@Url.Action("Logout", "Login", new { area = "" })" class="btn btn-danger">Đồng ý</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
     <script>
-        // Dropdown menu xử lý
-        document.getElementById('userMenu').addEventListener('click', function (event) {
-            event.stopPropagation();
-            document.getElementById('dropdownMenu').classList.toggle('show');
+        // Mở modal khi click icon thoát
+        document.getElementById("logoutIcon").addEventListener("click", function () {
+            var modal = new bootstrap.Modal(document.getElementById("logoutModal"));
+            modal.show();
         });
 
-        document.addEventListener('click', function (event) {
-            if (!document.getElementById('userMenu').contains(event.target)) {
-                document.getElementById('dropdownMenu').classList.remove('show');
-            }
-        });
+        // Hàm show toast (thông báo bong bóng)
+        function showToast(message, type = "info") {
+            const toastContainer = document.getElementById("toastContainer");
+            const toastEl = document.createElement("div");
+            toastEl.className = `toast align-items-center text-bg-${type} border-0`;
+            toastEl.role = "alert";
+            toastEl.ariaLive = "assertive";
+            toastEl.ariaAtomic = "true";
+            toastEl.innerHTML = `
+                    <div class="d-flex">
+                        <div class="toast-body">${message}</div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                    </div>
+                `;
+            toastContainer.appendChild(toastEl);
+            const bsToast = new bootstrap.Toast(toastEl, { delay: 3000 });
+            bsToast.show();
+            toastEl.addEventListener('hidden.bs.toast', () => toastEl.remove());
+        }
     </script>
 </body>
-
-</html>
