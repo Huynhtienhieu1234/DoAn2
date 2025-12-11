@@ -15,7 +15,7 @@
 
     formData.append("__RequestVerificationToken", document.querySelector('input[name="__RequestVerificationToken"]').value);
 
-    fetch("/Student/MainSinhVien/UpdateInfo(", {
+    fetch("/Student/MainSinhVien/UpdateInfo", {
         method: "POST",
         body: formData
     })

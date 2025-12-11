@@ -1,5 +1,7 @@
 ﻿using QuanLyDangKyNgayLD.Factories;
 using QuanLyDangKyNgayLD.Models;
+using System;
+using System.IO;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
@@ -92,6 +94,7 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
         }
 
         // Chỉnh thông tin sinh viên (form POST)
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult UpdateInfo(SinhVien model, HttpPostedFileBase AvatarFile)
@@ -100,48 +103,154 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
             if (userId == null)
                 return RedirectToAction("Login", "Login");
 
-            using (var db = DbContextFactory.Create())
+            try
             {
-                var sv = db.SinhViens.FirstOrDefault(s => s.TaiKhoan == userId);
-                if (sv != null)
+                using (var db = DbContextFactory.Create())
                 {
-                    sv.MSSV = model.MSSV;
-                    sv.HoTen = model.HoTen;
-                    sv.Email = model.Email;
-                    sv.NgaySinh = model.NgaySinh;
-                    sv.QueQuan = model.QueQuan;
-                    sv.GioiTinh = model.GioiTinh;
-                    sv.SoDienThoaiSinhVien = model.SoDienThoaiSinhVien;
-
-                    // xử lý upload ảnh
-                    if (AvatarFile != null && AvatarFile.ContentLength > 0)
+                    var sv = db.SinhViens.FirstOrDefault(s => s.TaiKhoan == userId);
+                    if (sv != null)
                     {
-                        var uploadDir = Server.MapPath("~/Uploads/Avatars");
-                        if (!System.IO.Directory.Exists(uploadDir))
-                            System.IO.Directory.CreateDirectory(uploadDir);
+                        sv.MSSV = model.MSSV;
+                        sv.HoTen = model.HoTen;
+                        sv.Email = model.Email;
+                        sv.NgaySinh = model.NgaySinh;
+                        sv.QueQuan = model.QueQuan;
+                        sv.GioiTinh = model.GioiTinh;
+                        sv.SoDienThoaiSinhVien = model.SoDienThoaiSinhVien;
 
-                        var fileName = System.IO.Path.GetFileName(AvatarFile.FileName);
-                        var path = System.IO.Path.Combine(uploadDir, fileName);
-                        AvatarFile.SaveAs(path);
+                        // xử lý upload ảnh
+                        if (AvatarFile != null && AvatarFile.ContentLength > 0)
+                        {
+                            var uploadDir = Server.MapPath("~/Uploads/Avatars");
+                            if (!System.IO.Directory.Exists(uploadDir))
+                                System.IO.Directory.CreateDirectory(uploadDir);
 
-                        var anh = new Anh { DuongDan = "/Uploads/Avatars/" + fileName };
-                        db.Anhs.Add(anh);
+                            var fileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(AvatarFile.FileName);
+
+
+                            var path = System.IO.Path.Combine(uploadDir, fileName);
+                            AvatarFile.SaveAs(path);
+
+                            var anh = new Anh { DuongDan = "/Uploads/Avatars/" + fileName };
+                            db.Anhs.Add(anh);
+                            db.SaveChanges();
+
+                            sv.Anh_id = anh.Anh_id;
+                        }
+
+                        db.SaveChanges();
+                        TempData["Message"] = "Cập nhật thông tin thành công!";
+                        TempData["MessageType"] = "success";
+                    }
+                    else
+                    {
+                        model.TaiKhoan = userId;
+                        db.SinhViens.Add(model);
                         db.SaveChanges();
 
-                        sv.Anh_id = anh.Anh_id;
+                        TempData["Message"] = "Đã thêm mới thông tin sinh viên!";
+                        TempData["MessageType"] = "success";
                     }
-
-                    db.SaveChanges();
                 }
-                else
-                {
-                    model.TaiKhoan = userId;
-                    db.SinhViens.Add(model);
-                    db.SaveChanges();
-                }
+            }
+            catch (Exception ex)
+            {
+                TempData["Message"] = "Có lỗi xảy ra khi cập nhật: " + ex.Message;
+                TempData["MessageType"] = "error";
             }
 
             return RedirectToAction("Detail", "MainSinhVien", new { area = "Student" });
         }
+        // Tài khoản
+        public ActionResult TaiKhoanInfo()
+        {
+            var userId = Session["UserID"] as int?;
+            if (userId == null)
+                return Json(new { success = false, message = "Bạn chưa đăng nhập!" }, JsonRequestBehavior.AllowGet);
+
+            using (var db = DbContextFactory.Create())
+            {
+                var sv = db.SinhViens
+                           .Include("TaiKhoan1.VaiTro")
+                           .FirstOrDefault(s => s.TaiKhoan == userId);
+
+                if (sv == null || sv.TaiKhoan1 == null)
+                    return Json(new { success = false, message = "Không tìm thấy thông tin tài khoản!" }, JsonRequestBehavior.AllowGet);
+
+                var taiKhoanModel = new
+                {
+                    TenTaiKhoan = sv.TaiKhoan1.Username,
+                    MatKhau = sv.TaiKhoan1.Password, 
+                    VaiTro = sv.TaiKhoan1.VaiTro?.TenVaiTro ?? "Chưa có"
+                };
+
+                return Json(new { success = true, data = taiKhoanModel }, JsonRequestBehavior.AllowGet);
+            }
+        }
+
+        // Đổi mật khẩu
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult DoiMatKhau(string MatKhauMoi, string ConfirmPassword)
+        {
+            var userId = Session["UserID"] as int?;
+            if (userId == null)
+            {
+                TempData["Message"] = "Bạn chưa đăng nhập!";
+                TempData["MessageType"] = "error";
+                return RedirectToAction("Login", "Login", new { area = "" });
+            }
+
+            if (string.IsNullOrEmpty(MatKhauMoi) || string.IsNullOrEmpty(ConfirmPassword))
+            {
+                TempData["Message"] = "Vui lòng nhập đầy đủ mật khẩu mới và xác nhận!";
+                TempData["MessageType"] = "error";
+                return RedirectToAction("Detail", "MainSinhVien", new { area = "Student" });
+            }
+
+            if (MatKhauMoi != ConfirmPassword)
+            {
+                TempData["Message"] = "Mật khẩu xác nhận không khớp!";
+                TempData["MessageType"] = "error";
+                return RedirectToAction("Detail", "MainSinhVien", new { area = "Student" });
+            }
+
+            try
+            {
+                using (var db = DbContextFactory.Create())
+                {
+                    var sv = db.SinhViens.Include("TaiKhoan1")
+                                         .FirstOrDefault(s => s.TaiKhoan == userId);
+
+                    if (sv != null && sv.TaiKhoan1 != null)
+                    {
+                        // ⚠️ Nên mã hoá mật khẩu trước khi lưu (ví dụ: Hash)
+                        sv.TaiKhoan1.Password = MatKhauMoi;
+
+                        db.SaveChanges();
+                        TempData["Message"] = "Đổi mật khẩu thành công!";
+                        TempData["MessageType"] = "success";
+                    }
+                    else
+                    {
+                        TempData["Message"] = "Không tìm thấy tài khoản!";
+                        TempData["MessageType"] = "error";
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["Message"] = "Có lỗi xảy ra khi đổi mật khẩu: " + ex.Message;
+                TempData["MessageType"] = "error";
+            }
+
+            return RedirectToAction("Detail", "MainSinhVien", new { area = "Student" });
+        }
+
+
+
+
+
+
     }
 }

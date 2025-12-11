@@ -12,7 +12,11 @@
                 <div class="card-body text-center">
                     <h4 class="mb-4">Thông tin sinh viên</h4>
 
-                    <img src="~/image/Avarta.png" class="avatar-img rounded-circle mb-3" alt="Avatar" />
+                    <img id="avatarImg" src="~/image/Avarta.png"
+                         class="avatar-img rounded-circle mb-3"
+                         alt="Avatar"
+                         style="width:120px;height:120px;object-fit:cover;" />
+
 
                     <a href="@Url.Action("Detail","MainSinhVien", new { area="Student" })"
                        class="d-block mb-4 text-primary fw-medium">

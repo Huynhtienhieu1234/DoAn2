@@ -7,6 +7,9 @@
                 document.getElementById("hoten").textContent = res.data.HoTen;
                 document.getElementById("email").textContent = res.data.Email;
                 document.getElementById("vaitro").textContent = res.data.VaiTro;
+
+                // ✅ Load ảnh avatar
+                document.getElementById("avatarImg").src = res.data.Avatar;
             } else {
                 document.getElementById("studentInfo").innerHTML =
                     `<li class="list-group-item text-danger">${res.message}</li>`;

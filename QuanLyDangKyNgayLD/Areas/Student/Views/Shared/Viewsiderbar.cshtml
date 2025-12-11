@@ -1,38 +1,62 @@
 ﻿<!DOCTYPE html>
 <html lang="vi">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap JS -->
+    <!-- Bootstrap JS (gọi ở cuối để load nhanh hơn) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <!-- CSS riêng -->
     <link rel="stylesheet" href="~/Areas/Student/Content/Css/Dashboard.css">
+    <!--Css sidebar-->
+    <link rel="stylesheet" href="~/Areas/Student/Content/Css/Siderbarmain.css">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <!--biểu tượng-->
     <link rel="icon" type="image/png" href="https://cdn.jsdelivr.net/gh/Huynhtienhieu1234/UploadAnh/logoxoanen.png" />
-    <!--Css sidebar-->
-    <link rel="stylesheet" href="~/Areas/Student/Content/Css/Siderbarmain.css">
-
     <!--links javascript-->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
+
+    <!--csss-->
+    <link rel="stylesheet" href="~/Areas/Student/Content/Css/Toast.css">
+
+
     <title>Trang Thông Tin Sinh Viên</title>
 
-</head>
 
+
+</head>
 <body>
+    <!-- Bong bóng chat -->
+    <div id="chatBubble" class="chat-bubble">
+        <i class="fa fa-comments"></i>
+    </div>
+    <!-- Khung chat -->
+    <div id="chatBox" class="chat-box card shadow">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <span>Chat hỗ trợ</span>
+            <button type="button" class="btn-close btn-close-white" id="closeChat"></button>
+        </div>
+        <div class="card-body" id="chatMessages" style="height:200px; overflow-y:auto;">
+            <div class="text-muted">Xin chào, bạn cần hỗ trợ gì?</div>
+        </div>
+        <div class="card-footer">
+            <div class="input-group">
+                <input type="text" id="chatInput" class="form-control" placeholder="Nhập tin nhắn...">
+                <button class="btn btn-primary" id="sendChat"><i class="fa fa-paper-plane"></i></button>
+            </div>
+        </div>
+    </div>
+
     <!-- Header -->
     <nav>
         <div class="nav-content">
-            <a href="@Url.Action("Index","MainSinhVien",new{area="Student"})" >
+            <a href="@Url.Action("Index","MainSinhVien",new{area="Student"})">
                 <img src="https://cdn.jsdelivr.net/gh/Huynhtienhieu1234/UploadAnh/sinhvien/LogoTruong.png"
                      alt="Logo" class="logo">
             </a>
-
             <div class="nav-content-text"></div>
             <div class="user-menu" id="userMenu">
                 <img src="../image/Avarta.png" alt="User Avatar" class="user-avatar">
@@ -45,7 +69,6 @@
                         <a class="a-color" href="@Url.Action("Logout", "Login", new { area = "" })">
                             <i class="fa fa-sign-out"></i> Đăng xuất
                         </a>
-
                     </li>
                 </ul>
             </div>
@@ -60,36 +83,12 @@
                     <i class="fa fa-home"></i> Trang chủ
                 </a>
             </li>
-              <li class="nav-item">
-                <a href="#" class="nav-link">
-                    <i class="fa fa-user-plus"></i> Đăng Ký Lao Động
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="#" class="nav-link">
-                    <i class="fa fa-chart-bar"></i> Thống Kê
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="#" class="nav-link">
-                    <i class="fa fa-calendar-alt"></i> Lịch Lao Động
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="#" class="nav-link">
-                    <i class="fa fa-user-check"></i> Điểm Danh Lao Động
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="#" class="nav-link">
-                    <i class="fa fa-bell"></i> Thông Báo
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="#" class="nav-link">
-                    <i class="fa fa-clipboard-check"></i> Xác Nhận Hoàn Thành
-                </a>
-            </li>
+            <li class="nav-item"><a href="#" class="nav-link"><i class="fa fa-user-plus"></i> Đăng Ký Lao Động</a></li>
+            <li class="nav-item"><a href="#" class="nav-link"><i class="fa fa-chart-bar"></i> Thống Kê</a></li>
+            <li class="nav-item"><a href="#" class="nav-link"><i class="fa fa-calendar-alt"></i> Lịch Lao Động</a></li>
+            <li class="nav-item"><a href="#" class="nav-link"><i class="fa fa-user-check"></i> Điểm Danh Lao Động</a></li>
+            <li class="nav-item"><a href="#" class="nav-link"><i class="fa fa-bell"></i> Thông Báo</a></li>
+            <li class="nav-item"><a href="#" class="nav-link"><i class="fa fa-clipboard-check"></i> Xác Nhận Hoàn Thành</a></li>
         </ul>
     </div>
 
@@ -100,19 +99,49 @@
         </div>
     </div>
 
-    <script>
-        // Dropdown menu xử lý
-        document.getElementById('userMenu').addEventListener('click', function (event) {
-            event.stopPropagation();
-            document.getElementById('dropdownMenu').classList.toggle('show');
-        });
 
-        document.addEventListener('click', function (event) {
-            if (!document.getElementById('userMenu').contains(event.target)) {
-                document.getElementById('dropdownMenu').classList.remove('show');
-            }
-        });
-    </script>
+    <!-- TOAST SIÊU ĐẸP CÓ HIỆU ỨNG CHẠY -->
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999;">
+        @if (TempData["Message"] != null)
+        {
+            var type = (TempData["MessageType"]?.ToString() ?? "info").ToLower();
+            var bgClass = type == "success" ? "bg-success" :
+                         (type.Contains("error") || type.Contains("danger") ? "bg-danger" : "bg-primary");
+
+            <div class="toast custom-toast text-white @bgClass border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="d-flex flex-column w-100">
+                    <!-- Nội dung + nút đóng cùng một hàng -->
+                    <div class="toast-body fw-bold d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center">
+                            @if (type == "success")
+                            {
+                                <i class="fas fa-check-circle me-2 fs-4"></i>
+                            }
+                            else if (type.Contains("error") || type.Contains("danger"))
+                            {
+                                <i class="fas fa-exclamation-triangle me-2 fs-4"></i>
+                            }
+                            else
+                            {
+                                <i class="fas fa-info-circle me-2 fs-4"></i>
+                            }
+                            @TempData["Message"]
+                        </div>
+                        <!-- ✅ Nút đóng nằm trong nội dung -->
+                        <button type="button" class="btn-close btn-close-white ms-3" data-bs-dismiss="toast"></button>
+                    </div>
+
+                    <!-- Thanh tiến trình chạy -->
+                    <div class="progress toast-progress">
+                        <div class="progress-bar bg-light" role="progressbar"></div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+
+    <!-- JavaScript -->
+    <script src="~/Areas/Student/Content/Js/Viewsider.js"></script>
 </body>
-
 </html>

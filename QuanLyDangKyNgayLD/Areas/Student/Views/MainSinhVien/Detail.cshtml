@@ -30,6 +30,8 @@
                     <input type="file" name="AvatarFile" id="avatarFile" class="form-control" accept="image/*" />
                 </div>
 
+                <!-- Thông tin cá nhân -->
+                <h5 class="text-primary mb-3">Thông tin cá nhân</h5>
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <label class="form-label">MSSV</label>
@@ -70,6 +72,40 @@
                     <label class="form-label">Quê quán</label>
                     @Html.TextBoxFor(m => m.QueQuan, new { @class = "form-control", placeholder = "Nhập quê quán" })
                 </div>
+                <div class="col-md-6">
+                    <label class="form-label">Lớp</label>
+                    @Html.TextBoxFor(m => m.Lop.TenLop, new { @class = "form-control", placeholder = "Nhập lớp" })
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Khoa</label>
+                    @Html.TextBoxFor(m => m.Lop.Khoa.TenKhoa, new { @class = "form-control", placeholder = "Khoa" })
+                </div>
+                <!-- Thông tin tài khoản -->
+                <h5 class="text-primary mt-4 mb-3">Thông tin tài khoản</h5>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Tên tài khoản</label>
+                        @Html.TextBoxFor(m => m.TaiKhoan, new { @class = "form-control", placeholder = "Tên đăng nhập", @readonly = "readonly" })
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Vai trò</label>
+                        @Html.TextBoxFor(m => m.TaiKhoan1.VaiTro.TenVaiTro, new { @class = "form-control", placeholder = "Vai trò", @readonly = "readonly" })
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+
+                    <div class="col-md-6">
+                        <label class="form-label">Mật khẩu</label>
+                        @Html.PasswordFor(m => m.TaiKhoan1.Password, new { @class = "form-control", placeholder = "Nhập mật khẩu mới" })
+                    </div>
+                </div>
+
+
+
+
+
+
 
                 <div class="d-flex justify-content-between">
                     <a href="@Url.Action("Index","MainSinhVien", new { area="Student" })" class="btn btn-secondary">
@@ -95,4 +131,4 @@
         }
     });
 </script>
-<script src="~/Areas/Student/Content/Js/StudentMain/StudentInfo.js"></script> 
+<script src="~/Areas/Student/Content/Js/StudentMain/StudentInfo.js"></script>
