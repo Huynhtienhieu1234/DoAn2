@@ -1,11 +1,12 @@
-﻿using QuanLyDangKyNgayLD.Factories;
-using QuanLyDangKyNgayLD.Models;
-using System;
-using System.Data.Entity;
-using System.Linq;
-using System.Net;
-using System.Web.Mvc;
-
+﻿using OfficeOpenXml;          // để dùng ExcelPackage
+using OfficeOpenXml.Style;    // để dùng ExcelFillStyle, ExcelBorderStyle, ExcelHorizontalAlignment...
+using QuanLyDangKyNgayLD.Factories; // factory tạo DbContext
+using QuanLyDangKyNgayLD.Models;    // model (TaiKhoan, VaiTro...)
+using System;                 // các kiểu cơ bản (DateTime, String...)
+using System.Data.Entity;     // để Include() khi query EF6
+using System.Linq;            // để dùng LINQ (Where, OrderBy, ToList...)
+using System.Web.Mvc;         // để viết Controller ActionResult
+using System.Drawing;         // để dùng Color khi set màu cell
 
 namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
 {
@@ -88,7 +89,8 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                 var accounts = query
                     .Skip((page - 1) * pageSize)
                     .Take(pageSize)
-                    .Select(t => new {
+                    .Select(t => new
+                    {
                         t.TaiKhoan_id,
                         t.Username,
                         t.Email,
@@ -285,7 +287,8 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                 var acc = db.TaiKhoans
                     .Include(t => t.VaiTro)
                     .Where(t => t.Deleted_at == null && t.TaiKhoan_id == id)
-                    .Select(t => new {
+                    .Select(t => new
+                    {
                         t.TaiKhoan_id,
                         t.Username,
                         t.Email,
@@ -332,7 +335,8 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                     .Include(t => t.VaiTro)
                     .Where(t => t.Deleted_at != null)
                     .OrderByDescending(t => t.Deleted_at)
-                    .Select(t => new {
+                    .Select(t => new
+                    {
                         t.TaiKhoan_id,
                         t.Username,
                         t.Email,
@@ -446,9 +450,129 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
             }
         }
 
+        // lọc và tìm kiếm
+        [HttpGet]
+        public ActionResult FilterSearchAccounts(int page = 1, int pageSize = 20, string search = "", string role = "")
+        {
+            using (var db = DbContextFactory.Create())
+            {
+                var query = db.TaiKhoans
+                    .Include(t => t.VaiTro)
+                    .Where(t => t.Deleted_at == null);
+
+                // Lọc theo vai trò
+                if (!string.IsNullOrWhiteSpace(role) && role != "Tất Cả")
+                {
+                    query = query.Where(t => t.VaiTro != null && t.VaiTro.TenVaiTro == role);
+                }
+
+                // Tìm kiếm theo tên tài khoản (Username)
+                if (!string.IsNullOrWhiteSpace(search))
+                {
+                    query = query.Where(t => t.Username.Contains(search));
+                }
+
+                int totalItems = query.Count();
+                int totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
+
+                if (page < 1) page = 1;
+                if (page > totalPages && totalPages > 0) page = totalPages;
+
+                var accounts = query
+                    .OrderByDescending(t => t.TaiKhoan_id)
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .Select(t => new
+                    {
+                        t.TaiKhoan_id,
+                        t.Username,
+                        t.Email,
+                        RoleName = t.VaiTro != null ? t.VaiTro.TenVaiTro : "Chưa có vai trò"
+                    })
+                    .ToList();
+
+                return Json(new
+                {
+                    data = accounts,
+                    currentPage = page,
+                    totalPages = totalPages,
+                    totalItems = totalItems
+                }, JsonRequestBehavior.AllowGet);
+            }
+        }
+
+        // xuât excel
+
+        [HttpGet]
+        public ActionResult exportAllAccounts(string keyword = "")
+        {
+            using (var db = DbContextFactory.Create())
+            {
+                var query = db.TaiKhoans
+                              .Include(t => t.VaiTro)
+                              .Where(t => t.Deleted_at == null); // bỏ tài khoản đã xóa mềm
+
+                if (!string.IsNullOrWhiteSpace(keyword))
+                {
+                    query = query.Where(t => (t.Username ?? "").Contains(keyword) ||
+                                             (t.Email ?? "").Contains(keyword));
+                }
+
+                var accounts = query.OrderBy(t => t.TaiKhoan_id).ToList();
+
+                using (var package = new OfficeOpenXml.ExcelPackage())
+                {
+                    var ws = package.Workbook.Worksheets.Add("DanhSachTaiKhoan");
+
+                    // ======= Header =======
+                    string[] headers = { "STT", "Tên tài khoản", "Email", "Vai trò" };
+                    for (int col = 1; col <= headers.Length; col++)
+                    {
+                        ws.Cells[1, col].Value = headers[col - 1];
+                        ws.Cells[1, col].Style.Font.Bold = true;
+                        ws.Cells[1, col].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                        ws.Cells[1, col].Style.VerticalAlignment = ExcelVerticalAlignment.Center;
+                        ws.Cells[1, col].Style.Fill.PatternType = ExcelFillStyle.Solid;
+                        ws.Cells[1, col].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGray);
+                        ws.Cells[1, col].Style.Border.BorderAround(ExcelBorderStyle.Thin);
+                    }
+
+                    // ======= Dữ liệu =======
+                    int row = 2;
+                    int stt = 1;
+                    foreach (var acc in accounts)
+                    {
+                        ws.Cells[row, 1].Value = stt;
+                        ws.Cells[row, 2].Value = acc.Username;
+                        ws.Cells[row, 3].Value = acc.Email ?? "";
+                        ws.Cells[row, 4].Value = acc.VaiTro?.TenVaiTro ?? "Chưa có vai trò";
+
+                        for (int col = 1; col <= headers.Length; col++)
+                        {
+                            ws.Cells[row, col].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                            ws.Cells[row, col].Style.VerticalAlignment = ExcelVerticalAlignment.Center;
+                            ws.Cells[row, col].Style.Border.BorderAround(ExcelBorderStyle.Thin);
+                        }
+
+                        ws.Cells[row, 1].Style.Font.Bold = true; // STT in đậm
+                        ws.Cells[row, 2].Style.Font.Bold = true; // Username in đậm
+
+                        row++;
+                        stt++;
+                    }
 
 
 
+                    // Xuất file
+                    var fileBytes = package.GetAsByteArray();
+                    string fileName = $"DanhSachTaiKhoan_{DateTime.Now:ddMMyy}.xlsx";
+
+                    return File(fileBytes,
+                                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                                fileName);
+                }
+            }
+        }
 
 
 

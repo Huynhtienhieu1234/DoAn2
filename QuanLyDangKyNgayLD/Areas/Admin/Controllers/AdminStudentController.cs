@@ -384,8 +384,6 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                         stt++;
                     }
 
-                    // Auto-fit cột
-                    ws.Cells[ws.Dimension.Address].AutoFitColumns();
 
                     // Xuất file
                     var fileBytes = package.GetAsByteArray();

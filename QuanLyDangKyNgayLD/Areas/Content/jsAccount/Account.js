@@ -148,6 +148,10 @@
                             <td colspan="6" class="text-muted py-4">Không có dữ liệu</td>
                         </tr>`;
                     pageNumbers.innerHTML = "";
+
+
+
+
                     prevBtn.disabled = true;
                     nextBtn.disabled = true;
                     return;
