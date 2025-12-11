@@ -14,32 +14,20 @@
 
                     <img src="~/image/Avarta.png" class="avatar-img rounded-circle mb-3" alt="Avatar" />
 
-                    <a href="@Url.Action("Index","MainSinhVien", new { area="Student" })"
+                    <a href="@Url.Action("Detail","MainSinhVien", new { area="Student" })"
                        class="d-block mb-4 text-primary fw-medium">
                         Xem chi tiết
                     </a>
 
-                    @if (Model != null)
-                    {
-                        <ul class="list-group list-group-flush">
-                            <li class="list-group-item">
-                                <strong>MSSV:</strong> @(Model.MSSV != 0 ? Model.MSSV.ToString() : "Chưa có dữ liệu")
-                            </li>
-
-                            <li class="list-group-item"><strong>Họ và Tên:</strong> @(string.IsNullOrEmpty(Model.HoTen) ? "Chưa có dữ liệu" : Model.HoTen)</li>
-                            <li class="list-group-item"><strong>Email:</strong> @(string.IsNullOrEmpty(Model.Email) ? "Chưa có dữ liệu" : Model.Email)</li>
-                            <li class="list-group-item"><strong>Vai trò:</strong> @(Model.TaiKhoan1?.VaiTro?.TenVaiTro ?? "Chưa có")</li>
-                        </ul>
-
-                    }
-                    else
-                    {
-                        <p class="text-danger">Chưa có thông tin sinh viên!</p>
-                    }
+                    <ul class="list-group list-group-flush" id="studentInfo">
+                        <li class="list-group-item"><strong>MSSV:</strong> <span id="mssv">...</span></li>
+                        <li class="list-group-item"><strong>Họ và Tên:</strong> <span id="hoten">...</span></li>
+                        <li class="list-group-item"><strong>Email:</strong> <span id="email">...</span></li>
+                        <li class="list-group-item"><strong>Vai trò:</strong> <span id="vaitro">...</span></li>
+                    </ul>
                 </div>
             </div>
         </div>
-
         <!-- Cột phải: Các chức năng -->
         <div class="col-lg-8">
             <div class="row g-4">
@@ -96,3 +84,4 @@
         </div>
     </div>
 </div>
+<script src="~/Areas/Student/Content/Js/StudentMain/StudentMain.js"></script>
