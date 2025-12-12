@@ -6,7 +6,7 @@
 @section Styles {
     <link rel="stylesheet" href="~/Areas/Content/css/AdminCount.css" />
 }
-    <!-- THANH CÔNG CỤ -->
+<!-- THANH CÔNG CỤ -->
 <nav class="navbar navbar-expand-lg toolbar shadow-sm mb-3">
     <div class="container-fluid p-0">
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
@@ -31,7 +31,6 @@
                     <option value="Tất Cả">Tất cả</option>
                     <option value="SinhVien">Sinh viên</option>
                     <option value="LopPhoLaoDong">Lớp phó lao động</option>
-                    <option value="QuanLy">Quản lý</option>
                     <option value="Admin">Admin</option>
                 </select>
 
@@ -182,7 +181,7 @@
                             <select name="VaiTro_id" id="createRole" class="form-select form-select-lg" required>
                                 <option value="">-- Chọn vai trò --</option>
                                 <option value="1">Admin</option>
-                                <option value="2">Quản lý</option>
+            
                                 <option value="3">Sinh viên</option>
                                 <option value="4">Lớp phó lao động</option>
                             </select>
@@ -197,7 +196,7 @@
                             <div class="input-group">
                                 <input type="password" name="Password" id="createPassword"
                                        class="form-control form-control-lg"
-                                       placeholder="Chỉ cần nhập khi chọn Admin hoặc Quản lý"
+                                       placeholder="Chỉ cần nhập khi chọn Admin "
                                        minlength="6" autocomplete="new-password" />
                                 <!-- Nút con mắt -->
                                 <button class="btn btn-outline-secondary btn-lg border toggle-password" type="button">
@@ -278,7 +277,7 @@
                         <select style="cursor:pointer" id="editRole" name="VaiTro_id" class="form-select" required>
                             <option value="">-- Chọn vai trò --</option>
                             <option value="1">Admin</option>
-                            <option value="2">Quản lý</option>
+          
                             <option value="3">Sinh viên</option>
                             <option value="4">Lớp phó lao động</option>
                         </select>
@@ -326,7 +325,7 @@
 </div>
 
 <!-- Modal Xóa -->
-<div class="modal fade" id="deleteModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+<div class="modal fade" id="deleteModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" style="z-index: 1055;">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content shadow-lg">
             <div class="modal-header bg-danger text-white">
@@ -387,7 +386,7 @@
 <!-- Modal Danh sách tài khoản đã xóa -->
 <div class="modal fade" id="deletedAccountsModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content shadow-lg">
+        <div class="modal-content shadow-lg dsxoa">
             <div class="modal-header bg-secondary text-white">
                 <h5 class="modal-title"><i class="fas fa-trash-restore me-2"></i>Danh sách tài khoản đã xóa</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
@@ -420,6 +419,39 @@
         </div>
     </div>
 </div>
+
+
+<!-- Modal xác nhận xóa -->
+<div class="modal fade" id="customDeleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow confirm-modal">
+            <div class="modal-header bg-gradient-danger text-white">
+                <h5 class="modal-title"><i class="fas fa-trash-alt me-2"></i>Xác nhận xóa</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <i class="fas fa-exclamation-circle text-danger mb-3" style="font-size: 3rem;"></i>
+                <h6 class="fw-bold" id="customDeleteTitle">Bạn có chắc muốn xóa?</h6>
+                <p class="text-muted" id="customDeleteInfo">Thông tin tài khoản sẽ hiển thị ở đây</p>
+                <div class="alert alert-warning small">
+                    <i class="fas fa-info-circle me-1"></i> Hành động này không thể hoàn tác!
+                </div>
+            </div>
+            <div class="modal-footer justify-content-center">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-danger" id="customDeleteConfirmBtn">
+                    <i class="fas fa-trash me-1"></i> Xác nhận xóa
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
 
 
 <!-- ĐẶT CHÍNH XÁC VỊ TRÍ NÀY – PHẢI TRƯỚC Account.js -->

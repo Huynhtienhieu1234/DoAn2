@@ -247,12 +247,16 @@
        ========================== */
     function animateTable() {
         const tableBody = document.getElementById("accountTableBody");
-        tableBody.classList.remove("show");
-        tableBody.classList.add("fade-soft");
 
+        // Bắt đầu hiệu ứng fade-out
+        tableBody.classList.remove("fade-in");
+        tableBody.classList.add("fade-out");
+
+        // Sau một khoảng ngắn thì bật fade-in
         setTimeout(() => {
-            tableBody.classList.add("show");
-        }, 50); 
+            tableBody.classList.remove("fade-out");
+            tableBody.classList.add("fade-in");
+        }, 200); // delay 200ms để mượt
     }
 
 

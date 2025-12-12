@@ -185,10 +185,6 @@
     <Compile Include="Areas\Models\AdminThongKeViewModel.cs" />
     <Compile Include="Areas\LopPhoLaoDong\Controllers\MainLPLDController.cs" />
     <Compile Include="Areas\LopPhoLaoDong\LopPhoLaoDongAreaRegistration.cs" />
-    <Compile Include="Areas\QuanLy\Controllers\QuanLyAccountController.cs" />
-    <Compile Include="Areas\QuanLy\Controllers\QuanLyController.cs" />
-    <Compile Include="Areas\QuanLy\Controllers\QuanLyWordRegisterController.cs" />
-    <Compile Include="Areas\QuanLy\QuanLyAreaRegistration.cs" />
     <Compile Include="Areas\Student\Controllers\MainSinhVienController.cs" />
     <Compile Include="Areas\Student\Controllers\StudentRegisterWordController.cs" />
     <Compile Include="Areas\Student\StudentAreaRegistration.cs" />
@@ -263,7 +259,6 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Views\web.config" />
-    <Content Include="Areas\QuanLy\Views\web.config" />
     <Content Include="Areas\LopPhoLaoDong\Views\web.config" />
     <Content Include="Areas\LopPhoLaoDong\Views\MainLPLD\MainLPLD.cshtml" />
     <Content Include="Areas\Admin\Views\web.config" />
@@ -271,10 +266,6 @@
     <Content Include="Areas\Admin\Views\Shared\ViewShare.cshtml" />
     <Content Include="Areas\Admin\Views\Account\Index.cshtml" />
     <Content Include="Areas\Admin\Views\AdminWordRegister\Index.cshtml" />
-    <Content Include="Areas\QuanLy\Views\QuanLy\Index.cshtml" />
-    <Content Include="Areas\QuanLy\Views\Shared\View.cshtml" />
-    <Content Include="Areas\QuanLy\Views\QuanLyWordRegister\Index.cshtml" />
-    <Content Include="Areas\QuanLy\Views\QuanLyAccount\Index.cshtml" />
     <Content Include="Areas\Admin\Views\AdminStudent\Index.cshtml" />
     <Content Include="Areas\Student\Views\Shared\ViewSinhvien.cshtml" />
     <Content Include="Areas\Student\Views\web.config" />
@@ -301,7 +292,6 @@
     <Folder Include="App_Data\" />
     <Folder Include="Areas\LopPhoLaoDong\Data\" />
     <Folder Include="Areas\LopPhoLaoDong\Views\Shared\" />
-    <Folder Include="Areas\QuanLy\Data\" />
     <Folder Include="Areas\Student\Data\" />
     <Folder Include="Uploads\Avatars\" />
     <Folder Include="Views\Student\" />

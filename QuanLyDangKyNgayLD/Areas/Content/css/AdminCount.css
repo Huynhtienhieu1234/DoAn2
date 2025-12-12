@@ -784,16 +784,19 @@ btn-reset {
 }
 /*Khu vự fomr bảng */
 #accountTableBody {
-    transition: opacity 0.3s ease-in-out;
+    transition: transform 0.5s ease, opacity 0.5s ease;
     opacity: 1;
+    transform: translateY(0);
 }
 
     #accountTableBody.fade-out {
         opacity: 0;
+        transform: translateY(20px); /* trượt xuống */
     }
 
     #accountTableBody.fade-in {
         opacity: 1;
+        transform: translateY(0);
     }
 
 
@@ -2258,3 +2261,95 @@ table {
         opacity: 0.5;
         cursor: not-allowed;
     }
+.modal-content.shadow-lg.dsxoa {
+    width: 9000px;
+}
+
+
+.confirm-modal {
+    border-radius: 12px;
+    overflow: hidden;
+    animation: fadeInModal 0.3s ease-in-out;
+}
+
+.bg-gradient-danger {
+    background: linear-gradient(45deg, #dc3545, #a71d2a);
+}
+
+@keyframes fadeInModal {
+    from {
+        transform: scale(0.95);
+        opacity: 0;
+    }
+
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.loading-btn {
+    position: relative;
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+    .loading-btn::after {
+        content: "";
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        width: 14px;
+        height: 14px;
+        margin-top: -7px;
+        border: 2px solid #fff;
+        border-top-color: transparent;
+        border-radius: 50%;
+        animation: spin 0.6s linear infinite;
+    }
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+/* Hiệu ứng nút loading khi chuyển trang */
+.page-btn.loading,
+#prev.loading,
+#next.loading {
+    position: relative;
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+    .page-btn.loading::after,
+    #prev.loading::after,
+    #next.loading::after {
+        content: "";
+        position: absolute;
+        right: 8px;
+        top: 50%;
+        width: 14px;
+        height: 14px;
+        margin-top: -7px;
+        border-radius: 50%;
+        border: 2px solid #fff;
+        border-top-color: transparent;
+        animation: spinGlow 0.8s linear infinite;
+    }
+
+@keyframes spinGlow {
+    0% {
+        transform: rotate(0deg);
+        opacity: 0.6;
+    }
+
+    50% {
+        opacity: 1;
+    }
+
+    100% {
+        transform: rotate(360deg);
+        opacity: 0.6;
+    }
+}

@@ -151,13 +151,16 @@
     }
 
     // Nút phân trang
+    let totalPages = 1; // Khai báo biến toàn cục
+
+    document.getElementById("next").addEventListener("click", () => {
+        if (currentPage < totalPages) loadAccounts(currentPage + 1);
+    });
+
     document.getElementById("prev").addEventListener("click", () => {
         if (currentPage > 1) loadAccounts(currentPage - 1);
     });
 
-    document.getElementById("next").addEventListener("click", () => {
-        if (currentPage < res.totalPages) loadAccounts(currentPage + 1);
-    });
 
     // Load lần đầu
     loadAccounts(1);
@@ -274,32 +277,71 @@
             })
             .catch(() => showToast("Lỗi khôi phục!", "error"));
     });
+    function showCustomDeleteModal({ id, username, email, isPermanent = false, onConfirm }) {
+        document.getElementById("customDeleteTitle").textContent = isPermanent
+            ? "Bạn có chắc muốn XÓA HẲN tài khoản này?"
+            : "Bạn có chắc muốn xóa tài khoản này?";
 
-    // Xóa hẳn vĩnh viễn
+        document.getElementById("customDeleteInfo").textContent =
+            `ID: ${id}` +
+            (username ? ` • Tài khoản: ${username}` : "") +
+            (email ? ` • Email: ${email}` : "");
+
+        const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById("customDeleteModal"));
+        modal.show();
+
+        const confirmBtn = document.getElementById("customDeleteConfirmBtn");
+        const clone = confirmBtn.cloneNode(true);
+        confirmBtn.parentNode.replaceChild(clone, confirmBtn);
+
+        clone.addEventListener("click", function () {
+            modal.hide();
+            if (typeof onConfirm === "function") onConfirm();
+        });
+    }
+
+    // Xóa hẳn vĩnh viễn (dùng modal riêng thay confirm)
     document.addEventListener("click", e => {
         const btn = e.target.closest(".btn-delete-permanent");
         if (!btn) return;
 
-        if (!confirm("Bạn có chắc muốn XÓA HẲN tài khoản này?\nHành động này KHÔNG THỂ HOÀN TÁC!")) return;
-
         const id = btn.dataset.id;
-        fetch("/Admin/Account/DeletePermanentAjax", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-RequestVerificationToken": document.querySelector('input[name="__RequestVerificationToken"]').value
-            },
-            body: JSON.stringify({ id })
-        })
-            .then(r => r.json())
-            .then(res => {
-                if (res.success) {
-                    showToast(res.message, "success");
-                    loadDeletedAccounts();
-                } else {
-                    showToast(res.message, "error");
-                }
-            })
-            .catch(() => showToast("Lỗi xóa vĩnh viễn!", "error"));
+        const row = btn.closest("tr");
+        const username = row?.children[1]?.textContent.trim() || "";
+        const email = row?.children[2]?.textContent.trim() || "";
+
+        showCustomDeleteModal({
+            id,
+            username,
+            email,
+            isPermanent: true,
+            onConfirm: () => {
+                fetch("/Admin/Account/DeletePermanentAjax", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-RequestVerificationToken": document.querySelector('input[name="__RequestVerificationToken"]').value
+                    },
+                    body: JSON.stringify({ id })
+                })
+                    .then(r => r.json())
+                    .then(res => {
+                        if (res.success) {
+                            const msg = res.username
+                                ? `Đã xóa hẳn tài khoản '${res.username}' khỏi hệ thống.`
+                                : res.message;
+                            showToast(msg, "success");
+                            bootstrap.Modal.getInstance(deleteModal).hide();
+                            loadDeletedAccounts();
+                        } else {
+                            showToast(res.message, "error");
+                        }
+                    })
+                    .catch(() => showToast("Lỗi xóa vĩnh viễn!", "error"));
+            }
+        });
     });
+
+
+
 });

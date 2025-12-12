@@ -48,6 +48,14 @@
                     editPassword.value = ""; // để trống nếu không đổi
                     editRole.value = acc.VaiTro_id;
 
+                    // 👉 Nếu là Sinh viên (3 hoặc 4) thì khóa ô Username
+                    if (acc.VaiTro_id === 3 || acc.VaiTro_id === 4) {
+                        editUsername.setAttribute("readonly", true);
+                    } else {
+                        editUsername.removeAttribute("readonly");
+                    }
+
+
                     // Mở modal
                     const modal = bootstrap.Modal.getOrCreateInstance(editModal);
                     modal.show();
