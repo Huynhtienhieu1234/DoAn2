@@ -133,6 +133,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Areas\Admin\Content\css\Adminsuscessword.css" />
+    <Content Include="Areas\Admin\Content\js\Adminsuscessword.js" />
     <Content Include="Areas\Content\AdminStudentRegister\AdminExportStudent.js" />
     <Content Include="Areas\Content\AdminStudentRegister\AdminImportStudent.js" />
     <Content Include="Areas\Content\css\AdminCount.css" />
@@ -158,6 +160,7 @@
     <Content Include="Areas\Student\Content\Js\Viewsider.js" />
     <Content Include="Areas\Student\Views\MainSinhVien\Index.cshtml" />
     <Content Include="Areas\Student\Views\MainSinhVien\Detail.cshtml" />
+    <Content Include="Areas\Admin\Views\AdminSuscesWord\Index.cshtml" />
     <None Include="Areas\Student\Views\Shared\Viewsiderbar.cshtml" />
     <Content Include="Areas\Student\Content\Css\Siderbarmain.css" />
     <Content Include="Areas\Student\Content\Css\Table.css" />
@@ -181,6 +184,7 @@
     <Compile Include="Areas\Admin\Controllers\AccountController.cs" />
     <Compile Include="Areas\Admin\Controllers\AdminController.cs" />
     <Compile Include="Areas\Admin\Controllers\AdminStudentController.cs" />
+    <Compile Include="Areas\Admin\Controllers\AdminSuscesWordController.cs" />
     <Compile Include="Areas\Admin\Controllers\AdminWordRegisterController.cs" />
     <Compile Include="Areas\Models\AdminThongKeViewModel.cs" />
     <Compile Include="Areas\LopPhoLaoDong\Controllers\MainLPLDController.cs" />
@@ -193,6 +197,7 @@
     <Compile Include="Controllers\ResetPasswordController.cs" />
     <Compile Include="DbContextFactory\DbContextFactory.cs" />
     <Compile Include="EmailHelper\EmailHelper.cs" />
+    <Compile Include="EmailHelper\EmailHelperCompletion.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
