@@ -339,10 +339,21 @@
                                 <option value="Chiều">Chiều (13h-14h)</option>
                             </select>
                         </div>
+
+
+
                         <div class="col-md-6">
                             <label class="form-label fw-bold">Loại lao động</label>
-                            <input name="LoaiLaoDong" id="editLoaiLaoDong" class="form-control" />
+                            <select name="LoaiLaoDong" id="editLoaiLaoDong" class="form-select" required>
+                                <option value="">-- Chọn loại lao động --</option>
+                                <option value="Cá nhân">Cá nhân</option>
+                                <option value="Lớp">Lớp</option>
+                            </select>
                         </div>
+
+
+
+
                         <div class="col-md-6">
                             <label class="form-label fw-bold">Giá trị</label>
                             <input name="GiaTri" id="editGiaTri" type="number" step="0.1" class="form-control" />

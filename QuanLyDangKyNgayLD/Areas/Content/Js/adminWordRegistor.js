@@ -333,6 +333,11 @@ document.addEventListener("DOMContentLoaded", function () {
     document.addEventListener("click", function (e) {
         const detailBtn = e.target.closest(".btn-detail");
         const editBtn = e.target.closest(".btn-edit");
+
+
+
+
+
         const deleteBtn = e.target.closest(".btn-delete");
         const approveBtn = e.target.closest(".btn-approve");
         const restoreBtn = e.target.closest(".btn-restore");
@@ -507,13 +512,50 @@ document.addEventListener("DOMContentLoaded", function () {
             let buoiValue = buoiRaw.includes("Sáng") ? "Sáng" : buoiRaw.includes("Chiều") ? "Chiều" : "";
             setInputValue("editBuoi", buoiValue);
 
-            setInputValue("editLoaiLaoDong", cells[3]?.textContent || "");
+
+
+            const loaiTextRaw = cells[3]?.textContent || "";
+            const loaiText = loaiTextRaw.toLowerCase().trim();
+            const loaiSelect = document.getElementById("editLoaiLaoDong");
+
+            if (loaiSelect) {
+                if (loaiText.includes("cá")) {
+                    loaiSelect.value = "Cá nhân";
+                } else if (loaiText.includes("lớp")) {
+                    loaiSelect.value = "Lớp";
+                } else {
+                    loaiSelect.value = "";
+                }
+            }
+
+
+
+
+
+
             setInputValue("editGiaTri", (cells[4]?.textContent || "").replace(/\D/g, ""));
 
-            let ngayRaw = cells[5]?.textContent || "";
-            let ngayParts = ngayRaw.split("/");
-            let ngayValue = ngayParts.length === 3 ? `${ngayParts[2]}-${ngayParts[1]}-${ngayParts[0]}` : "";
-            setInputValue("editNgayLaoDong", ngayValue);
+            // ===== FIX LOAD NGÀY LAO ĐỘNG (EDIT) =====
+            const ngayText = cells[5]?.textContent?.trim(); // dd/MM/yyyy
+            const editNgay = document.getElementById("editNgayLaoDong");
+
+            if (editNgay) {
+                editNgay.innerHTML = '<option value="">-- Chọn ngày --</option>';
+
+                if (ngayText) {
+                    const parts = ngayText.split("/");
+                    if (parts.length === 3) {
+                        const value = `${parts[2]}-${parts[1]}-${parts[0]}`; // yyyy-MM-dd
+
+                        const opt = document.createElement("option");
+                        opt.value = value;
+                        opt.textContent = ngayText;
+                        opt.selected = true;
+
+                        editNgay.appendChild(opt);
+                    }
+                }
+            }
 
             const khuVucRaw = cells[6]?.textContent?.trim() || "";
             const khuVucSelect = document.getElementById("editKhuVuc");
@@ -969,6 +1011,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // Tự động sinh ngày cho form Chỉnh sửa
     // ==============================
     const editMonthSelect = document.getElementById("editDotLaoDong");
+
     const editDaySelect = document.getElementById("editNgayLaoDong");
 
     if (editMonthSelect && editDaySelect) {
