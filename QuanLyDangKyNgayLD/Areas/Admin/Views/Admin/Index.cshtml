@@ -11,21 +11,21 @@
             <div class="card shadow h-100 text-center p-3 animate-card">
                 <h6 class="text-muted">Tài khoản</h6>
                 <h2 class="display-4 text-primary" data-target="@Model.TongTaiKhoan">0</h2>
-                <a href="/Admin/TaiKhoan/ChiTiet" class="btn btn-sm btn-outline-primary mt-2">Xem chi tiết</a>
+                <a  href="@Url.Action("Index","Account",new{area="Admin"})" class="btn btn-sm btn-outline-primary mt-2">Xem chi tiết</a>
             </div>
         </div>
         <div class="col-md-3 mb-3">
             <div class="card shadow h-100 text-center p-3 animate-card">
                 <h6 class="text-muted">Sinh viên</h6>
                 <h2 class="display-4 text-success" data-target="@Model.TongSinhVien">0</h2>
-                <a href="/Admin/SinhVien/ChiTiet" class="btn btn-sm btn-outline-success mt-2">Xem chi tiết</a>
+                <a href="@Url.Action("Index","AdminStudent",new{area="Admin"})" class="btn btn-sm btn-outline-success mt-2">Xem chi tiết</a>
             </div>
         </div>
         <div class="col-md-3 mb-3">
             <div class="card shadow h-100 text-center p-3 animate-card">
                 <h6 class="text-muted">Đợt lao động</h6>
                 <h2 class="display-4 text-warning" data-target="@Model.TongDotLaoDong">0</h2>
-                <a href="/Admin/DotLaoDong/ChiTiet" class="btn btn-sm btn-outline-warning mt-2">Xem chi tiết</a>
+                <a href="@Url.Action("Index","AdminWordRegister",new{area="Admin"})" class="btn btn-sm btn-outline-warning mt-2">Xem chi tiết</a>
             </div>
         </div>
         <div class="col-md-3 mb-3">
