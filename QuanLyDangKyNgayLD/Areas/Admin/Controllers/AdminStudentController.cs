@@ -397,10 +397,6 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
             }
         }
 
-
-
-
-
         // POST: Nhập danh sách sinh viên từ file Excel
         [HttpPost]
         public ActionResult ImportExcel(HttpPostedFileBase excelFile)
@@ -442,6 +438,7 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                             var hoTen = worksheet.Cells[row, 2 + offset].Text?.Trim();
                             var tenLop = worksheet.Cells[row, 3 + offset].Text?.Trim();
                             var tenKhoa = worksheet.Cells[row, 4 + offset].Text?.Trim();
+                            var email = worksheet.Cells[row, 5 + offset].Text?.Trim(); // ✅ cột Email
 
                             // ✅ Nếu phát hiện trống bất kỳ cột nào → báo lỗi chi tiết
                             var missingFields = new List<string>();
@@ -449,6 +446,7 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                             if (string.IsNullOrEmpty(hoTen)) missingFields.Add("Họ tên");
                             if (string.IsNullOrEmpty(tenLop)) missingFields.Add("Tên lớp");
                             if (string.IsNullOrEmpty(tenKhoa)) missingFields.Add("Tên khoa");
+                            if (string.IsNullOrEmpty(email)) missingFields.Add("Email");
 
                             if (missingFields.Any())
                             {
@@ -462,6 +460,7 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                                 continue;
                             }
 
+                            // ✅ Kiểm tra lớp
                             var lop = allLops.FirstOrDefault(l =>
                                 l.TenLop.Equals(tenLop, StringComparison.OrdinalIgnoreCase));
 
@@ -477,6 +476,7 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                                 // vẫn nhập sinh viên, dùng khoa đúng từ lớp
                             }
 
+                            // ✅ Kiểm tra trùng MSSV
                             bool existsMssv = db.SinhViens.Any(s => s.MSSV == mssv);
                             if (existsMssv)
                             {
@@ -484,10 +484,27 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                                 continue;
                             }
 
-                            bool existsName = db.SinhViens.Any(s => s.HoTen.Equals(hoTen, StringComparison.OrdinalIgnoreCase));
-                            if (existsName)
+                            // ✅ Kiểm tra trùng Họ tên nhưng chỉ báo lỗi nếu cùng MSSV
+                            bool existsSameStudent = db.SinhViens.Any(s =>
+                                s.HoTen.Equals(hoTen, StringComparison.OrdinalIgnoreCase) && s.MSSV == mssv);
+                            if (existsSameStudent)
                             {
-                                errorList.Add($"Dòng {row}: Họ tên '{hoTen}' đã tồn tại trong hệ thống");
+                                errorList.Add($"Dòng {row}: Sinh viên '{hoTen}' với MSSV {mssv} đã tồn tại trong hệ thống");
+                                continue;
+                            }
+
+                            // ✅ Kiểm tra email hợp lệ (phải là Gmail)
+                            if (!System.Text.RegularExpressions.Regex.IsMatch(email, @"^[a-zA-Z0-9._%+-]+@gmail\.com$"))
+                            {
+                                errorList.Add($"Dòng {row}: Email '{email}' không hợp lệ, phải là Gmail!");
+                                continue;
+                            }
+
+                            // ✅ Kiểm tra email trùng
+                            bool existsEmail = db.TaiKhoans.Any(t => t.Email == email && t.Deleted_at == null);
+                            if (existsEmail)
+                            {
+                                errorList.Add($"Dòng {row}: Email '{email}' đã tồn tại trong hệ thống");
                                 continue;
                             }
 
@@ -495,8 +512,8 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                             var taiKhoan = new TaiKhoan
                             {
                                 Username = mssv.ToString(),
-                                Password = PasswordHelper.HashPassword("123456"), // mật khẩu mặc định
-                                Email = null,
+                                Password = PasswordHelper.HashPassword(mssv.ToString()), // mật khẩu mặc định = MSSV
+                                Email = email,
                                 VaiTro_id = vaiTroSinhVien?.VaiTro_id,
                                 Deleted_at = null
                             };
@@ -507,7 +524,7 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                                 MSSV = mssv,
                                 HoTen = hoTen,
                                 Lop_id = lop.Lop_id,
-                                GioiTinh = "Nam",
+                                GioiTinh = null,
                                 TaiKhoan1 = taiKhoan
                             };
 
@@ -531,6 +548,7 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                 return Json(new { success = false, message = "Lỗi khi xử lý file: " + ex.Message });
             }
         }
+
 
 
 

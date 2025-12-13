@@ -267,6 +267,7 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
         }
 
         // AJAX: Duyệt đợt
+        // AJAX: Duyệt đợt
         [HttpPost]
         public ActionResult ApproveAjax(int id)
         {
@@ -292,17 +293,28 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                     // ✅ Duyệt đợt
                     dot.TrangThaiDuyet = true;
 
-                    // ✅ Cập nhật tất cả phiếu đăng ký của sinh viên trong đợt này thành "DaDuyet"
+                    // ✅ Cập nhật phiếu đăng ký và tạo phiếu duyệt với ID trùng nhau
                     var phieuList = db.PhieuDangKies.Where(p => p.TaoDotLaoDong_id == id).ToList();
                     foreach (var phieu in phieuList)
                     {
                         phieu.TrangThai = "DaDuyet";
-                        phieu.ThoiGian = DateTime.Now; // cập nhật thời gian duyệt
+                        phieu.ThoiGian = DateTime.Now;
+
+                        var phieuDuyet = new PhieuDuyet
+                        {
+                            PhieuDuyet_id = phieu.PhieuDangKy_id,   // ✅ ID phiếu duyệt = ID phiếu đăng ký
+                            Nguoiduyet = 1,
+                            ThoiGian = DateTime.Now,
+                            PhieuDangKy = phieu.PhieuDangKy_id,     // liên kết tới phiếu đăng ký
+                            TrangThai = "Đã duyệt"
+                        };
+
+                        db.PhieuDuyets.Add(phieuDuyet);
                     }
 
                     db.SaveChanges();
 
-                    return Json(new { success = true, message = "Đã duyệt đợt và tất cả phiếu đăng ký." });
+                    return Json(new { success = true, message = "Đã duyệt đợt và tạo phiếu duyệt với ID trùng phiếu đăng ký." });
                 }
             }
             catch (Exception ex)
@@ -310,8 +322,6 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                 return Json(new { success = false, message = "Lỗi: " + ex.Message });
             }
         }
-
-
 
 
 
@@ -428,21 +438,6 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                 return Json(new { success = true, dotList = dataDot, sinhVienList = dataSinhVien }, JsonRequestBehavior.AllowGet);
             }
         }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
