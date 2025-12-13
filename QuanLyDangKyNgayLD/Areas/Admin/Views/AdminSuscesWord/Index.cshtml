@@ -2,32 +2,37 @@
     ViewBag.Title = "Duyệt hoàn Thành Lao Động";
     Layout = "~/Areas/Admin/Views/Shared/ViewShare.cshtml";
 }
+<link rel="stylesheet" href="~/Areas/Admin/Content/css/Adminsuscessword.css" />
+
 <h2 class="mb-4">Danh sách Phiếu Xác Nhận Hoàn Thành Lao Động</h2>
 
 <div class="table-responsive">
-    <table class="table table-bordered table-hover">
+    <table class="table table-bordered table-hover text-nowrap">
         <thead class="table-primary text-center">
             <tr>
-                <th>STT</th>
-                <th>Họ và tên</th>
-                <th>Lớp</th>
-                <th>Khoa</th>
-                <th>Số ngày đã hoàn thành</th>
-                <th>Tác vụ</th>
+                <th style="width: 60px;">STT</th>
+                <th style="width: 120px;">MSSV</th> 
+                <th style="min-width: 180px;">Họ và tên</th>
+                <th style="min-width: 160px;">Lớp</th>
+                <th style="min-width: 180px;">Khoa</th>
+                <th style="width: 160px;">Số ngày đã hoàn thành</th>
+                <th style="width: 120px;">Tác vụ</th>
             </tr>
         </thead>
         <tbody id="duyetTableBody">
             <tr>
-                <td colspan="6" class="text-center text-muted py-4">Đang tải dữ liệu...</td>
+                <td colspan="7" class="text-center text-muted py-4">Đang tải dữ liệu...</td>
             </tr>
         </tbody>
     </table>
 </div>
 
+
 <div class="d-flex justify-content-center mt-3">
-    <button id="prev" class="btn btn-outline-primary me-2">« Trước</button>
+    <button id="prev" class="btn btn-outline-primary me-2">«</button>
     <div id="pageNumbers" class="d-flex align-items-center"></div>
-    <button id="next" class="btn btn-outline-primary ms-2">Sau »</button>
+    <button id="next" class="btn btn-outline-primary ms-2">»</button>
 </div>
 
 <script src="~/Areas/Admin/Content/js/Adminsuscessword.js"></script>
+<script src="~/Areas/Admin/Content/js/duyetHandler.js"></script>

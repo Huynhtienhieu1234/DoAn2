@@ -29,6 +29,7 @@ namespace QuanLyDangKyNgayLD.Models
         public string Reset_token { get; set; }
         public Nullable<System.DateTime> Reset_token_expiry { get; set; }
         public Nullable<System.DateTime> Deleted_at { get; set; }
+        public bool IsLocked { get; set; }
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<QuanLy> QuanLies { get; set; }

@@ -44,6 +44,13 @@ namespace QuanLyDangKyNgayLD.Controllers
                     return View(model);
                 }
 
+                // ✅ Kiểm tra trạng thái khóa
+                if (user.IsLocked)
+                {
+                    ModelState.AddModelError("", "Bạn đã hoàn thành ngày lao động rồi.");
+                    return View(model);
+                }
+
                 bool isValid = false;
 
                 // Kiểm tra nếu mật khẩu đã mã hóa
@@ -73,15 +80,12 @@ namespace QuanLyDangKyNgayLD.Controllers
                 // ✅ Đăng nhập thành công - SET SESSION
                 Session["UserID"] = user.TaiKhoan_id;
                 Session["Username"] = user.Username;
-                
-                // ✅ QUAN TRỌNG: Set User object với đầy đủ VaiTro
+
                 var userWithRole = db.TaiKhoans
                     .Include("VaiTro")
                     .FirstOrDefault(u => u.TaiKhoan_id == user.TaiKhoan_id);
-                
-                Session["User"] = userWithRole;
 
-                // ✅ Cũng set Role để safe
+                Session["User"] = userWithRole;
                 Session["Role"] = userWithRole?.VaiTro?.TenVaiTro;
 
                 FormsAuthentication.SetAuthCookie(user.Username, false);

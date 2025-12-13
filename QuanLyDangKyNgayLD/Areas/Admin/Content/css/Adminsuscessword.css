@@ -1,2 +1,309 @@
-﻿body {
+﻿/* ============================================= */
+/*          Admin - Duyệt Hoàn Thành Lao Động     */
+/* ============================================= */
+
+body {
+    background-color: #f8f9fa;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    overflow-x: hidden;
+}
+
+/* Container chính */
+.table-responsive {
+    position: relative;
+    min-height: 300px;
+}
+
+/* Hiệu ứng loading */
+.loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.92);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    border-radius: 12px;
+}
+
+    .loading-overlay.active {
+        opacity: 1;
+        visibility: visible;
+    }
+
+.loading-spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #3498db;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* Tiêu đề trang */
+h2.mb-4 {
+    color: #2c3e50;
+    font-weight: 600;
+    border-bottom: 3px solid #3498db;
+    padding-bottom: 10px;
+    display: inline-block;
+}
+
+/* Bảng dữ liệu với hiệu ứng load */
+.table-responsive {
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    background: #ffffff;
+    transform-origin: top center;
+    animation: slideDownFadeIn 0.6s ease-out;
+}
+
+@keyframes slideDownFadeIn {
+    0% {
+        opacity: 0;
+        transform: translateY(-30px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.table {
+    margin-bottom: 0;
+    font-size: 15px;
+}
+
+    .table thead th {
+        background-color: #3498db;
+        color: white;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 14px;
+        letter-spacing: 0.5px;
+        vertical-align: middle;
+        animation: headerSlideDown 0.5s ease-out;
+    }
+
+@keyframes headerSlideDown {
+    0% {
+        transform: translateY(-15px);
+        opacity: 0;
+    }
+
+    100% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Animation cho từng hàng dữ liệu */
+.table tbody tr {
+    transition: all 0.3s ease;
+    animation: rowSlideDown 0.5s ease-out forwards;
+    opacity: 0;
+    transform: translateY(-10px);
+}
+
+    /* Stagger animation cho các hàng */
+    .table tbody tr[data-row-index] {
+        animation-delay: calc(attr(data-row-index) * 0.1s);
+    }
+
+@keyframes rowSlideDown {
+    0% {
+        opacity: 0;
+        transform: translateY(-15px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Hiệu ứng hover sau khi load */
+.table tbody tr:hover {
+    background-color: #ebf3fd;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(52, 152, 219, 0.15);
+}
+
+.table td {
+    vertical-align: middle;
+    padding: 14px 12px;
+}
+
+/* Dòng "Đang tải dữ liệu..." */
+.text-muted.py-4 {
+    font-size: 16px;
+    color: #95a5a6 !important;
+    animation: fadeInUp 0.5s ease-out;
+}
+
+@keyframes fadeInUp {
+    0% {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Container phân trang */
+.d-flex.justify-content-center.mt-3 {
+    animation: paginationFadeIn 0.7s ease-out 0.3s forwards;
+    opacity: 0;
+    transform: translateY(20px);
+}
+
+@keyframes paginationFadeIn {
+    0% {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Nút phân trang */
+#prev, #next {
+    min-width: 100px;
+    padding: 8px 16px;
+    font-weight: 500;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+    #prev:hover, #next:hover {
+        background-color: #3498db;
+        color: white;
+        border-color: #3498db;
+        transform: translateY(-2px);
+    }
+
+    #prev:disabled, #next:disabled {
+        background-color: #ecf0f1;
+        color: #95a5a6;
+        cursor: not-allowed;
+        border-color: #bdc3c7;
+    }
+
+/* Số trang */
+#pageNumbers {
+    gap: 8px;
+}
+
+    #pageNumbers button {
+        min-width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        border: 1px solid #ddd;
+        background: white;
+        color: #2c3e50;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        animation: fadeInScale 0.5s ease-out;
+    }
+
+@keyframes fadeInScale {
+    0% {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+#pageNumbers button:hover {
+    background-color: #3498db;
+    color: white;
+    border-color: #3498db;
+}
+
+#pageNumbers button.active {
+    background-color: #2980b9;
+    color: white;
+    border-color: #2980b9;
+    font-weight: 600;
+}
+
+/* Nút duyệt */
+.btn-duyet {
+    padding: 6px 16px;
+    font-size: 14px;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    animation: buttonFadeIn 0.6s ease-out;
+}
+
+@keyframes buttonFadeIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.btn-duyet:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+}
+
+/* Responsive cho mobile */
+@media (max-width: 768px) {
+    .table-responsive {
+        font-size: 14px;
+    }
+
+    h2.mb-4 {
+        font-size: 1.5rem;
+    }
+
+    #prev, #next {
+        min-width: 80px;
+        font-size: 14px;
+    }
+
+    #pageNumbers button {
+        min-width: 36px;
+        height: 36px;
+        font-size: 13px;
+    }
+}
+.table td.text-start {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }

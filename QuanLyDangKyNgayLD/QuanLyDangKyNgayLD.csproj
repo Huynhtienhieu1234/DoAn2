@@ -135,6 +135,7 @@
   <ItemGroup>
     <Content Include="Areas\Admin\Content\css\Adminsuscessword.css" />
     <Content Include="Areas\Admin\Content\js\Adminsuscessword.js" />
+    <Content Include="Areas\Admin\Content\js\duyetHandler.js" />
     <Content Include="Areas\Content\AdminStudentRegister\AdminExportStudent.js" />
     <Content Include="Areas\Content\AdminStudentRegister\AdminImportStudent.js" />
     <Content Include="Areas\Content\css\AdminCount.css" />

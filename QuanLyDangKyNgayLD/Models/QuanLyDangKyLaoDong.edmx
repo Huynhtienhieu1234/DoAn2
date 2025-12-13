@@ -131,6 +131,7 @@
           <Property Name="Reset_token" Type="nvarchar" MaxLength="255" />
           <Property Name="Reset_token_expiry" Type="datetime" />
           <Property Name="Deleted_at" Type="datetime" />
+          <Property Name="IsLocked" Type="bit" Nullable="false" />
         </EntityType>
         <EntityType Name="TaoDotNgayLaoDong">
           <Key>
@@ -550,6 +551,7 @@
           <NavigationProperty Name="QuanLies" Relationship="Self.fk_quanly_taikhoan" FromRole="TaiKhoan" ToRole="QuanLy" />
           <NavigationProperty Name="SinhViens" Relationship="Self.FK_SinhVien_TaiKhoan" FromRole="TaiKhoan" ToRole="SinhVien" />
           <NavigationProperty Name="VaiTro" Relationship="Self.fk_taikhoan_role" FromRole="TaiKhoan" ToRole="VaiTro" />
+          <Property Name="IsLocked" Type="Boolean" Nullable="false" />
         </EntityType>
         <EntityType Name="TaoDotNgayLaoDong">
           <Key>
@@ -937,6 +939,7 @@
           <EntitySetMapping Name="TaiKhoans">
             <EntityTypeMapping TypeName="DB_QLNLD4ROLEModel.TaiKhoan">
               <MappingFragment StoreEntitySet="TaiKhoan">
+                <ScalarProperty Name="IsLocked" ColumnName="IsLocked" />
                 <ScalarProperty Name="TaiKhoan_id" ColumnName="TaiKhoan_id" />
                 <ScalarProperty Name="Username" ColumnName="Username" />
                 <ScalarProperty Name="Password" ColumnName="Password" />
