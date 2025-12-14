@@ -26,7 +26,7 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                             join khoa in db.Khoas on lop.Khoa_id equals khoa.Khoa_id
                             join snld in db.SoNgayLaoDongs on sv.MSSV equals snld.MSSV into snldGroup
                             from snld in snldGroup.DefaultIfEmpty()
-                            where (phieu.TrangThai == "Chờ Duyệt" || phieu.TrangThai == null)
+                            where (phieu.TrangThai == "Chờ Xác Nhận" || phieu.TrangThai == null)
                                   && (snld != null && snld.TongSoNgay == 18)   // ✅ chỉ lấy sinh viên đủ 18 ngày
                             orderby sv.HoTen
                             select new

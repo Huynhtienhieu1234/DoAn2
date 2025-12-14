@@ -4,18 +4,7 @@
     let totalPages = 1;
 
     // Hàm hiển thị toast
-    function showToast(message, type = "info") {
-        const container = document.getElementById("toastContainer");
-        if (!container) {
-            alert(message); // fallback nếu chưa có toastContainer
-            return;
-        }
-        const toast = document.createElement("div");
-        toast.className = `toast toast-${type}`;
-        toast.textContent = message;
-        container.appendChild(toast);
-        setTimeout(() => toast.remove(), 4000);
-    }
+
 
     // Tạo loading overlay động
     function createLoadingOverlay() {
@@ -153,20 +142,26 @@
         if (currentPage < totalPages) loadDanhSach(currentPage + 1);
     });
 
-    // ✅ Xử lý nút Duyệt
+
+    // ✅ Xử lý nút Duyệt (DÙNG TOAST CHUNG)
     document.addEventListener("click", e => {
         const btn = e.target.closest(".btn-duyet");
         if (!btn) return;
+
         btn.style.transform = 'scale(0.95)';
-        setTimeout(() => { btn.style.transform = ''; }, 150);
+        setTimeout(() => btn.style.transform = '', 150);
+
         const id = btn.dataset.id;
+
         btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Đang duyệt...';
         btn.disabled = true;
+
         fetch("/Admin/AdminSuscesWord/DuyetAjax", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "X-RequestVerificationToken": document.querySelector('input[name="__RequestVerificationToken"]')?.value || ""
+                "X-RequestVerificationToken":
+                    document.querySelector('input[name="__RequestVerificationToken"]')?.value || ""
             },
             body: JSON.stringify({ id: parseInt(id) })
         })
@@ -175,20 +170,26 @@
                 if (res.success) {
                     btn.innerHTML = '<i class="fas fa-check me-1"></i> Đã duyệt';
                     btn.className = 'btn btn-sm btn-outline-success';
-                    showToast("Đã duyệt và gửi email đi thành công!", "success"); // ✅ thông báo
-                    setTimeout(() => { loadDanhSach(currentPage); }, 1000);
+
+                    // ✅ DÙNG TOAST CHUNG TỪ VIEWSHARE
+                    window.showToast(res.message || "Duyệt thành công!", "success");
+
+                    setTimeout(() => loadDanhSach(currentPage), 1200);
                 } else {
                     btn.innerHTML = 'Duyệt';
                     btn.disabled = false;
-                    showToast("Lỗi: " + res.message, "error");
+
+                    window.showToast(res.message || "Duyệt thất bại!", "error");
                 }
             })
             .catch(() => {
                 btn.innerHTML = 'Duyệt';
                 btn.disabled = false;
-                showToast("Lỗi kết nối server!", "error");
+
+                window.showToast("Lỗi kết nối server!", "error");
             });
     });
+
 
     setTimeout(() => { loadDanhSach(1); }, 300);
 });
