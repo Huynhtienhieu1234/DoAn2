@@ -307,3 +307,40 @@ h2.mb-4 {
     overflow: hidden;
     text-overflow: ellipsis;
 }
+
+
+
+
+/* ===== FILTER + SEARCH ===== */
+.filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+/* SEARCH */
+.filter-search {
+    flex: 1 1 260px;
+    min-width: 260px;
+}
+
+/* KHOA SELECT */
+.filter-khoa {
+    flex: 1 1 320px;
+    min-width: 320px;
+}
+
+    /* Dropdown hiển thị 2 cột */
+    .filter-khoa option {
+        white-space: normal;
+    }
+
+/* Responsive */
+@media (max-width: 768px) {
+    .filter-bar {
+        flex-direction: column;
+    }
+}
+
+ 

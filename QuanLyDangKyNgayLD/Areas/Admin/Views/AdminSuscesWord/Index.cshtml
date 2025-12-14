@@ -6,12 +6,40 @@
 
 <h2 class="mb-4">Danh sách Phiếu Xác Nhận Hoàn Thành Lao Động</h2>
 
+
+<div class="filter-bar">
+    <!-- SEARCH -->
+    <div class="input-group input-group-sm shadow-sm filter-search">
+        <span class="input-group-text bg-white border-end-0">
+            <i class="fa fa-search text-muted"></i>
+        </span>
+        <input type="text" id="searchBox" class="form-control border-start-0"
+               placeholder="Tìm MSSV, họ tên, lớp, khoa...">
+    </div>
+
+    <!-- FILTER KHOA -->
+    <select id="khoaFilter" class="form-select form-select-sm shadow-sm filter-khoa">
+        <option value="">-- Tất cả khoa --</option>
+        <option value="Công nghệ và kỹ thuật">Công nghệ và kỹ thuật</option>
+        <option value="Khoa Ngoại ngữ">Khoa Ngoại ngữ</option>
+        <option value="Khoa Kinh tế - Luật">Khoa Kinh tế - Luật</option>
+        <option value="Nông nghiệp, Tài nguyên và Môi trường">Nông nghiệp, Tài nguyên và Môi trường</option>
+        <option value="Văn hóa - Du lịch và Công tác xã hội">Văn hóa - Du lịch và Công tác xã hội</option>
+        <option value="Sư phạm Toán - Tin">Sư phạm Toán - Tin</option>
+        <option value="Sư phạm Khoa học tự nhiên">Sư phạm Khoa học tự nhiên</option>
+        <option value="Sư phạm Khoa học xã hội">Sư phạm Khoa học xã hội</option>
+        <option value="Giáo dục Tiểu học - Mầm non">Giáo dục Tiểu học - Mầm non</option>
+        <option value="Giáo dục Thể chất - Sư phạm Nghệ thuật">Giáo dục Thể chất - Sư phạm Nghệ thuật</option>
+    </select>
+
+</div>
+
 <div class="table-responsive">
     <table class="table table-bordered table-hover text-nowrap">
         <thead class="table-primary text-center">
             <tr>
                 <th style="width: 60px;">STT</th>
-                <th style="width: 120px;">MSSV</th> 
+                <th style="width: 120px;">MSSV</th>
                 <th style="min-width: 180px;">Họ và tên</th>
                 <th style="min-width: 160px;">Lớp</th>
                 <th style="min-width: 180px;">Khoa</th>

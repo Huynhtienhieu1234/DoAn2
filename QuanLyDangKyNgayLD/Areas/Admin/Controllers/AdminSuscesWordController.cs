@@ -16,28 +16,46 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
 
         // Lấy danh sách phiếu xác nhận hoàn thành (liên kết MSSV với SinhVien)
         [HttpGet]
-        public ActionResult GetList(int page = 1, int pageSize = 5)
+        public ActionResult GetList(int page = 1, int pageSize = 5, string khoa = "", string keyword = "")
         {
             using (var db = DbContextFactory.Create())
             {
                 var query = from phieu in db.PhieuXacNhanHoanThanhs
                             join sv in db.SinhViens on phieu.MSSV equals sv.MSSV
                             join lop in db.Lops on sv.Lop_id equals lop.Lop_id
-                            join khoa in db.Khoas on lop.Khoa_id equals khoa.Khoa_id
+                            join k in db.Khoas on lop.Khoa_id equals k.Khoa_id
                             join snld in db.SoNgayLaoDongs on sv.MSSV equals snld.MSSV into snldGroup
                             from snld in snldGroup.DefaultIfEmpty()
                             where (phieu.TrangThai == "Chờ Xác Nhận" || phieu.TrangThai == null)
-                                  && (snld != null && snld.TongSoNgay == 18)   // ✅ chỉ lấy sinh viên đủ 18 ngày
-                            orderby sv.HoTen
+                                  && (snld != null && snld.TongSoNgay == 18)
                             select new
                             {
                                 id = phieu.id,
                                 MSSV = sv.MSSV,
                                 HoTen = sv.HoTen,
                                 Lop = lop.TenLop,
-                                Khoa = khoa.TenKhoa,
+                                Khoa = k.TenKhoa,
                                 SoNgay = snld != null ? snld.TongSoNgay : 0
                             };
+
+                // ✅ Lọc theo khoa nếu có truyền vào
+                if (!string.IsNullOrEmpty(khoa))
+                {
+                    query = query.Where(x => x.Khoa.Equals(khoa, StringComparison.OrdinalIgnoreCase));
+                }
+
+                // ✅ Lọc theo từ khóa nếu có truyền vào
+                if (!string.IsNullOrEmpty(keyword))
+                {
+                    keyword = keyword.Trim();
+                    query = query.Where(x =>
+                        x.MSSV.ToString() == keyword || // khớp chính xác MSSV
+                        x.HoTen.Equals(keyword, StringComparison.OrdinalIgnoreCase) || // khớp chính xác Họ tên
+                        x.Lop.Contains(keyword) || // cho phép tìm mờ theo lớp
+                        x.Khoa.Contains(keyword)); // cho phép tìm mờ theo khoa
+                }
+
+                query = query.OrderBy(x => x.HoTen);
 
                 int totalItems = query.Count();
                 int totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
@@ -55,6 +73,8 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                 }, JsonRequestBehavior.AllowGet);
             }
         }
+
+
 
 
 

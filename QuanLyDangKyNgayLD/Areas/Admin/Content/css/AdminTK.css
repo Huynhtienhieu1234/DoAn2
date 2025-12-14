@@ -1,0 +1,172 @@
+﻿
+/* Nền parallax toàn trang */
+body {
+    background: linear-gradient(135deg, #e0f7fa, #c8e6c9) fixed;
+    background-attachment: fixed; /* Parallax nhẹ */
+    background-size: cover;
+    min-height: 100vh;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 20px;
+}
+
+/* Container chính để nội dung không dính cạnh */
+.container-fluid {
+    background: rgba(255, 255, 255, 0.92);
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(5px); /* Hiệu ứng kính mờ nhẹ */
+}
+
+h2 {
+    font-weight: 700;
+    color: #00796b;
+    text-align: center;
+    margin-bottom: 30px;
+    position: relative;
+}
+
+    h2::after {
+        content: '';
+        width: 100px;
+        height: 4px;
+        background: linear-gradient(to right, #009688, #4caf50);
+        display: block;
+        margin: 10px auto;
+        border-radius: 2px;
+    }
+
+/* Form lọc */
+form {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+.btn-primary {
+    background: linear-gradient(to right, #009688, #00796b);
+    border: none;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+    .btn-primary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 15px rgba(0, 150, 136, 0.3);
+    }
+
+    /* Ripple effect cho button */
+    .btn-primary::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        background: rgba(255,255,255,0.3);
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        transition: width 0.6s, height 0.6s;
+    }
+
+    .btn-primary:active::after {
+        width: 300px;
+        height: 300px;
+    }
+
+/* Cards thống kê */
+.stats-card {
+    border: none;
+    border-radius: 15px;
+    overflow: hidden;
+    transition: all 0.4s ease;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+}
+
+    .stats-card:hover {
+        transform: translateY(-10px) scale(1.03);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+    }
+
+.total-card {
+    background: linear-gradient(135deg, #42a5f5, #1e88e5);
+}
+
+.completed-card {
+    background: linear-gradient(135deg, #66bb6a, #43a047);
+}
+
+.incomplete-card {
+    background: linear-gradient(135deg, #ef5350, #d32f2f);
+}
+
+.card-header {
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.card-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+}
+
+/* Progress bar */
+.progress {
+    height: 30px;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.progress-bar {
+    background: linear-gradient(to right, #43a047, #66bb6a);
+    animation: progressAnimate 2s ease-in-out;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+@keyframes progressAnimate {
+    0% {
+        width: 0%;
+    }
+}
+
+/* Table */
+.table {
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+}
+
+    .table thead {
+        background: linear-gradient(to right, #009688, #00796b);
+        color: white;
+    }
+
+    .table tbody tr {
+        transition: all 0.3s ease;
+    }
+
+        .table tbody tr:hover {
+            background: #e0f2f1;
+            transform: scale(1.01);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+
+    .table td {
+        vertical-align: middle;
+    }
+
+/* Responsive */
+@media (max-width: 768px) {
+    .row .col-md-4 {
+        margin-bottom: 20px;
+    }
+}
+
+

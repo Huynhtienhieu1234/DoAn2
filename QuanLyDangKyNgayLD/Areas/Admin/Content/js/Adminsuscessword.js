@@ -1,15 +1,18 @@
 ﻿document.addEventListener("DOMContentLoaded", function () {
+
+    /* ================== STATE ================== */
     let currentPage = 1;
     const pageSize = 5;
     let totalPages = 1;
 
-    // Hàm hiển thị toast
+    let searchKeyword = "";
+    let khoa = "";
 
-
-    // Tạo loading overlay động
+    /* ================== LOADING OVERLAY ================== */
     function createLoadingOverlay() {
         const tableContainer = document.querySelector('.table-responsive');
         if (!tableContainer) return null;
+
         let overlay = tableContainer.querySelector('.loading-overlay');
         if (!overlay) {
             overlay = document.createElement('div');
@@ -23,7 +26,8 @@
 
     function showLoading() {
         const overlay = createLoadingOverlay();
-        if (overlay) overlay.classList.add('active');
+        overlay?.classList.add('active');
+
         const pagination = document.querySelector('.d-flex.justify-content-center.mt-3');
         if (pagination) {
             pagination.style.opacity = '0';
@@ -33,7 +37,8 @@
 
     function hideLoading() {
         const overlay = document.querySelector('.loading-overlay');
-        if (overlay) overlay.classList.remove('active');
+        overlay?.classList.remove('active');
+
         const pagination = document.querySelector('.d-flex.justify-content-center.mt-3');
         if (pagination) {
             setTimeout(() => {
@@ -44,117 +49,140 @@
         }
     }
 
-    // Hàm load danh sách phiếu
+    /* ================== LOAD DATA ================== */
     function loadDanhSach(page = 1) {
         const tbody = document.getElementById("duyetTableBody");
-        if (!tbody) {
-            console.error("Không tìm thấy #duyetTableBody trong DOM.");
-            return;
-        }
+        if (!tbody) return;
+
         showLoading();
-        tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted py-4">Đang tải...</td></tr>`;
-        fetch(`/Admin/AdminSuscesWord/GetList?page=${page}&pageSize=${pageSize}`)
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="7" class="text-center text-muted py-4">Đang tải...</td>
+            </tr>`;
+
+        fetch(`/Admin/AdminSuscesWord/GetList?page=${page}&pageSize=${pageSize}&keyword=${encodeURIComponent(searchKeyword)}&khoa=${encodeURIComponent(khoa)}`)
             .then(r => r.json())
             .then(res => {
                 const data = res.data || [];
-                currentPage = res.currentPage;
+                currentPage = res.currentPage || 1;
                 totalPages = res.totalPages || 1;
+
                 tbody.innerHTML = "";
+
+                /* ===== KHÔNG CÓ DỮ LIỆU ===== */
                 if (data.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted py-4">Không có dữ liệu</td></tr>`;
+                    const hasFilter = searchKeyword || khoa;
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-4">
+                                ${hasFilter
+                            ? "Không tìm thấy dữ liệu phù hợp với điều kiện tìm kiếm / lọc"
+                            : "Không có dữ liệu"}
+                            </td>
+                        </tr>`;
                     hideLoading();
                     return;
                 }
+
+                /* ===== RENDER ROW ===== */
                 data.forEach((item, index) => {
-                    const row = document.createElement("tr");
-                    row.style.animationDelay = `${index * 0.1}s`;
-                    row.style.opacity = '0';
-                    row.innerHTML = `
+                    const tr = document.createElement("tr");
+                    tr.style.opacity = "0";
+                    tr.style.animationDelay = `${index * 0.08}s`;
+
+                    tr.innerHTML = `
                         <td class="text-center">${(currentPage - 1) * pageSize + index + 1}</td>
                         <td class="text-center">${item.MSSV}</td>
-                        <td class="text-start">${item.HoTen}</td>
-                        <td class="text-start">${item.Lop}</td>
-                        <td class="text-start">${item.Khoa}</td>
+                        <td>${item.HoTen}</td>
+                        <td>${item.Lop}</td>
+                        <td>${item.Khoa}</td>
                         <td class="text-center">${item.SoNgay ?? 0}</td>
                         <td class="text-center">
                             <button class="btn btn-sm btn-success btn-duyet" data-id="${item.id}">
                                 Duyệt
                             </button>
                         </td>`;
-                    tbody.appendChild(row);
+                    tbody.appendChild(tr);
+
                     setTimeout(() => {
-                        row.style.animation = 'rowSlideDown 0.5s ease-out forwards';
+                        tr.style.animation = 'rowSlideDown 0.45s ease-out forwards';
                     }, 10);
                 });
+
                 renderPagination();
                 hideLoading();
-                setTimeout(() => {
-                    const buttons = document.querySelectorAll('.btn-duyet');
-                    buttons.forEach((btn, index) => {
-                        btn.style.animationDelay = `${index * 0.05}s`;
-                        btn.style.animation = 'buttonFadeIn 0.6s ease-out forwards';
-                    });
-                }, 500);
             })
             .catch(err => {
                 console.error(err);
-                tbody.innerHTML = `<tr><td colspan="7" class="text-center text-danger py-4">Lỗi tải dữ liệu!</td></tr>`;
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="text-center text-danger py-4">
+                            Lỗi tải dữ liệu!
+                        </td>
+                    </tr>`;
                 hideLoading();
             });
     }
 
-    // Hàm render phân trang
+    /* ================== PAGINATION ================== */
     function renderPagination() {
         const container = document.getElementById("pageNumbers");
         if (!container) return;
+
         container.innerHTML = "";
+
         for (let i = 1; i <= totalPages; i++) {
             const btn = document.createElement("button");
             btn.className = `btn btn-sm mx-1 ${i === currentPage ? "btn-primary active" : "btn-outline-primary"}`;
             btn.textContent = i;
-            btn.style.animationDelay = `${i * 0.05}s`;
-            btn.style.opacity = '0';
-            btn.style.animation = 'fadeInScale 0.5s ease-out forwards';
+
             btn.addEventListener("click", () => {
-                currentPage = i;
-                loadDanhSach(i);
+                if (i !== currentPage) {
+                    currentPage = i;
+                    loadDanhSach(i);
+                }
             });
+
             container.appendChild(btn);
         }
-        const prev = document.getElementById("prev");
-        const next = document.getElementById("next");
-        if (prev) prev.disabled = currentPage <= 1;
-        if (next) next.disabled = currentPage >= totalPages;
-        if (prev) {
-            prev.style.animation = 'fadeInScale 0.5s ease-out 0.1s forwards';
-            prev.style.opacity = '0';
-        }
-        if (next) {
-            next.style.animation = 'fadeInScale 0.5s ease-out 0.15s forwards';
-            next.style.opacity = '0';
-        }
+
+        document.getElementById("prev")?.toggleAttribute("disabled", currentPage <= 1);
+        document.getElementById("next")?.toggleAttribute("disabled", currentPage >= totalPages);
     }
 
     document.getElementById("prev")?.addEventListener("click", () => {
         if (currentPage > 1) loadDanhSach(currentPage - 1);
     });
+
     document.getElementById("next")?.addEventListener("click", () => {
         if (currentPage < totalPages) loadDanhSach(currentPage + 1);
     });
 
+    /* ================== SEARCH & FILTER ================== */
+    let searchTimer;
+    document.getElementById("searchBox")?.addEventListener("input", function () {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(() => {
+            searchKeyword = this.value.trim();
+            currentPage = 1;
+            loadDanhSach(1);
+        }, 300);
+    });
 
-    // ✅ Xử lý nút Duyệt (DÙNG TOAST CHUNG)
+    document.getElementById("khoaFilter")?.addEventListener("change", function () {
+        khoa = this.value;
+        currentPage = 1;
+        loadDanhSach(1);
+    });
+
+    /* ================== DUYỆT ================== */
     document.addEventListener("click", e => {
         const btn = e.target.closest(".btn-duyet");
         if (!btn) return;
 
-        btn.style.transform = 'scale(0.95)';
-        setTimeout(() => btn.style.transform = '', 150);
-
         const id = btn.dataset.id;
-
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Đang duyệt...';
         btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Đang duyệt...';
 
         fetch("/Admin/AdminSuscesWord/DuyetAjax", {
             method: "POST",
@@ -163,33 +191,28 @@
                 "X-RequestVerificationToken":
                     document.querySelector('input[name="__RequestVerificationToken"]')?.value || ""
             },
-            body: JSON.stringify({ id: parseInt(id) })
+            body: JSON.stringify({ id: Number(id) })
         })
             .then(r => r.json())
             .then(res => {
                 if (res.success) {
+                    btn.className = "btn btn-sm btn-outline-success";
                     btn.innerHTML = '<i class="fas fa-check me-1"></i> Đã duyệt';
-                    btn.className = 'btn btn-sm btn-outline-success';
-
-                    // ✅ DÙNG TOAST CHUNG TỪ VIEWSHARE
                     window.showToast(res.message || "Duyệt thành công!", "success");
-
-                    setTimeout(() => loadDanhSach(currentPage), 1200);
+                    setTimeout(() => loadDanhSach(currentPage), 1000);
                 } else {
-                    btn.innerHTML = 'Duyệt';
                     btn.disabled = false;
-
+                    btn.innerHTML = "Duyệt";
                     window.showToast(res.message || "Duyệt thất bại!", "error");
                 }
             })
             .catch(() => {
-                btn.innerHTML = 'Duyệt';
                 btn.disabled = false;
-
+                btn.innerHTML = "Duyệt";
                 window.showToast("Lỗi kết nối server!", "error");
             });
     });
 
-
-    setTimeout(() => { loadDanhSach(1); }, 300);
+    /* ================== INIT ================== */
+    setTimeout(() => loadDanhSach(1), 300);
 });

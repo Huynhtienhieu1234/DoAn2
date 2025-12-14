@@ -134,6 +134,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Areas\Admin\Content\css\Adminsuscessword.css" />
+    <Content Include="Areas\Admin\Content\css\AdminTK.css" />
     <Content Include="Areas\Admin\Content\js\Adminsuscessword.js" />
     <Content Include="Areas\Admin\Content\js\duyetHandler.js" />
     <Content Include="Areas\Content\AdminStudentRegister\AdminExportStudent.js" />
@@ -162,6 +163,7 @@
     <Content Include="Areas\Student\Views\MainSinhVien\Index.cshtml" />
     <Content Include="Areas\Student\Views\MainSinhVien\Detail.cshtml" />
     <Content Include="Areas\Admin\Views\AdminSuscesWord\Index.cshtml" />
+    <Content Include="Areas\Admin\Views\AdminTK\Index.cshtml" />
     <None Include="Areas\Student\Views\Shared\Viewsiderbar.cshtml" />
     <Content Include="Areas\Student\Content\Css\Siderbarmain.css" />
     <Content Include="Areas\Student\Content\Css\Table.css" />
@@ -186,7 +188,9 @@
     <Compile Include="Areas\Admin\Controllers\AdminController.cs" />
     <Compile Include="Areas\Admin\Controllers\AdminStudentController.cs" />
     <Compile Include="Areas\Admin\Controllers\AdminSuscesWordController.cs" />
+    <Compile Include="Areas\Admin\Controllers\AdminTKController.cs" />
     <Compile Include="Areas\Admin\Controllers\AdminWordRegisterController.cs" />
+    <Compile Include="Areas\Admin\ViewModel\StudentProgressViewModel.cs" />
     <Compile Include="Areas\Models\AdminThongKeViewModel.cs" />
     <Compile Include="Areas\LopPhoLaoDong\Controllers\MainLPLDController.cs" />
     <Compile Include="Areas\LopPhoLaoDong\LopPhoLaoDongAreaRegistration.cs" />

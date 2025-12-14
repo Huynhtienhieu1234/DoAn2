@@ -1,0 +1,190 @@
+﻿@using QuanLyDangKyNgayLD.Areas.Admin.ViewModel
+@model IEnumerable<StudentProgressViewModel>
+
+@{
+    ViewBag.Title = "Thống kê tiến độ lao động";
+    Layout = "~/Areas/Admin/Views/Shared/ViewShare.cshtml";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/Areas/Admin/Content/css/AdminTK.css" />
+}
+
+
+<h2 class="mb-4">Thống kê tiến độ lao động sinh viên</h2>
+
+<!-- Bộ lọc khoa -->
+<form method="get" class="mb-3">
+    <input type="hidden" name="page" value="@ViewBag.CurrentPage" />
+
+    <label for="khoa" class="me-2 fw-bold">Chọn khoa:</label>
+    <select name="khoa" id="khoa" class="form-select form-select-sm w-auto d-inline-block">
+        <option value="">-- Tất cả khoa --</option>
+        <option value="Công nghệ và kỹ thuật" @(ViewBag.Khoa == "Công nghệ và kỹ thuật" ? "selected" : "")>Công nghệ và kỹ thuật</option>
+        <option value="Khoa Ngoại ngữ" @(ViewBag.Khoa == "Khoa Ngoại ngữ" ? "selected" : "")>Khoa Ngoại ngữ</option>
+        <option value="Khoa Kinh tế - Luật" @(ViewBag.Khoa == "Khoa Kinh tế - Luật" ? "selected" : "")>Khoa Kinh tế - Luật</option>
+        <!-- các khoa khác -->
+    </select>
+    <button type="submit"
+            class="btn btn-primary btn-sm ms-2"
+            onclick="this.form.page.value = 1">
+        Xem thống kê
+    </button>
+</form>
+
+
+<!-- Thống kê tổng quan -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card text-white bg-primary">
+            <div class="card-header">Tổng số sinh viên</div>
+            <div class="card-body">
+                <h5 class="card-title">@ViewBag.TongSinhVien</h5>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-white bg-success">
+            <div class="card-header">Đã hoàn thành (≥18 ngày)</div>
+            <div class="card-body">
+                <h5 class="card-title">@ViewBag.DaHoanThanh</h5>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-white bg-danger">
+            <div class="card-header">Chưa hoàn thành</div>
+            <div class="card-body">
+                <h5 class="card-title">@ViewBag.ChuaHoanThanh</h5>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Thanh tiến độ -->
+<div class="mb-4">
+    <h5>Tiến độ hoàn thành:</h5>
+    <div class="progress">
+        <div class="progress-bar" role="progressbar"
+             style="width: @ViewBag.TienDoHoanThanh%" aria-valuenow="@ViewBag.TienDoHoanThanh"
+             aria-valuemin="0" aria-valuemax="100">
+            @ViewBag.TienDoHoanThanh%
+        </div>
+    </div>
+</div>
+
+<!-- Danh sách sinh viên -->
+<div id="admin-tk-page">
+    <div id="studentTable">
+
+        <!-- Danh sách sinh viên -->
+        <table class="table table-bordered table-hover">
+            <thead class="table-primary text-center">
+                <tr>
+                    <th>STT</th>
+                    <th>MSSV</th>
+                    <th>Họ và tên</th>
+                    <th>Lớp</th>
+                    <th>Khoa</th>
+                    <th>Số ngày đã hoàn thành</th>
+                </tr>
+            </thead>
+            <tbody class="student-table-body">
+                @if (Model != null && Model.Any())
+                {
+                    int stt = (ViewBag.CurrentPage - 1) * 10 + 1;
+
+                    foreach (var sv in Model)
+                    {
+                        <tr class="student-row">
+                            <td class="col-stt text-center">@stt</td>
+                            <td class="col-mssv text-center">@sv.MSSV</td>
+                            <td class="col-name">@sv.HoTen</td>
+                            <td class="col-class text-center">@sv.Lop</td>
+                            <td class="col-faculty">@sv.Khoa</td>
+                            <td class="col-days text-center fw-bold">@sv.SoNgay</td>
+                        </tr>
+                        stt++;
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-3">
+                            Không có dữ liệu
+                        </td>
+                    </tr>
+                }
+            </tbody>
+
+        </table>
+
+        @if (ViewBag.TotalPages > 1)
+        {
+            <nav class="d-flex justify-content-center mt-3">
+                <ul class="pagination">
+
+                    <!-- Trang trước -->
+                    <li class="page-item @(ViewBag.CurrentPage == 1 ? "disabled" : "")">
+                        <a href="#"
+                           class="page-link"
+                           onclick="loadData(@(ViewBag.CurrentPage - 1)); return false;">
+                            &laquo;
+                        </a>
+                    </li>
+
+                    <!-- Các trang -->
+                    @for (int i = 1; i <= ViewBag.TotalPages; i++)
+                    {
+                        <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                            <a href="#"
+                               class="page-link"
+                               onclick="loadData(@i); return false;">
+                                @i
+                            </a>
+                        </li>
+                    }
+
+                    <!-- Trang sau -->
+                    <li class="page-item @(ViewBag.CurrentPage == ViewBag.TotalPages ? "disabled" : "")">
+                        <a href="#"
+                           class="page-link"
+                           onclick="loadData(@(ViewBag.CurrentPage + 1)); return false;">
+                            &raquo;
+                        </a>
+                    </li>
+
+                </ul>
+            </nav>
+        }
+
+    </div>
+</div>
+
+
+
+
+
+    <script>
+        function loadData(page = 1) {
+            const khoa = document.getElementById("khoa").value;
+
+            fetch(`/Admin/AdminTK/Index?khoa=${encodeURIComponent(khoa)}&page=${page}`, {
+                headers: { "X-Requested-With": "XMLHttpRequest" }
+            })
+                .then(res => res.text())
+                .then(html => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, "text/html");
+
+                    const newTable = doc.querySelector("#studentTable");
+                    document.getElementById("studentTable").innerHTML = newTable.innerHTML;
+                });
+        }
+
+        // Khi đổi khoa → load lại trang 1 (KHÔNG reload)
+        document.getElementById("khoa").addEventListener("change", function () {
+            loadData(1);
+        });
+    </script>
+
