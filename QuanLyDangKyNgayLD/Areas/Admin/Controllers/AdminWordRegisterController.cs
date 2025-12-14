@@ -61,7 +61,14 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
             string keyword = "",
             string buoi = "",
             string trangThai = "",
-            int? thang = null 
+            int? thang = null,
+            string ngay = null,
+
+            string sortField = "date",   
+            string sortDir = "desc"
+
+
+
         )
         {
             using (var db = DbContextFactory.Create())
@@ -99,16 +106,61 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                     query = query.Where(x => x.NgayLaoDong.HasValue && x.NgayLaoDong.Value.Month == thang.Value);
                 }
 
+                // ✅ Bước 5.5: Lọc theo NGÀY CỤ THỂ (dd/MM/yyyy từ search box)
+                if (!string.IsNullOrEmpty(ngay))
+                {
+                    DateTime d = DateTime.Parse(ngay);
+
+                    query = query.Where(x =>
+                        x.NgayLaoDong.HasValue &&
+                        x.NgayLaoDong.Value.Year == d.Year &&
+                        x.NgayLaoDong.Value.Month == d.Month &&
+                        x.NgayLaoDong.Value.Day == d.Day
+                    );
+                }
+
+
                 // Bước 6: Tính tổng số dòng và số trang
                 int totalItems = query.Count();
                 int totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
 
                 // Bước 7: Lấy dữ liệu theo trang
+                // ===================== SORT SERVER SIDE =====================
+                switch (sortField)
+                {
+                    case "date":
+                        query = sortDir == "asc"
+                            ? query.OrderBy(x => x.NgayLaoDong)
+                            : query.OrderByDescending(x => x.NgayLaoDong);
+                        break;
+
+                    case "quantity":
+                        query = sortDir == "asc"
+                            ? query.OrderBy(x => db.PhieuDangKies
+                                .Count(p => p.TaoDotLaoDong_id == x.TaoDotLaoDong_id))
+                            : query.OrderByDescending(x => db.PhieuDangKies
+                                .Count(p => p.TaoDotLaoDong_id == x.TaoDotLaoDong_id));
+                        break;
+
+                    case "status":
+                        query = sortDir == "asc"
+                            ? query.OrderBy(x => x.TrangThaiDuyet)
+                            : query.OrderByDescending(x => x.TrangThaiDuyet);
+                        break;
+
+                    default:
+                        query = query.OrderByDescending(x => x.NgayLaoDong);
+                        break;
+                }
+                // ===========================================================
+
                 var rawItems = query
-                    .OrderByDescending(x => x.NgayLaoDong)
                     .Skip((page - 1) * pageSize)
                     .Take(pageSize)
                     .ToList();
+
+
+
 
                 // Bước 8: Xử lý dữ liệu để trả về JSON
                 var items = rawItems.Select(x => new

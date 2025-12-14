@@ -54,6 +54,11 @@ document.addEventListener("DOMContentLoaded", function () {
     const pageSize = 5;
     let currentLoadedItems = []; // chứa dữ liệu đang hiển thị
 
+
+    let currentSortField = localStorage.getItem("sortField") || "date";
+    let currentSortDir = localStorage.getItem("sortDir") || "desc";
+    let thang = "";
+
     // ==============================
     // 1) Tải dữ liệu lần đầu
     // ==============================
@@ -86,9 +91,13 @@ document.addEventListener("DOMContentLoaded", function () {
                     loadDataToTable(currentPage);
 
                     // Sau khi tải xong, sắp xếp lại để dòng mới nằm cuối
-                    setTimeout(() => {
-                        sortDotLaoDong(true); // hoặc false nếu bạn muốn tháng mới nhất lên đầu
-                    }, 400);
+                    //setTimeout(() => {
+                    //    sortDotLaoDong(true); // hoặc false nếu bạn muốn tháng mới nhất lên đầu
+                    //}, 400);
+
+
+
+
                 } else {
                     showToast(data.message || "Tạo thất bại!");
                 }
@@ -99,7 +108,35 @@ document.addEventListener("DOMContentLoaded", function () {
             });
     });
 
+    function isDateSearch(value) {
+        return /^\d{2}\/\d{2}\/\d{4}$/.test(value);
+    }
+
+    function convertToISODate(ddmmyyyy) {
+        const [day, month, year] = ddmmyyyy.split('/');
+        return `${year}-${month}-${day}`;
+    }
+
+
+
+
     function loadDataToTable(page = 1, keyword = "", buoi = "", trangthai = "") {
+
+        // ===== XỬ LÝ SEARCH BOX =====
+        const keywordRaw = document.getElementById("searchBox")?.value.trim() || "";
+
+        let keywordFinal = "";
+        let ngay = "";
+
+        if (isDateSearch(keywordRaw)) {
+            ngay = convertToISODate(keywordRaw); // yyyy-MM-dd
+        } else {
+            keywordFinal = keywordRaw;
+        }
+        // ============================
+
+
+        // Kiểm tra nếu từ khóa là ngày tháng
         const tbody = document.getElementById("dotLaoDongTableBody");
         const tableWrapper = document.querySelector(".table-responsive");
 
@@ -114,7 +151,7 @@ document.addEventListener("DOMContentLoaded", function () {
         </tr>
     `;
 
-        fetch(`/Admin/AdminWordRegister/LoadDotLaoDong?page=${page}&pageSize=${pageSize}&keyword=${encodeURIComponent(keyword)}&buoi=${encodeURIComponent(buoi)}&trangThai=${encodeURIComponent(trangthai)}`)
+        fetch(`/Admin/AdminWordRegister/LoadDotLaoDong?page=${page}&pageSize=${pageSize}&keyword=${encodeURIComponent(keywordFinal)}&buoi=${encodeURIComponent(buoi)}&trangThai=${encodeURIComponent(trangthai)}&ngay=${encodeURIComponent(ngay)}&thang=${thang ?? ""}&sortField=${currentSortField}&sortDir=${currentSortDir}`)
             .then(res => res.json())
 
             .then(data => {
@@ -137,6 +174,22 @@ document.addEventListener("DOMContentLoaded", function () {
                 tbody.innerHTML = "<tr><td colspan='10' class='text-center text-danger'>Lỗi tải dữ liệu</td></tr>";
             });
     }
+
+    function setSort(field) {
+        if (currentSortField === field) {
+            currentSortDir = currentSortDir === "asc" ? "desc" : "asc";
+        } else {
+            currentSortField = field;
+            currentSortDir = "asc";
+        }
+
+        localStorage.setItem("sortField", currentSortField);
+        localStorage.setItem("sortDir", currentSortDir);
+
+        currentPage = 1;
+        triggerReload();
+    }
+
 
     // ==============================
     // 3) Render bảng
@@ -255,6 +308,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         function gotoPage(p) {
             const keyword = document.getElementById("searchBox")?.value || "";
+
             const buoi = document.getElementById("sessionFilter")?.value || "";
             const trangThai = document.getElementById("statusFilter")?.value || "";
             currentPage = p;
@@ -836,49 +890,11 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
 
+    
 
 
 
 
-
-    // ==============================
-    // 10. Tăng dần giảm dần
-    // ==============================
-    document.getElementById("sortMonthSelect")?.addEventListener("change", function () {
-        const value = this.value;
-        if (value === "asc") sortDotLaoDong(true);
-        else if (value === "desc") sortDotLaoDong(false);
-    });
-
-    function sortDotLaoDong(isAsc) {
-        const tbody = document.getElementById("dotLaoDongTableBody");
-        const rows = Array.from(tbody.querySelectorAll("tr"));
-
-        // Map tên tháng sang số để dễ sắp xếp
-        const monthMap = {
-            "Tháng 1": 1, "Tháng 2": 2, "Tháng 3": 3, "Tháng 4": 4,
-            "Tháng 5": 5, "Tháng 6": 6, "Tháng 7": 7, "Tháng 8": 8,
-            "Tháng 9": 9, "Tháng 10": 10, "Tháng 11": 11, "Tháng 12": 12
-        };
-
-        // Sắp xếp theo tháng
-        rows.sort((a, b) => {
-            const aText = a.querySelector("td:nth-child(2)")?.textContent.trim() || "";
-            const bText = b.querySelector("td:nth-child(2)")?.textContent.trim() || "";
-            const aMonth = monthMap[aText] || 0;
-            const bMonth = monthMap[bText] || 0;
-            return isAsc ? aMonth - bMonth : bMonth - aMonth;
-        });
-
-        // Xóa nội dung cũ và render lại
-        tbody.innerHTML = "";
-        rows.forEach((row, i) => {
-            // ✅ STT theo trang hiện tại
-            const stt = (currentPage - 1) * pageSize + i + 1;
-            row.querySelector("td:first-child").textContent = stt;
-            tbody.appendChild(row);
-        });
-    }
 
 
 
@@ -1044,6 +1060,23 @@ document.addEventListener("DOMContentLoaded", function () {
         const modalInstance = bootstrap.Modal.getInstance(modalEl);
         if (modalInstance) modalInstance.hide();
     }
+
+    document.getElementById("sortMonthSelect")?.addEventListener("change", function () {
+        const value = this.value;
+        if (!value) return;
+
+        // Mặc định sort theo NGÀY LAO ĐỘNG
+        currentSortField = "date";
+        currentSortDir = value;
+
+        localStorage.setItem("sortField", currentSortField);
+        localStorage.setItem("sortDir", currentSortDir);
+
+        currentPage = 1;
+        triggerReload();
+    });
+
+
 
 
 
