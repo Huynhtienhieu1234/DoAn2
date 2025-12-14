@@ -67,8 +67,6 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
 
 
 
-
-
         // lấy dữ liêu
         [HttpGet]
         public ActionResult GetAccounts(int page = 1, int pageSize = 100)
@@ -107,9 +105,6 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                 }, JsonRequestBehavior.AllowGet);
             }
         }
-
-
-
 
 
 

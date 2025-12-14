@@ -3,121 +3,181 @@ using System.Linq;
 using System.Web.Mvc;
 using QuanLyDangKyNgayLD.Factories;
 using QuanLyDangKyNgayLD.Areas.Admin.ViewModel;
+using OfficeOpenXml;          // EPPlus
+using OfficeOpenXml.Style;    // Style cho Excel
+using System.Drawing;         // Màu sắc
+using System.IO;
 
 namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
 {
     public class AdminTKController : Controller
     {
-        // GET: Admin/AdminTK
-        public ActionResult Index(string khoa = "", int page = 1)
+        private const int PAGE_SIZE = 5;
+
+        // Trang chính
+        public ActionResult Index()
+        {
+            // Trang chỉ load khung, dữ liệu sẽ gọi bằng AJAX
+            return View();
+        }
+
+        // Load dữ liệu phân trang (AJAX → JSON)
+        public JsonResult LoadData(string khoa = "", string lop = "", int page = 1)
         {
             const int PAGE_SIZE = 5;
 
             using (var db = DbContextFactory.Create())
             {
-                // ===== QUERY GỐC =====
                 var query = from sv in db.SinhViens
                             where sv.Deleted_at == null
-                            join lop in db.Lops on sv.Lop_id equals lop.Lop_id
-                            join k in db.Khoas on lop.Khoa_id equals k.Khoa_id
+                            join lopObj in db.Lops on sv.Lop_id equals lopObj.Lop_id
+                            join k in db.Khoas on lopObj.Khoa_id equals k.Khoa_id
                             join snld in db.SoNgayLaoDongs on sv.MSSV equals snld.MSSV into snldGroup
                             select new StudentProgressViewModel
                             {
                                 MSSV = sv.MSSV,
                                 HoTen = sv.HoTen,
-                                Lop = lop.TenLop,
+                                Lop = lopObj.TenLop,
                                 Khoa = k.TenKhoa,
                                 SoNgay = snldGroup.Sum(x => (int?)x.TongSoNgay) ?? 0
                             };
 
-                // ===== LỌC THEO KHOA =====
                 if (!string.IsNullOrEmpty(khoa))
-                {
                     query = query.Where(x => x.Khoa == khoa);
-                }
 
-                // ===== THỐNG KÊ =====
-                int tongSV = query.Count();
-                int daHoanThanh = query.Count(x => x.SoNgay >= 18);
+                if (!string.IsNullOrEmpty(lop))
+                    query = query.Where(x => x.Lop == lop);
+
+                var allData = query.ToList(); // thực thi sớm để tránh deferred execution
+
+                int tongSV = allData.Count();
+                int daHoanThanh = allData.Count(x => x.SoNgay >= 18);
                 int chuaHoanThanh = tongSV - daHoanThanh;
-                double tienDo = tongSV > 0
-                    ? Math.Round((double)daHoanThanh / tongSV * 100, 2)
-                    : 0;
+                double tienDo = tongSV > 0 ? Math.Round((double)daHoanThanh / tongSV * 100, 2) : 0;
 
-                // ===== VIEWBAG =====
-                ViewBag.Khoa = khoa;
-                ViewBag.TongSinhVien = tongSV;
-                ViewBag.DaHoanThanh = daHoanThanh;
-                ViewBag.ChuaHoanThanh = chuaHoanThanh;
-                ViewBag.TienDoHoanThanh = tienDo;
-
-                // ===== PHÂN TRANG =====
-                int totalPages = (int)Math.Ceiling((double)tongSV / PAGE_SIZE);
+                int totalPages = tongSV > 0 ? (int)Math.Ceiling((double)tongSV / PAGE_SIZE) : 1;
                 page = page < 1 ? 1 : page;
+                if (page > totalPages) page = totalPages;
 
-                ViewBag.CurrentPage = page;
-                ViewBag.TotalPages = totalPages;
-
-                var listSV = query
+                var listSV = allData
                     .OrderBy(x => x.MSSV)
                     .Skip((page - 1) * PAGE_SIZE)
                     .Take(PAGE_SIZE)
                     .ToList();
 
-                // ===== TRẢ VIEW =====
-                return View(listSV);
+                return Json(new
+                {
+                    Students = listSV,
+                    Stats = new
+                    {
+                        TongSinhVien = tongSV,
+                        DaHoanThanh = daHoanThanh,
+                        ChuaHoanThanh = chuaHoanThanh,
+                        TienDoHoanThanh = tienDo
+                    },
+                    Pagination = new
+                    {
+                        CurrentPage = page,
+                        TotalPages = totalPages
+                    }
+                }, JsonRequestBehavior.AllowGet);
             }
         }
 
-        public PartialViewResult LoadData(string khoa = "", int page = 1)
+        // Lấy danh sách lớp theo khoa
+        public JsonResult GetLopByKhoa(string khoa)
         {
-            const int PAGE_SIZE = 5;
-
             using (var db = DbContextFactory.Create())
             {
-                var query = from sv in db.SinhViens
-                            where sv.Deleted_at == null
-                            join lop in db.Lops on sv.Lop_id equals lop.Lop_id
-                            join k in db.Khoas on lop.Khoa_id equals k.Khoa_id
-                            join snld in db.SoNgayLaoDongs on sv.MSSV equals snld.MSSV into snldGroup
-                            select new StudentProgressViewModel
-                            {
-                                MSSV = sv.MSSV,
-                                HoTen = sv.HoTen,
-                                Lop = lop.TenLop,
-                                Khoa = k.TenKhoa,
-                                SoNgay = snldGroup.Sum(x => (int?)x.TongSoNgay) ?? 0
-                            };
-
-                if (!string.IsNullOrEmpty(khoa))
-                    query = query.Where(x => x.Khoa == khoa);
-
-                int tongSV = query.Count();
-                int daHoanThanh = query.Count(x => x.SoNgay >= 18);
-                int chuaHoanThanh = tongSV - daHoanThanh;
-                double tienDo = tongSV > 0
-                    ? Math.Round((double)daHoanThanh / tongSV * 100, 2)
-                    : 0;
-
-                ViewBag.TongSinhVien = tongSV;
-                ViewBag.DaHoanThanh = daHoanThanh;
-                ViewBag.ChuaHoanThanh = chuaHoanThanh;
-                ViewBag.TienDoHoanThanh = tienDo;
-
-                ViewBag.CurrentPage = page;
-                ViewBag.TotalPages = (int)Math.Ceiling((double)tongSV / PAGE_SIZE);
-
-                var listSV = query
-                    .OrderBy(x => x.MSSV)
-                    .Skip((page - 1) * PAGE_SIZE)
-                    .Take(PAGE_SIZE)
+                var lops = db.Lops
+                    .Where(l => string.IsNullOrEmpty(khoa) || l.Khoa.TenKhoa == khoa)
+                    .Select(l => l.TenLop)
+                    .Distinct()
+                    .OrderBy(x => x)
                     .ToList();
 
-                return PartialView("_StudentTable", listSV);
+                return Json(lops, JsonRequestBehavior.AllowGet);
             }
         }
 
+        // Xuất Excel bằng EPPlus
+        // Xuất Excel bằng EPPlus
+        public ActionResult ExportExcel(string khoa = "", string lop = "")
+        {
+            using (var db = DbContextFactory.Create())
+            {
+                var data = from sv in db.SinhViens
+                           where sv.Deleted_at == null
+                           join l in db.Lops on sv.Lop_id equals l.Lop_id
+                           join k in db.Khoas on l.Khoa_id equals k.Khoa_id
+                           join snld in db.SoNgayLaoDongs on sv.MSSV equals snld.MSSV into snldGroup
+                           select new
+                           {
+                               sv.MSSV,
+                               sv.HoTen,
+                               Lop = l.TenLop,
+                               Khoa = k.TenKhoa,
+                               SoNgay = snldGroup.Sum(x => (int?)x.TongSoNgay) ?? 0
+                           };
 
+                if (!string.IsNullOrEmpty(khoa))
+                    data = data.Where(x => x.Khoa == khoa);
+
+                if (!string.IsNullOrEmpty(lop))
+                    data = data.Where(x => x.Lop == lop);
+
+                using (var package = new ExcelPackage())
+                {
+                    var ws = package.Workbook.Worksheets.Add("DanhSachSinhVien");
+
+                    // Header
+                    ws.Cells[1, 1].Value = "STT";
+                    ws.Cells[1, 2].Value = "MSSV";
+                    ws.Cells[1, 3].Value = "Họ tên";
+                    ws.Cells[1, 4].Value = "Lớp";
+                    ws.Cells[1, 5].Value = "Khoa";
+                    ws.Cells[1, 6].Value = "Số ngày đã hoàn thành";
+
+                    using (var range = ws.Cells[1, 1, 1, 6])
+                    {
+                        range.Style.Font.Bold = true;
+                        range.Style.Fill.PatternType = ExcelFillStyle.Solid;
+                        range.Style.Fill.BackgroundColor.SetColor(Color.LightBlue);
+                        range.Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                        range.Style.Border.BorderAround(ExcelBorderStyle.Thin);
+                    }
+
+                    // Nội dung
+                    int row = 2;
+                    int stt = 1;
+                    foreach (var sv in data)
+                    {
+                        ws.Cells[row, 1].Value = stt;       // STT
+                        ws.Cells[row, 2].Value = sv.MSSV;
+                        ws.Cells[row, 3].Value = sv.HoTen;
+                        ws.Cells[row, 4].Value = sv.Lop;
+                        ws.Cells[row, 5].Value = sv.Khoa;
+                        ws.Cells[row, 6].Value = sv.SoNgay;
+
+                        ws.Cells[row, 1, row, 6].Style.Border.BorderAround(ExcelBorderStyle.Thin);
+                        ws.Cells[row, 1, row, 6].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+
+                        row++;
+                        stt++;
+                    }
+
+       
+
+                    var stream = new MemoryStream();
+                    package.SaveAs(stream);
+                    stream.Position = 0;
+
+                    return File(stream.ToArray(),
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        "DanhSachSinhVien.xlsx");
+                }
+            }
+        }
 
     }
 }
