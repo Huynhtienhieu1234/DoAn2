@@ -155,9 +155,11 @@
     <Content Include="Areas\Content\Js\adminCommon.js" />
     <Content Include="Areas\Content\Js\adminWordRegistor.js" />
     <Content Include="Areas\Content\AdminStudentRegister\AdminStudentRegister.js" />
+    <Content Include="Areas\Content\Js\CreateCode.js" />
     <Content Include="Areas\Student\Content\Css\Dashboard.css" />
     <Content Include="Areas\Student\Content\Css\Toast.css" />
     <Content Include="Areas\Student\Content\Js\Register\DeleteRegister.js" />
+    <Content Include="Areas\Student\Content\Js\StudentCheckDay\StudentCheckDay.js" />
     <Content Include="Areas\Student\Content\Js\StudentMain\StudentInfo.js" />
     <Content Include="Areas\Student\Content\Js\StudentMain\StudentMain.js" />
     <Content Include="Areas\Student\Content\Js\Viewsider\LayoutUser.js" />
@@ -195,6 +197,7 @@
     <Compile Include="Areas\Admin\ViewModel\StudentProgressViewModel.cs" />
     <Compile Include="Areas\Models\AdminThongKeViewModel.cs" />
     <Compile Include="Areas\Student\Controllers\MainSinhVienController.cs" />
+    <Compile Include="Areas\Student\Controllers\StudentCheckDayController.cs" />
     <Compile Include="Areas\Student\Controllers\StudentRegisterWordController.cs" />
     <Compile Include="Areas\Student\StudentAreaRegistration.cs" />
     <Compile Include="Controllers\ForgotPasswordController.cs" />
@@ -285,6 +288,7 @@
     <Content Include="Models\QuanLyDangKyLaoDong.edmx.diagram">
       <DependentUpon>QuanLyDangKyLaoDong.edmx</DependentUpon>
     </Content>
+    <Content Include="Areas\Student\Views\StudentCheckDay\Index.cshtml" />
     <None Include="packages.config" />
     <Content Include="Views\Login\Login.cshtml" />
     <Content Include="Views\ForgotPassword\ForgotPassword.cshtml" />

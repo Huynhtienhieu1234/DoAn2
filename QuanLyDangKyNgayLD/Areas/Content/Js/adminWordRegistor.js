@@ -198,61 +198,82 @@ document.addEventListener("DOMContentLoaded", function () {
         const tbody = document.getElementById("dotLaoDongTableBody");
         tbody.innerHTML = items.map((item, index) => {
             // Map buổi sang text hiển thị
-            let buoiText = item.Buoi;
+            let buoiText = item.Buoi || '';
             if (buoiText === "Sáng") buoiText = "Sáng (7h-8h30)";
             if (buoiText === "Chiều") buoiText = "Chiều (13h-14h)";
 
             return `
             <tr
-              data-id="${item.TaoDotLaoDong_id}" 
+              data-id="${item.TaoDotLaoDong_id}"
               data-mota="${(item.MoTa || '').replace(/"/g, '&quot;').replace(/\n/g, ' ')}"
               data-nguoitao="${String(item.NguoiTao || '').replace(/"/g, '&quot;')}"
             >
-            <td>${(page - 1) * pageSize + index + 1}</td>
-            <td>${item.DotLaoDong}</td>
-            <td>${buoiText}</td>
-            <td>${item.LoaiLaoDong || ""}</td>
-            <td class="text-success fw-bold">${item.GiaTri ?? ""}</td>
-            <td>${item.NgayLaoDong || ""}</td>
-            <td>${item.KhuVuc || ""}</td>
-            <td class="${item.SoLuongDangKy < item.SoLuongSinhVien ? 'text-danger fw-bold' : 'text-success fw-bold'} text-center">
-                ${item.SoLuongDangKy}/${item.SoLuongSinhVien}
-            </td>
-            <td>
-                <span class="badge ${item.TrangThaiDuyet === 'Đã duyệt' ? 'bg-success' : 'bg-warning text-dark'}">
-                    ${item.TrangThaiDuyet}
-                </span>
-            </td>
-            <td class="action-cell">
-                <button class="btn btn-sm btn-info btn-detail me-1 text-white" 
-                        data-id="${item.TaoDotLaoDong_id}" title="Chi tiết">
-                    <i class="fas fa-info-circle"></i>
-                </button>
-                ${item.TrangThaiDuyet === 'Chưa duyệt' ? `
-                    <button class="btn btn-sm btn-warning btn-edit me-1" 
-                            data-id="${item.TaoDotLaoDong_id}" title="Sửa">
-                        <i class="fas fa-edit"></i>
+                <td>${(page - 1) * pageSize + index + 1}</td>
+                <td>${item.DotLaoDong || ''}</td>
+                <td>${buoiText}</td>
+                <td>${item.LoaiLaoDong || ''}</td>
+                <td class="text-success fw-bold">${item.GiaTri ?? ''}</td>
+                <td>${item.NgayLaoDong || ''}</td>
+                <td>${item.KhuVuc || ''}</td>
+                <td class="${item.SoLuongDangKy < item.SoLuongSinhVien ? 'text-danger fw-bold' : 'text-success fw-bold'} text-center">
+                    ${item.SoLuongDangKy}/${item.SoLuongSinhVien}
+                </td>
+                <td>
+                    <span class="badge ${item.TrangThaiDuyet === 'Đã duyệt' ? 'bg-success' : 'bg-warning text-dark'}">
+                        ${item.TrangThaiDuyet}
+                    </span>
+                </td>
+                <td class="action-cell text-center d-flex justify-content-center gap-1 align-items-center flex-wrap">
+                    <!-- Nút Chi tiết - luôn hiển thị -->
+                    <button class="btn btn-sm btn-info btn-detail text-white"
+                            data-id="${item.TaoDotLaoDong_id}"
+                            title="Xem chi tiết đợt">
+                        <i class="fas fa-info-circle"></i>
                     </button>
-                    <button class="btn btn-sm btn-danger btn-delete me-1" 
-                            data-id="${item.TaoDotLaoDong_id}" title="Xóa">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                    <button class="btn btn-sm btn-success btn-approve" 
-                            data-id="${item.TaoDotLaoDong_id}" title="Duyệt">
-                        <i class="fas fa-check"></i>
-                    </button>
-                ` : ""}
-            </td>
-        </tr>
+
+                    <!-- 2 nút mới: chỉ hiển thị khi ĐÃ DUYỆT -->
+                    ${item.TrangThaiDuyet === 'Đã duyệt' ? `
+                        <button class="btn btn-sm btn-primary btn-show-code"
+                                data-id="${item.TaoDotLaoDong_id}"
+                                title="Hiển thị mã điểm danh">
+                            <i class="fas fa-key"></i>
+                        </button>
+                        <button class="btn btn-sm btn-success btn-view-attendance"
+                                data-id="${item.TaoDotLaoDong_id}"
+                                title="Xem danh sách sinh viên đã điểm danh">
+                            <i class="fas fa-list-check"></i>
+                        </button>
+                    ` : ''}
+
+                    <!-- Các nút cũ: chỉ hiển thị khi CHƯA DUYỆT -->
+                    ${item.TrangThaiDuyet === 'Chưa duyệt' ? `
+                        <button class="btn btn-sm btn-warning btn-edit"
+                                data-id="${item.TaoDotLaoDong_id}"
+                                title="Chỉnh sửa đợt">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-danger btn-delete"
+                                data-id="${item.TaoDotLaoDong_id}"
+                                title="Xóa đợt">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                        <button class="btn btn-sm btn-success btn-approve"
+                                data-id="${item.TaoDotLaoDong_id}"
+                                title="Duyệt đợt">
+                            <i class="fas fa-check"></i>
+                        </button>
+                    ` : ''}
+                </td>
+            </tr>
         `;
         }).join("");
 
+        // Hiệu ứng fade-in mượt mà
         setTimeout(() => {
             tbody.classList.remove("fade-out");
             tbody.classList.add("fade-in");
         }, 50);
     }
-
 
 
     // ==============================

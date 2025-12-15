@@ -319,7 +319,6 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
         }
 
         // AJAX: Duyệt đợt
-        // AJAX: Duyệt đợt
         [HttpPost]
         public ActionResult ApproveAjax(int id)
         {
@@ -331,7 +330,6 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                     if (dot == null || dot.Ngayxoa != null)
                         return Json(new { success = false, message = "Không tìm thấy đợt." });
 
-                    // Kiểm tra số lượng sinh viên đã đăng ký
                     int soDangKy = db.PhieuDangKies.Count(p => p.TaoDotLaoDong_id == id);
                     if (soDangKy < 5)
                     {
@@ -342,10 +340,8 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                         });
                     }
 
-                    // ✅ Duyệt đợt
                     dot.TrangThaiDuyet = true;
 
-                    // ✅ Cập nhật phiếu đăng ký và tạo phiếu duyệt với ID trùng nhau
                     var phieuList = db.PhieuDangKies.Where(p => p.TaoDotLaoDong_id == id).ToList();
                     foreach (var phieu in phieuList)
                     {
@@ -354,24 +350,23 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
 
                         var phieuDuyet = new PhieuDuyet
                         {
-                            PhieuDuyet_id = phieu.PhieuDangKy_id,   // ✅ ID phiếu duyệt = ID phiếu đăng ký
-                            Nguoiduyet = 1,
+                            PhieuDangKy = phieu.PhieuDangKy_id,
+                            Nguoiduyet = 1, // hoặc lấy từ Session
                             ThoiGian = DateTime.Now,
-                            PhieuDangKy = phieu.PhieuDangKy_id,     // liên kết tới phiếu đăng ký
                             TrangThai = "Đã duyệt"
                         };
-
                         db.PhieuDuyets.Add(phieuDuyet);
                     }
 
                     db.SaveChanges();
 
-                    return Json(new { success = true, message = "Đã duyệt đợt và tạo phiếu duyệt với ID trùng phiếu đăng ký." });
+                    return Json(new { success = true, message = "Đã duyệt đợt thành công!" });
                 }
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = "Lỗi: " + ex.Message });
+                var message = ex.InnerException?.InnerException?.Message ?? ex.InnerException?.Message ?? ex.Message;
+                return Json(new { success = false, message = "Lỗi: " + message });
             }
         }
 
@@ -553,6 +548,97 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                 return Json(new { success = false, message = "Lỗi: " + ex.Message }, JsonRequestBehavior.AllowGet);
             }
         }
+
+
+        // Xử lý sinh mã điểm danh
+
+
+        [HttpPost]
+        public JsonResult HienThiMaDiemDanh(int dotId)
+        {
+            try
+            {
+                using (var db = DbContextFactory.Create())
+                {
+                    var dot = db.TaoDotNgayLaoDongs.Find(dotId);
+                    if (dot == null || dot.Ngayxoa != null)
+                        return Json(new { success = false, message = "Không tìm thấy đợt lao động." });
+
+                    // Chỉ cho phép tạo mã khi đợt đã được duyệt
+                    if (dot.TrangThaiDuyet != true)
+                        return Json(new { success = false, message = "Đợt chưa được duyệt, không thể hiển thị mã điểm danh." });
+
+                    // Nếu chưa có mã → tự động tạo mới (6 ký tự chữ hoa + số)
+                    if (string.IsNullOrEmpty(dot.MaDiemDanh))
+                    {
+                        dot.MaDiemDanh = GenerateRandomCode(6);
+                        db.SaveChanges();
+                    }
+
+                    return Json(new
+                    {
+                        success = true,
+                        maDiemDanh = dot.MaDiemDanh,
+                        tenDot = dot.DotLaoDong ?? "Đợt lao động"
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Lỗi hệ thống: " + ex.Message });
+            }
+        }
+
+        // ==================== MỚI: LẤY DANH SÁCH SINH VIÊN ĐÃ ĐIỂM DANH ====================
+        [HttpGet]
+        public JsonResult GetDanhSachDiemDanh(int dotId)
+        {
+            try
+            {
+                using (var db = DbContextFactory.Create())
+                {
+                    var danhSach = (from dd in db.DanhSachDiemDanhs
+                                    join sv in db.SinhViens on dd.MSSV equals sv.MSSV
+                                    join lop in db.Lops on sv.Lop_id equals lop.Lop_id
+                                    join khoa in db.Khoas on lop.Khoa_id equals khoa.Khoa_id
+                                    where dd.Dot_id == dotId
+                                    orderby dd.ThoiGian descending
+                                    select new
+                                    {
+                                        sv.MSSV,
+                                        sv.HoTen,
+                                        TenLop = lop.TenLop,
+                                        TenKhoa = khoa.TenKhoa,
+                                        ThoiGian = dd.ThoiGian
+                                    }).ToList();
+
+                    var result = danhSach.Select(x => new
+                    {
+                        x.MSSV,
+                        x.HoTen,
+                        x.TenLop,
+                        x.TenKhoa,
+                        ThoiGian = x.ThoiGian.ToString("HH:mm:ss dd/MM/yyyy")
+                    }).ToList();
+
+                    return Json(new { success = true, items = result }, JsonRequestBehavior.AllowGet);
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Lỗi: " + ex.Message });
+            }
+        }
+
+        // ==================== HÀM HỖ TRỢ: TẠO MÃ NGẪU NHIÊN ====================
+        private string GenerateRandomCode(int length = 6)
+        {
+            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            var random = new Random();
+            return new string(Enumerable.Repeat(chars, length)
+                .Select(s => s[random.Next(s.Length)]).ToArray());
+        }
+
 
 
 

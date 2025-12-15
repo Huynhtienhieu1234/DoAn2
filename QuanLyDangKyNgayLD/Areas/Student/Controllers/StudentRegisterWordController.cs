@@ -99,8 +99,7 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
             using (var db = DbContextFactory.Create())
             {
                 var userRole = GetUserRoleFromSession();
-                var today = DateTime.Today; // Ngày hôm nay: 00:00:00
-
+                var today = DateTime.Today;
                 var currentMonth = today.Month;
                 var currentYear = today.Year;
 
@@ -125,42 +124,52 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
                     }
                 }
 
-                // Lọc theo buổi
+                // Lọc theo buổi và trạng thái duyệt
                 if (!string.IsNullOrWhiteSpace(buoi))
                     query = query.Where(x => x.Buoi == buoi);
-
-                // Lọc theo trạng thái duyệt
                 if (trangThai == "1")
                     query = query.Where(x => x.TrangThaiDuyet == true);
                 else if (trangThai == "0")
                     query = query.Where(x => x.TrangThaiDuyet == false);
 
-                // === SẮP XẾP ĐÚNG THỨ TỰ MONG MUỐN ===
-                var orderedQuery = query.OrderBy(x =>
-                    x.NgayLaoDong.Value < today ? 1 : 0  // 0: chưa kết thúc → lên trước; 1: đã kết thúc → xuống sau
-                ).ThenBy(x => x.NgayLaoDong.Value); // Trong mỗi nhóm: ngày gần nhất trước
+                // Sắp xếp: chưa kết thúc lên trước, đã kết thúc xuống sau
+                var orderedQuery = query.OrderBy(x => x.NgayLaoDong.Value < today ? 1 : 0)
+                                        .ThenBy(x => x.NgayLaoDong.Value);
 
-                // Phân trang
                 int totalItems = orderedQuery.Count();
                 int totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
                 if (page < 1) page = 1;
                 if (page > totalPages && totalPages > 0) page = totalPages;
 
-                var rawItems = orderedQuery
-                                .Skip((page - 1) * pageSize)
-                                .Take(pageSize)
-                                .ToList();
+                var rawItems = orderedQuery.Skip((page - 1) * pageSize).Take(pageSize).ToList();
 
-                // Đếm số lượng đã đăng ký (giữ nguyên như cũ)
+                // Đếm số lượng đã đăng ký toàn bộ
                 var dotIds = rawItems.Select(x => x.TaoDotLaoDong_id).ToList();
                 var dangKyCount = db.PhieuDangKies
                     .Where(p => dotIds.Contains(p.TaoDotLaoDong_id ?? 0))
                     .GroupBy(p => p.TaoDotLaoDong_id)
                     .ToDictionary(g => g.Key ?? 0, g => g.Count());
 
-                foreach (var id in dotIds)
-                    if (!dangKyCount.ContainsKey(id))
-                        dangKyCount[id] = 0;
+                // LẤY MSSV SINH VIÊN HIỆN TẠI ĐỂ KIỂM TRA ĐÃ ĐĂNG KÝ CHƯA
+                string username = Session["Username"]?.ToString();
+                long? currentMSSV = null;
+                if (!string.IsNullOrEmpty(username))
+                {
+                    var user = db.TaiKhoans.FirstOrDefault(t => t.Username == username);
+                    if (user != null)
+                    {
+                        var sv = db.SinhViens.FirstOrDefault(s => s.TaiKhoan == user.TaiKhoan_id);
+                        if (sv != null) currentMSSV = sv.MSSV;
+                    }
+                }
+
+                // Danh sách đợt sinh viên đã đăng ký (trạng thái DangKy)
+                var registeredDotIds = currentMSSV.HasValue
+                    ? db.PhieuDangKies
+                        .Where(p => p.MSSV == currentMSSV.Value && p.TrangThai == "DangKy")
+                        .Select(p => p.TaoDotLaoDong_id ?? 0)
+                        .ToList()
+                    : new List<int>();
 
                 var items = rawItems.Select(x => new
                 {
@@ -174,7 +183,10 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
                     x.SoLuongSinhVien,
                     TrangThaiDuyet = x.TrangThaiDuyet == true,
                     TrangThaiText = x.TrangThaiDuyet == true ? "Đã duyệt" : "Chưa duyệt",
-                    SoLuongDaDangKy = dangKyCount.ContainsKey(x.TaoDotLaoDong_id) ? dangKyCount[x.TaoDotLaoDong_id] : 0
+                    SoLuongDaDangKy = dangKyCount.ContainsKey(x.TaoDotLaoDong_id) ? dangKyCount[x.TaoDotLaoDong_id] : 0,
+                    // THÊM 2 FIELD QUAN TRỌNG
+                    DaDangKy = registeredDotIds.Contains(x.TaoDotLaoDong_id), // Sinh viên đã đăng ký chưa
+                    DaDuyet = x.TrangThaiDuyet == true // Đợt đã duyệt chưa
                 }).ToList();
 
                 return Json(new

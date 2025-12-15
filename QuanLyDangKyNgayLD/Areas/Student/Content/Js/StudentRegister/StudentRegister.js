@@ -36,28 +36,21 @@ function loadDataToTable(page, keyword = "", buoi = "", trangThai = "") {
             if (res.items && res.items.length > 0) {
                 showMainToast(`Lọc thành công: tìm thấy ${res.items.length} kết quả`, "success");
 
-                // === TÍNH NGÀY HIỆN TẠI MỘT LẦN DUY NHẤT ===
+                // Tính ngày hiện tại một lần
                 const todayStart = new Date();
                 todayStart.setHours(0, 0, 0, 0);
 
-                // === SẮP XẾP: Các đợt CHƯA KẾT THÚC lên trước, ĐÃ KẾT THÚC xuống sau ===
-                // Trong mỗi nhóm: sắp xếp theo ngày tăng dần (gần nhất trước)
+                // Sắp xếp client-side: chưa kết thúc lên trước
                 res.items.sort((a, b) => {
                     const dateA = parseDate(a.NgayLaoDong);
                     const dateB = parseDate(b.NgayLaoDong);
-
                     const isPastA = dateA < todayStart;
                     const isPastB = dateB < todayStart;
 
-                    // Nếu A chưa kết thúc mà B đã kết thúc → A lên trước
                     if (!isPastA && isPastB) return -1;
-                    // Nếu A đã kết thúc mà B chưa → A xuống sau
                     if (isPastA && !isPastB) return 1;
-
-                    // Cùng nhóm → sắp xếp theo ngày (càng gần hôm nay càng lên trên)
                     return dateA - dateB;
                 });
-                // === KẾT THÚC SẮP XẾP ===
 
                 res.items.forEach((item, index) => {
                     // Trạng thái duyệt
@@ -70,7 +63,7 @@ function loadDataToTable(page, keyword = "", buoi = "", trangThai = "") {
                     const can = item.SoLuongSinhVien || 0;
                     const mauSoLuong = daDangKy >= can ? "text-success fw-bold" : "text-danger fw-bold";
 
-                    // Kiểm tra ngày đã qua chưa (dùng lại todayStart đã tính ở trên)
+                    // Kiểm tra ngày đã qua
                     const ngayLaoDongDate = parseDate(item.NgayLaoDong);
                     const isPast = ngayLaoDongDate < todayStart;
 
@@ -79,24 +72,43 @@ function loadDataToTable(page, keyword = "", buoi = "", trangThai = "") {
                     const isSinhVien = res.role && res.role.trim() === "SinhVien";
                     const isLoaiLop = loaiLaoDongNormalized === "lớp";
 
-                    // Nút thao tác
+                    // === LOGIC NÚT THAO TÁC HOÀN CHỈNH ===
                     let thaoTacHTML = "";
+
                     if (isSinhVien && isLoaiLop) {
-                        thaoTacHTML = `<span class="text-danger fw-bold">Không được đăng ký</span>`;
+                        thaoTacHTML = `<span class="text-danger fw-bold"><i class="fas fa-ban me-1"></i>Không được đăng ký</span>`;
                     } else if (isPast) {
-                        thaoTacHTML = `<span class="text-danger fw-bold">Đã kết thúc</span>`;
+                        thaoTacHTML = `<span class="text-danger fw-bold"><i class="fas fa-calendar-times me-1"></i>Đã kết thúc</span>`;
+                    } else if (item.DaDuyet) {
+                        // ĐÃ DUYỆT → KHÓA HOÀN TOÀN
+                        if (item.DaDangKy) {
+                            thaoTacHTML = `<span class="text-success fw-bold"><i class="fas fa-check-double me-1"></i>Đã đăng ký (đã duyệt)</span>`;
+                        } else {
+                            thaoTacHTML = `<span class="text-warning fw-bold"><i class="fas fa-lock me-1"></i>Đợt đã duyệt</span>`;
+                        }
                     } else {
-                        thaoTacHTML = `
-                            <div class="btn-group-action">
-                                <button class="btn btn-register" onclick="dangKy(${item.TaoDotLaoDong_id})">
-                                    <i class="fas fa-user-plus me-1"></i>Đăng ký
-                                </button>
-                            </div>`;
+                        // CHƯA DUYỆT → CHO ĐĂNG KÝ / HỦY
+                        if (item.DaDangKy) {
+                            thaoTacHTML = `
+                                <div class="btn-group-action">
+                                    <button class="btn btn-cancel" onclick="huyDangKy(${item.TaoDotLaoDong_id})">
+                                        <i class="fas fa-user-minus me-1"></i>Hủy đăng ký
+                                    </button>
+                                </div>`;
+                        } else {
+                            thaoTacHTML = `
+                                <div class="btn-group-action">
+                                    <button class="btn btn-register" onclick="dangKy(${item.TaoDotLaoDong_id})">
+                                        <i class="fas fa-user-plus me-1"></i>Đăng ký
+                                    </button>
+                                </div>`;
+                        }
                     }
+                    // === KẾT THÚC LOGIC NÚT ===
 
                     // Ẩn hàng loại "Lớp" nếu là sinh viên
                     if (isSinhVien && isLoaiLop) {
-                        return; // Bỏ qua không render
+                        return; // Skip render
                     }
 
                     tbody.innerHTML += `
@@ -147,7 +159,6 @@ function loadDataToTable(page, keyword = "", buoi = "", trangThai = "") {
         showMainToast("Lỗi kết nối đến máy chủ.", "error");
     });
 }
-
 // === PHÂN TRANG, ĐĂNG KÝ, HỦY === (giữ nguyên như cũ, không thay đổi)
 function renderPagination(page, totalPages) {
     // ... (giữ nguyên code cũ)

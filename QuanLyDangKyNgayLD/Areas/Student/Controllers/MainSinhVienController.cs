@@ -13,16 +13,23 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
         // Trang thông tin sinh viên (render view)
         public ActionResult Index()
         {
-            var userId = Session["UserID"] as int?;
-            if (userId == null)
+            // Lấy username từ session
+            string username = Session["Username"]?.ToString();
+            if (string.IsNullOrEmpty(username))
                 return RedirectToAction("Login", "Login");
 
             using (var db = DbContextFactory.Create())
             {
+                // Tìm tài khoản theo username
+                var user = db.TaiKhoans.FirstOrDefault(t => t.Username == username);
+                if (user == null)
+                    return RedirectToAction("Login", "Login");
+
+                // Tìm sinh viên theo tài khoản
                 var sv = db.SinhViens
                            .Include("Anh")
                            .Include("Lop.Khoa")
-                           .FirstOrDefault(s => s.TaiKhoan == userId);
+                           .FirstOrDefault(s => s.TaiKhoan == user.TaiKhoan_id);
 
                 if (sv == null)
                     return RedirectToAction("Login", "Login");
@@ -34,6 +41,7 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
                 return View("Index", sv);
             }
         }
+
 
 
         // Trang chi tiết để xem và chỉnh sửa
