@@ -132,8 +132,7 @@ document.addEventListener("DOMContentLoaded", function () {
         fetch("/Student/StudentCheckDay/DiemDanhAjax", {
             method: "POST",
             headers: {
-                "Content-Type": "application/x-www-form-urlencoded",
-                "RequestVerificationToken": document.querySelector('input[name="__RequestVerificationToken"]').value || ""
+                "Content-Type": "application/x-www-form-urlencoded"
             },
             body: `dotId=${dotId}&maDiemDanh=${encodeURIComponent(ma)}`
         })
@@ -158,9 +157,12 @@ document.addEventListener("DOMContentLoaded", function () {
                 statusDiv.innerHTML = `<span class="text-danger"><i class="fas fa-exclamation-triangle me-1"></i> Lỗi kết nối!</span>`;
             })
             .finally(() => {
-                input.disabled = false;
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-check"></i>';
+                // Chỉ enable lại nếu form vẫn tồn tại (chưa bị thay bằng badge)
+                if (form.parentNode) {
+                    input.disabled = false;
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-check"></i>';
+                }
             });
     });
 

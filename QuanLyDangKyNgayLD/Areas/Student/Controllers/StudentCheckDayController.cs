@@ -102,9 +102,9 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
             }
         }
 
+        // điểm Danh AJAX
         // POST: Điểm danh
-        [HttpPost]
-        [ValidateAntiForgeryToken]
+        [HttpPost] // ❌ bỏ ValidateAntiForgeryToken
         public JsonResult DiemDanhAjax(int dotId, string maDiemDanh)
         {
             try
@@ -125,9 +125,6 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
 
                     long mssv = sinhVien.MSSV;
 
-                    // ... (phần kiểm tra đăng ký, mã, đã điểm danh, lưu điểm danh, cộng ngày lao động giữ nguyên như cũ)
-                    // Chỉ thay mssv lấy từ sinhVien.MSSV thay vì Session["MSSV"]
-
                     var phieu = db.PhieuDangKies.FirstOrDefault(p => p.TaoDotLaoDong_id == dotId && p.MSSV == mssv);
                     if (phieu == null)
                         return Json(new { success = false, message = "Bạn chưa đăng ký đợt này." });
@@ -143,6 +140,7 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
                     if (db.DanhSachDiemDanhs.Any(d => d.Dot_id == dotId && d.MSSV == mssv))
                         return Json(new { success = false, message = "Bạn đã điểm danh rồi!" });
 
+                    // ✅ Chỉ thêm bản ghi điểm danh, trigger trong DB sẽ tự cộng ngày
                     db.DanhSachDiemDanhs.Add(new DanhSachDiemDanh
                     {
                         MSSV = mssv,
@@ -151,25 +149,17 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
                         ThoiGian = DateTime.Now
                     });
 
-                    var soNgay = db.SoNgayLaoDongs.FirstOrDefault(s => s.MSSV == mssv);
-                    if (soNgay != null)
-                    {
-                        soNgay.TongSoNgay = (soNgay.TongSoNgay ?? 0) + 1;
-                    }
-                    else
-                    {
-                        db.SoNgayLaoDongs.Add(new SoNgayLaoDong { MSSV = mssv, TongSoNgay = 1 });
-                    }
-
                     db.SaveChanges();
 
-                    return Json(new { success = true, message = "Điểm danh thành công! Đã cộng +1 ngày lao động." });
+                    return Json(new { success = true, message = "Điểm danh thành công! Ngày lao động sẽ được cập nhật tự động." });
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return Json(new { success = false, message = "Lỗi hệ thống." });
             }
         }
+
+
     }
 }
