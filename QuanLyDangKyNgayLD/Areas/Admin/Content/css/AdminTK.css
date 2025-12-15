@@ -1,124 +1,162 @@
-﻿
-
-/* Container chính để nội dung không dính cạnh */
-.container-fluid {
+﻿/* =======================
+   PAGE SCOPE
+======================= */
+#admin-tk-page {
     background: rgba(255, 255, 255, 0.92);
     border-radius: 15px;
     padding: 30px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-    backdrop-filter: blur(5px); /* Hiệu ứng kính mờ nhẹ */
 }
 
+
+/* =======================
+   TITLE - THỐNG KÊ
+======================= */
 h2 {
+    font-size: 1.8rem;
     font-weight: 700;
     color: #00796b;
     text-align: center;
-    margin-bottom: 30px;
     position: relative;
+    padding-bottom: 12px;
+    margin-bottom: 30px;
 }
 
+    /* Gạch trang trí dưới tiêu đề */
     h2::after {
-        content: '';
-        width: 100px;
+        content: "";
+        position: absolute;
+        left: 50%;
+        bottom: 0;
+        transform: translateX(-50%);
+        width: 120px;
         height: 4px;
         background: linear-gradient(to right, #009688, #4caf50);
-        display: block;
-        margin: 10px auto;
         border-radius: 2px;
     }
 
-/* Form lọc */
-form {
-    background: #f8f9fa;
-    padding: 15px;
-    border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-}
 
-.btn-primary {
-    background: linear-gradient(to right, #009688, #00796b);
-    border: none;
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-}
-
-    .btn-primary:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 8px 15px rgba(0, 150, 136, 0.3);
+    /* =======================
+   TITLE
+======================= */
+    #admin-tk-page h2 {
+        font-weight: 700;
+        color: #00796b;
+        text-align: center;
+        margin-bottom: 30px;
+        position: relative;
     }
 
-    /* Ripple effect cho button */
-    .btn-primary::after {
-        content: '';
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        width: 0;
-        height: 0;
-        background: rgba(255,255,255,0.3);
-        border-radius: 50%;
-        transform: translate(-50%, -50%);
-        transition: width 0.6s, height 0.6s;
+        #admin-tk-page h2::after {
+            content: '';
+            width: 100px;
+            height: 4px;
+            background: linear-gradient(to right, #009688, #4caf50);
+            display: block;
+            margin: 10px auto;
+            border-radius: 2px;
+        }
+
+    /* =======================
+   FILTER BAR / FORM
+======================= */
+    #admin-tk-page form {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.05);
     }
 
-    .btn-primary:active::after {
-        width: 300px;
-        height: 300px;
+    /* =======================
+   BUTTON
+======================= */
+    #admin-tk-page .btn-primary {
+        background: linear-gradient(to right, #009688, #00796b);
+        border: none;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
     }
 
-/* Cards thống kê */
-.stats-card {
-    border: none;
-    border-radius: 15px;
-    overflow: hidden;
-    transition: all 0.4s ease;
-    box-shadow: 0 6px 15px rgba(0,0,0,0.1);
-}
+        #admin-tk-page .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(0, 150, 136, 0.3);
+        }
 
-    .stats-card:hover {
-        transform: translateY(-10px) scale(1.03);
-        box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        #admin-tk-page .btn-primary::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255,255,255,0.3);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        #admin-tk-page .btn-primary:active::after {
+            width: 300px;
+            height: 300px;
+        }
+
+    /* =======================
+   STAT CARDS
+======================= */
+    #admin-tk-page .stats-card {
+        border: none;
+        border-radius: 15px;
+        overflow: hidden;
+        transition: all 0.4s ease;
+        box-shadow: 0 6px 15px rgba(0,0,0,0.1);
     }
 
-.total-card {
-    background: linear-gradient(135deg, #42a5f5, #1e88e5);
-}
+        #admin-tk-page .stats-card:hover {
+            transform: translateY(-10px) scale(1.03);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
 
-.completed-card {
-    background: linear-gradient(135deg, #66bb6a, #43a047);
-}
+    #admin-tk-page .total-card {
+        background: linear-gradient(135deg, #42a5f5, #1e88e5);
+    }
 
-.incomplete-card {
-    background: linear-gradient(135deg, #ef5350, #d32f2f);
-}
+    #admin-tk-page .completed-card {
+        background: linear-gradient(135deg, #66bb6a, #43a047);
+    }
 
-.card-header {
-    font-weight: 600;
-    font-size: 1.1rem;
-}
+    #admin-tk-page .incomplete-card {
+        background: linear-gradient(135deg, #ef5350, #d32f2f);
+    }
 
-.card-title {
-    font-size: 2.5rem;
-    font-weight: 700;
-}
+    #admin-tk-page .card-header {
+        font-weight: 600;
+        font-size: 1.1rem;
+    }
 
-/* Progress bar */
-.progress {
-    height: 30px;
-    border-radius: 15px;
-    overflow: hidden;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-}
+    #admin-tk-page .card-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+    }
 
-.progress-bar {
-    background: linear-gradient(to right, #43a047, #66bb6a);
-    animation: progressAnimate 2s ease-in-out;
-    font-weight: bold;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
+    /* =======================
+   PROGRESS BAR
+======================= */
+    #admin-tk-page .progress {
+        height: 30px;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    #admin-tk-page .progress-bar {
+        background: linear-gradient(to right, #43a047, #66bb6a);
+        animation: progressAnimate 2s ease-in-out;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
 
 @keyframes progressAnimate {
     0% {
@@ -126,37 +164,39 @@ form {
     }
 }
 
-/* Table */
-.table {
+/* =======================
+   TABLE
+======================= */
+#admin-tk-page .table {
     border-radius: 15px;
     overflow: hidden;
     box-shadow: 0 8px 20px rgba(0,0,0,0.1);
 }
 
-    .table thead {
+    #admin-tk-page .table thead {
         background: linear-gradient(to right, #009688, #00796b);
         color: white;
     }
 
-    .table tbody tr {
+    #admin-tk-page .table tbody tr {
         transition: all 0.3s ease;
     }
 
-        .table tbody tr:hover {
+        #admin-tk-page .table tbody tr:hover {
             background: #e0f2f1;
             transform: scale(1.01);
             box-shadow: 0 5px 15px rgba(0,0,0,0.05);
         }
 
-    .table td {
+    #admin-tk-page .table td {
         vertical-align: middle;
     }
 
-/* Responsive */
+/* =======================
+   RESPONSIVE
+======================= */
 @media (max-width: 768px) {
-    .row .col-md-4 {
+    #admin-tk-page .row .col-md-4 {
         margin-bottom: 20px;
     }
 }
-
-
