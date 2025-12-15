@@ -137,7 +137,7 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                     var taiKhoan = new TaiKhoan
                     {
                         Username = username,
-                        Password = PasswordHelper.HashPassword("123456"), // mật khẩu mặc định
+                        Password = PasswordHelper.HashPassword(username), // mật khẩu = MSSV
                         Email = model.Email,
                         VaiTro_id = db.VaiTroes.FirstOrDefault(v => v.TenVaiTro == "SinhVien")?.VaiTro_id,
                         Deleted_at = null
@@ -158,6 +158,7 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                 return Json(new { success = false, message = "Lỗi: " + ex.Message });
             }
         }
+
 
 
         // POST: Chỉnh sửa sinh viên

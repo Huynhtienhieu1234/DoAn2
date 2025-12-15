@@ -1,12 +1,12 @@
-﻿using OfficeOpenXml;          // để dùng ExcelPackage
-using OfficeOpenXml.Style;    // để dùng ExcelFillStyle, ExcelBorderStyle, ExcelHorizontalAlignment...
-using QuanLyDangKyNgayLD.Factories; // factory tạo DbContext
-using QuanLyDangKyNgayLD.Models;    // model (TaiKhoan, VaiTro...)
-using System;                 // các kiểu cơ bản (DateTime, String...)
-using System.Data.Entity;     // để Include() khi query EF6
-using System.Linq;            // để dùng LINQ (Where, OrderBy, ToList...)
-using System.Web.Mvc;         // để viết Controller ActionResult
-using System.Drawing;         // để dùng Color khi set màu cell
+﻿using OfficeOpenXml;         
+using OfficeOpenXml.Style;    
+using QuanLyDangKyNgayLD.Factories; 
+using QuanLyDangKyNgayLD.Models;    
+using System;               
+using System.Data.Entity;    
+using System.Linq;            
+using System.Web.Mvc;         
+using System.Drawing;         
 
 namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
 {

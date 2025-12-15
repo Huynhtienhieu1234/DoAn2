@@ -1,12 +1,15 @@
-﻿using System;
-using System.Linq;
-using System.Web.Mvc;
-using QuanLyDangKyNgayLD.Factories;
-using QuanLyDangKyNgayLD.Areas.Admin.ViewModel;
-using OfficeOpenXml;          // EPPlus
+﻿using OfficeOpenXml;          // EPPlus
 using OfficeOpenXml.Style;    // Style cho Excel
+using QuanLyDangKyNgayLD.Areas.Admin.ViewModel;
+using QuanLyDangKyNgayLD.Factories;
+using System;
 using System.Drawing;         // Màu sắc
 using System.IO;
+using System.Linq;
+using System.Net;
+using System.Net.Mail;
+using System.Web;
+using System.Web.Mvc;
 
 namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
 {
@@ -178,6 +181,47 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                 }
             }
         }
+        // Gửi email 
+        [HttpPost]
+        public JsonResult SendExcelMail(string email, HttpPostedFileBase excelFile)
+        {
+            if (excelFile == null || excelFile.ContentLength == 0)
+            {
+                return Json(new { success = false, message = "Vui lòng chọn file Excel." });
+            }
+
+            try
+            {
+                var fromEmail = "huynhtienhieu11@gmail.com";
+                var fromPassword = "ocvspctozbcakfgy";
+
+                var mail = new MailMessage();
+                mail.From = new MailAddress(fromEmail, "Hệ thống thống kê lao động");
+                mail.To.Add(email);
+                mail.Subject = "File Excel thống kê tiến độ lao động";
+                mail.Body = "Xin chào,\n\nGửi bạn file Excel thống kê theo yêu cầu.\n\nTrân trọng.";
+
+                mail.Attachments.Add(new Attachment(excelFile.InputStream, excelFile.FileName));
+
+                var smtp = new SmtpClient("smtp.gmail.com", 587)
+                {
+                    Credentials = new NetworkCredential(fromEmail, fromPassword),
+                    EnableSsl = true
+                };
+
+                smtp.Send(mail);
+
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Gửi email thất bại: " + ex.Message });
+            }
+        }
+
+
+
+
 
     }
 }
