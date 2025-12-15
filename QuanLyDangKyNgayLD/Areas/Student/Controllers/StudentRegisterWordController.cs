@@ -99,8 +99,8 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
             using (var db = DbContextFactory.Create())
             {
                 var userRole = GetUserRoleFromSession();
+                var today = DateTime.Today; // Ngày hôm nay: 00:00:00
 
-                var today = DateTime.Today;
                 var currentMonth = today.Month;
                 var currentYear = today.Year;
 
@@ -115,11 +115,11 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
                 // Lọc theo vai trò
                 if (!string.IsNullOrEmpty(userRole))
                 {
-                    if (userRole == "SinhVien") // Sinh viên: chỉ lấy Cá Nhân
+                    if (userRole == "SinhVien")
                     {
                         query = query.Where(d => d.LoaiLaoDong.Trim().Length != 3);
                     }
-                    else if (userRole == "LopPhoLaoDong") // Lớp phó: lấy cả Lớp và Cá Nhân
+                    else if (userRole == "LopPhoLaoDong")
                     {
                         query = query.Where(d => d.LoaiLaoDong.Trim().Length == 3 || d.LoaiLaoDong.Trim().Length != 3);
                     }
@@ -135,16 +135,23 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
                 else if (trangThai == "0")
                     query = query.Where(x => x.TrangThaiDuyet == false);
 
+                // === SẮP XẾP ĐÚNG THỨ TỰ MONG MUỐN ===
+                var orderedQuery = query.OrderBy(x =>
+                    x.NgayLaoDong.Value < today ? 1 : 0  // 0: chưa kết thúc → lên trước; 1: đã kết thúc → xuống sau
+                ).ThenBy(x => x.NgayLaoDong.Value); // Trong mỗi nhóm: ngày gần nhất trước
+
                 // Phân trang
-                int totalItems = query.Count();
+                int totalItems = orderedQuery.Count();
                 int totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
+                if (page < 1) page = 1;
+                if (page > totalPages && totalPages > 0) page = totalPages;
 
-                var rawItems = query.OrderBy(x => x.NgayLaoDong)
-                                    .Skip((page - 1) * pageSize)
-                                    .Take(pageSize)
-                                    .ToList();
+                var rawItems = orderedQuery
+                                .Skip((page - 1) * pageSize)
+                                .Take(pageSize)
+                                .ToList();
 
-                // Đếm số lượng đã đăng ký
+                // Đếm số lượng đã đăng ký (giữ nguyên như cũ)
                 var dotIds = rawItems.Select(x => x.TaoDotLaoDong_id).ToList();
                 var dangKyCount = db.PhieuDangKies
                     .Where(p => dotIds.Contains(p.TaoDotLaoDong_id ?? 0))
@@ -177,11 +184,10 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
                     page,
                     totalPages,
                     role = userRole,
-                    debugRole = userRole ?? "NULL"  // ✅ DEBUG: In giá trị role để kiểm tra
+                    debugRole = userRole ?? "NULL"
                 }, JsonRequestBehavior.AllowGet);
             }
         }
-
         [HttpPost]
         public ActionResult DangKy(int id)
         {

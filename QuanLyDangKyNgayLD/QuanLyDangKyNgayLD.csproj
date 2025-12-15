@@ -160,7 +160,8 @@
     <Content Include="Areas\Student\Content\Js\Register\DeleteRegister.js" />
     <Content Include="Areas\Student\Content\Js\StudentMain\StudentInfo.js" />
     <Content Include="Areas\Student\Content\Js\StudentMain\StudentMain.js" />
-    <Content Include="Areas\Student\Content\Js\Viewsider.js" />
+    <Content Include="Areas\Student\Content\Js\Viewsider\LayoutUser.js" />
+    <Content Include="Areas\Student\Content\Js\Viewsider\Viewsider.js" />
     <Content Include="Areas\Student\Views\MainSinhVien\Index.cshtml" />
     <Content Include="Areas\Student\Views\MainSinhVien\Detail.cshtml" />
     <Content Include="Areas\Admin\Views\AdminSuscesWord\Index.cshtml" />
@@ -168,7 +169,7 @@
     <None Include="Areas\Student\Views\Shared\Viewsiderbar.cshtml" />
     <Content Include="Areas\Student\Content\Css\Siderbarmain.css" />
     <Content Include="Areas\Student\Content\Css\Table.css" />
-    <Content Include="Areas\Student\Content\Js\StudentRegister.js" />
+    <Content Include="Areas\Student\Content\Js\StudentRegister\StudentRegister.js" />
     <Content Include="Global.asax" />
     <Content Include="Models\QuanLyDangKyLaoDong.Context.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
@@ -193,8 +194,6 @@
     <Compile Include="Areas\Admin\Controllers\AdminWordRegisterController.cs" />
     <Compile Include="Areas\Admin\ViewModel\StudentProgressViewModel.cs" />
     <Compile Include="Areas\Models\AdminThongKeViewModel.cs" />
-    <Compile Include="Areas\LopPhoLaoDong\Controllers\MainLPLDController.cs" />
-    <Compile Include="Areas\LopPhoLaoDong\LopPhoLaoDongAreaRegistration.cs" />
     <Compile Include="Areas\Student\Controllers\MainSinhVienController.cs" />
     <Compile Include="Areas\Student\Controllers\StudentRegisterWordController.cs" />
     <Compile Include="Areas\Student\StudentAreaRegistration.cs" />
@@ -270,8 +269,6 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Views\web.config" />
-    <Content Include="Areas\LopPhoLaoDong\Views\web.config" />
-    <Content Include="Areas\LopPhoLaoDong\Views\MainLPLD\MainLPLD.cshtml" />
     <Content Include="Areas\Admin\Views\web.config" />
     <Content Include="Areas\Admin\Views\Admin\Index.cshtml" />
     <Content Include="Areas\Admin\Views\Shared\ViewShare.cshtml" />
@@ -301,8 +298,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
-    <Folder Include="Areas\LopPhoLaoDong\Data\" />
-    <Folder Include="Areas\LopPhoLaoDong\Views\Shared\" />
     <Folder Include="Areas\Student\Data\" />
     <Folder Include="Uploads\Avatars\" />
     <Folder Include="Views\Student\" />

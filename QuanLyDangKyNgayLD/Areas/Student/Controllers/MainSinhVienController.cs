@@ -20,17 +20,21 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
             using (var db = DbContextFactory.Create())
             {
                 var sv = db.SinhViens
-                           .Include("TaiKhoan1.VaiTro")
                            .Include("Anh")
-                           .Include("Lop")
+                           .Include("Lop.Khoa")
                            .FirstOrDefault(s => s.TaiKhoan == userId);
 
                 if (sv == null)
-                    sv = new SinhVien { TaiKhoan = userId };
+                    return RedirectToAction("Login", "Login");
+
+                // ✅ Truyền avatar và tên lên ViewBag
+                ViewBag.AvatarUrl = sv.Anh != null ? sv.Anh.DuongDan : "/image/Avarta.png";
+                ViewBag.HoTen = sv.HoTen ?? "Sinh viên";
 
                 return View("Index", sv);
             }
         }
+
 
         // Trang chi tiết để xem và chỉnh sửa
         public ActionResult Detail()

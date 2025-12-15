@@ -19,7 +19,9 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <!-- JavaScript -->
-    <script src="~/Areas/Student/Content/Js/Viewsider.js"></script>
+    <script src="~/Areas/Student/Content/Js/Viewsider/Viewsider.js"></script>
+    <script src="~/Areas/Student/Content/Js/Viewsider/LayoutUser.js"></script>
+
     <!--csss-->
     <link rel="stylesheet" href="~/Areas/Student/Content/Css/Toast.css">
 
@@ -96,20 +98,43 @@
     <!-- Header -->
     <nav>
         <div class="nav-content">
+            <!-- Logo -->
             <a href="@Url.Action("Index","MainSinhVien",new{area="Student"})">
                 <img src="https://cdn.jsdelivr.net/gh/Huynhtienhieu1234/UploadAnh/sinhvien/LogoTruong.png"
                      alt="Logo" class="logo">
             </a>
+
             <div class="nav-content-text"></div>
+
+            <!-- User menu -->
             <div class="user-menu" id="userMenu">
-                <img src="../image/Avarta.png" alt="User Avatar" class="user-avatar">
-                <span class="user-name"></span>
+                <img id="layoutAvatar"
+                     src="/image/Avarta.png"
+                     alt="User Avatar"
+                     class="user-avatar rounded-circle"
+                     style="width:40px;height:40px;object-fit:cover;">
+
+                <span id="layoutUserName" class="user-name">
+                    Sinh viên
+                </span>
+
                 <i class="fa fa-caret-down"></i>
+
                 <ul class="dropdown-menu" id="dropdownMenu">
-                    <li><a class="a-color" href="Trangthongtinquanly.html">Thông tin cá nhân</a></li>
-                    <li><a class="a-color" href="DoiMatKhau.html">Đổi mật khẩu</a></li>
                     <li>
-                        <a class="a-color" href="@Url.Action("Logout", "Login", new { area = "" })">
+                        <a class="a-color" href="@Url.Action("Detail","MainSinhVien",new{area="Student"})">
+                            <i class="fa fa-user me-1"></i> Thông tin cá nhân
+                        </a>
+                    </li>
+                    <li>
+                        <a class="a-color" href="@Url.Action("DoiMatKhau","MainSinhVien",new{area="Student"})">
+                            <i class="fa fa-key me-1"></i> Đổi mật khẩu
+                        </a>
+                    </li>
+                    <li class="dropdown-divider"></li>
+                    <li>
+                        <a class="a-color text-danger"
+                           href="@Url.Action("Logout", "Login", new { area = "" })">
                             <i class="fa fa-sign-out"></i> Đăng xuất
                         </a>
                     </li>
@@ -117,6 +142,7 @@
             </div>
         </div>
     </nav>
+
 
     <!-- Sidebar -->
     <div class="sidebar">
