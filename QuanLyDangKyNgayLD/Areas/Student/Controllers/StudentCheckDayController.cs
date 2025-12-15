@@ -34,29 +34,20 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
             {
                 string username = Session["Username"]?.ToString();
                 if (string.IsNullOrEmpty(username))
-                {
-                    return Json(new { success = false, message = "Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại." }, JsonRequestBehavior.AllowGet);
-                }
+                    return Json(new { success = false, message = "Phiên đăng nhập hết hạn." }, JsonRequestBehavior.AllowGet);
 
                 using (var db = DbContextFactory.Create())
                 {
-                    // Lấy tài khoản từ Username
-                    var taiKhoan = db.TaiKhoans.FirstOrDefault(t => t.Username == username);
-                    if (taiKhoan == null)
-                    {
+                    var user = db.TaiKhoans.FirstOrDefault(t => t.Username == username);
+                    if (user == null)
                         return Json(new { success = false, message = "Không tìm thấy tài khoản!" }, JsonRequestBehavior.AllowGet);
-                    }
 
-                    // Lấy sinh viên từ TaiKhoan_id
-                    var sinhVien = db.SinhViens.FirstOrDefault(sv => sv.TaiKhoan == taiKhoan.TaiKhoan_id);
-                    if (sinhVien == null)
-                    {
-                        return Json(new { success = false, message = "Không tìm thấy thông tin sinh viên!" }, JsonRequestBehavior.AllowGet);
-                    }
+                    var sv = db.SinhViens.FirstOrDefault(s => s.TaiKhoan == user.TaiKhoan_id);
+                    if (sv == null)
+                        return Json(new { success = false, message = "Không tìm thấy sinh viên!" }, JsonRequestBehavior.AllowGet);
 
-                    long mssv = sinhVien.MSSV;
+                    long mssv = sv.MSSV;
 
-                    // Lấy dữ liệu thô trước
                     var rawList = (from p in db.PhieuDangKies
                                    join d in db.TaoDotNgayLaoDongs on p.TaoDotLaoDong_id equals d.TaoDotLaoDong_id
                                    where p.MSSV == mssv && d.Ngayxoa == null
@@ -67,11 +58,11 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
                                        d.Buoi,
                                        d.NgayLaoDong,
                                        d.KhuVuc,
+                                       d.LoaiLaoDong,
                                        DaDuyet = d.TrangThaiDuyet == true,
                                        DaDiemDanh = db.DanhSachDiemDanhs.Any(dd => dd.Dot_id == d.TaoDotLaoDong_id && dd.MSSV == mssv)
-                                   }).ToList(); // ✅ ToList để EF thực thi SQL trước
+                                   }).ToList();
 
-                    // Sau đó xử lý định dạng ngày bằng C#
                     var dotList = rawList.Select(x => new
                     {
                         x.TaoDotLaoDong_id,
@@ -79,20 +70,21 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
                         x.Buoi,
                         NgayLaoDong = x.NgayLaoDong.HasValue ? x.NgayLaoDong.Value.ToString("dd/MM/yyyy") : "",
                         x.KhuVuc,
+                        x.LoaiLaoDong,
                         x.DaDuyet,
                         x.DaDiemDanh
                     }).OrderByDescending(x => x.NgayLaoDong).ToList();
 
                     var choDuyet = dotList.Where(x => !x.DaDuyet).ToList();
-                    var daDuyet = dotList.Where(x => x.DaDuyet).ToList();
+                    var daDuyet = dotList.Where(x => x.DaDuyet && !x.DaDiemDanh).ToList();
+                    var hoanThanh = dotList.Where(x => x.DaDuyet && x.DaDiemDanh).ToList();
 
                     return Json(new
                     {
                         success = true,
                         choDuyet,
                         daDuyet,
-                        role = taiKhoan.VaiTro?.TenVaiTro ?? "NULL",
-                        debugRole = Session["Role"] ?? "NULL"
+                        hoanThanh
                     }, JsonRequestBehavior.AllowGet);
                 }
             }
@@ -101,6 +93,7 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
                 return Json(new { success = false, message = "Lỗi hệ thống: " + ex.Message }, JsonRequestBehavior.AllowGet);
             }
         }
+
 
         // điểm Danh AJAX
         // POST: Điểm danh
