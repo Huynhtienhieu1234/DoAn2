@@ -13,7 +13,8 @@
                     btn.dataset.dotId = dotId; // gắn lại dotId để đảm bảo đúng
                 }
 
-                $.get("/Student/StudentRegisterWord/GetDanhSachLop", function (res) {
+                // ✅ Gọi API GetDanhSachLop kèm dotId
+                $.get("/Student/StudentRegisterWord/GetDanhSachLop", { dotId: dotId }, function (res) {
                     if (res && res.success && Array.isArray(res.sinhViens)) {
                         const container = document.getElementById("modalContentLop");
                         let html = `
@@ -32,13 +33,16 @@
                               </thead>
                               <tbody>`;
 
+                        // ✅ Chỉ tích checkbox nếu sv.DaDangKy = true
                         res.sinhViens.forEach((sv, index) => {
                             html += `
                                 <tr>
                                   <td>${index + 1}</td>
                                   <td>${sv.MSSV}</td>
                                   <td>${sv.HoTen}</td>
-                                  <td><input type="checkbox" class="chon-sv" value="${sv.MSSV}" checked></td>
+                                  <td>
+                                    <input type="checkbox" class="chon-sv" value="${sv.MSSV}" ${sv.DaDangKy ? "checked" : ""}>
+                                  </td>
                                 </tr>`;
                         });
 
@@ -66,11 +70,11 @@
             const selectedMSSVs = Array.from(document.querySelectorAll(".chon-sv:checked"))
                 .map(input => parseInt(input.value));
 
+            // ✅ Chỉ chặn khi đăng ký mới mà không chọn ai
             if (selectedMSSVs.length === 0 && action === "create") {
                 showMainToast("Bạn chưa chọn sinh viên nào!", "warning");
                 return;
             }
-
 
             const url = action === "update"
                 ? "/Student/StudentRegisterWord/CapNhatDangKyTheoLop"

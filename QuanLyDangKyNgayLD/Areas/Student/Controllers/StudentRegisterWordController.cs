@@ -283,75 +283,44 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
 
         // Đăng ký theo lớp
         [HttpGet]
-        public ActionResult GetDanhSachLop()
+        public ActionResult GetDanhSachLop(int dotId)
         {
             using (var db = DbContextFactory.Create())
             {
-                // Kiểm tra đăng nhập
                 string username = Session["Username"]?.ToString();
                 if (string.IsNullOrEmpty(username))
-                {
-                    return Json(new
-                    {
-                        success = false,
-                        message = "Chưa đăng nhập"
-                    }, JsonRequestBehavior.AllowGet);
-                }
+                    return Json(new { success = false, message = "Chưa đăng nhập" }, JsonRequestBehavior.AllowGet);
 
-                //  Lấy tài khoản
                 var user = db.TaiKhoans.FirstOrDefault(t => t.Username == username);
                 if (user == null)
-                {
-                    return Json(new
-                    {
-                        success = false,
-                        message = "Không tìm thấy tài khoản"
-                    }, JsonRequestBehavior.AllowGet);
-                }
+                    return Json(new { success = false, message = "Không tìm thấy tài khoản" }, JsonRequestBehavior.AllowGet);
 
-                // Lấy sinh viên hiện tại
                 var svHienTai = db.SinhViens.FirstOrDefault(s => s.TaiKhoan == user.TaiKhoan_id);
                 if (svHienTai == null)
-                {
-                    return Json(new
-                    {
-                        success = false,
-                        message = "Không tìm thấy sinh viên"
-                    }, JsonRequestBehavior.AllowGet);
-                }
+                    return Json(new { success = false, message = "Không tìm thấy sinh viên" }, JsonRequestBehavior.AllowGet);
 
-                //  Kiểm tra lớp
                 if (!svHienTai.Lop_id.HasValue)
-                {
-                    return Json(new
-                    {
-                        success = false,
-                        message = "Sinh viên chưa được gán lớp"
-                    }, JsonRequestBehavior.AllowGet);
-                }
+                    return Json(new { success = false, message = "Sinh viên chưa được gán lớp" }, JsonRequestBehavior.AllowGet);
 
                 int lopId = svHienTai.Lop_id.Value;
 
-                //  Lấy danh sách sinh viên cùng lớp
                 var danhSach = db.SinhViens
                     .Where(s => s.Lop_id == lopId)
                     .Select(s => new
                     {
                         s.MSSV,
-                        s.HoTen
+                        s.HoTen,
+                        DaDangKy = db.PhieuDangKies.Any(p => p.TaoDotLaoDong_id == dotId && p.MSSV == s.MSSV && p.LaoDongTheoLop == true)
                     })
                     .ToList();
 
-                return Json(new
-                {
-                    success = true,
-                    sinhViens = danhSach
-                }, JsonRequestBehavior.AllowGet);
+                return Json(new { success = true, sinhViens = danhSach }, JsonRequestBehavior.AllowGet);
             }
         }
 
 
- 
+
+
         // Đăng Ký theo lớp 
         [HttpPost]
         public ActionResult DangKyTheoLop(int dotId, List<long> mssvList)
