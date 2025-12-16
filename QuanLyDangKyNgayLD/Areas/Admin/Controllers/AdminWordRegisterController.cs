@@ -144,8 +144,8 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                 var dotIds = rawItems.Select(x => x.TaoDotLaoDong_id).ToList();
 
                 var phieuLopList = db.PhieuDangKies
-                    .Where(p => dotIds.Contains(p.PhieuDangKy_id) && p.LaoDongTheoLop == true)
-                    .Select(p => new { p.TaoDotLaoDong_id, p.MSSV })
+                    .Where(p => p.TaoDotLaoDong_id.HasValue && dotIds.Contains(p.TaoDotLaoDong_id.Value) && p.LaoDongTheoLop == true)
+                    .Select(p => new { TaoDotLaoDong_id = p.TaoDotLaoDong_id.Value, p.MSSV })
                     .ToList();
 
                 var lopDaDangKyDict = phieuLopList
