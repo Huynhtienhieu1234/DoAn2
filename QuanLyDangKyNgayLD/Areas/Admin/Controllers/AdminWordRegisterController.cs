@@ -63,25 +63,19 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
             string trangThai = "",
             int? thang = null,
             string ngay = null,
-
-            string sortField = "date",   
+            string sortField = "date",
             string sortDir = "desc"
-
-
-
         )
         {
             using (var db = DbContextFactory.Create())
             {
-                // Bước 1: Khởi tạo truy vấn ban đầu (chỉ lấy đợt chưa bị xóa)
+                // Bước 1: Khởi tạo truy vấn ban đầu
                 var query = db.TaoDotNgayLaoDongs.Where(x => x.Ngayxoa == null);
 
-                // Bước 2: Lọc theo từ khóa (tên đợt hoặc khu vực)
+                // Bước 2: Lọc theo từ khóa
                 if (!string.IsNullOrWhiteSpace(keyword))
                 {
-                    query = query.Where(x =>
-                        x.DotLaoDong.Contains(keyword) ||
-                        x.KhuVuc.Contains(keyword));
+                    query = query.Where(x => x.DotLaoDong.Contains(keyword) || x.KhuVuc.Contains(keyword));
                 }
 
                 // Bước 3: Lọc theo buổi
@@ -100,17 +94,16 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                     query = query.Where(x => x.TrangThaiDuyet == false);
                 }
 
-                // ✅ Bước 5: Lọc theo tháng nếu có
+                // Bước 5: Lọc theo tháng
                 if (thang.HasValue)
                 {
                     query = query.Where(x => x.NgayLaoDong.HasValue && x.NgayLaoDong.Value.Month == thang.Value);
                 }
 
-                // ✅ Bước 5.5: Lọc theo NGÀY CỤ THỂ (dd/MM/yyyy từ search box)
+                // Bước 5.5: Lọc theo ngày cụ thể
                 if (!string.IsNullOrEmpty(ngay))
                 {
                     DateTime d = DateTime.Parse(ngay);
-
                     query = query.Where(x =>
                         x.NgayLaoDong.HasValue &&
                         x.NgayLaoDong.Value.Year == d.Year &&
@@ -119,50 +112,51 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                     );
                 }
 
-
-                // Bước 6: Tính tổng số dòng và số trang
-                int totalItems = query.Count();
-                int totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
-
-                // Bước 7: Lấy dữ liệu theo trang
-                // ===================== SORT SERVER SIDE =====================
+                // Bước 6: Sort server-side
                 switch (sortField)
                 {
                     case "date":
-                        query = sortDir == "asc"
-                            ? query.OrderBy(x => x.NgayLaoDong)
-                            : query.OrderByDescending(x => x.NgayLaoDong);
+                        query = sortDir == "asc" ? query.OrderBy(x => x.NgayLaoDong) : query.OrderByDescending(x => x.NgayLaoDong);
                         break;
-
                     case "quantity":
                         query = sortDir == "asc"
-                            ? query.OrderBy(x => db.PhieuDangKies
-                                .Count(p => p.TaoDotLaoDong_id == x.TaoDotLaoDong_id))
-                            : query.OrderByDescending(x => db.PhieuDangKies
-                                .Count(p => p.TaoDotLaoDong_id == x.TaoDotLaoDong_id));
+                            ? query.OrderBy(x => db.PhieuDangKies.Count(p => p.TaoDotLaoDong_id == x.TaoDotLaoDong_id))
+                            : query.OrderByDescending(x => db.PhieuDangKies.Count(p => p.TaoDotLaoDong_id == x.TaoDotLaoDong_id));
                         break;
-
                     case "status":
-                        query = sortDir == "asc"
-                            ? query.OrderBy(x => x.TrangThaiDuyet)
-                            : query.OrderByDescending(x => x.TrangThaiDuyet);
+                        query = sortDir == "asc" ? query.OrderBy(x => x.TrangThaiDuyet) : query.OrderByDescending(x => x.TrangThaiDuyet);
                         break;
-
                     default:
                         query = query.OrderByDescending(x => x.NgayLaoDong);
                         break;
                 }
-                // ===========================================================
+
+                // Bước 7: Phân trang
+                int totalItems = query.Count();
+                int totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
 
                 var rawItems = query
                     .Skip((page - 1) * pageSize)
                     .Take(pageSize)
                     .ToList();
 
+                // === TÍNH SỐ LỚP ĐÃ ĐĂNG KÝ CHO ĐỢT LOẠI "LỚP" ===
+                var dotIds = rawItems.Select(x => x.TaoDotLaoDong_id).ToList();
 
+                var phieuLopList = db.PhieuDangKies
+                    .Where(p => dotIds.Contains(p.PhieuDangKy_id) && p.LaoDongTheoLop == true)
+                    .Select(p => new { p.TaoDotLaoDong_id, p.MSSV })
+                    .ToList();
 
+                var lopDaDangKyDict = phieuLopList
+                    .Join(db.SinhViens, p => p.MSSV, sv => sv.MSSV, (p, sv) => new { p.TaoDotLaoDong_id, LopId = sv.Lop_id })
+                    .GroupBy(x => x.TaoDotLaoDong_id)
+                    .ToDictionary(
+                        g => g.Key,
+                        g => g.Select(x => x.LopId.GetValueOrDefault()).Distinct().Count()
+                    );
 
-                // Bước 8: Xử lý dữ liệu để trả về JSON
+                // === TẠO DANH SÁCH TRẢ VỀ JSON ===
                 var items = rawItems.Select(x => new
                 {
                     x.TaoDotLaoDong_id,
@@ -170,18 +164,23 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                     x.Buoi,
                     x.LoaiLaoDong,
                     GiaTri = x.GiaTri,
-                    NgayLaoDong = x.NgayLaoDong.HasValue
-                        ? x.NgayLaoDong.Value.ToString("dd/MM/yyyy")
-                        : "",
+                    NgayLaoDong = x.NgayLaoDong.HasValue ? x.NgayLaoDong.Value.ToString("dd/MM/yyyy") : "",
                     x.KhuVuc,
                     x.SoLuongSinhVien,
                     SoLuongDangKy = db.PhieuDangKies.Count(p => p.TaoDotLaoDong_id == x.TaoDotLaoDong_id),
                     TrangThaiDuyet = x.TrangThaiDuyet == true ? "Đã duyệt" : "Chưa duyệt",
                     x.MoTa,
-                    x.NguoiTao
+                    x.NguoiTao,
+                    // Số lớp đã đăng ký (chỉ cho loại "Lớp")
+                    SoLuongLopDaDangKy = (x.LoaiLaoDong == "Lớp")
+                        ? (lopDaDangKyDict.ContainsKey(x.TaoDotLaoDong_id) ? lopDaDangKyDict[x.TaoDotLaoDong_id] : 0)
+                        : 0,
+                    // Tổng số lớp cần (dùng SoLuongSinhVien làm chỉ tiêu lớp, nếu null → mặc định 20)
+                    TongSoLopCan = (x.LoaiLaoDong == "Lớp")
+                        ? x.SoLuongSinhVien.GetValueOrDefault(20)
+                        : 0
                 }).ToList();
 
-                // Bước 9: Trả về JSON
                 return Json(new
                 {
                     success = true,
@@ -191,6 +190,7 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                 }, JsonRequestBehavior.AllowGet);
             }
         }
+
 
         // Tạo Đợt Lao động 
         [HttpPost]
@@ -427,7 +427,7 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                 return Json(new { success = false, message = "Lỗi: " + ex.Message });
             }
         }
-        //
+        // Xuất dữ liệu
         [HttpGet]
         public ActionResult ExportAllDotLaoDong()
         {
@@ -522,7 +522,7 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
         {
             try
             {
-                using (var db = new DB_QLNLD4ROLEEntities1())
+                using (var db = DbContextFactory.Create())
                 {
                     var danhSach = (from pd in db.PhieuDangKies
                                     join sv in db.SinhViens on pd.MSSV equals sv.MSSV
@@ -531,6 +531,7 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                                     where pd.TaoDotLaoDong_id == maDot && pd.MSSV != null
                                     select new
                                     {
+                                        MSSV = sv.MSSV,                 // ← THÊM DÒNG NÀY
                                         TenSinhVien = sv.HoTen,
                                         TenLop = lop.TenLop,
                                         TenKhoa = khoa.TenKhoa
@@ -551,7 +552,6 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
 
 
         // Xử lý sinh mã điểm danh
-
 
         [HttpPost]
         public JsonResult HienThiMaDiemDanh(int dotId)
@@ -589,7 +589,7 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
             }
         }
 
-        // ==================== MỚI: LẤY DANH SÁCH SINH VIÊN ĐÃ ĐIỂM DANH ====================
+        // Lấy danh sách sinh viên đã điểm danh
         [HttpGet]
         public JsonResult GetDanhSachDiemDanh(int dotId)
         {
@@ -630,7 +630,7 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
             }
         }
 
-        // ==================== HÀM HỖ TRỢ: TẠO MÃ NGẪU NHIÊN ====================
+        // Hỗ trợ tạo mã điểm danh ngẫu nhiên
         private string GenerateRandomCode(int length = 6)
         {
             const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -639,7 +639,47 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                 .Select(s => s[random.Next(s.Length)]).ToArray());
         }
 
+        // Lấy danh sách lớp theo lớp
 
+
+        [HttpGet]
+        public ActionResult GetDanhSachLopThamGia(int dotId)
+        {
+            try
+            {
+                using (var db = DbContextFactory.Create())
+                {
+                    // Gom nhóm theo lớp
+                    var danhSachLop = (from pd in db.PhieuDangKies
+                                       join sv in db.SinhViens on pd.MSSV equals sv.MSSV
+                                       join lop in db.Lops on sv.Lop_id equals lop.Lop_id
+                                       join khoa in db.Khoas on lop.Khoa_id equals khoa.Khoa_id
+                                       where pd.TaoDotLaoDong_id == dotId && pd.LaoDongTheoLop == true
+                                       group sv by new { lop.Lop_id, lop.TenLop, khoa.TenKhoa } into g
+                                       select new
+                                       {
+                                           LopId = g.Key.Lop_id,
+                                           TenLop = g.Key.TenLop,
+                                           TenKhoa = g.Key.TenKhoa,
+                                           SoLuongSinhVien = g.Count()
+                                       }).ToList();
+
+                    return Json(new
+                    {
+                        success = true,
+                        data = danhSachLop
+                    }, JsonRequestBehavior.AllowGet);
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = "Lỗi hệ thống: " + ex.Message
+                }, JsonRequestBehavior.AllowGet);
+            }
+        }
 
 
 

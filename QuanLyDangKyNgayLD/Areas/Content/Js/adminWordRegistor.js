@@ -202,6 +202,16 @@ document.addEventListener("DOMContentLoaded", function () {
             if (buoiText === "Sáng") buoiText = "Sáng (7h-8h30)";
             if (buoiText === "Chiều") buoiText = "Chiều (13h-14h)";
 
+            // Xác định loại lao động
+            const isLoaiLop = item.LoaiLaoDong === "Lớp";
+
+            // Số lượng lớp đã đăng ký và tổng lớp cần (dùng tạm SoLuongSinhVien nếu backend chưa có field riêng)
+            const soLopDaDangKy = item.SoLuongLopDaDangKy || 0;
+            const tongLopCan = item.TongSoLopCan || item.SoLuongSinhVien || 20;
+
+            // Màu sắc cho số lượng lớp
+            const mauLop = soLopDaDangKy >= tongLopCan ? "text-success" : "text-danger";
+
             return `
             <tr
               data-id="${item.TaoDotLaoDong_id}"
@@ -215,9 +225,27 @@ document.addEventListener("DOMContentLoaded", function () {
                 <td class="text-success fw-bold">${item.GiaTri ?? ''}</td>
                 <td>${item.NgayLaoDong || ''}</td>
                 <td>${item.KhuVuc || ''}</td>
-                <td class="${item.SoLuongDangKy < item.SoLuongSinhVien ? 'text-danger fw-bold' : 'text-success fw-bold'} text-center">
-                    ${item.SoLuongDangKy}/${item.SoLuongSinhVien}
+
+                <!-- CỘT SỐ LƯỢNG: XỬ LÝ RIÊNG CHO LOẠI "LỚP" -->
+                <td class="text-center">
+                    ${isLoaiLop ? `
+                        <div class="d-flex align-items-center justify-content-center gap-2">
+                            <i class="fas fa-user-friends fa-lg text-primary"></i>
+                            <span class="${mauLop} fw-bold">
+                                ${soLopDaDangKy}/${tongLopCan} Lớp
+                            </span>
+                        </div>
+                    ` : `
+                        <div class="d-flex align-items-center justify-content-center gap-2">
+                            <i class="fas fa-users text-info"></i>
+                            <span class="${item.SoLuongDangKy < item.SoLuongSinhVien ? 'text-danger' : 'text-success'} fw-bold">
+                                ${item.SoLuongDangKy}/${item.SoLuongSinhVien}
+                            </span>
+                        </div>
+                    `}
                 </td>
+                <!-- HẾT CỘT SỐ LƯỢNG -->
+
                 <td>
                     <span class="badge ${item.TrangThaiDuyet === 'Đã duyệt' ? 'bg-success' : 'bg-warning text-dark'}">
                         ${item.TrangThaiDuyet}
@@ -225,11 +253,18 @@ document.addEventListener("DOMContentLoaded", function () {
                 </td>
                 <td class="action-cell text-center d-flex justify-content-center gap-1 align-items-center flex-wrap">
                     <!-- Nút Chi tiết - luôn hiển thị -->
-                    <button class="btn btn-sm btn-info btn-detail text-white"
+                    
+                    <button class="btn btn-sm btn-info btn-detail-dot text-white"
                             data-id="${item.TaoDotLaoDong_id}"
+                            data-loai="${item.LoaiLaoDong || ''}"
                             title="Xem chi tiết đợt">
                         <i class="fas fa-info-circle"></i>
                     </button>
+
+
+
+
+
 
                     <!-- 2 nút mới: chỉ hiển thị khi ĐÃ DUYỆT -->
                     ${item.TrangThaiDuyet === 'Đã duyệt' ? `
@@ -244,7 +279,6 @@ document.addEventListener("DOMContentLoaded", function () {
                             <i class="fas fa-list-check"></i>
                         </button>
                     ` : ''}
-
                     <!-- Các nút cũ: chỉ hiển thị khi CHƯA DUYỆT -->
                     ${item.TrangThaiDuyet === 'Chưa duyệt' ? `
                         <button class="btn btn-sm btn-warning btn-edit"
@@ -406,22 +440,14 @@ document.addEventListener("DOMContentLoaded", function () {
     // 6) Event delegation cho nút trong bảng
     // ==============================
     document.addEventListener("click", function (e) {
-        const detailBtn = e.target.closest(".btn-detail");
         const editBtn = e.target.closest(".btn-edit");
-
-
-
-
-
         const deleteBtn = e.target.closest(".btn-delete");
         const approveBtn = e.target.closest(".btn-approve");
         const restoreBtn = e.target.closest(".btn-restore");
         const permanentDeleteBtn = e.target.closest(".btn-permanent-delete");
 
-        // Hỗ trợ cả id và class cho nút Xem (tránh trùng id khi render nhiều lần)
+        // Xem chi tiết sinh viên tham gia (nút "Xem" trong modal chi tiết đợt)
         const btnXemChiTiet = e.target.closest("#btnXemChiTietSinhVien, .btn-view-sinhvien");
-
-        // xem chi tiết sinh viên tham gia
         if (btnXemChiTiet) {
             const id = btnXemChiTiet.dataset.id || btnXemChiTiet.getAttribute("data-id");
             const tbody = document.getElementById("sinhVienTableBody");
@@ -430,133 +456,140 @@ document.addEventListener("DOMContentLoaded", function () {
             let currentPage = 1;
             let fullData = [];
 
-            if (!tbody || !modalEl) return console.warn("Không tìm thấy bảng hoặc modal sinh viên");
+            if (!tbody || !modalEl) {
+                console.warn("Không tìm thấy bảng hoặc modal sinh viên");
+                return;
+            }
 
-            tbody.innerHTML = `<tr><td colspan="4" class="text-muted text-center">Đang tải...</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="4" class="text-center py-4"><div class="spinner-border text-primary"></div><p class="mt-2">Đang tải...</p></td></tr>`;
 
             fetch(`/Admin/AdminWordRegister/GetSinhVienThamGia?maDot=${encodeURIComponent(id)}`)
                 .then(res => res.json())
                 .then(data => {
-                    if (!data || !data.success || !Array.isArray(data.data) || data.data.length === 0) {
-                        tbody.innerHTML = `<tr><td colspan="4" class="text-muted text-center">Chưa có sinh viên nào đăng ký</td></tr>`;
-                        new bootstrap.Modal(modalEl).show(); // ✅ Đảm bảo modal mở
-                        return;
-                    }
+                    if (!data.success || !Array.isArray(data.data) || data.data.length === 0) {
+                        tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted py-5">Chưa có sinh viên nào đăng ký</td></tr>`;
+                    } else {
+                        fullData = data.data;
 
+                        function renderPage(page) {
+                            currentPage = page;
+                            const start = (page - 1) * pageSize;
+                            const end = start + pageSize;
+                            const pageData = fullData.slice(start, end);
 
-                    fullData = data.data;
+                            tbody.innerHTML = pageData.map((sv, i) => `
+                                <tr>
+                                    <td>${start + i + 1}</td>
+                                    <td>${sv.TenSinhVien || sv.HoTen || ""}</td>
+                                    <td>${sv.TenLop || ""}</td>
+                                    <td>${sv.TenKhoa || ""}</td>
+                                </tr>
+                            `).join("");
 
-                    function renderPage(page) {
-                        currentPage = page;
-                        const start = (page - 1) * pageSize;
-                        const end = start + pageSize;
-                        const pageData = fullData.slice(start, end);
-
-                        tbody.innerHTML = pageData.map((sv, i) => `
-                    <tr>
-                        <td>${start + i + 1}</td>
-                        <td>${sv.TenSinhVien || ""}</td>
-                        <td>${sv.TenLop || ""}</td>
-                        <td>${sv.TenKhoa || ""}</td>
-                    </tr>
-                `).join("");
-
-                        renderPagination();
-                    }
-
-                    function renderPagination() {
-                        const totalPages = Math.ceil(fullData.length / pageSize);
-                        const footer = modalEl.querySelector(".modal-footer");
-                        if (!footer) return;
-
-                        let nav = footer.querySelector(".pagination-nav");
-                        if (!nav) {
-                            nav = document.createElement("div");
-                            nav.className = "pagination-nav mb-2";
-                            footer.prepend(nav);
+                            renderPagination();
                         }
 
-                        nav.innerHTML = "";
+                        function renderPagination() {
+                            const totalPages = Math.ceil(fullData.length / pageSize);
+                            const footer = modalEl.querySelector(".modal-footer");
+                            if (!footer) return;
 
-                        for (let i = 1; i <= totalPages; i++) {
-                            const btn = document.createElement("button");
-                            btn.className = "btn btn-sm btn-outline-secondary me-1 mb-1";
-                            btn.textContent = i;
-                            if (i === currentPage) btn.classList.add("active");
-                            btn.onclick = () => renderPage(i);
-                            nav.appendChild(btn);
+                            let nav = footer.querySelector(".pagination-nav");
+                            if (!nav) {
+                                nav = document.createElement("div");
+                                nav.className = "pagination-nav text-center mb-3";
+                                footer.prepend(nav);
+                            }
+
+                            nav.innerHTML = "";
+                            for (let i = 1; i <= totalPages; i++) {
+                                const btn = document.createElement("button");
+                                btn.className = "btn btn-sm btn-outline-secondary mx-1";
+                                btn.textContent = i;
+                                if (i === currentPage) btn.classList.add("active");
+                                btn.onclick = () => renderPage(i);
+                                nav.appendChild(btn);
+                            }
                         }
-                    }
 
-                    renderPage(1);
+                        renderPage(1);
+                    }
                     new bootstrap.Modal(modalEl).show();
                 })
                 .catch(err => {
-                    console.error("Lỗi khi tải danh sách sinh viên:", err);
-                    tbody.innerHTML = `<tr><td colspan="4" class="text-danger text-center">Lỗi tải dữ liệu</td></tr>`;
+                    console.error("Lỗi tải danh sách sinh viên:", err);
+                    tbody.innerHTML = `<tr><td colspan="4" class="text-center text-danger py-4">Lỗi tải dữ liệu</td></tr>`;
+                    new bootstrap.Modal(modalEl).show();
                 });
 
             return;
         }
 
-
-
-        // Chi tiết
+        // XỬ LÝ NÚT CHI TIẾT ĐỢT (HOÀN CHỈNH THEO YÊU CẦU MỚI)
+        const detailBtn = e.target.closest(".btn-detail-dot");
         if (detailBtn) {
-            const tr = detailBtn.closest("tr");
-            if (!tr) return;
-            const cells = tr.querySelectorAll("td");
+            const dotId = detailBtn.dataset.id;
+            const loaiLaoDong = detailBtn.dataset.loai || "";
 
-            // Gán thông tin cơ bản (kiểm tra tồn tại phần tử trước khi gán)
-            const setText = (id, value) => {
-                const el = document.getElementById(id);
-                if (el) el.textContent = value || "";
-            };
-            setText("detailDotLaoDong", cells[1]?.textContent);
-            setText("detailBuoi", cells[2]?.textContent);
-            setText("detailLoaiLaoDong", cells[3]?.textContent);
-            setText("detailGiaTri", cells[4]?.textContent);
-            setText("detailNgayLaoDong", cells[5]?.textContent);
-            setText("detailKhuVuc", cells[6]?.textContent);
-
-            // Số lượng SV + nút Xem (an toàn nếu thiếu /)
-            const soLuongRaw = cells[7]?.textContent || "";
-            let soDangKy = "", soQuyDinh = "";
-            if (soLuongRaw.includes("/")) {
-                [soDangKy, soQuyDinh] = soLuongRaw.split("/").map(x => x.trim());
+            if (loaiLaoDong === "Lớp") {
+                // Nếu là loại "Lớp" → mở modal danh sách lớp đã đăng ký
+                moModalLopDaDangKy(dotId);
             } else {
-                soDangKy = soLuongRaw.trim();
-                soQuyDinh = "";
+                // Nếu là loại cá nhân → mở modal chi tiết đợt như cũ
+                const tr = detailBtn.closest("tr");
+                if (!tr) return;
+
+                const cells = tr.querySelectorAll("td");
+
+                const setText = (id, value) => {
+                    const el = document.getElementById(id);
+                    if (el) el.textContent = value || "";
+                };
+
+                setText("detailDotLaoDong", cells[1]?.textContent?.trim());
+                setText("detailBuoi", cells[2]?.textContent?.trim());
+                setText("detailLoaiLaoDong", cells[3]?.textContent?.trim());
+                setText("detailGiaTri", cells[4]?.textContent?.trim());
+                setText("detailNgayLaoDong", cells[5]?.textContent?.trim());
+                setText("detailKhuVuc", cells[6]?.textContent?.trim());
+
+                const soLuongRaw = cells[7]?.textContent?.trim() || "";
+                let soDangKy = "0", soQuyDinh = "";
+                if (soLuongRaw.includes("/")) {
+                    [soDangKy, soQuyDinh] = soLuongRaw.split("/").map(x => x.trim());
+                }
+
+                const soLuongEl = document.getElementById("detailSoLuongSinhVien");
+                if (soLuongEl) {
+                    soLuongEl.innerHTML = `
+                        <span class="fw-bold">${soDangKy}${soQuyDinh ? "/" + soQuyDinh : ""}</span>
+                        <button class="btn btn-sm btn-outline-primary ms-2 btn-view-sinhvien" data-id="${dotId}">
+                            <i class="fas fa-users me-1"></i> Xem
+                        </button>
+                    `;
+                }
+
+                setText("detailTrangThaiDuyet", tr.querySelector(".badge")?.textContent?.trim());
+                setText("detailMoTa", tr.dataset.mota || "");
+                setText("detailNguoiTao", tr.dataset.nguoitao || "");
+
+                const khuVucValue = cells[6]?.textContent?.trim() || "";
+                const imgEl = document.getElementById("detailKhuVucImage");
+                if (imgEl) setAreaImage(imgEl, khuVucValue);
+
+                new bootstrap.Modal(document.getElementById("detailModal")).show();
             }
-            const soLuongEl = document.getElementById("detailSoLuongSinhVien");
-            if (soLuongEl) {
-                // Tạo nút bằng class để tránh trùng id khi có nhiều modal/dòng
-                soLuongEl.innerHTML = `
-                <span class="fw-bold">${soDangKy || "0"}${soQuyDinh ? "/" + soQuyDinh : ""}</span>
-                <button class="btn btn-sm btn-outline-primary ms-2 btn-view-sinhvien" data-id="${detailBtn.dataset.id}">
-                    <i class="fas fa-users me-1"></i> Xem
-                </button>
-            `;
-            }
-
-            // Trạng thái duyệt
-            setText("detailTrangThaiDuyet", tr.querySelector(".badge")?.textContent);
-
-            // Mô tả & người tạo
-            setText("detailMoTa", tr.dataset.mota);
-            setText("detailNguoiTao", tr.dataset.nguoitao);
-
-            // Ảnh khu vực (kiểm tra tồn tại)
-            const khuVucValue = cells[6]?.textContent?.trim() || "";
-            const imgEl = document.getElementById("detailKhuVucImage");
-            if (imgEl) setAreaImage(imgEl, khuVucValue);
-
-            // Mở modal chi tiết
-            const detailModalEl = document.getElementById("detailModal");
-            if (detailModalEl) new bootstrap.Modal(detailModalEl).show();
-
             return;
         }
+
+
+
+
+
+
+
+
+
 
         // sửa
         if (editBtn) {
@@ -910,17 +943,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-
     
-
-
-
-
-
-
-
-
-
     // ==============================
     // 11. Xuất Excel TOÀN BỘ dữ liệu (dùng action có sẵn)
     // ==============================
@@ -1097,7 +1120,111 @@ document.addEventListener("DOMContentLoaded", function () {
         triggerReload();
     });
 
+    // xử hai form kia
+    // ==============================
+    // MỞ MODAL DANH SÁCH LỚP ĐÃ ĐĂNG KÝ (CHO ĐỢT LOẠI "LỚP")
+    // ==============================
+    window.moModalLopDaDangKy = function (dotId) {
+        const content = document.getElementById("lopDaDangKyContent");
+        content.innerHTML = `
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="mt-3 text-muted">Đang tải danh sách lớp...</p>
+        </div>`;
 
+        fetch(`/Admin/AdminWordRegister/GetDanhSachLopThamGia?dotId=${dotId}`)
+            .then(res => res.json())
+            .then(data => {
+                if (!data.success || !data.data || data.data.length === 0) {
+                    content.innerHTML = `
+                    <div class="alert alert-info text-center py-4">
+                        <i class="fas fa-info-circle fa-2x mb-3"></i>
+                        <p>Chưa có lớp nào đăng ký đợt này.</p>
+                    </div>`;
+                } else {
+                    let html = `
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover align-middle">
+                            <thead class="table-primary sticky-top">
+                                <tr>
+                                    <th class="text-center" style="width:8%;">STT</th>
+                                    <th>Tên lớp</th>
+                                    <th>Khoa</th>
+                                    <th class="text-center">Số SV đăng ký</th>
+                                    <th class="text-center">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>`;
+
+                    data.data.forEach((lop, i) => {
+                        html += `
+                        <tr>
+                            <td class="text-center">${i + 1}</td>
+                            <td class="fw-bold">${lop.TenLop || ''}</td>
+                            <td>${lop.TenKhoa || ''}</td>
+                            <td class="text-center fw-bold text-primary">${lop.SoLuongSinhVien || 0}</td>
+                            <td class="text-center">
+                                <button class="btn btn-sm btn-outline-success" onclick="moModalSinhVienLop('${lop.TenLop}', ${dotId})">
+                                    <i class="fas fa-list-ul me-1"></i> Xem SV
+                                </button>
+                            </td>
+                        </tr>`;
+                    });
+
+                    html += `</tbody></table></div>`;
+                    content.innerHTML = html;
+                }
+
+                new bootstrap.Modal(document.getElementById("lopDaDangKyModal")).show();
+            })
+            .catch(err => {
+                console.error("Lỗi tải danh sách lớp:", err);
+                content.innerHTML = `
+                <div class="alert alert-danger text-center py-4">
+                    <i class="fas fa-exclamation-triangle fa-2x mb-3"></i>
+                    <p>Lỗi tải dữ liệu! Vui lòng thử lại.</p>
+                </div>`;
+                new bootstrap.Modal(document.getElementById("lopDaDangKyModal")).show();
+            });
+    };
+
+    // ==============================
+    // MỞ MODAL DANH SÁCH SINH VIÊN CỦA LỚP
+    // ==============================
+    window.moModalSinhVienLop = function (tenLop, dotId) {
+        document.getElementById("tenLopHienThi").textContent = tenLop;
+        const tbody = document.getElementById("sinhVienLopBody");
+        tbody.innerHTML = `<tr><td colspan="3" class="text-center py-4"><div class="spinner-border text-success"></div></td></tr>`;
+
+        // Dùng API GetSinhVienThamGia và lọc theo tên lớp
+        fetch(`/Admin/AdminWordRegister/GetSinhVienThamGia?maDot=${dotId}`)
+            .then(res => res.json())
+            .then(data => {
+                if (!data.success || !data.data || data.data.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="3" class="text-center text-muted py-5">Không có dữ liệu</td></tr>`;
+                } else {
+                    const svCuaLop = data.data.filter(sv => (sv.TenLop || "").trim() === tenLop.trim());
+
+                    if (svCuaLop.length === 0) {
+                        tbody.innerHTML = `<tr><td colspan="3" class="text-center text-muted py-5">Lớp này chưa có sinh viên đăng ký</td></tr>`;
+                    } else {
+                        tbody.innerHTML = svCuaLop.map((sv, i) => `
+                        <tr>
+                            <td class="text-center">${i + 1}</td>
+                            <td>${sv.MSSV || ""}</td>
+                            <td>${sv.TenSinhVien || sv.HoTen || ""}</td>
+                        </tr>
+                    `).join("");
+                    }
+                }
+                new bootstrap.Modal(document.getElementById("sinhVienLopModal")).show();
+            })
+            .catch(err => {
+                console.error("Lỗi tải danh sách sinh viên lớp:", err);
+                tbody.innerHTML = `<tr><td colspan="3" class="text-center text-danger py-4">Lỗi tải dữ liệu</td></tr>`;
+                new bootstrap.Modal(document.getElementById("sinhVienLopModal")).show();
+            });
+    };
 
 
 

@@ -643,6 +643,62 @@
     </div>
 </div>
 
+
+<!-- Modal Danh sách lớp đã đăng ký -->
+<div class="modal fade" id="lopDaDangKyModal" tabindex="-1" aria-labelledby="lopDaDangKyModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="lopDaDangKyModalLabel">
+                    <i class="fas fa-users me-2"></i>Danh sách lớp đã đăng ký đợt lao động
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="lopDaDangKyContent">
+                    <!-- JS sẽ load danh sách lớp ở đây -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Danh sách sinh viên của lớp -->
+<div class="modal fade" id="sinhVienLopModal" tabindex="-1" aria-labelledby="sinhVienLopModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="sinhVienLopModalLabel">
+                    <i class="fas fa-user-graduate me-2"></i>Danh sách sinh viên lớp: <span id="tenLopHienThi"></span>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>STT</th>
+                                <th>MSSV</th>
+                                <th>Họ tên</th>
+                            </tr>
+                        </thead>
+                        <tbody id="sinhVienLopBody">
+               
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Các script cũ giữ nguyên -->
 <script src="~/Areas/Content/Js/adminCommon.js"></script>
 <script src="~/Areas/Content/Js/adminWordRegistor.js"></script>
