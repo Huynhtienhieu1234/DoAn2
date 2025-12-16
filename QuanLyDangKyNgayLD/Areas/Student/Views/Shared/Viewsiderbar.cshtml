@@ -152,13 +152,11 @@
                     <i class="fa fa-home"></i> Trang chủ
                 </a>
             </li>
-            <li class="nav-item"><a href="#" class="nav-link"><i class="fa fa-user-plus"></i> Đăng Ký Lao Động</a></li>
-            <li class="nav-item"><a href="#" class="nav-link"><i class="fa fa-chart-bar"></i> Thống Kê</a></li>
+            <li class="nav-item"><a href="@Url.Action("Index","StudentRegisterWord",new{area="Student"})" class="nav-link"><i class="fa fa-user-plus"></i> Đăng Ký Lao Động</a></li>
+            <li class="nav-item"><a href="@Url.Action("Index","StudentTK",new{area="Student"})" class="nav-link"><i class="fa fa-chart-bar"></i> Thống Kê</a></li>
             <li class="nav-item"><a href="#" class="nav-link"><i class="fa fa-calendar-alt"></i> Lịch Lao Động</a></li>
-            <li class="nav-item"><a href="#" class="nav-link"><i class="fa fa-user-check"></i> Điểm Danh Lao Động</a></li>
-            <li class="nav-item"><a href="#" class="nav-link"><i class="fa fa-bell"></i> Thông Báo</a></li>
-            <li class="nav-item"><a href="#" class="nav-link"><i class="fa fa-clipboard-check"></i> Xác Nhận Hoàn Thành</a></li>
-        </ul>
+            <li class="nav-item"><a href="@Url.Action("Index","StudentCheckDay",new{area="Student"})" class="nav-link"><i class="fa fa-user-check"></i> Điểm Danh Lao Động</a></li>
+            </ul>
     </div>
 
     <!-- Nội dung chính -->

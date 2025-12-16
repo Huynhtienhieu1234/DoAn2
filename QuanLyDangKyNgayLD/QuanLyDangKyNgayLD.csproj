@@ -162,6 +162,7 @@
     <Content Include="Areas\Student\Content\Js\StudentCheckDay\StudentCheckDay.js" />
     <Content Include="Areas\Student\Content\Js\StudentMain\StudentInfo.js" />
     <Content Include="Areas\Student\Content\Js\StudentMain\StudentMain.js" />
+    <Content Include="Areas\Student\Content\Js\StudentTK\StudentTK.js" />
     <Content Include="Areas\Student\Content\Js\Viewsider\LayoutUser.js" />
     <Content Include="Areas\Student\Content\Js\Viewsider\Viewsider.js" />
     <Content Include="Areas\Student\Views\MainSinhVien\Index.cshtml" />
@@ -199,6 +200,7 @@
     <Compile Include="Areas\Student\Controllers\MainSinhVienController.cs" />
     <Compile Include="Areas\Student\Controllers\StudentCheckDayController.cs" />
     <Compile Include="Areas\Student\Controllers\StudentRegisterWordController.cs" />
+    <Compile Include="Areas\Student\Controllers\StudentTKController.cs" />
     <Compile Include="Areas\Student\StudentAreaRegistration.cs" />
     <Compile Include="Controllers\ForgotPasswordController.cs" />
     <Compile Include="Controllers\LoginController.cs" />
@@ -289,6 +291,7 @@
       <DependentUpon>QuanLyDangKyLaoDong.edmx</DependentUpon>
     </Content>
     <Content Include="Areas\Student\Views\StudentCheckDay\Index.cshtml" />
+    <Content Include="Areas\Student\Views\StudentTK\Index.cshtml" />
     <None Include="packages.config" />
     <Content Include="Views\Login\Login.cshtml" />
     <Content Include="Views\ForgotPassword\ForgotPassword.cshtml" />
