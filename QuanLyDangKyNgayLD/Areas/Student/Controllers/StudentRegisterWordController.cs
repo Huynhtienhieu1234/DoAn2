@@ -280,5 +280,257 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
                 return Json(new { success = true, message = "Đã hủy và xóa phiếu đăng ký thành công!", type = "success" });
             }
         }
+
+        // Đăng ký theo lớp
+        [HttpGet]
+        public ActionResult GetDanhSachLop()
+        {
+            using (var db = DbContextFactory.Create())
+            {
+                // Kiểm tra đăng nhập
+                string username = Session["Username"]?.ToString();
+                if (string.IsNullOrEmpty(username))
+                {
+                    return Json(new
+                    {
+                        success = false,
+                        message = "Chưa đăng nhập"
+                    }, JsonRequestBehavior.AllowGet);
+                }
+
+                //  Lấy tài khoản
+                var user = db.TaiKhoans.FirstOrDefault(t => t.Username == username);
+                if (user == null)
+                {
+                    return Json(new
+                    {
+                        success = false,
+                        message = "Không tìm thấy tài khoản"
+                    }, JsonRequestBehavior.AllowGet);
+                }
+
+                // Lấy sinh viên hiện tại
+                var svHienTai = db.SinhViens.FirstOrDefault(s => s.TaiKhoan == user.TaiKhoan_id);
+                if (svHienTai == null)
+                {
+                    return Json(new
+                    {
+                        success = false,
+                        message = "Không tìm thấy sinh viên"
+                    }, JsonRequestBehavior.AllowGet);
+                }
+
+                //  Kiểm tra lớp
+                if (!svHienTai.Lop_id.HasValue)
+                {
+                    return Json(new
+                    {
+                        success = false,
+                        message = "Sinh viên chưa được gán lớp"
+                    }, JsonRequestBehavior.AllowGet);
+                }
+
+                int lopId = svHienTai.Lop_id.Value;
+
+                //  Lấy danh sách sinh viên cùng lớp
+                var danhSach = db.SinhViens
+                    .Where(s => s.Lop_id == lopId)
+                    .Select(s => new
+                    {
+                        s.MSSV,
+                        s.HoTen
+                    })
+                    .ToList();
+
+                return Json(new
+                {
+                    success = true,
+                    sinhViens = danhSach
+                }, JsonRequestBehavior.AllowGet);
+            }
+        }
+
+
+ 
+        // Đăng Ký theo lớp 
+        [HttpPost]
+        public ActionResult DangKyTheoLop(int dotId, List<long> mssvList)
+        {
+            try
+            {
+                using (var db = DbContextFactory.Create())
+                {
+                    if (mssvList == null)
+                        return Json(new { success = false, message = "mssvList = NULL" });
+
+                    if (!mssvList.Any())
+                        return Json(new { success = false, message = "Danh sách rỗng" });
+
+                    var now = DateTime.Now;
+
+                    // Lấy ID lớn nhất hiện tại trong bảng
+                    int maxId = db.PhieuDangKies.Max(p => (int?)p.PhieuDangKy_id) ?? 0;
+
+                    foreach (var mssv in mssvList)
+                    {
+                        // Tăng ID thủ công mỗi lần thêm
+                        maxId++;
+
+                        db.PhieuDangKies.Add(new PhieuDangKy
+                        {
+                            PhieuDangKy_id = maxId,   // ⭐ Ghi thủ công ID
+                            MSSV = mssv,
+                            TaoDotLaoDong_id = dotId,
+                            ThoiGian = now,
+                            LaoDongCaNhan = false,
+                            LaoDongTheoLop = true,
+                            TrangThai = "DangKy"
+                        });
+                    }
+
+                    db.SaveChanges();
+                    return Json(new { success = true, message = "Đăng ký theo lớp thành công!" });
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = ex.InnerException?.Message ?? ex.Message
+                });
+            }
+        }
+
+
+        // cập nhật đăng ký lớp 
+        [HttpPost]
+        public ActionResult CapNhatDangKyTheoLop(int dotId, List<long> mssvList)
+        {
+            try
+            {
+                using (var db = DbContextFactory.Create())
+                {
+                    // Đảm bảo danh sách không bị null
+                    if (mssvList == null)
+                        mssvList = new List<long>();
+
+                    // Lấy toàn bộ phiếu đăng ký hiện tại của lớp trong đợt này
+                    var danhSachCu = db.PhieuDangKies
+                                       .Where(p => p.TaoDotLaoDong_id == dotId && p.LaoDongTheoLop == true)
+                                       .Select(p => p.MSSV)
+                                       .ToList();
+
+                    var now = DateTime.Now;
+                    int maxId = db.PhieuDangKies.Max(p => (int?)p.PhieuDangKy_id) ?? 0;
+
+                    // 1. Thêm sinh viên mới (có trong mssvList nhưng chưa có trong DB)
+                    var canThem = mssvList.Except(danhSachCu).ToList();
+                    foreach (var mssv in canThem)
+                    {
+                        maxId++;
+                        db.PhieuDangKies.Add(new PhieuDangKy
+                        {
+                            PhieuDangKy_id = maxId,
+                            MSSV = mssv,
+                            TaoDotLaoDong_id = dotId,
+                            ThoiGian = now,
+                            LaoDongCaNhan = false,
+                            LaoDongTheoLop = true,
+                            TrangThai = "DangKy"
+                        });
+                    }
+
+                    // 2. Xóa sinh viên (có trong DB nhưng không còn trong mssvList)
+                    var canXoa = danhSachCu.Except(mssvList).ToList();
+                    foreach (var mssv in canXoa)
+                    {
+                        var phieu = db.PhieuDangKies
+                                      .FirstOrDefault(p => p.TaoDotLaoDong_id == dotId && p.MSSV == mssv && p.LaoDongTheoLop == true);
+                        if (phieu != null)
+                        {
+                            db.PhieuDangKies.Remove(phieu);
+                        }
+                    }
+
+                    db.SaveChanges();
+                    return Json(new { success = true, message = "Cập nhật danh sách đăng ký thành công!" });
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = "Lỗi hệ thống: " + (ex.InnerException?.Message ?? ex.Message)
+                });
+            }
+        }
+
+
+
+        // thống kê
+        [HttpGet]
+        public ActionResult GetThongKeDangKyLop(int dotId)
+        {
+            using (var db = DbContextFactory.Create())
+            {
+                var dot = db.TaoDotNgayLaoDongs.FirstOrDefault(x => x.TaoDotLaoDong_id == dotId);
+                if (dot == null)
+                {
+                    return Json(new { success = false, message = "Không tìm thấy đợt!" }, JsonRequestBehavior.AllowGet);
+                }
+
+                // Tổng số sinh viên dự kiến (nullable int nên dùng ?? 0)
+                int tongSo = dot.SoLuongSinhVien ?? 0;
+
+                // Chỉ xử lý nếu loại lao động là "Lớp"
+                if (dot.LoaiLaoDong == "Lớp")
+                {
+                    // Kiểm tra có sinh viên nào đăng ký theo lớp không
+                    bool coDangKy = db.PhieuDangKies.Any(p => p.TaoDotLaoDong_id == dotId && p.LaoDongTheoLop == true);
+
+                    // Nếu có đăng ký thì quy về 1 lớp, nếu chưa thì 0 lớp
+                    int soLopDaDangKy = coDangKy ? 1 : 0;
+
+                    return Json(new
+                    {
+                        success = true,
+                        hienThi = $"{soLopDaDangKy}/{tongSo} lớp"
+                    }, JsonRequestBehavior.AllowGet);
+                }
+                else
+                {
+                    // Nếu không phải loại lao động là lớp thì bỏ trống hoặc hiển thị khác
+                    return Json(new
+                    {
+                        success = true,
+                        hienThi = "-"
+                    }, JsonRequestBehavior.AllowGet);
+                }
+            }
+        }
+
+        // kiểm tra đăng ký lớp 
+        [HttpGet]
+        public ActionResult KiemTraDangKyLop(int dotId)
+        {
+            using (var db = DbContextFactory.Create())
+            {
+                bool daDangKy = db.PhieuDangKies.Any(p => p.TaoDotLaoDong_id == dotId && p.LaoDongTheoLop == true);
+                return Json(new { success = true, daDangKy = daDangKy }, JsonRequestBehavior.AllowGet);
+            }
+        }
+
+
+
+
+
+
+
+
+
+
+
     }
 }

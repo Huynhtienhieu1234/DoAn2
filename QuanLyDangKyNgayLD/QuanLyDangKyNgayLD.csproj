@@ -163,6 +163,8 @@
     <Content Include="Areas\Student\Content\Js\StudentListDay\StudentListDay.js" />
     <Content Include="Areas\Student\Content\Js\StudentMain\StudentInfo.js" />
     <Content Include="Areas\Student\Content\Js\StudentMain\StudentMain.js" />
+    <Content Include="Areas\Student\Content\Js\StudentRegister\LopPhoTableOverride.js" />
+    <Content Include="Areas\Student\Content\Js\StudentRegister\StudentListClass.js" />
     <Content Include="Areas\Student\Content\Js\StudentTK\StudentTK.js" />
     <Content Include="Areas\Student\Content\Js\Viewsider\LayoutUser.js" />
     <Content Include="Areas\Student\Content\Js\Viewsider\Viewsider.js" />

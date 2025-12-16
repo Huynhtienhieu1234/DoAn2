@@ -402,7 +402,47 @@
         border-color: #007bff !important;
     }
 
+/*Hai nút chọn xem cá nhân hoặc lớp */
 
 
+.two-buton {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin: 20px 0;
+}
+
+    .two-buton button {
+        padding: 10px 18px;
+        font-weight: 600;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+        font-size: 14px;
+    }
+
+        /* Nút Cá nhân */
+        .two-buton button:first-child {
+            background: linear-gradient(45deg, #007bff, #0056b3);
+            color: #fff;
+        }
+
+            .two-buton button:first-child:hover {
+                background: linear-gradient(45deg, #0056b3, #004080);
+                transform: translateY(-2px);
+            }
+
+        /* Nút Lớp */
+        .two-buton button:last-child {
+            background: linear-gradient(45deg, #28a745, #1e7e34);
+            color: #fff;
+        }
+
+            .two-buton button:last-child:hover {
+                background: linear-gradient(45deg, #1e7e34, #155d27);
+                transform: translateY(-2px);
+            }
 
 
