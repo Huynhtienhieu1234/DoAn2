@@ -650,20 +650,16 @@ document.addEventListener("DOMContentLoaded", function () {
             // ===== FIX LOAD NGÀY LAO ĐỘNG (EDIT) =====
             const ngayText = cells[5]?.textContent?.trim(); // dd/MM/yyyy
             const editNgay = document.getElementById("editNgayLaoDong");
-
             if (editNgay) {
                 editNgay.innerHTML = '<option value="">-- Chọn ngày --</option>';
-
                 if (ngayText) {
                     const parts = ngayText.split("/");
                     if (parts.length === 3) {
                         const value = `${parts[2]}-${parts[1]}-${parts[0]}`; // yyyy-MM-dd
-
                         const opt = document.createElement("option");
                         opt.value = value;
                         opt.textContent = ngayText;
                         opt.selected = true;
-
                         editNgay.appendChild(opt);
                     }
                 }
@@ -672,21 +668,36 @@ document.addEventListener("DOMContentLoaded", function () {
             const khuVucRaw = cells[6]?.textContent?.trim() || "";
             const khuVucSelect = document.getElementById("editKhuVuc");
             if (khuVucSelect) {
-                khuVucSelect.value = [...khuVucSelect.options].some(opt => opt.value === khuVucRaw) ? khuVucRaw : "";
+                khuVucSelect.value = khuVucRaw;
                 setAreaImage(document.getElementById("editKhuVucImage"), khuVucSelect.value);
             }
 
-            let soLuongRaw2 = cells[7]?.textContent || "";
-            let quyDinh = soLuongRaw2.includes("/") ? soLuongRaw2.split("/")[1]?.trim() || "" : "";
-            setInputValue("editSoLuongSinhVien", quyDinh);
+            // ===== SỬA LỖI SỐ LƯỢNG (KHÔNG LẤY CHỮ "LỚP" HOẶC "NULL") =====
+            let soLuongRaw = cells[7]?.textContent?.trim() || "";
+            // Loại bỏ chữ "Lớp" và mọi ký tự không phải số ở phần sau dấu "/"
+            let soLuongThucTe = 20; // mặc định
 
+            if (soLuongRaw.includes("/")) {
+                const parts = soLuongRaw.split("/");
+                if (parts.length >= 2) {
+                    // Lấy phần sau dấu /, loại bỏ chữ "Lớp", "null", khoảng trắng
+                    let phanSau = parts[1].trim().replace(/Lớp|null/gi, "").trim();
+                    soLuongThucTe = parseInt(phanSau) || 20;
+                }
+            } else {
+                // Nếu không có dấu /, lấy số trực tiếp
+                soLuongThucTe = parseInt(soLuongRaw.replace(/\D/g, "")) || 20;
+            }
+
+            setInputValue("editSoLuongSinhVien", soLuongThucTe);
+
+            // Mô tả
             setInputValue("editMoTa", tr.dataset.mota || "");
 
+            // Mở modal
             const editModalEl = document.getElementById("editModal");
             if (editModalEl) new bootstrap.Modal(editModalEl).show();
-
-            return;
-        }
+            return;        }
 
         // xóa mềm
         if (deleteBtn) {

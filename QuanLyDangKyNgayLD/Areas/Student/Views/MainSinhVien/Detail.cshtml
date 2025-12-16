@@ -35,42 +35,40 @@
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <label class="form-label">MSSV</label>
-                        @Html.TextBoxFor(m => m.MSSV, new { @class = "form-control", placeholder = "Nhập MSSV" })
+                        @Html.TextBoxFor(m => m.MSSV, new { @class = "form-control", placeholder = "Nhập MSSV", @readonly = "readonly" })
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Họ và Tên</label>
-                        @Html.TextBoxFor(m => m.HoTen, new { @class = "form-control", placeholder = "Nhập họ tên" })
+                        @Html.TextBoxFor(m => m.HoTen, new { @class = "form-control", placeholder = "Nhập họ tên", @readonly = "readonly" })
                     </div>
                 </div>
 
                 <div class="row mb-3">
                     <div class="col-md-6">
-                        <label class="form-label">Email</label>
+                        <label class="form-label">Email*</label>
                         @Html.TextBoxFor(m => m.Email, new { @class = "form-control", placeholder = "Nhập email" })
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label">Số điện thoại</label>
+                        <label class="form-label">Số điện thoại*</label>
                         @Html.TextBoxFor(m => m.SoDienThoaiSinhVien, new { @class = "form-control", placeholder = "Nhập số điện thoại" })
                     </div>
                 </div>
 
                 <div class="row mb-3">
                     <div class="col-md-6">
-                        <label class="form-label">Ngày sinh</label>
+                        <label class="form-label">Ngày sinh*</label>
                         @Html.TextBoxFor(m => m.NgaySinh, "{0:yyyy-MM-dd}", new { @class = "form-control", type = "date" })
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Giới tính</label>
-                        @Html.DropDownListFor(m => m.GioiTinh,
-                            new SelectList(new[] { "Nam", "Nữ", "Khác" }, Model.GioiTinh),
-                            "Chọn giới tính",
-                            new { @class = "form-select" })
+                        @Html.TextBoxFor(m => m.GioiTinh, new { @class = "form-control", @readonly = "readonly" })
                     </div>
+
                 </div>
 
                 <div class="row mb-3">
                     <div class="col-md-6">
-                        <label class="form-label">Quê quán</label>
+                        <label class="form-label">Quê quán*</label>
                         @Html.TextBoxFor(m => m.QueQuan, new { @class = "form-control", placeholder = "Nhập quê quán" })
                     </div>
                     <div class="col-md-6">
@@ -94,7 +92,7 @@
                             @readonly = "readonly"
                         })
                     </div>
-     
+
                 </div>
 
 
@@ -111,16 +109,38 @@
                     </div>
                 </div>
 
-         
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label class="form-label">Mật khẩu mới</label>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Mật khẩu mới*</label>
+                        <div class="input-group">
                             <input type="password" name="MatKhauMoi" id="matkhau" class="form-control" placeholder="Nhập mật khẩu mới" />
+                            <span class="input-group-text" id="togglePassword" style="cursor: pointer;">
+                                <i class="fa fa-eye" id="eyeIcon"></i>
+                            </span>
                         </div>
                     </div>
+                </div>
+                <script>
+                    document.getElementById("togglePassword").addEventListener("click", function () {
+                        const input = document.getElementById("matkhau");
+                        const icon = document.getElementById("eyeIcon");
+
+                        if (input.type === "password") {
+                            input.type = "text";
+                            icon.classList.remove("fa-eye");
+                            icon.classList.add("fa-eye-slash");
+                        } else {
+                            input.type = "password";
+                            icon.classList.remove("fa-eye-slash");
+                            icon.classList.add("fa-eye");
+                        }
+                    });
+                </script>
 
 
- 
+
+
 
                 <!-- Nút hành động -->
                 <div class="d-flex justify-content-between">

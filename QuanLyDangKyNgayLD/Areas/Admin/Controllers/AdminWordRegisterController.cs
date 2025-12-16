@@ -501,6 +501,21 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                     if (dot == null)
                         return Json(new { success = false, message = "Không tìm thấy đợt." });
 
+                    // ✅ Xóa các phiếu đăng ký liên quan trước
+                    var phieuDangKyList = db.PhieuDangKies.Where(p => p.TaoDotLaoDong_id == id).ToList();
+                    foreach (var phieu in phieuDangKyList)
+                    {
+                        // Xóa các phiếu duyệt liên quan
+                        var phieuDuyetList = db.PhieuDuyets.Where(pd => pd.PhieuDangKy == phieu.PhieuDangKy_id).ToList();
+                        db.PhieuDuyets.RemoveRange(phieuDuyetList);
+                    }
+                    db.PhieuDangKies.RemoveRange(phieuDangKyList);
+
+                    // ✅ Xóa các bản ghi điểm danh liên quan
+                    var diemDanhList = db.DanhSachDiemDanhs.Where(dd => dd.Dot_id == id).ToList();
+                    db.DanhSachDiemDanhs.RemoveRange(diemDanhList);
+
+                    // ✅ Cuối cùng xóa đợt lao động
                     db.TaoDotNgayLaoDongs.Remove(dot);
                     db.SaveChanges();
 

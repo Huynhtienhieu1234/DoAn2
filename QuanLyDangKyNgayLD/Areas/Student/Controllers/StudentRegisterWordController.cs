@@ -215,17 +215,27 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
 
                 var sv = db.SinhViens.FirstOrDefault(tk => tk.TaiKhoan == user.TaiKhoan_id);
                 if (sv == null)
-                    return Json(new { success = false, message = "Không tìm thấy sinh viên tương ứng!", type = "error" });
+                    return Json(new { success = false, message = "Không tìm thấy sinh viên!", type = "error" });
 
                 var dot = db.TaoDotNgayLaoDongs.FirstOrDefault(x => x.TaoDotLaoDong_id == id && x.Ngayxoa == null);
                 if (dot == null)
                     return Json(new { success = false, message = "Đợt lao động không tồn tại!", type = "error" });
 
+                // ✅ Lấy tất cả phiếu đăng ký của sinh viên trong cùng ngày
+                var phieuTrongNgay = db.PhieuDangKies
+                    .Where(p => p.MSSV == sv.MSSV && p.TaoDotNgayLaoDong.NgayLaoDong == dot.NgayLaoDong)
+                    .ToList();
+
+                // Nếu đã đăng ký cùng buổi → từ chối
+                if (phieuTrongNgay.Any(p => p.TaoDotNgayLaoDong.Buoi == dot.Buoi))
+                    return Json(new { success = false, message = $"Bạn đã đăng ký buổi {dot.Buoi} trong ngày này rồi!", type = "error" });
+
+                // Nếu đã đăng ký 2 buổi trong ngày → từ chối
+                if (phieuTrongNgay.Count >= 2)
+                    return Json(new { success = false, message = "Bạn chỉ được đăng ký tối đa 2 buổi trong ngày!", type = "error" });
+
+                // ✅ Nếu qua kiểm tra thì thêm phiếu
                 var phieu = db.PhieuDangKies.FirstOrDefault(p => p.TaoDotLaoDong_id == id && p.MSSV == sv.MSSV);
-
-                if (phieu != null && phieu.TrangThai == "DangKy")
-                    return Json(new { success = false, message = "Bạn đã đăng ký đợt này rồi!", type = "error" });
-
                 if (phieu == null)
                 {
                     var phieuMoi = new PhieuDangKy
@@ -247,10 +257,10 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
                 }
 
                 db.SaveChanges();
-
                 return Json(new { success = true, message = "Đăng ký thành công!", type = "success" });
             }
         }
+
 
         [HttpPost]
         public ActionResult HuyDangKy(int id)
@@ -340,14 +350,35 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
                     // Lấy ID lớn nhất hiện tại trong bảng
                     int maxId = db.PhieuDangKies.Max(p => (int?)p.PhieuDangKy_id) ?? 0;
 
+                    // Lấy thông tin đợt lao động
+                    var dot = db.TaoDotNgayLaoDongs.FirstOrDefault(x => x.TaoDotLaoDong_id == dotId && x.Ngayxoa == null);
+                    if (dot == null)
+                        return Json(new { success = false, message = "Đợt lao động không tồn tại!" });
+
                     foreach (var mssv in mssvList)
                     {
-                        // Tăng ID thủ công mỗi lần thêm
-                        maxId++;
+                        // ✅ Kiểm tra trùng lịch
+                        var phieuTrongNgay = db.PhieuDangKies
+                            .Where(p => p.MSSV == mssv && p.TaoDotNgayLaoDong.NgayLaoDong == dot.NgayLaoDong)
+                            .ToList();
 
+                        // Nếu đã đăng ký cùng buổi → từ chối
+                        if (phieuTrongNgay.Any(p => p.TaoDotNgayLaoDong.Buoi == dot.Buoi))
+                        {
+                            return Json(new { success = false, message = $"Sinh viên {mssv} đã đăng ký buổi {dot.Buoi} trong ngày này rồi!", type = "error" });
+                        }
+
+                        // Nếu đã đăng ký 2 buổi trong ngày → từ chối
+                        if (phieuTrongNgay.Count >= 2)
+                        {
+                            return Json(new { success = false, message = $"Sinh viên {mssv} đã đăng ký đủ 2 buổi trong ngày!", type = "error" });
+                        }
+
+                        // ✅ Nếu qua kiểm tra thì thêm phiếu
+                        maxId++;
                         db.PhieuDangKies.Add(new PhieuDangKy
                         {
-                            PhieuDangKy_id = maxId,   // ⭐ Ghi thủ công ID
+                            PhieuDangKy_id = maxId,
                             MSSV = mssv,
                             TaoDotLaoDong_id = dotId,
                             ThoiGian = now,
@@ -370,6 +401,7 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
                 });
             }
         }
+
 
 
         // cập nhật đăng ký lớp 

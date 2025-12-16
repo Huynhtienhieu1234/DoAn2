@@ -1,5 +1,4 @@
-﻿/*sidebar*/
-/* Header cố định trên cùng */
+﻿/* ===== HEADER ===== */
 nav {
     position: fixed;
     top: 0;
@@ -69,37 +68,66 @@ nav {
             background-color: #f0f0f0;
         }
 
-/* Sidebar */
+/* ===== SIDEBAR ===== */
 .sidebar {
     position: fixed;
     top: 60px;
     left: 0;
     width: 214px;
-    height: calc(100vh - 60px);
+    height: 50%;
     background-color: #343a40;
     padding-top: 20px;
-    overflow-y: auto;
+   
+    transition: width 0.3s ease;
+    z-index: 100;
 }
 
+    /* Thu gọn */
+    .sidebar.collapsed {
+        width: 60px;
+    }
+
+        /* Ẩn chữ khi thu gọn */
+        .sidebar.collapsed .menu-text {
+            display: none;
+        }
+
+    /* Link menu */
     .sidebar a {
-        display: block;
+        display: flex;
+        align-items: center;
+        gap: 10px;
         color: #f8f9fa;
         padding: 10px 15px;
         text-decoration: none;
         font-size: 15px;
+        white-space: nowrap;
+        transition: background-color 0.2s ease;
     }
 
+        /* Hover */
         .sidebar a:hover {
             background-color: #495057;
         }
 
-/* Nội dung chính */
+        /* Icon */
+        .sidebar a i {
+            width: 20px;
+            text-align: center;
+        }
+
+/* ===== NỘI DUNG CHÍNH ===== */
 .content {
-    margin-left: 180px;
-    padding: 45px 20px 20px;
+    margin-left: 214px;
+    padding: 80px 20px 20px;
+    transition: margin-left 0.3s ease;
+}
+
+/* Khi sidebar thu gọn thì nội dung dịch lại */
+.sidebar.collapsed ~ .content {
+    margin-left: 60px;
 }
 
 i.fa.fa-caret-down {
     margin-left: 7px;
-
 }

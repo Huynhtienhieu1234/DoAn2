@@ -25,8 +25,7 @@
     <!--csss-->
     <link rel="stylesheet" href="~/Areas/Student/Content/Css/Toast.css">
 
-
-    <title>Trang Thông Tin Sinh Viên</title>
+    <title>@ViewBag.Title</title>
 
 
 
@@ -145,19 +144,57 @@
 
 
     <!-- Sidebar -->
-    <div class="sidebar">
-        <ul class="nav flex-column">
+    <div class="sidebar" id="sidebar">
+        <!-- Nút toggle -->
+        <div class="toggle-btn text-end px-2">
+            <button id="toggleSidebar" class="btn btn-sm btn-outline-secondary">
+                <i class="fa fa-bars"></i>
+            </button>
+        </div>
+
+        <ul class="nav flex-column mt-3">
             <li class="nav-item">
                 <a href="@Url.Action("Index","MainSinhVien",new{area="Student"})" class="nav-link">
-                    <i class="fa fa-home"></i> Trang chủ
+                    <i class="fa fa-home"></i> <span class="menu-text">Trang chủ</span>
                 </a>
             </li>
-            <li class="nav-item"><a href="@Url.Action("Index","StudentRegisterWord",new{area="Student"})" class="nav-link"><i class="fa fa-user-plus"></i> Đăng Ký Lao Động</a></li>
-            <li class="nav-item"><a href="@Url.Action("Index","StudentTK",new{area="Student"})" class="nav-link"><i class="fa fa-chart-bar"></i> Thống Kê</a></li>
-            <li class="nav-item"><a href="@Url.Action("Index","StudentListDay",new{area="Student"})" class="nav-link"><i class="fa fa-calendar-alt"></i> Lịch Lao Động</a></li>
-            <li class="nav-item"><a href="@Url.Action("Index","StudentCheckDay",new{area="Student"})" class="nav-link"><i class="fa fa-user-check"></i> Điểm Danh Lao Động</a></li>
-            </ul>
+            <li class="nav-item">
+                <a href="@Url.Action("Index","StudentRegisterWord",new{area="Student"})" class="nav-link">
+                    <i class="fa fa-user-plus"></i> <span class="menu-text">Đăng Ký Lao Động</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="@Url.Action("Index","StudentTK",new{area="Student"})" class="nav-link">
+                    <i class="fa fa-chart-bar"></i> <span class="menu-text">Thống Kê</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="@Url.Action("Index","StudentListDay",new{area="Student"})" class="nav-link">
+                    <i class="fa fa-calendar-alt"></i> <span class="menu-text">Lịch Lao Động</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="@Url.Action("Index","StudentCheckDay",new{area="Student"})" class="nav-link">
+                    <i class="fa fa-user-check"></i> <span class="menu-text">Điểm Danh Lao Động</span>
+                </a>
+            </li>
+        </ul>
     </div>
+    <script>
+        // Mặc định thu gọn sidebar khi trang vừa load
+        document.addEventListener("DOMContentLoaded", function () {
+            document.getElementById("sidebar").classList.add("collapsed");
+        });
+
+        // Toggle khi bấm nút ☰
+        document.getElementById("toggleSidebar").addEventListener("click", function () {
+            document.getElementById("sidebar").classList.toggle("collapsed");
+        });
+    </script>
+
+
+
+
 
     <!-- Nội dung chính -->
     <div class="content">
