@@ -1,0 +1,84 @@
+﻿@{
+    ViewBag.Title = "Lịch Lao Động";
+    Layout = "~/Areas/Student/Views/Shared/Viewsiderbar.cshtml";
+}
+
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white text-center py-3">
+            <h4 class="mb-0">
+                <i class="fas fa-calendar-alt me-2"></i> Lịch Lao Động Của Sinh Viên
+            </h4>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered text-center align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Buổi / Ngày</th>
+                            <th>Thứ 2</th>
+                            <th>Thứ 3</th>
+                            <th>Thứ 4</th>
+                            <th>Thứ 5</th>
+                            <th>Thứ 6</th>
+                            <th>Thứ 7</th>
+                            <th>Chủ nhật</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <th class="table-light">Sáng</th>
+                            <td id="sang2"></td>
+                            <td id="sang3"></td>
+                            <td id="sang4"></td>
+                            <td id="sang5"></td>
+                            <td id="sang6"></td>
+                            <td id="sang7"></td>
+                            <td id="sangCN"></td>
+                        </tr>
+                        <tr>
+                            <th class="table-light">Chiều</th>
+                            <td id="chieu2"></td>
+                            <td id="chieu3"></td>
+                            <td id="chieu4"></td>
+                            <td id="chieu5"></td>
+                            <td id="chieu6"></td>
+                            <td id="chieu7"></td>
+                            <td id="chieuCN"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal chi tiết -->
+<div class="modal fade" id="modalChiTiet" tabindex="-1" aria-labelledby="modalChiTietLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title" id="modalChiTietLabel">Chi Tiết Đợt Lao Động</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Ngày:</strong> <span id="ctNgay"></span></p>
+                        <p><strong>Buổi:</strong> <span id="ctBuoi"></span></p>
+                        <p><strong>Loại lao động:</strong> <span id="ctLoai"></span></p>
+                        <p><strong>Địa điểm:</strong> <span id="ctDiaDiem"></span></p>
+                    </div>
+                    <div class="col-md-6 text-center">
+                        <img id="ctHinh" src="" alt="Hình địa điểm" class="img-fluid rounded shadow" />
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="~/Areas/Student/Content/Js/StudentListDay/StudentListDay.js"></script>
+

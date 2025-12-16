@@ -160,6 +160,7 @@
     <Content Include="Areas\Student\Content\Css\Toast.css" />
     <Content Include="Areas\Student\Content\Js\Register\DeleteRegister.js" />
     <Content Include="Areas\Student\Content\Js\StudentCheckDay\StudentCheckDay.js" />
+    <Content Include="Areas\Student\Content\Js\StudentListDay\StudentListDay.js" />
     <Content Include="Areas\Student\Content\Js\StudentMain\StudentInfo.js" />
     <Content Include="Areas\Student\Content\Js\StudentMain\StudentMain.js" />
     <Content Include="Areas\Student\Content\Js\StudentTK\StudentTK.js" />
@@ -199,6 +200,7 @@
     <Compile Include="Areas\Models\AdminThongKeViewModel.cs" />
     <Compile Include="Areas\Student\Controllers\MainSinhVienController.cs" />
     <Compile Include="Areas\Student\Controllers\StudentCheckDayController.cs" />
+    <Compile Include="Areas\Student\Controllers\StudentListDayController.cs" />
     <Compile Include="Areas\Student\Controllers\StudentRegisterWordController.cs" />
     <Compile Include="Areas\Student\Controllers\StudentTKController.cs" />
     <Compile Include="Areas\Student\StudentAreaRegistration.cs" />
@@ -292,6 +294,7 @@
     </Content>
     <Content Include="Areas\Student\Views\StudentCheckDay\Index.cshtml" />
     <Content Include="Areas\Student\Views\StudentTK\Index.cshtml" />
+    <Content Include="Areas\Student\Views\StudentListDay\Index.cshtml" />
     <None Include="packages.config" />
     <Content Include="Views\Login\Login.cshtml" />
     <Content Include="Views\ForgotPassword\ForgotPassword.cshtml" />
