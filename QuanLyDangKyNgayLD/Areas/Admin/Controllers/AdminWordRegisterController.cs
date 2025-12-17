@@ -168,7 +168,10 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                     x.KhuVuc,
                     x.SoLuongSinhVien,
                     SoLuongDangKy = db.PhieuDangKies.Count(p => p.TaoDotLaoDong_id == x.TaoDotLaoDong_id),
-                    TrangThaiDuyet = x.TrangThaiDuyet == true ? "Đã duyệt" : "Chưa duyệt",
+                    TrangThaiDuyet = x.TrangThaiDuyet == true
+                        ? "Đã duyệt"
+                        : (x.NgayLaoDong.HasValue && x.NgayLaoDong.Value.Date < DateTime.Today ? "Kết thúc" : "Chưa duyệt"),
+
                     x.MoTa,
                     x.NguoiTao,
                     // Số lớp đã đăng ký (chỉ cho loại "Lớp")
@@ -318,7 +321,6 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
             }
         }
 
-        // AJAX: Duyệt đợt
         [HttpPost]
         public ActionResult ApproveAjax(int id)
         {
@@ -330,32 +332,52 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                     if (dot == null || dot.Ngayxoa != null)
                         return Json(new { success = false, message = "Không tìm thấy đợt." });
 
-                    int soDangKy = db.PhieuDangKies.Count(p => p.TaoDotLaoDong_id == id);
-                    if (soDangKy < 5)
+                    bool duDieuKien = false;
+
+                    // Nếu là loại "Lớp" → kiểm tra số lớp đăng ký
+                    if (dot.LoaiLaoDong == "Lớp")
                     {
-                        return Json(new
-                        {
-                            success = false,
-                            message = $"Chưa đủ số lượng sinh viên đăng ký (hiện tại: {soDangKy}/5)."
-                        });
+                        var soLopDangKy = (from pd in db.PhieuDangKies
+                                           join sv in db.SinhViens on pd.MSSV equals sv.MSSV
+                                           where pd.TaoDotLaoDong_id == id && pd.LaoDongTheoLop == true
+                                           select sv.Lop_id).Distinct().Count();
+
+                        if (soLopDangKy >= 2)
+                            duDieuKien = true;
+                        else
+                            return Json(new { success = false, message = $"Chưa đủ số lớp đăng ký (hiện tại: {soLopDangKy}/2)." });
+                    }
+                    else
+                    {
+                        // Nếu là loại "Cá Nhân" → kiểm tra số lượng sinh viên
+                        int soDangKy = db.PhieuDangKies.Count(p => p.TaoDotLaoDong_id == id);
+                        if (soDangKy >= 5)
+                            duDieuKien = true;
+                        else
+                            return Json(new { success = false, message = $"Chưa đủ số lượng sinh viên đăng ký (hiện tại: {soDangKy}/5)." });
                     }
 
+                    if (!duDieuKien)
+                        return Json(new { success = false, message = "Không đủ điều kiện duyệt." });
+
+                    // ✅ Cập nhật trạng thái đợt
                     dot.TrangThaiDuyet = true;
 
+                    // ✅ Duyệt từng phiếu đăng ký
                     var phieuList = db.PhieuDangKies.Where(p => p.TaoDotLaoDong_id == id).ToList();
                     foreach (var phieu in phieuList)
                     {
                         phieu.TrangThai = "DaDuyet";
                         phieu.ThoiGian = DateTime.Now;
 
-                        var phieuDuyet = new PhieuDuyet
+                        // ✅ Thêm bản ghi PhieuDuyet (KHÔNG gán ID — để trigger tự xử lý)
+                        db.PhieuDuyets.Add(new PhieuDuyet
                         {
                             PhieuDangKy = phieu.PhieuDangKy_id,
-                            Nguoiduyet = 1, // hoặc lấy từ Session
+                            Nguoiduyet = 1, // hoặc lấy từ Session["UserId"]
                             ThoiGian = DateTime.Now,
                             TrangThai = "Đã duyệt"
-                        };
-                        db.PhieuDuyets.Add(phieuDuyet);
+                        });
                     }
 
                     db.SaveChanges();
@@ -369,6 +391,8 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                 return Json(new { success = false, message = "Lỗi: " + message });
             }
         }
+
+
 
 
 

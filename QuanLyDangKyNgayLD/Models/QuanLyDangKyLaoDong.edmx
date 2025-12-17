@@ -151,6 +151,7 @@
           <Property Name="MoTa" Type="nvarchar" MaxLength="255" />
           <Property Name="NguoiTao" Type="int" />
           <Property Name="MaDiemDanh" Type="nvarchar" MaxLength="10" />
+          <Property Name="TrangThaiDot" Type="nvarchar" MaxLength="50" />
         </EntityType>
         <EntityType Name="VaiTro">
           <Key>
@@ -574,6 +575,7 @@
           <NavigationProperty Name="DanhSachDiemDanhs" Relationship="Self.fk_diemdanh_dot" FromRole="TaoDotNgayLaoDong" ToRole="DanhSachDiemDanh" />
           <NavigationProperty Name="PhieuDangKies" Relationship="Self.FK_PhieuDangKy_TaoDot" FromRole="TaoDotNgayLaoDong" ToRole="PhieuDangKy" />
           <Property Name="MaDiemDanh" Type="String" MaxLength="10" FixedLength="false" Unicode="true" />
+          <Property Name="TrangThaiDot" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
         </EntityType>
         <EntityType Name="VaiTro">
           <Key>
@@ -956,6 +958,7 @@
           <EntitySetMapping Name="TaoDotNgayLaoDongs">
             <EntityTypeMapping TypeName="DB_QLNLD4ROLEModel.TaoDotNgayLaoDong">
               <MappingFragment StoreEntitySet="TaoDotNgayLaoDong">
+                <ScalarProperty Name="TrangThaiDot" ColumnName="TrangThaiDot" />
                 <ScalarProperty Name="MaDiemDanh" ColumnName="MaDiemDanh" />
                 <ScalarProperty Name="TaoDotLaoDong_id" ColumnName="TaoDotLaoDong_id" />
                 <ScalarProperty Name="DotLaoDong" ColumnName="DotLaoDong" />

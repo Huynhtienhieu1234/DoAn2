@@ -16,13 +16,13 @@
                     <thead class="table-light">
                         <tr>
                             <th>Buổi / Ngày</th>
-                            <th>Thứ 2</th>
-                            <th>Thứ 3</th>
-                            <th>Thứ 4</th>
-                            <th>Thứ 5</th>
-                            <th>Thứ 6</th>
-                            <th>Thứ 7</th>
-                            <th>Chủ nhật</th>
+                            <th>Thứ 2<br><span id="ngay2"></span></th>
+                            <th>Thứ 3<br><span id="ngay3"></span></th>
+                            <th>Thứ 4<br><span id="ngay4"></span></th>
+                            <th>Thứ 5<br><span id="ngay5"></span></th>
+                            <th>Thứ 6<br><span id="ngay6"></span></th>
+                            <th>Thứ 7<br><span id="ngay7"></span></th>
+                            <th>Chủ nhật<br><span id="ngayCN"></span></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -49,6 +49,12 @@
                     </tbody>
                 </table>
             </div>
+
+            <!-- Phân trang tuần -->
+            <div class="d-flex justify-content-between mt-3">
+                <button class="btn btn-outline-primary" onclick="changeWeek(-1)">Tuần trước</button>
+                <button class="btn btn-outline-primary" onclick="changeWeek(1)">Tuần sau</button>
+            </div>
         </div>
     </div>
 </div>
@@ -68,6 +74,7 @@
                         <p><strong>Buổi:</strong> <span id="ctBuoi"></span></p>
                         <p><strong>Loại lao động:</strong> <span id="ctLoai"></span></p>
                         <p><strong>Địa điểm:</strong> <span id="ctDiaDiem"></span></p>
+                        <p><strong>Trạng thái:</strong> <span id="ctTrangThai"></span></p>
                     </div>
                     <div class="col-md-6 text-center">
                         <img id="ctHinh" src="" alt="Hình địa điểm" class="img-fluid rounded shadow" />
@@ -80,5 +87,5 @@
         </div>
     </div>
 </div>
-<script src="~/Areas/Student/Content/Js/StudentListDay/StudentListDay.js"></script>
 
+<script src="~/Areas/Student/Content/Js/StudentListDay/StudentListDay.js"></script>

@@ -8,15 +8,13 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
 {
     public class StudentListDayController : Controller
     {
-        // GET: Student/StudentListDay
         public ActionResult Index()
         {
             return View();
         }
 
-        // AJAX: Lấy lịch lao động từ các đợt đã đăng ký và đã duyệt
         [HttpGet]
-        public JsonResult GetLichDaDuyet()
+        public JsonResult GetLichDaDangKy(int weekOffset = 0)
         {
             try
             {
@@ -36,26 +34,60 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
 
                     long mssv = sv.MSSV;
 
-                    // Lấy danh sách đợt đã đăng ký và đã duyệt
-                    var rawList = (from p in db.PhieuDangKies
-                                   join d in db.TaoDotNgayLaoDongs on p.TaoDotLaoDong_id equals d.TaoDotLaoDong_id
-                                   where p.MSSV == mssv && d.TrangThaiDuyet == true && d.Ngayxoa == null
-                                   orderby d.NgayLaoDong
-                                   select new
-                                   {
-                                       d.Buoi,
-                                       d.NgayLaoDong,
-                                       d.LoaiLaoDong,
-                                       d.KhuVuc
-                                   }).ToList();
+                    DateTime today = DateTime.Today;
+                    int diff = (7 + (today.DayOfWeek - DayOfWeek.Monday)) % 7;
+                    DateTime monday = today.AddDays(-diff).AddDays(weekOffset * 7);
+                    DateTime sunday = monday.AddDays(6);
 
-                    // Định dạng ngày dd/MM/yyyy
+                    var rawList =
+                        (from p in db.PhieuDangKies
+                         join d in db.TaoDotNgayLaoDongs
+                            on p.TaoDotLaoDong_id equals d.TaoDotLaoDong_id
+
+                         // LEFT JOIN điểm danh
+                         join dd in db.DanhSachDiemDanhs
+                            on new { MSSV = p.MSSV, Dot_id = p.TaoDotLaoDong_id ?? 0 }
+                            equals new { dd.MSSV, dd.Dot_id }
+                            into diemDanhGroup
+                         from diemDanh in diemDanhGroup.DefaultIfEmpty()
+
+                         where p.MSSV == mssv
+                               && p.TrangThai == "DangKy"
+                               && d.Ngayxoa == null
+                               && d.NgayLaoDong >= monday
+                               && d.NgayLaoDong <= sunday
+
+                         orderby d.NgayLaoDong
+                         select new
+                         {
+                             d.Buoi,
+                             d.NgayLaoDong,
+                             d.LoaiLaoDong,
+                             d.KhuVuc,
+                             d.TrangThaiDot,
+
+                             DaDiemDanh = diemDanh != null
+                         }).ToList();
+
                     var list = rawList.Select(x => new
                     {
                         Buoi = x.Buoi,
-                        Ngay = x.NgayLaoDong != null ? x.NgayLaoDong.Value.ToString("dd/MM/yyyy") : "",
+                        Ngay = x.NgayLaoDong.HasValue
+                            ? x.NgayLaoDong.Value.ToString("dd/MM/yyyy")
+                            : "",
                         LoaiLaoDong = x.LoaiLaoDong,
-                        DiaDiem = x.KhuVuc
+                        DiaDiem = x.KhuVuc,
+
+                        TrangThaiText =
+                            x.DaDiemDanh
+                                ? "Đã điểm danh"
+                                : string.IsNullOrEmpty(x.TrangThaiDot)
+                                    ? "Chưa duyệt"
+                                    : (x.TrangThaiDot == "Đã duyệt"
+                                       && x.NgayLaoDong.HasValue
+                                       && x.NgayLaoDong.Value.Date < DateTime.Today
+                                        ? "Hoàn thành"
+                                        : x.TrangThaiDot)
                     }).ToList();
 
                     return Json(new { success = true, list }, JsonRequestBehavior.AllowGet);
