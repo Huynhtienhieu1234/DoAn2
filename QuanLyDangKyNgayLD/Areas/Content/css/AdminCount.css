@@ -2353,3 +2353,102 @@ table {
         opacity: 0.6;
     }
 }
+
+
+
+/*
+
+    ====================== HIỆU ỨNG BÓNG ĐÈN CHO NÚT TÁC VỤ ====================== 
+
+
+*/
+/* Container optional (để canh vị trí đẹp hơn) */
+.page-size-wrapper {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Nhãn (nếu dùng) */
+.page-size-label {
+    font-weight: 600;
+    color: #344054;
+    font-size: 14px;
+}
+
+/* Select chính */
+.page-size-select {
+    appearance: none; /* Ẩn style mặc định */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    position: relative;
+    padding: 8px 36px 8px 12px; /* chừa chỗ cho icon mũi tên bên phải */
+    min-width: 140px;
+    font-size: 14px;
+    line-height: 1.4;
+    color: #1f2937; /* text */
+    background: #ffffff;
+    border: 1px solid #d0d5dd; /* viền */
+    border-radius: 8px; /* bo góc */
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.1); /* nhẹ */
+    cursor: pointer;
+    transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+
+/* Mũi tên tùy biến bằng background image SVG */
+.page-size-select {
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2358656d' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px;
+}
+
+    /* Hover */
+    .page-size-select:hover {
+        border-color: #98a2b3;
+    }
+
+    /* Focus */
+    .page-size-select:focus {
+        outline: none;
+        border-color: #3b82f6; /* xanh */
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+    }
+
+    /* Disabled */
+    .page-size-select:disabled {
+        color: #98a2b3;
+        background: #f9fafb;
+        cursor: not-allowed;
+    }
+
+/* Dark mode (nếu có class .dark trên body) */
+.dark .page-size-select {
+    color: #e5e7eb;
+    background: #0b1220;
+    border-color: #334155;
+    box-shadow: none;
+}
+
+    .dark .page-size-select:hover {
+        border-color: #475569;
+    }
+
+    .dark .page-size-select:focus {
+        border-color: #60a5fa;
+        box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.25);
+    }
+
+/* Kích thước nhỏ gọn (nếu muốn) */
+.page-size-select.sm {
+    padding: 6px 32px 6px 10px;
+    font-size: 13px;
+    min-width: 120px;
+}
+
+/* Kích thước lớn (nếu muốn) */
+.page-size-select.lg {
+    padding: 10px 40px 10px 14px;
+    font-size: 15px;
+    min-width: 160px;
+}

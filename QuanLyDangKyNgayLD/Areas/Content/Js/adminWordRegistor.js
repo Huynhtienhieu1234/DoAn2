@@ -51,7 +51,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     let currentPage = 1;
-    const pageSize = 5;
+    const pageSize = 10;
     let currentLoadedItems = []; // chứa dữ liệu đang hiển thị
 
 
@@ -456,7 +456,7 @@ document.addEventListener("DOMContentLoaded", function () {
             const id = btnXemChiTiet.dataset.id || btnXemChiTiet.getAttribute("data-id");
             const tbody = document.getElementById("sinhVienTableBody");
             const modalEl = document.getElementById("sinhVienModal");
-            const pageSize = 5;
+            const pageSize = 10;
             let currentPage = 1;
             let fullData = [];
 
@@ -697,7 +697,8 @@ document.addEventListener("DOMContentLoaded", function () {
             // Mở modal
             const editModalEl = document.getElementById("editModal");
             if (editModalEl) new bootstrap.Modal(editModalEl).show();
-            return;        }
+            return;
+        }
 
         // xóa mềm
         if (deleteBtn) {
@@ -958,7 +959,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    
+
     // ==============================
     // 11. Xuất Excel TOÀN BỘ dữ liệu (dùng action có sẵn)
     // ==============================

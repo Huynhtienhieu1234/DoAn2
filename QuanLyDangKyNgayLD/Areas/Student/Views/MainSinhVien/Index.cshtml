@@ -63,7 +63,7 @@
 
                 <!-- Điểm Danh -->
                 <div class="col-md-4 col-sm-6">
-                    <a href="@Url.Action("Index", "StudentCheckDay", new { area = "Student" })" 
+                    <a href="@Url.Action("Index", "StudentCheckDay", new { area = "Student" })"
                        class="func-card text-white d-block">
                         <h6 class="fw-bold mb-3">Điểm Danh Lao Động</h6>
                         <img src="https://cdn.jsdelivr.net/gh/Huynhtienhieu1234/UploadAnh/sinhvien/Duyet1.png" class="func-icon" alt="Điểm danh" />
@@ -72,23 +72,60 @@
 
                 <!-- Thông báo -->
                 <div class="col-md-4 col-sm-6">
-                    <a href="~/HTML/ThongBao.html" class="func-card text-white d-block">
+                    <a href="javascript:void(0);"
+                       class="func-card text-white d-block"
+                       data-bs-toggle="modal"
+                       data-bs-target="#modalThongBao">
                         <h6 class="fw-bold mb-3">Thông báo</h6>
                         <img src="https://cdn.jsdelivr.net/gh/Huynhtienhieu1234/UploadAnh/sinhvien/icons8-bell.gif" class="func-icon" alt="Thông báo" />
                     </a>
+
                 </div>
 
                 <!-- Xác nhận hoàn thành -->
                 @*<div class="col-md-4 col-sm-6">
-                    <a href="~/HTML/XacNhanHoanThanh.html" class="func-card text-white d-block">
-                        <h6 class="fw-bold mb-3">Xác nhận hoàn thành</h6>
-                        <img src="https://cdn.jsdelivr.net/gh/Huynhtienhieu1234/UploadAnh/sinhvien/Duyet.png" class="func-icon" alt="Xác nhận" />
-                    </a>
-                </div>*@
+                        <a href="~/HTML/XacNhanHoanThanh.html" class="func-card text-white d-block">
+                            <h6 class="fw-bold mb-3">Xác nhận hoàn thành</h6>
+                            <img src="https://cdn.jsdelivr.net/gh/Huynhtienhieu1234/UploadAnh/sinhvien/Duyet.png" class="func-icon" alt="Xác nhận" />
+                        </a>
+                    </div>*@
             </div>
         </div>
     </div>
 </div>
+<!-- Modal Thông Báo -->
+<div class="modal fade" id="modalThongBao" tabindex="-1" aria-labelledby="modalThongBaoLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="modalThongBaoLabel">Danh sách thông báo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+            <div class="modal-body">
+                <table class="table table-bordered table-hover text-center">
+                    <thead class="table-light">
+                        <tr>
+                            <th>STT</th>
+                            <th>Tiêu đề</th>
+                            <th>Nội dung</th>
+                            <th>Thời gian</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="4" class="text-muted">Chưa có thông báo gì hết</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 
 
 

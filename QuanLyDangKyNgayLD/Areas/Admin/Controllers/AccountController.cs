@@ -12,7 +12,7 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
 {
     public class AccountController : Controller
     {
-        private const int ITEMS_PER_PAGE = 100;
+        private const int ITEMS_PER_PAGE = 10;
 
         // GET: Admin/Account
         public ActionResult Index(int page = 1, string search = "", string role = "")
@@ -69,7 +69,7 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
 
         // lấy dữ liêu
         [HttpGet]
-        public ActionResult GetAccounts(int page = 1, int pageSize = 100)
+        public ActionResult GetAccounts(int page = 1, int pageSize = 10)
         {
             using (var db = DbContextFactory.Create())
             {

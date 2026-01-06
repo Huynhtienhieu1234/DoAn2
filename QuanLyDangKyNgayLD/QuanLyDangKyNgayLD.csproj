@@ -146,6 +146,7 @@
     <Content Include="Areas\Content\jsAccount\Account.js" />
     <Content Include="Areas\Content\admin.css" />
     <Content Include="Areas\Content\adminpage.css" />
+    <Content Include="Areas\Content\jsAccount\AdminPagesize.js" />
     <Content Include="Areas\Content\jsAccount\DeleteAcount.js" />
     <Content Include="Areas\Content\jsAccount\DetailAcount.js" />
     <Content Include="Areas\Content\jsAccount\EditAcount.js" />
@@ -158,6 +159,7 @@
     <Content Include="Areas\Content\Js\CreateCode.js" />
     <Content Include="Areas\Student\Content\Css\Dashboard.css" />
     <Content Include="Areas\Student\Content\Css\Toast.css" />
+    <Content Include="Areas\Student\Content\Js\ChatBot\ChatBot.js" />
     <Content Include="Areas\Student\Content\Js\Register\DeleteRegister.js" />
     <Content Include="Areas\Student\Content\Js\StudentCheckDay\StudentCheckDay.js" />
     <Content Include="Areas\Student\Content\Js\StudentListDay\StudentListDay.js" />
@@ -177,6 +179,8 @@
     <Content Include="Areas\Student\Content\Css\Table.css" />
     <Content Include="Areas\Student\Content\Js\StudentRegister\StudentRegister.js" />
     <Content Include="Global.asax" />
+    <Content Include="Logs\ErrorLog.txt" />
+    <Content Include="Logs\LichSuDangNhap.txt" />
     <Content Include="Models\QuanLyDangKyLaoDong.Context.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <DependentUpon>QuanLyDangKyLaoDong.edmx</DependentUpon>
@@ -200,6 +204,7 @@
     <Compile Include="Areas\Admin\Controllers\AdminWordRegisterController.cs" />
     <Compile Include="Areas\Admin\ViewModel\StudentProgressViewModel.cs" />
     <Compile Include="Areas\Models\AdminThongKeViewModel.cs" />
+    <Compile Include="Areas\Student\Controllers\ChatBotController.cs" />
     <Compile Include="Areas\Student\Controllers\MainSinhVienController.cs" />
     <Compile Include="Areas\Student\Controllers\StudentCheckDayController.cs" />
     <Compile Include="Areas\Student\Controllers\StudentListDayController.cs" />
@@ -311,6 +316,7 @@
   <ItemGroup>
     <Folder Include="App_Data\" />
     <Folder Include="Areas\Student\Data\" />
+    <Folder Include="Areas\Student\Views\ChatBot\" />
     <Folder Include="Uploads\Avatars\" />
     <Folder Include="Views\Student\" />
   </ItemGroup>

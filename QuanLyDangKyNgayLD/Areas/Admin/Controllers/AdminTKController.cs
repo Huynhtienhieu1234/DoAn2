@@ -15,7 +15,7 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
 {
     public class AdminTKController : Controller
     {
-        private const int PAGE_SIZE = 5;
+        private const int PAGE_SIZE = 10;
 
         // Trang chính
         public ActionResult Index()

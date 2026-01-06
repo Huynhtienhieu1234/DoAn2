@@ -14,7 +14,7 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
 {
     public class AdminStudentController : Controller
     {
-        private const int ITEMS_PER_PAGE = 5;
+        private const int ITEMS_PER_PAGE = 10;
 
         // GET: Admin/AdminStudent
         public ActionResult Index(int page = 1, string search = "")

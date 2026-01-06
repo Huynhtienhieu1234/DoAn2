@@ -26,6 +26,13 @@
 
             <!-- Bên phải -->
             <form class="toolbar-flex align-items-center" role="search">
+                @*<select id="pageSizeSelector" class="page-size-select">
+                    <option value="5">5 dòng</option>
+                    <option value="10" selected>10 dòng</option>
+                    <option value="20">20 dòng</option>
+                </select>*@
+
+
                 <select id="roleFilter" class="form-select form-select-sm me-2 shadow-sm" style="min-width: 140px;">
                     <option value="">-- Lọc theo vai trò --</option>
                     <option value="Tất Cả">Tất cả</option>
@@ -469,3 +476,4 @@
 <script src="~/Areas/Content/jsAccount/Account.js"></script>
 <script src="~/Areas/Content/Js/adminCommon.js"></script>
 <script src="~/Areas/Content/jsAccount/ExportExcel.js"></script>
+<script src="~/Areas/Content/jsAccount/AdminPagesize.js"></script>

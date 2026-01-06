@@ -8,7 +8,7 @@
 
     let deleteId = null;
     let currentPage = 1;
-    const pageSize = 5;
+    const pageSize = 10;
 
     /* ==========================
        HÀM ĐỊNH DẠNG NGÀY GIỜ TIẾNG VIỆT ĐẸP

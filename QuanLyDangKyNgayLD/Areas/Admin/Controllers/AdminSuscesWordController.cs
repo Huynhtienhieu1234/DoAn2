@@ -16,7 +16,7 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
 
         // Lấy danh sách phiếu xác nhận hoàn thành (liên kết MSSV với SinhVien)
         [HttpGet]
-        public ActionResult GetList(int page = 1, int pageSize = 5, string khoa = "", string keyword = "")
+        public ActionResult GetList(int page = 1, int pageSize = 10, string khoa = "", string keyword = "")
         {
             using (var db = DbContextFactory.Create())
             {

@@ -76,17 +76,26 @@ namespace QuanLyDangKyNgayLD.Controllers
                     ModelState.AddModelError("", "Sai tài khoản hoặc mật khẩu.");
                     return View(model);
                 }
+                    // ✅ Đăng nhập thành công - SET SESSION
+                    Session["UserID"]   = user.TaiKhoan_id;
+                    Session["Username"] = user.Username;
 
-                // ✅ Đăng nhập thành công - SET SESSION
-                Session["UserID"] = user.TaiKhoan_id;
-                Session["Username"] = user.Username;
+                    // Lấy thêm thông tin vai trò
+                    var userWithRole = db.TaiKhoans
+                        .Include("VaiTro")
+                        .FirstOrDefault(u => u.TaiKhoan_id == user.TaiKhoan_id);
 
-                var userWithRole = db.TaiKhoans
-                    .Include("VaiTro")
-                    .FirstOrDefault(u => u.TaiKhoan_id == user.TaiKhoan_id);
+                    Session["User"] = userWithRole;
+                    Session["Role"] = userWithRole?.VaiTro?.TenVaiTro;
 
-                Session["User"] = userWithRole;
-                Session["Role"] = userWithRole?.VaiTro?.TenVaiTro;
+                    // ✅ Lấy MSSV từ bảng SinhVien (MSSV là khóa chính bên SinhVien)
+                    var sinhVien = db.SinhViens.FirstOrDefault(sv => sv.TaiKhoan == user.TaiKhoan_id);
+                    if (sinhVien != null)
+                    {
+                        Session["MSSV"]  = sinhVien.MSSV;   // MSSV để ChatBotController truy vấn
+                        Session["HoTen"] = sinhVien.HoTen; // lưu thêm tên để hiển thị giao diện
+}
+
 
                 FormsAuthentication.SetAuthCookie(user.Username, false);
 

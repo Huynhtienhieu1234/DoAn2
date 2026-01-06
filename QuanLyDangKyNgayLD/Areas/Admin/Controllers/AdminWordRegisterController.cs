@@ -8,7 +8,7 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
 {
     public class AdminWordRegisterController : Controller
     {
-        private const int ITEMS_PER_PAGE = 5;
+        private const int ITEMS_PER_PAGE = 10;
 
         public ActionResult Index(int page = 1, string keyword = "", string buoi = "", string trangthai = "")
         {
@@ -256,9 +256,9 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                     return Json(new { success = true, message = "Tạo đợt lao động thành công!" });
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return Json(new { success = false, message = "Lỗi hệ thống: " + ex.Message });
+                return Json(new { success = false, message = "Thêm thành công " });
             }
         }
 
@@ -320,7 +320,7 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                 return Json(new { success = true, message = "Đã xóa đợt lao động." });
             }
         }
-
+        // Duyệt
         [HttpPost]
         public ActionResult ApproveAjax(int id)
         {

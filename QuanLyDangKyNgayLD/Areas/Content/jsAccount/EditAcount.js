@@ -105,7 +105,7 @@
     LOAD DỮ LIỆU BẢNG + PHÂN TRANG
     ========================== */
     let currentPage = 1;
-    const pageSize = 5;
+    const pageSize = 10;
 
     function loadAccounts(page = 1) {
         const loading = document.getElementById("loadingIndicator");
