@@ -192,7 +192,7 @@
 <!-- ==================== TẤT CẢ MODAL ==================== -->
 <!-- Modal Tạo Mới -->
 <div class="modal fade" id="createModal" tabindex="-1">
-    <div class="modal-dialog modal-md">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content shadow">
             <form id="createForm" action="/AdminWordRegister/CreateAjax" method="post">
                 @Html.AntiForgeryToken()
@@ -201,91 +201,95 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="row g-3">
-
-                        <div class="khuvuc-frame mb-3">
-                            <img id="createKhuVucImage" alt="Ảnh khu vực" />
-
+                    <div class="row">
+                        <!-- Khung ảnh bên trái -->
+                        <div class="col-md-4">
+                            <div class="khuvuc-frame mb-3">
+                                <img id="createKhuVucImage" alt="Ảnh khu vực" class="img-fluid rounded border" />
+                            </div>
                         </div>
 
+                        <!-- Form bên phải -->
+                        <div class="col-md-8">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Đợt lao động (Tháng) <span class="text-danger">*</span></label>
+                                    <select name="DotLaoDong" id="dotLaoDongMonth" class="form-select" required>
+                                        <option value="">-- Chọn tháng --</option>
+                                        <option value="Tháng 1">Tháng 1</option>
+                                        <option value="Tháng 2">Tháng 2</option>
+                                        <option value="Tháng 3">Tháng 3</option>
+                                        <option value="Tháng 4">Tháng 4</option>
+                                        <option value="Tháng 5">Tháng 5</option>
+                                        <option value="Tháng 6">Tháng 6</option>
+                                        <option value="Tháng 7">Tháng 7</option>
+                                        <option value="Tháng 8">Tháng 8</option>
+                                        <option value="Tháng 9">Tháng 9</option>
+                                        <option value="Tháng 10">Tháng 10</option>
+                                        <option value="Tháng 11">Tháng 11</option>
+                                        <option value="Tháng 12">Tháng 12</option>
+                                    </select>
+                                </div>
 
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold">Đợt lao động (Tháng) <span class="text-danger">*</span></label>
-                            <select name="DotLaoDong" id="dotLaoDongMonth" class="form-select" style="cursor:pointer" required>
-                                <option value="">-- Chọn tháng --</option>
-                                <option value="Tháng 1">Tháng 1</option>
-                                <option value="Tháng 2">Tháng 2</option>
-                                <option value="Tháng 3">Tháng 3</option>
-                                <option value="Tháng 4">Tháng 4</option>
-                                <option value="Tháng 5">Tháng 5</option>
-                                <option value="Tháng 6">Tháng 6</option>
-                                <option value="Tháng 7">Tháng 7</option>
-                                <option value="Tháng 8">Tháng 8</option>
-                                <option value="Tháng 9">Tháng 9</option>
-                                <option value="Tháng 10">Tháng 10</option>
-                                <option value="Tháng 11">Tháng 11</option>
-                                <option value="Tháng 12">Tháng 12</option>
-                            </select>
-                        </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Buổi <span class="text-danger">*</span></label>
+                                    <select name="Buoi" class="form-select" required>
+                                        <option value="">-- Chọn buổi --</option>
+                                        <option value="Sáng">Sáng (7h-8h30)</option>
+                                        <option value="Chiều">Chiều (13h-14h)</option>
+                                    </select>
+                                </div>
 
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold" style="cursor:pointer">Buổi <span class="text-danger">*</span></label>
-                            <select name="Buoi" class="form-select" style="cursor:pointer" required>
-                                <option value="">-- Chọn buổi --</option>
-                                <option value="Sáng">Sáng (7h-8h30h)</option>
-                                <option value="Chiều">Chiều (13h-14h)</option>
-                            </select>
-                        </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Loại lao động</label>
+                                    <select name="LoaiLaoDong" class="form-select" required>
+                                        <option value="">-- Chọn loại lao động --</option>
+                                        <option value="Cá Nhân">Cá Nhân</option>
+                                        <option value="Lớp">Lớp</option>
+                                    </select>
+                                </div>
 
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold">Loại lao động</label>
-                            <select name="LoaiLaoDong" class="form-select" style="cursor:pointer" required>
-                                <option value="">-- Chọn loại lao động --</option>
-                                <option value="Cá Nhân">Cá Nhân</option>
-                                <option value="Lớp">Lớp</option>
-                            </select>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Giá trị (điểm)</label>
+                                    <input name="GiaTri" type="number" step="0.1" class="form-control" value="1" min="0" />
+                                </div>
 
-                        </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Ngày lao động <span class="text-danger">*</span></label>
+                                    <select name="NgayLaoDong" id="dotLaoDongDay" class="form-select" required>
+                                        <option value="">-- Chọn ngày --</option>
+                                    </select>
+                                </div>
 
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold">Giá trị (điểm)</label>
-                            <input name="GiaTri" type="number" step="0.1" class="form-control" value="1" min="0" />
-                        </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Khu vực</label>
+                                    <select id="createKhuVuc" name="KhuVuc" class="form-select">
+                                        <option value="">-- Chọn khu vực --</option>
+                                        <option value="A1">Tòa A1</option>
+                                        <option value="A2">Tòa A2</option>
+                                        <option value="B1">Tòa B1</option>
+                                        <option value="B2">Tòa B2</option>
+                                        <option value="B3">Tòa B3</option>
+                                        <option value="B4">Tòa B4</option>
+                                        <option value="C1">Tòa C1</option>
+                                        <option value="C2">Tòa C2</option>
+                                        <option value="H1">Tòa H1</option>
+                                        <option value="H2">Tòa H2</option>
+                                        <option value="T2">Tòa T2</option>
+                                        <option value="Trước cổng trường">Trước cổng trường</option>
+                                    </select>
+                                </div>
 
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold">Ngày lao động <span class="text-danger">*</span></label>
-                            <select name="NgayLaoDong" id="dotLaoDongDay" class="form-select" required>
-                                <option value="">-- Chọn ngày --</option>
-                            </select>
-                        </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Số lượng sinh viên</label>
+                                    <input name="SoLuongSinhVien" type="number" class="form-control" min="1" value="20" />
+                                </div>
 
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold">Khu vực</label>
-                            <select id="createKhuVuc" name="KhuVuc" class="form-select" style="cursor:pointer">
-                                <option value="">-- Chọn khu vực --</option>
-                                <option value="A1">Tòa A1</option>
-                                <option value="A2">Tòa A2</option>
-                                <option value="B1">Tòa B1</option>
-                                <option value="B2">Tòa B2</option>
-                                <option value="B3">Tòa B3</option>
-                                <option value="B4">Tòa B4</option>
-                                <option value="C1">Tòa C1</option>
-                                <option value="C2">Tòa C2</option>
-                                <option value="H1">Tòa H1</option>
-                                <option value="H2">Tòa H2</option>
-                                <option value="T2">Tòa T2</option>
-                                <option value="Trước cổng trường">Trước cổng trường</option>
-                            </select>
-                        </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold">Số lượng sinh viên</label>
-                            <input name="SoLuongSinhVien" type="number" class="form-control" min="1" value="20" />
-                        </div>
-
-                        <div class="col-12">
-                            <label class="form-label fw-bold">Mô tả công việc</label>
-                            <textarea name="MoTa" class="form-control" rows="4"></textarea>
+                                <div class="col-12">
+                                    <label class="form-label fw-bold">Mô tả công việc</label>
+                                    <textarea name="MoTa" class="form-control" rows="4"></textarea>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -687,7 +691,6 @@
                             </tr>
                         </thead>
                         <tbody id="sinhVienLopBody">
-               
                         </tbody>
                     </table>
                 </div>

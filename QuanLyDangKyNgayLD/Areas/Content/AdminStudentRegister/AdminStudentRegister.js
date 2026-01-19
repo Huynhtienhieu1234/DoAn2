@@ -1,7 +1,4 @@
-﻿// ~/Areas/Content/AdminStudentRegister/AdminStudentRegister.js
-// ĐÃ ĐỒNG BỘ HOÀN TOÀN VỚI THANH CÔNG CỤ MỚI (LỌC KHOA + NHẬP/XUẤT EXCEL)
-// 🎯 ĐÃ THÊM HIỆU ỨNG LOADING MƯỢT MÀ
-// 🎯 ĐÃ TỐI ƯU HỆ THỐNG LỌC KHOA
+﻿
 
 // ==================== CÁC HÀM GLOBAL (CÓ THỂ GỌI TỪ ONCLICK) ====================
 
@@ -191,7 +188,7 @@ function loadDeletedStudents() {
 document.addEventListener("DOMContentLoaded", function () {
     let currentDeleteMSSV = null;
     let currentPage = 1;
-    const pageSize = 5;
+    const pageSize = 10;
     let isLoading = false;
 
     // Biến cache và quản lý state cho hệ thống lọc

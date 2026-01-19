@@ -105,87 +105,96 @@
         opacity: 1;
     }
 
-/* Modal tạo mới */
+/ /* ==================== MODAL TẠO ĐỢT LAO ĐỘNG MỚI - CẢI TIẾN PHẦN ẢNH ==================== */
+/* Modal tổng thể - giữ nguyên hoặc điều chỉnh nhẹ cho gọn hơn */
 #createModal .modal-dialog {
-    max-width: 600px;
+    max-width: 900px;
     width: 95%;
-    margin: 1rem auto;
-    margin-bottom: 120px; /* tạo không gian để dropdown xổ xuống */
+    margin: 1.5rem auto;
 }
 
 #createModal .modal-content {
-    border-radius: 12px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
-    border: 1px solid #e0f7fa;
+    border-radius: 14px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    border: none;
+    overflow: hidden;
     background: #ffffff;
-    font-size: 0.92rem;
-    overflow: visible;
 }
 
-#createModal .modal-header {
-    padding: 1rem 1.25rem;
-    background-color: #007bff;
-    color: white;
-    border-bottom: 1px solid #e0f7fa;
-}
-
-#createModal .modal-title {
-    font-size: 1.05rem;
-    font-weight: 600;
-}
-
-#createModal .modal-body {
-    padding: 1rem 1.25rem;
-}
-
-#createModal .form-label {
-    font-weight: 600;
-    margin-bottom: 0.35rem;
-    font-size: 0.9rem;
-}
-
-#createModal .form-control,
-#createModal .form-select,
-#createModal textarea {
-    padding: 8px 12px;
-    font-size: 0.92rem;
-    border-radius: 8px;
-    border: 1.5px solid #ced4da;
-    background: #f8fdff;
-}
-
-    #createModal .form-control:focus,
-    #createModal .form-select:focus,
-    #createModal textarea:focus {
-        border-color: #007bff;
-        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.2);
-        background: #ffffff;
-    }
-
-#createModal .modal-footer {
-    padding: 0.75rem 1.25rem;
-    border-top: 1px solid #e0f7fa;
-}
-
-    #createModal .modal-footer .btn {
-        padding: 8px 16px;
-        font-size: 0.9rem;
-        border-radius: 8px;
-        font-weight: 600;
-    }
-
-/* Dropdown Buổi */
-#createModal select[name="Buoi"] {
-    display: block;
-    width: 100%;
-    margin-top: 0 !important;
-    margin-bottom: 0.5rem;
-}
-
-/* Dropdown Ngày Lao Động */
-#dotLaoDongDay {
-    max-height: 200px;
-    overflow-y: auto;
+/* Cải thiện phần khung ảnh bên trái */
+#createModal .khuvuc-frame {
+    /* Loại bỏ min-height cố định để linh hoạt theo nội dung form bên phải */
+    height: 100%; /* Chiếm toàn bộ chiều cao của row */
+    min-height: 380px; /* Giảm xuống một chút để modal gọn hơn */
+    max-height: 500px; /* Giới hạn tối đa tránh quá dài */
+    overflow: hidden;
+    border-radius: 14px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+    background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
     position: relative;
-    z-index: 1050;
+}
+
+/* Ảnh khu vực - hiển thị đầy đủ và đẹp nhất có thể */
+#createModal #createKhuVucImage {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Phủ kín khung, cắt phần thừa nếu cần */
+    object-position: center; /* Giữ phần trung tâm quan trọng */
+    border-radius: 14px;
+    transition: transform 0.4s ease;
+}
+
+    /* Hover effect nhẹ nhàng */
+    #createModal #createKhuVucImage:hover {
+        transform: scale(1.08);
+    }
+
+    /* Placeholder khi chưa chọn khu vực (hiển thị text hoặc icon) */
+    #createModal #createKhuVucImage:empty,
+    #createModal #createKhuVucImage[src=""] {
+        background: #ced4da;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #6c757d;
+        font-size: 1rem;
+        font-weight: 500;
+    }
+
+        #createModal #createKhuVucImage:empty::before,
+        #createModal #createKhuVucImage[src=""]::before {
+            content: "Chưa chọn khu vực";
+        }
+
+/* Đảm bảo row chính có chiều cao bằng nhau giữa ảnh và form */
+#createModal .modal-body .row {
+    align-items: stretch; /* Quan trọng: làm 2 cột có chiều cao bằng nhau */
+    min-height: 400px;
+}
+
+/* Responsive - mobile: ảnh xuống dưới, nhưng vẫn đẹp */
+@media (max-width: 768px) {
+    #createModal .khuvuc-frame {
+        min-height: 280px;
+        max-height: 350px;
+        border-radius: 12px;
+    }
+
+    /* Ảnh vẫn phủ đẹp trên mobile */
+    #createModal #createKhuVucImage {
+        object-fit: cover;
+    }
+
+    /* Form lên trên, ảnh xuống dưới */
+    #createModal .row > .col-md-4 {
+        order: 2;
+        margin-top: 1.5rem;
+    }
+
+    #createModal .row > .col-md-8 {
+        order: 1;
+    }
 }

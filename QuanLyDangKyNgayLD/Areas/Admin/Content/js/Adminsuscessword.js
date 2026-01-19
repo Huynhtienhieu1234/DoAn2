@@ -2,7 +2,7 @@
 
     /* ================== STATE ================== */
     let currentPage = 1;
-    const pageSize = 5;
+    const pageSize = 10;
     let totalPages = 1;
 
     let searchKeyword = "";

@@ -182,13 +182,13 @@ body {
 }
 
 .table {
-    margin: 0;
+    margin: 0;left
     font-size: 0.94rem;
     background: var(--card-bg);
 }
 
     .table thead th {
-        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        background: #0029c8d9;
         color: white;
         font-weight: 600;
         text-transform: uppercase;
