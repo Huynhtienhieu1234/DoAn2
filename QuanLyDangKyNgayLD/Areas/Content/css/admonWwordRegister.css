@@ -1,4 +1,4 @@
-﻿/* Khung bảng cho phép cuộn ngang */
+/* Khung bảng cho phép cuộn ngang */
 .table-wrapper {
     overflow-x: auto;
     width: 100%;
@@ -14,6 +14,19 @@
 }
 
     /* Header và nội dung bảng */
+    .table thead th {
+        background: #0029c8d9 !important;
+        background-color: #0029c8d9 !important;
+        color: #ffffff !important;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.78rem;
+        letter-spacing: 0.8px;
+        border: none;
+        padding: 14px 12px;
+        text-align: center;
+    }
+
     .table th,
     .table td {
         white-space: nowrap;
@@ -105,7 +118,7 @@
         opacity: 1;
     }
 
-/ /* ==================== MODAL TẠO ĐỢT LAO ĐỘNG MỚI - CẢI TIẾN PHẦN ẢNH ==================== */
+ /* ==================== MODAL TẠO ĐỢT LAO ĐỘNG MỚI - CẢI TIẾN PHẦN ẢNH ==================== */
 /* Modal tổng thể - giữ nguyên hoặc điều chỉnh nhẹ cho gọn hơn */
 #createModal .modal-dialog {
     max-width: 900px;

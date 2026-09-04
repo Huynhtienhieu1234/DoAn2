@@ -1,4 +1,4 @@
-﻿@{
+@{
     ViewBag.Title = "Duyệt hoàn Thành Lao Động";
     Layout = "~/Areas/Admin/Views/Shared/ViewShare.cshtml";
 }
@@ -7,7 +7,12 @@
 <h2 class="mb-4">Danh sách Phiếu Xác Nhận Hoàn Thành Lao Động</h2>
 
 
-<div class="filter-bar">
+<div class="filter-bar d-flex align-items-center flex-wrap gap-2">
+    <!-- BULK DELETE -->
+    <button class="btn btn-outline-danger btn-sm shadow-sm btn-delete-selected" id="btnDeleteSelectedDuyet" style="display:none;" title="Xóa các phiếu đã chọn">
+        <i class="fas fa-trash-alt me-1"></i> Xóa đã chọn (<span class="selected-count">0</span>)
+    </button>
+
     <!-- SEARCH -->
     <div class="input-group input-group-sm shadow-sm filter-search">
         <span class="input-group-text bg-white border-end-0">
@@ -36,8 +41,9 @@
 
 <div class="table-responsive">
     <table class="table table-bordered table-hover text-nowrap">
-        <thead class="table-primary text-center">
+        <thead class="text-center">
             <tr>
+                <th style="width: 40px;"><input type="checkbox" id="checkAllDuyet" class="form-check-input" title="Chọn tất cả"></th>
                 <th style="width: 60px;">STT</th>
                 <th style="width: 120px;">MSSV</th>
                 <th style="min-width: 180px;">Họ và tên</th>
@@ -49,18 +55,32 @@
         </thead>
         <tbody id="duyetTableBody">
             <tr>
-                <td colspan="7" class="text-center text-muted py-4">Đang tải dữ liệu...</td>
+                <td colspan="8" class="text-center text-muted py-4">Đang tải dữ liệu...</td>
             </tr>
         </tbody>
     </table>
 </div>
 
 
-<div class="d-flex justify-content-center mt-3">
-    <button id="prev" class="btn btn-outline-primary me-2">«</button>
-    <div id="pageNumbers" class="d-flex align-items-center"></div>
-    <button id="next" class="btn btn-outline-primary ms-2">»</button>
+<!-- PHÂN TRANG -->
+<div class="d-flex justify-content-center align-items-center flex-wrap gap-3 mt-3 mb-4">
+    <div id="pagination" class="pagination-container my-0">
+        <button id="prev" class="btn btn-outline-primary me-1">&lt;</button>
+        <span id="pageNumbers"></span>
+        <button id="next" class="btn btn-outline-primary ms-1">&gt;</button>
+    </div>
+
+    <div class="page-size-wrapper">
+        <span class="page-size-label"><i class="fas fa-list-ul me-1"></i> Hiển thị:</span>
+        <select id="pageSizeDuyet" class="form-select form-select-sm page-size-select" title="Số dòng mỗi trang">
+            <option value="5">5 dòng / trang</option>
+            <option value="10" selected>10 dòng / trang</option>
+            <option value="20">20 dòng / trang</option>
+            <option value="50">50 dòng / trang</option>
+            <option value="100">100 dòng / trang</option>
+        </select>
+    </div>
 </div>
 
-<script src="~/Areas/Admin/Content/js/Adminsuscessword.js"></script>
-<script src="~/Areas/Admin/Content/js/duyetHandler.js"></script>
+<script src="~/Areas/Admin/Content/js/Adminsuscessword.js?v=@DateTime.Now.Ticks"></script>
+<script src="~/Areas/Admin/Content/js/duyetHandler.js?v=@DateTime.Now.Ticks"></script>

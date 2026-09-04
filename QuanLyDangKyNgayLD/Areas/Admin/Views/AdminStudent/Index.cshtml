@@ -1,4 +1,4 @@
-﻿@model IEnumerable<QuanLyDangKyNgayLD.Models.SinhVien>
+@model IEnumerable<QuanLyDangKyNgayLD.Models.SinhVien>
 @{
     ViewBag.Title = "Quản lý Sinh viên";
     Layout = "~/Areas/Admin/Views/Shared/ViewShare.cshtml";
@@ -16,6 +16,11 @@
                 <li class="nav-item">
                     <button class="btn btn-outline-primary btn-sm me-2" id="btnAdd">
                         <i class="fa fa-plus me-1"></i> Thêm sinh viên
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="btn btn-outline-danger btn-sm me-2 btn-delete-selected" id="btnDeleteSelectedStudent" style="display:none;" title="Xóa các sinh viên đã chọn">
+                        <i class="fas fa-trash-alt me-1"></i> Xóa đã chọn (<span class="selected-count">0</span>)
                     </button>
                 </li>
                 <li class="nav-item">
@@ -75,6 +80,7 @@
     <table class="table table-bordered table-hover align-middle text-center mb-0">
         <thead class="table-light">
             <tr>
+                <th width="40px" class="text-center"><input type="checkbox" id="checkAllStudent" class="form-check-input" title="Chọn tất cả"></th>
                 <th width="6%">STT</th>
                 <th>MSSV</th>
                 <th>Họ tên</th>
@@ -86,7 +92,7 @@
         </thead>
         <tbody id="studentTableBody">
             <tr>
-                <td colspan="7" class="text-center py-5">
+                <td colspan="8" class="text-center py-5">
                     <i class="fa fa-spinner fa-spin fa-2x"></i><br>
                     <small class="text-muted">Đang tải dữ liệu...</small>
                 </td>
@@ -96,11 +102,22 @@
 </div>
 
 <!-- PHÂN TRANG -->
-<div class="d-flex justify-content-between align-items-center mt-3">
-    <div id="paginationStudent" class="pagination-container">
+<div class="d-flex justify-content-center align-items-center flex-wrap gap-3 mt-3 mb-4">
+    <div id="paginationStudent" class="pagination-container my-0">
         <button class="btn btn-secondary btn-sm me-1" id="prevStudent">&lt;</button>
         <span id="pageNumbersStudent"></span>
         <button class="btn btn-secondary btn-sm ms-1" id="nextStudent">&gt;</button>
+    </div>
+
+    <div class="page-size-wrapper">
+        <span class="page-size-label"><i class="fas fa-list-ul me-1"></i> Hiển thị:</span>
+        <select id="pageSizeStudent" class="form-select form-select-sm page-size-select" title="Số dòng mỗi trang">
+            <option value="5">5 dòng / trang</option>
+            <option value="10" selected>10 dòng / trang</option>
+            <option value="20">20 dòng / trang</option>
+            <option value="50">50 dòng / trang</option>
+            <option value="100">100 dòng / trang</option>
+        </select>
     </div>
 </div>
 
@@ -443,7 +460,7 @@
     </div>
 </div>
 
-<script src="~/Areas/Content/AdminStudentRegister/AdminExportStudent.js"></script>
-<script src="~/Areas/Content/AdminStudentRegister/AdminImportStudent.js"></script>
-<script src="~/Areas/Content/AdminStudentRegister/AdminStudentRegister.js"></script>
-<script src="~/Areas/Content/Js/adminCommon.js"></script>
+<script src="~/Areas/Content/AdminStudentRegister/AdminExportStudent.js?v=@DateTime.Now.Ticks"></script>
+<script src="~/Areas/Content/AdminStudentRegister/AdminImportStudent.js?v=@DateTime.Now.Ticks"></script>
+<script src="~/Areas/Content/AdminStudentRegister/AdminStudentRegister.js?v=@DateTime.Now.Ticks"></script>
+<script src="~/Areas/Content/Js/adminCommon.js?v=@DateTime.Now.Ticks"></script>

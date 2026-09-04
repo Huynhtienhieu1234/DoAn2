@@ -1,8 +1,9 @@
-﻿using OfficeOpenXml;         
+using OfficeOpenXml;         
 using OfficeOpenXml.Style;    
 using QuanLyDangKyNgayLD.Factories; 
 using QuanLyDangKyNgayLD.Models;    
 using System;               
+using System.Collections.Generic;
 using System.Data.Entity;    
 using System.Linq;            
 using System.Web.Mvc;         
@@ -336,6 +337,48 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
             {
                 var detail = ex.InnerException?.Message ?? ex.Message;
                 return Json(new { success = false, message = "Lỗi: " + detail });
+            }
+        }
+
+        // Xóa nhiều tài khoản đã chọn
+        [HttpPost]
+        public ActionResult DeleteMultipleAjax(List<int> ids)
+        {
+            if (ids == null || !ids.Any())
+                return Json(new { success = false, message = "Vui lòng chọn ít nhất một tài khoản để xóa." });
+
+            try
+            {
+                using (var db = DbContextFactory.Create())
+                {
+                    var taiKhoans = db.TaiKhoans.Where(t => ids.Contains(t.TaiKhoan_id) && t.Deleted_at == null).ToList();
+                    if (!taiKhoans.Any())
+                        return Json(new { success = false, message = "Không tìm thấy tài khoản hợp lệ để xóa." });
+
+                    int count = 0;
+                    foreach (var tk in taiKhoans)
+                    {
+                        tk.Deleted_at = DateTime.Now;
+                        count++;
+
+                        if (long.TryParse(tk.Username, out long mssv))
+                        {
+                            var sinhVien = db.SinhViens.FirstOrDefault(sv => sv.MSSV == mssv && sv.Deleted_at == null);
+                            if (sinhVien != null)
+                            {
+                                sinhVien.Deleted_at = DateTime.Now;
+                            }
+                        }
+                    }
+
+                    db.SaveChanges();
+                    return Json(new { success = true, message = $"Đã xóa thành công {count} tài khoản đã chọn." });
+                }
+            }
+            catch (Exception ex)
+            {
+                var detail = ex.InnerException?.Message ?? ex.Message;
+                return Json(new { success = false, message = "Lỗi khi xóa: " + detail });
             }
         }
 

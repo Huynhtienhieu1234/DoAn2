@@ -1,4 +1,4 @@
-﻿/* =========================================
+/* =========================================
    🎨 GIAO DIỆN QUẢN TRỊ - STYLE DÙNG CHUNG
    ========================================= */
 
@@ -233,13 +233,17 @@ table {
 }
 
 table th {
-    background-color: #8fb6ff;
-    color: white;
+    background-color: #0029c8d9 !important;
+    background: #0029c8d9 !important;
+    color: #ffffff !important;
     text-align: center;
-    padding: 10px 8px;
+    padding: 12px 8px;
     font-weight: 600;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
     white-space: nowrap;
+    border: none;
 }
 
 table td {
@@ -257,7 +261,7 @@ table tr:nth-child(even) td {
 }
 
 table tr:hover td {
-    background-color: #eaf1ff;
+    background-color: #ebf3fd !important;
     transition: background-color 0.2s ease;
 }
 

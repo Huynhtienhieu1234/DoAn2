@@ -1,4 +1,4 @@
-﻿using QuanLyDangKyNgayLD.Factories;
+using QuanLyDangKyNgayLD.Factories;
 using QuanLyDangKyNgayLD.Models;
 using System;
 using System.IO;
@@ -156,8 +156,7 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
                         string matKhauMoi = Request.Form["MatKhauMoi"];
                         if (!string.IsNullOrEmpty(matKhauMoi) && sv.TaiKhoan1 != null)
                         {
-                            // ⚠️ Nên hash mật khẩu trước khi lưu
-                            sv.TaiKhoan1.Password = matKhauMoi;
+                            sv.TaiKhoan1.Password = PasswordHelper.HashPassword(matKhauMoi);
                         }
 
                         db.SaveChanges();
@@ -203,7 +202,7 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
                 var taiKhoanModel = new
                 {
                     TenTaiKhoan = sv.TaiKhoan1.Username,
-                    MatKhau = sv.TaiKhoan1.Password, 
+                    MatKhau = "********", 
                     VaiTro = sv.TaiKhoan1.VaiTro?.TenVaiTro ?? "Chưa có"
                 };
 
@@ -223,6 +222,9 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
             if (string.IsNullOrEmpty(MatKhauMoi))
                 return Json(new { success = false, message = "Vui lòng nhập mật khẩu mới!" });
 
+            if (MatKhauMoi.Trim().Length < 6)
+                return Json(new { success = false, message = "Mật khẩu mới phải có ít nhất 6 ký tự!" });
+
             using (var db = DbContextFactory.Create())
             {
                 var sv = db.SinhViens.Include("TaiKhoan1")
@@ -230,8 +232,7 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
 
                 if (sv != null && sv.TaiKhoan1 != null)
                 {
-                    // ⚠️ Nên hash mật khẩu trước khi lưu
-                    sv.TaiKhoan1.Password = MatKhauMoi;
+                    sv.TaiKhoan1.Password = PasswordHelper.HashPassword(MatKhauMoi.Trim());
                     db.SaveChanges();
 
                     return Json(new { success = true, message = "Đổi mật khẩu thành công!" });

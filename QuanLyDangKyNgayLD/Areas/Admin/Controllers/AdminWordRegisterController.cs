@@ -1,6 +1,7 @@
-﻿using QuanLyDangKyNgayLD.Factories;
+using QuanLyDangKyNgayLD.Factories;
 using QuanLyDangKyNgayLD.Models;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Web.Mvc;
 
@@ -216,9 +217,9 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                     if (user == null)
                         return Json(new { success = false, message = "Không tìm thấy tài khoản." });
 
-                    // ✅ Chỉ cho phép Admin tạo đợt
-                    if (user.VaiTro_id != 1)
-                        return Json(new { success = false, message = "Chỉ Admin mới có quyền tạo đợt lao động." });
+                    // ✅ Cho phép Admin và Cán bộ quản lý tạo đợt
+                    if (user.VaiTro_id != 1 && user.VaiTro_id != 2)
+                        return Json(new { success = false, message = "Bạn không có quyền tạo đợt lao động." });
 
                     // Kiểm tra trùng lặp (ngày + buổi + khu vực + loại lao động)
                     bool isDuplicate = db.TaoDotNgayLaoDongs.Any(x =>
@@ -318,6 +319,30 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                 db.SaveChanges();
 
                 return Json(new { success = true, message = "Đã xóa đợt lao động." });
+            }
+        }
+
+        // AJAX: Xóa nhiều đợt đã chọn
+        [HttpPost]
+        public ActionResult DeleteMultipleAjax(List<int> ids)
+        {
+            if (ids == null || !ids.Any())
+                return Json(new { success = false, message = "Vui lòng chọn ít nhất một đợt lao động để xóa." });
+
+            using (var db = DbContextFactory.Create())
+            {
+                var dots = db.TaoDotNgayLaoDongs.Where(d => ids.Contains(d.TaoDotLaoDong_id) && d.Ngayxoa == null).ToList();
+                if (!dots.Any())
+                    return Json(new { success = false, message = "Không tìm thấy đợt lao động hợp lệ để xóa." });
+
+                int count = 0;
+                foreach (var dot in dots)
+                {
+                    dot.Ngayxoa = DateTime.Now;
+                    count++;
+                }
+                db.SaveChanges();
+                return Json(new { success = true, message = $"Đã xóa thành công {count} đợt lao động đã chọn." });
             }
         }
         // Duyệt
@@ -567,7 +592,7 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                                     join sv in db.SinhViens on pd.MSSV equals sv.MSSV
                                     join lop in db.Lops on sv.Lop_id equals lop.Lop_id
                                     join khoa in db.Khoas on lop.Khoa_id equals khoa.Khoa_id
-                                    where pd.TaoDotLaoDong_id == maDot && pd.MSSV != null
+                                    where pd.TaoDotLaoDong_id == maDot
                                     select new
                                     {
                                         MSSV = sv.MSSV,                 // ← THÊM DÒNG NÀY

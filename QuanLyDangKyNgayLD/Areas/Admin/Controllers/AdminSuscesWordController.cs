@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Web.Mvc;
 using QuanLyDangKyNgayLD.Factories;
@@ -127,6 +128,42 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                     success = true,
                     message = $"Đã duyệt, khóa tài khoản MSSV {sv.MSSV} và gửi email thành công!"
                 });
+            }
+        }
+
+        // Xóa một phiếu xác nhận
+        [HttpPost]
+        public ActionResult DeleteAjax(int id)
+        {
+            using (var db = DbContextFactory.Create())
+            {
+                var phieu = db.PhieuXacNhanHoanThanhs.FirstOrDefault(p => p.id == id);
+                if (phieu == null)
+                    return Json(new { success = false, message = "Không tìm thấy phiếu xác nhận." });
+
+                db.PhieuXacNhanHoanThanhs.Remove(phieu);
+                db.SaveChanges();
+                return Json(new { success = true, message = "Đã xóa phiếu xác nhận hoàn thành." });
+            }
+        }
+
+        // Xóa nhiều phiếu xác nhận đã chọn
+        [HttpPost]
+        public ActionResult DeleteMultipleAjax(List<int> ids)
+        {
+            if (ids == null || !ids.Any())
+                return Json(new { success = false, message = "Vui lòng chọn ít nhất một phiếu để xóa." });
+
+            using (var db = DbContextFactory.Create())
+            {
+                var phieus = db.PhieuXacNhanHoanThanhs.Where(p => ids.Contains(p.id)).ToList();
+                if (!phieus.Any())
+                    return Json(new { success = false, message = "Không tìm thấy phiếu hợp lệ để xóa." });
+
+                int count = phieus.Count;
+                db.PhieuXacNhanHoanThanhs.RemoveRange(phieus);
+                db.SaveChanges();
+                return Json(new { success = true, message = $"Đã xóa thành công {count} phiếu xác nhận đã chọn." });
             }
         }
 

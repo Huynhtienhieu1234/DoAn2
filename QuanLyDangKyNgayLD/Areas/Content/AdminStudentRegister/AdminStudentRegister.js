@@ -1,4 +1,4 @@
-﻿
+
 
 // ==================== CÁC HÀM GLOBAL (CÓ THỂ GỌI TỪ ONCLICK) ====================
 
@@ -188,8 +188,17 @@ function loadDeletedStudents() {
 document.addEventListener("DOMContentLoaded", function () {
     let currentDeleteMSSV = null;
     let currentPage = 1;
-    const pageSize = 10;
+    const pageSizeSelector = document.getElementById("pageSizeStudent") || document.getElementById("pageSizeSelector");
+    let pageSize = pageSizeSelector ? (parseInt(pageSizeSelector.value, 10) || 10) : 10;
     let isLoading = false;
+
+    if (pageSizeSelector) {
+        pageSizeSelector.addEventListener("change", function () {
+            pageSize = parseInt(this.value, 10) || 10;
+            currentPage = 1;
+            loadStudents(1);
+        });
+    }
 
     // Biến cache và quản lý state cho hệ thống lọc
     let khoaLopCache = {};
@@ -214,6 +223,7 @@ document.addEventListener("DOMContentLoaded", function () {
     };
 
     setupEventListeners();
+    window.loadStudents = loadStudents;
     loadStudents();
     initFilterSystem();
 
@@ -1021,7 +1031,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const khoaFilter = currentFilterState.khoa || "0";
         const tbody = document.getElementById("studentTableBody");
 
-        tbody.innerHTML = `<tr><td colspan="7" class="text-center py-5">
+        tbody.innerHTML = `<tr><td colspan="8" class="text-center py-5">
             <div class="spinner-wave mx-auto mb-2">
                 <div></div><div></div><div></div>
             </div>
@@ -1088,7 +1098,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             tbody.innerHTML = `
             <tr class="no-data-row">
-                <td colspan="7" class="text-muted py-4 text-center">
+                <td colspan="8" class="text-muted py-4 text-center">
                     <div class="py-3">
                         <i class="fas fa-inbox fa-2x text-muted mb-2"></i>
                         <div class="fw-medium">Không có dữ liệu</div>
@@ -1103,6 +1113,9 @@ document.addEventListener("DOMContentLoaded", function () {
             const stt = (page - 1) * pageSize + i + 1;
             return `
             <tr>
+                <td class="text-center">
+                    <input type="checkbox" class="form-check-input check-item-student" value="${s.MSSV}">
+                </td>
                 <td class="stt-cell">${stt}</td>
                 <td class="fw-bold">${s.MSSV || "-"}</td>
                 <td class="truncate" title="${s.HoTen || "-"}">${s.HoTen || "-"}</td>

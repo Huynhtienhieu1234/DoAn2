@@ -1,4 +1,4 @@
-﻿document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", function () {
     const deleteModal = document.getElementById("deleteModal");
     const confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
     const deletedAccountsModal = document.getElementById("deletedAccountsModal");
@@ -68,7 +68,11 @@
                 if (res.success) {
                     showToast(res.message, "success");
                     bootstrap.Modal.getInstance(deleteModal).hide();
-                    loadAccounts(currentPage);
+                    if (typeof window.loadFilteredAccounts === "function") {
+                        window.loadFilteredAccounts(currentPage);
+                    } else {
+                        loadAccounts(currentPage);
+                    }
                 } else {
                     showToast(res.message || "Xóa thất bại!", "error");
                 }

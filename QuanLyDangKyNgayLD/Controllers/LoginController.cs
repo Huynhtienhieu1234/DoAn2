@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 using System.Web.Mvc;
 using System.Web.Security;
 using QuanLyDangKyNgayLD.Models;
@@ -78,6 +78,7 @@ namespace QuanLyDangKyNgayLD.Controllers
                 }
                     // ✅ Đăng nhập thành công - SET SESSION
                     Session["UserID"]   = user.TaiKhoan_id;
+                    Session["UserId"]   = user.TaiKhoan_id;
                     Session["Username"] = user.Username;
 
                     // Lấy thêm thông tin vai trò
@@ -87,6 +88,7 @@ namespace QuanLyDangKyNgayLD.Controllers
 
                     Session["User"] = userWithRole;
                     Session["Role"] = userWithRole?.VaiTro?.TenVaiTro;
+                    Session["VaiTroId"] = user.VaiTro_id;
 
                     // ✅ Lấy MSSV từ bảng SinhVien (MSSV là khóa chính bên SinhVien)
                     var sinhVien = db.SinhViens.FirstOrDefault(sv => sv.TaiKhoan == user.TaiKhoan_id);
@@ -94,8 +96,7 @@ namespace QuanLyDangKyNgayLD.Controllers
                     {
                         Session["MSSV"]  = sinhVien.MSSV;   // MSSV để ChatBotController truy vấn
                         Session["HoTen"] = sinhVien.HoTen; // lưu thêm tên để hiển thị giao diện
-}
-
+                    }
 
                 FormsAuthentication.SetAuthCookie(user.Username, false);
 
@@ -105,7 +106,7 @@ namespace QuanLyDangKyNgayLD.Controllers
                 switch (user.VaiTro_id)
                 {
                     case 1: return RedirectToAction("Index", "Admin", new { area = "Admin" });
-                    case 2: return RedirectToAction("Index", "QuanLy", new { area = "QuanLy" });
+                    case 2: return RedirectToAction("Index", "AdminWordRegister", new { area = "Admin" }); // Cán bộ quản lý lao động
                     case 3: return RedirectToAction("Index", "MainSinhVien", new { area = "Student" });
                     case 4: return RedirectToAction("Index", "MainSinhVien", new { area = "Student" });
                     default:

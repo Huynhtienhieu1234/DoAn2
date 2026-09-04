@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Web.Mvc;
@@ -94,7 +94,7 @@ namespace QuanLyDangKyNgayLD.Controllers
                     TempData["SuccessMessage"] = "Đặt lại mật khẩu thành công! Đang chuyển về trang đăng nhập...";
                     return View(); // Quan trọng: vẫn return View để JS hiện thông báo + redirect
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     TempData["ErrorMessage"] = "Có lỗi xảy ra khi lưu mật khẩu. Vui lòng thử lại!";
                     ViewBag.Token = token;

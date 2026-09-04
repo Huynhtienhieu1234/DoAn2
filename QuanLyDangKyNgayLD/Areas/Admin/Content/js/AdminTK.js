@@ -1,4 +1,4 @@
-﻿function loadData(page = 1) {
+function loadData(page = 1) {
     const khoa = document.getElementById("khoaFilter").value;
     const lop = document.getElementById("lopFilter").value;
 
@@ -47,7 +47,7 @@
 
             document.getElementById("studentTable").innerHTML = `
                 <table class="table table-bordered table-hover">
-                    <thead class="table-primary text-center">
+                    <thead class="text-center">
                         <tr><th>STT</th><th>MSSV</th><th>Họ và tên</th><th>Lớp</th><th>Khoa</th><th>Số ngày đã hoàn thành</th></tr>
                     </thead>
                     <tbody>${rows}</tbody>

@@ -1,4 +1,4 @@
-﻿@model IEnumerable<QuanLyDangKyNgayLD.Models.TaoDotNgayLaoDong>
+@model IEnumerable<QuanLyDangKyNgayLD.Models.TaoDotNgayLaoDong>
 @{
     ViewBag.Title = "Quản Lý Đợt Lao Động";
     Layout = "~/Areas/Admin/Views/Shared/ViewShare.cshtml";
@@ -21,6 +21,11 @@
                 <li class="nav-item">
                     <button class="btn btn-outline-primary btn-sm me-2" id="btnAdd">
                         <i class="fa fa-plus me-1"></i> Tạo đợt mới
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="btn btn-outline-danger btn-sm me-2 btn-delete-selected" id="btnDeleteSelectedDot" style="display:none;" title="Xóa các đợt đã chọn">
+                        <i class="fas fa-trash-alt me-1"></i> Xóa đã chọn (<span class="selected-count">0</span>)
                     </button>
                 </li>
                 <li class="nav-item">
@@ -76,11 +81,11 @@
     </div>
 </nav>
 
-<!-- BẢNG DỮ LIỆU -->
 <div class="table-wrapper shadow-sm rounded-3 bg-white p-2" style="overflow-x: auto;">
     <table class="table table-bordered table-hover align-middle text-center mb-0">
         <thead class="table-light">
             <tr>
+                <th style="width:40px;" class="text-center"><input type="checkbox" id="checkAllDot" class="form-check-input" title="Chọn tất cả"></th>
                 <th style="width:5%;">STT</th>
                 <th style="width:18%;">Tên Đợt</th>
                 <th style="width:8%;">Buổi</th>
@@ -104,7 +109,7 @@
                 foreach (var item in Model)
                 {
                     <tr data-id="@item.TaoDotLaoDong_id" data-mota="@Html.Raw(HttpUtility.JavaScriptStringEncode(item.MoTa ?? ""))" data-deleted="@(item.Ngayxoa != null)">
-
+                        <td class="text-center"><input type="checkbox" class="form-check-input check-item-dot" value="@item.TaoDotLaoDong_id"></td>
                         <td class="stt-cell">@stt</td>
                         <td class="Dotloaodong">@item.DotLaoDong</td>
                         <td>@item.Buoi</td>
@@ -116,7 +121,6 @@
                             </span>
                         </td>
                         <td>@item.KhuVuc</td>
-
                         <td class="text-center">
                             @{
                                 var dict = ViewBag.SoLuongDangKyDict as Dictionary<int, int>;
@@ -140,10 +144,6 @@
                             }
                         </td>
                         <td class="action-cell">
-                            <button class="btn btn-sm btn-info btn-detail me-1 text-white" title="Chi tiết"
-                                    data-id="@item.TaoDotLaoDong_id">
-                                <i class="fas fa-info-circle"></i>
-                            </button>
                             <button class="btn btn-sm btn-warning btn-edit me-1" title="Sửa"
                                     data-id="@item.TaoDotLaoDong_id">
                                 <i class="fas fa-edit"></i>
@@ -151,6 +151,10 @@
                             <button class="btn btn-sm btn-danger btn-delete me-1" title="Xóa"
                                     data-id="@item.TaoDotLaoDong_id">
                                 <i class="fas fa-trash"></i>
+                            </button>
+                            <button class="btn btn-sm btn-info btn-detail me-1 text-white" title="Chi tiết"
+                                    data-id="@item.TaoDotLaoDong_id">
+                                <i class="fas fa-info-circle"></i>
                             </button>
                             @if (item.TrangThaiDuyet == false)
                             {
@@ -167,7 +171,7 @@
             else
             {
                 <tr class="no-data-row">
-                    <td colspan="10" class="text-muted py-4">Không có dữ liệu đợt lao động</td>
+                    <td colspan="11" class="text-muted py-4">Không có dữ liệu đợt lao động</td>
                 </tr>
             }
         </tbody>
@@ -175,8 +179,8 @@
 </div>
 
 <!-- PHÂN TRANG -->
-<div class="d-flex justify-content-between align-items-center mt-3">
-    <div id="pagination" class="pagination-container">
+<div class="d-flex justify-content-center align-items-center flex-wrap gap-3 mt-3 mb-4">
+    <div id="pagination" class="pagination-container my-0">
         <!-- Nút trang trước -->
         <button class="btn btn-secondary btn-sm me-1" id="prev">&lt;</button>
 
@@ -185,6 +189,17 @@
 
         <!-- Nút trang sau -->
         <button class="btn btn-secondary btn-sm ms-1" id="next">&gt;</button>
+    </div>
+
+    <div class="page-size-wrapper">
+        <span class="page-size-label"><i class="fas fa-list-ul me-1"></i> Hiển thị:</span>
+        <select id="pageSizeDot" class="form-select form-select-sm page-size-select" title="Số dòng mỗi trang">
+            <option value="5">5 dòng / trang</option>
+            <option value="10" selected>10 dòng / trang</option>
+            <option value="20">20 dòng / trang</option>
+            <option value="50">50 dòng / trang</option>
+            <option value="100">100 dòng / trang</option>
+        </select>
     </div>
 </div>
 
@@ -703,6 +718,6 @@
 </div>
 
 <!-- Các script cũ giữ nguyên -->
-<script src="~/Areas/Content/Js/adminCommon.js"></script>
-<script src="~/Areas/Content/Js/adminWordRegistor.js"></script>
-<script src="~/Areas/Content/Js/CreateCode.js"></script>
+<script src="~/Areas/Content/Js/adminCommon.js?v=@DateTime.Now.Ticks"></script>
+<script src="~/Areas/Content/Js/adminWordRegistor.js?v=@DateTime.Now.Ticks"></script>
+<script src="~/Areas/Content/Js/CreateCode.js?v=@DateTime.Now.Ticks"></script>

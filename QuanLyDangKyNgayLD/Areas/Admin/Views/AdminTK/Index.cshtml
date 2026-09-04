@@ -1,4 +1,4 @@
-﻿@using QuanLyDangKyNgayLD.Areas.Admin.ViewModel
+@using QuanLyDangKyNgayLD.Areas.Admin.ViewModel
 @model IEnumerable<StudentProgressViewModel>
 
 @{
@@ -36,13 +36,13 @@
         </div>
 
         <div class="col-auto" style=" margin-left:2%">
-            <button class="btn btn-success btn-sm shadow-sm" onclick="exportExcel()">
-                <i class="bi bi-file-earmark-excel"></i> Xuất Excel
+            <button class="btn btn-outline-success btn-sm shadow-sm" onclick="exportExcel()">
+                <i class="fa fa-file-excel me-1"></i> Xuất Excel
             </button>
-            <button class="btn btn-primary btn-sm"
+            <button class="btn btn-primary btn-sm shadow-sm"
                     data-bs-toggle="modal"
                     data-bs-target="#sendExcelModal">
-                <i class="bi bi-envelope-fill"></i> Gửi Excel qua Email
+                <i class="fa fa-paper-plane me-1"></i> Gửi Excel qua Email
             </button>
 
         </div>
@@ -102,7 +102,7 @@
 
             <div class="modal-header bg-primary text-white">
                 <h5 class="modal-title">
-                    <i class="bi bi-envelope-paper"></i> Gửi file Excel
+                    <i class="fa fa-envelope-open me-2"></i> Gửi file Excel
                 </h5>
                 <button type="button" class="btn-close btn-close-white"
                         data-bs-dismiss="modal"></button>

@@ -1,4 +1,4 @@
-﻿/* ============================================================= */
+/* ============================================================= */
 /* ADMINPAGE.CSS - HOÀN CHỈNH, TRẮNG XANH NHẠT, CĂN CHỈNH 100% */
 /* Phù hợp: Desktop, Tablet, Mobile | Chuẩn Figma 2025        */
 /* ============================================================= */
@@ -182,14 +182,15 @@ body {
 }
 
 .table {
-    margin: 0;left
+    margin: 0;
     font-size: 0.94rem;
     background: var(--card-bg);
 }
 
     .table thead th {
-        background: #0029c8d9;
-        color: white;
+        background: #0029c8d9 !important;
+        background-color: #0029c8d9 !important;
+        color: #ffffff !important;
         font-weight: 600;
         text-transform: uppercase;
         font-size: 0.78rem;

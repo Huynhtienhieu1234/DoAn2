@@ -1,4 +1,4 @@
-﻿document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", function () {
     const btnAdd = document.getElementById("btnAdd");
     const createModal = document.getElementById("createModal");
     const form = document.getElementById("createForm");
@@ -123,8 +123,17 @@
        LOAD DỮ LIỆU BẢNG + PHÂN TRANG
        ========================== */
     let currentPage = 1;
-    const pageSize = 10;
+    const pageSizeSelector = document.getElementById("pageSizeSelector");
+    let pageSize = pageSizeSelector ? (parseInt(pageSizeSelector.value, 10) || 10) : 10;
     let totalPages = 1;
+
+    if (pageSizeSelector) {
+        pageSizeSelector.addEventListener("change", function () {
+            pageSize = parseInt(this.value, 10) || 10;
+            currentPage = 1;
+            loadAccounts(1);
+        });
+    }
 
     function loadAccounts(page = 1) {
         const loading = document.getElementById("loadingIndicator");
@@ -147,7 +156,7 @@
                 if (data.length === 0) {
                     tableBody.innerHTML = `
                         <tr class="no-data-row">
-                            <td colspan="6" class="text-muted py-4">Không có dữ liệu</td>
+                            <td colspan="7" class="text-muted py-4">Không có dữ liệu</td>
                         </tr>`;
                     pageNumbers.innerHTML = "";
                     prevBtn.disabled = true;
@@ -159,6 +168,7 @@
                 data.forEach((acc, index) => {
                     const row = document.createElement("tr");
                     row.innerHTML = `
+                        <td class="text-center"><input type="checkbox" class="form-check-input check-item-account" value="${acc.TaiKhoan_id}"></td>
                         <td class="stt-cell">${(currentPage - 1) * pageSize + index + 1}</td>
                         <td>${acc.Username}</td>
                         <td class="text-truncate" style="max-width:200px;" title="${acc.Email ?? ""}">

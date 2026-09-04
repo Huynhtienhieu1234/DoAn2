@@ -1,4 +1,4 @@
-﻿// Quản lý Đợt Lao Động - Full JS
+// Quản lý Đợt Lao Động - Full JS
 document.addEventListener("DOMContentLoaded", function () {
 
 
@@ -51,8 +51,17 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     let currentPage = 1;
-    const pageSize = 10;
+    const pageSizeSelector = document.getElementById("pageSizeDot") || document.getElementById("pageSizeSelector");
+    let pageSize = pageSizeSelector ? (parseInt(pageSizeSelector.value, 10) || 10) : 10;
     let currentLoadedItems = []; // chứa dữ liệu đang hiển thị
+
+    if (pageSizeSelector) {
+        pageSizeSelector.addEventListener("change", function () {
+            pageSize = parseInt(this.value, 10) || 10;
+            currentPage = 1;
+            loadDataToTable(1);
+        });
+    }
 
 
     let currentSortField = localStorage.getItem("sortField") || "date";
@@ -62,6 +71,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // ==============================
     // 1) Tải dữ liệu lần đầu
     // ==============================
+    window.loadDataToTable = loadDataToTable;
     loadDataToTable();
 
     // ==============================
@@ -159,7 +169,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 tableWrapper.classList.remove("loading");
 
                 if (!data.items || data.items.length === 0) {
-                    tbody.innerHTML = "<tr><td colspan='10' class='text-center'>Không có dữ liệu</td></tr>";
+                    tbody.innerHTML = "<tr><td colspan='11' class='text-center'>Không có dữ liệu</td></tr>";
                     renderPagination(page, data.totalPages || 1);
                     return;
                 }
@@ -171,7 +181,7 @@ document.addEventListener("DOMContentLoaded", function () {
             })
             .catch(() => {
                 tableWrapper.classList.remove("loading");
-                tbody.innerHTML = "<tr><td colspan='10' class='text-center text-danger'>Lỗi tải dữ liệu</td></tr>";
+                tbody.innerHTML = "<tr><td colspan='11' class='text-center text-danger'>Lỗi tải dữ liệu</td></tr>";
             });
     }
 
@@ -222,6 +232,7 @@ document.addEventListener("DOMContentLoaded", function () {
               data-mota="${(item.MoTa || '').replace(/"/g, '&quot;').replace(/\n/g, ' ')}"
               data-nguoitao="${String(item.NguoiTao || '').replace(/"/g, '&quot;')}"
             >
+                <td class="text-center"><input type="checkbox" class="form-check-input check-item-dot" value="${item.TaoDotLaoDong_id}"></td>
                 <td>${(page - 1) * pageSize + index + 1}</td>
                 <td>${item.DotLaoDong || ''}</td>
                 <td>${buoiText}</td>

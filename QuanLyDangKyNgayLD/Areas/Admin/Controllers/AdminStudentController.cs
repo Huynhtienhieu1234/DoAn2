@@ -1,4 +1,4 @@
-﻿using OfficeOpenXml;
+using OfficeOpenXml;
 using OfficeOpenXml.Style;
 using QuanLyDangKyNgayLD.Factories;
 using QuanLyDangKyNgayLD.Models;
@@ -235,6 +235,46 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                     db.SaveChanges();
 
                     return Json(new { success = true, message = "Xóa sinh viên và tài khoản thành công!" });
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Lỗi server: " + ex.Message });
+            }
+        }
+
+        // POST: Xóa nhiều sinh viên đã chọn
+        [HttpPost]
+        public ActionResult DeleteMultipleAjax(List<int> ids)
+        {
+            if (ids == null || !ids.Any())
+                return Json(new { success = false, message = "Vui lòng chọn ít nhất một sinh viên để xóa." });
+
+            try
+            {
+                using (var db = DbContextFactory.Create())
+                {
+                    var svList = db.SinhViens
+                        .Include(s => s.TaiKhoan1)
+                        .Where(s => ids.Contains((int)s.MSSV) && s.Deleted_at == null)
+                        .ToList();
+
+                    if (!svList.Any())
+                        return Json(new { success = false, message = "Không tìm thấy sinh viên hợp lệ để xóa." });
+
+                    int count = 0;
+                    foreach (var sv in svList)
+                    {
+                        sv.Deleted_at = DateTime.Now;
+                        if (sv.TaiKhoan1 != null)
+                        {
+                            sv.TaiKhoan1.Deleted_at = DateTime.Now;
+                        }
+                        count++;
+                    }
+
+                    db.SaveChanges();
+                    return Json(new { success = true, message = $"Đã xóa thành công {count} sinh viên đã chọn." });
                 }
             }
             catch (Exception ex)

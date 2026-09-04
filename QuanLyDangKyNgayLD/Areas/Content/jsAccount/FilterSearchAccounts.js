@@ -1,4 +1,4 @@
-﻿document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", function () {
     const roleFilter = document.getElementById("roleFilter");
     const searchBox = document.getElementById("searchBox");
     const tableBody = document.getElementById("accountTableBody");
@@ -8,9 +8,18 @@
     const loading = document.getElementById("loadingIndicator");
 
     let currentPage = 1;
-    const pageSize = 10;
+    const pageSizeSelector = document.getElementById("pageSizeSelector");
+    let pageSize = pageSizeSelector ? (parseInt(pageSizeSelector.value, 10) || 10) : 10;
     let totalPages = 1;
     let searchTimeout = null;
+
+    if (pageSizeSelector) {
+        pageSizeSelector.addEventListener("change", function () {
+            pageSize = parseInt(this.value, 10) || 10;
+            currentPage = 1;
+            loadFilteredAccounts(1);
+        });
+    }
 
     // Hàm load dữ liệu với filter + search
     function loadFilteredAccounts(page = 1) {
@@ -31,7 +40,7 @@
                 if (data.length === 0) {
                     tableBody.innerHTML = `
                         <tr class="no-data-row">
-                            <td colspan="6" class="text-muted py-4">Không có dữ liệu</td>
+                            <td colspan="7" class="text-muted py-4">Không có dữ liệu</td>
                         </tr>`;
                     pageNumbers.innerHTML = "";
                     updatePrevNextButtons(prevBtn, nextBtn);
@@ -41,6 +50,7 @@
                 data.forEach((acc, index) => {
                     const row = document.createElement("tr");
                     row.innerHTML = `
+                        <td class="text-center"><input type="checkbox" class="form-check-input check-item-account" value="${acc.TaiKhoan_id}"></td>
                         <td class="stt-cell">${(currentPage - 1) * pageSize + index + 1}</td>
                         <td>${acc.Username}</td>
                         <td class="text-truncate" style="max-width:200px;" title="${acc.Email ?? ""}">
@@ -117,5 +127,7 @@
     });
 
     // Load lần đầu
+    window.loadFilteredAccounts = loadFilteredAccounts;
+    window.loadAccounts = loadFilteredAccounts;
     loadFilteredAccounts(1);
 });

@@ -1,12 +1,21 @@
-﻿document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", function () {
 
     /* ================== STATE ================== */
     let currentPage = 1;
-    const pageSize = 10;
+    const pageSizeSelector = document.getElementById("pageSizeDuyet") || document.getElementById("pageSizeSelector");
+    let pageSize = pageSizeSelector ? (parseInt(pageSizeSelector.value, 10) || 10) : 10;
     let totalPages = 1;
 
     let searchKeyword = "";
     let khoa = "";
+
+    if (pageSizeSelector) {
+        pageSizeSelector.addEventListener("change", function () {
+            pageSize = parseInt(this.value, 10) || 10;
+            currentPage = 1;
+            loadDanhSach(1);
+        });
+    }
 
     /* ================== LOADING OVERLAY ================== */
     function createLoadingOverlay() {
@@ -57,7 +66,7 @@
         showLoading();
         tbody.innerHTML = `
             <tr>
-                <td colspan="7" class="text-center text-muted py-4">Đang tải...</td>
+                <td colspan="8" class="text-center text-muted py-4">Đang tải...</td>
             </tr>`;
 
         fetch(`/Admin/AdminSuscesWord/GetList?page=${page}&pageSize=${pageSize}&keyword=${encodeURIComponent(searchKeyword)}&khoa=${encodeURIComponent(khoa)}`)
@@ -74,7 +83,7 @@
                     const hasFilter = searchKeyword || khoa;
                     tbody.innerHTML = `
                         <tr>
-                            <td colspan="7" class="text-center text-muted py-4">
+                            <td colspan="8" class="text-center text-muted py-4">
                                 ${hasFilter
                             ? "Không tìm thấy dữ liệu phù hợp với điều kiện tìm kiếm / lọc"
                             : "Không có dữ liệu"}
@@ -91,15 +100,16 @@
                     tr.style.animationDelay = `${index * 0.08}s`;
 
                     tr.innerHTML = `
+                        <td class="text-center"><input type="checkbox" class="form-check-input check-item-duyet" value="${item.id}"></td>
                         <td class="text-center">${(currentPage - 1) * pageSize + index + 1}</td>
                         <td class="text-center">${item.MSSV}</td>
                         <td>${item.HoTen}</td>
                         <td>${item.Lop}</td>
                         <td>${item.Khoa}</td>
-                        <td class="text-center">${item.SoNgay ?? 0}</td>
-                        <td class="text-center">
-                            <button class="btn btn-sm btn-success btn-duyet" data-id="${item.id}">
-                                Duyệt
+                        <td class="text-center fw-bold">${item.SoNgay ?? 0}</td>
+                        <td class="action-cell text-center">
+                            <button class="btn btn-sm btn-success btn-duyet" data-id="${item.id}" title="Duyệt hoàn thành">
+                                <i class="fas fa-check"></i>
                             </button>
                         </td>`;
                     tbody.appendChild(tr);
@@ -116,8 +126,8 @@
                 console.error(err);
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="7" class="text-center text-danger py-4">
-                            Lỗi tải dữ liệu!
+                        <td colspan="8" class="text-center text-danger py-4">
+                            Lỗi tải dữ liệu. Vui lòng thử lại!
                         </td>
                     </tr>`;
                 hideLoading();
@@ -214,5 +224,6 @@
     });
 
     /* ================== INIT ================== */
+    window.loadDanhSach = loadDanhSach;
     setTimeout(() => loadDanhSach(1), 300);
 });

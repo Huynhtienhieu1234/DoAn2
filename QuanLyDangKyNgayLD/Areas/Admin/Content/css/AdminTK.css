@@ -1,4 +1,4 @@
-﻿/* =======================
+/* =======================
    PAGE SCOPE
 ======================= */
 #admin-tk-page {
@@ -173,9 +173,14 @@ h2 {
     box-shadow: 0 8px 20px rgba(0,0,0,0.1);
 }
 
-    #admin-tk-page .table thead {
-        background: linear-gradient(to right, #009688, #00796b);
+    #admin-tk-page .table thead th {
+        background: #0029c8d9 !important;
         color: white;
+        text-transform: uppercase;
+        font-size: 0.8rem;
+        letter-spacing: 0.8px;
+        padding: 12px;
+        border: none;
     }
 
     #admin-tk-page .table tbody tr {
