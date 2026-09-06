@@ -52,11 +52,14 @@ function showCustomConfirmModal(title, message, onConfirm) {
     showModal("customConfirmModal");
 }
 
-// Hàm khôi phục sinh viên
+// ============= QUẢN LÝ THÙNG RÁC SINH VIÊN (DELETED STUDENTS) =============
+let cachedDeletedStudents = [];
+
+// Hàm khôi phục 1 sinh viên
 function restoreStudent(mssv) {
     showCustomConfirmModal(
         "Khôi phục sinh viên",
-        `Bạn có chắc muốn khôi phục sinh viên này?`,
+        `Bạn có chắc muốn khôi phục sinh viên (MSSV: ${mssv}) về danh sách chính?`,
         function () {
             const fd = new FormData();
             fd.append("id", mssv);
@@ -67,9 +70,8 @@ function restoreStudent(mssv) {
                     showToast(d.success ? "Khôi phục thành công!" : d.message, d.success ? "success" : "error");
                     if (d.success) {
                         loadDeletedStudents();
-                        if (typeof loadStudents === "function") {
-                            loadStudents(1);
-                        }
+                        if (typeof window.loadStudents === "function") window.loadStudents(1);
+                        else if (typeof loadStudents === "function") loadStudents(1);
                     }
                 })
                 .catch(err => {
@@ -80,11 +82,11 @@ function restoreStudent(mssv) {
     );
 }
 
-// Hàm xóa hẳn sinh viên
+// Hàm xóa vĩnh viễn 1 sinh viên
 function deletePermanent(mssv) {
     showCustomConfirmModal(
         "Xóa vĩnh viễn sinh viên",
-        `Bạn có chắc muốn xóa hẳn sinh viên này? Hành động này không thể hoàn tác!`,
+        `Bạn có chắc chắn muốn xóa vĩnh viễn sinh viên (MSSV: ${mssv}) khỏi hệ thống? Hành động này KHÔNG thể hoàn tác!`,
         function () {
             const fd = new FormData();
             fd.append("id", mssv);
@@ -92,8 +94,10 @@ function deletePermanent(mssv) {
             fetch("/Admin/AdminStudent/DeletePermanentAjax", { method: "POST", body: fd })
                 .then(r => r.json())
                 .then(d => {
-                    showToast(d.success ? "Đã xóa hẳn!" : d.message, d.success ? "success" : "error");
-                    if (d.success) loadDeletedStudents();
+                    showToast(d.success ? "Đã xóa vĩnh viễn sinh viên!" : d.message, d.success ? "success" : "error");
+                    if (d.success) {
+                        loadDeletedStudents();
+                    }
                 })
                 .catch(err => {
                     console.error("Lỗi khi xóa hẳn:", err);
@@ -103,84 +107,273 @@ function deletePermanent(mssv) {
     );
 }
 
-// Hàm hiển thị toast (dùng chung cho cả onclick lẫn các sự kiện khác)
+// Hàm hiển thị toast
 function showToast(msg, type = "info") {
     if (window.showToast) window.showToast(msg, type);
     else alert(msg);
 }
 
-// Hàm load danh sách sinh viên đã xóa - ĐƯỢC DI CHUYỂN RA NGOÀI
+// Render dữ liệu bảng thùng rác
+function renderDeletedStudents(list) {
+    const tbody = document.getElementById("deletedStudentsTableBody");
+    const checkAll = document.getElementById("checkAllDeletedStudents");
+    if (checkAll) {
+        checkAll.checked = false;
+        checkAll.indeterminate = false;
+    }
+    updateDeletedBulkActions();
+
+    if (!tbody) return;
+
+    if (!Array.isArray(list) || list.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="8" class="text-center py-5 text-muted">
+                    <i class="fas fa-trash-alt fa-3x text-secondary opacity-25 mb-3"></i>
+                    <div class="fw-bold fs-6">Thùng rác trống</div>
+                    <small class="text-muted">Không có sinh viên nào đã bị xóa</small>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    tbody.innerHTML = list.map((sv, index) => {
+        const mssvStr = sv.MSSVDisplay || sv.MSSV || "";
+        return `
+            <tr>
+                <td class="text-center">
+                    <input type="checkbox" class="form-check-input check-item-deleted-student" value="${sv.MSSV}">
+                </td>
+                <td class="text-center fw-bold text-muted">${index + 1}</td>
+                <td class="text-center">
+                    <span class="badge bg-secondary font-monospace px-2 py-1">${mssvStr}</span>
+                </td>
+                <td>
+                    <span class="fw-bold text-dark">${sv.HoTen ?? "Chưa có"}</span>
+                </td>
+                <td>
+                    <span class="text-secondary small">${sv.Khoa ?? "Chưa có khoa"}</span>
+                </td>
+                <td>
+                    <span class="badge bg-info-subtle text-primary border border-info-subtle px-2 py-1">${sv.Lop ?? "Chưa có"}</span>
+                </td>
+                <td class="text-center">
+                    <span class="badge bg-light text-muted border px-2 py-1">${sv.Deleted_at || "-"}</span>
+                </td>
+                <td class="text-center">
+                    <div class="d-flex justify-content-center gap-1">
+                        <button type="button" class="btn btn-sm btn-outline-success rounded-pill px-2 py-1 d-flex align-items-center gap-1"
+                                onclick="restoreStudent('${sv.MSSV}')"
+                                title="Khôi phục sinh viên này">
+                            <i class="fas fa-undo-alt"></i> Khôi phục
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-2 py-1 d-flex align-items-center gap-1"
+                                onclick="deletePermanent('${sv.MSSV}')"
+                                title="Xóa vĩnh viễn khỏi hệ thống">
+                            <i class="fas fa-trash-alt"></i> Xóa hẳn
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    }).join("");
+}
+
+// Cập nhật trạng thái Toolbar chọn nhiều trong thùng rác
+function updateDeletedBulkActions() {
+    const tbody = document.getElementById("deletedStudentsTableBody");
+    const container = document.getElementById("deletedBulkActionContainer");
+    const countBadge = document.getElementById("deletedSelectedCount");
+    const checkAll = document.getElementById("checkAllDeletedStudents");
+
+    if (!tbody || !container) return;
+
+    const allBoxes = tbody.querySelectorAll(".check-item-deleted-student");
+    const checkedBoxes = tbody.querySelectorAll(".check-item-deleted-student:checked");
+    const count = checkedBoxes.length;
+
+    if (countBadge) countBadge.textContent = count;
+
+    if (count > 0) {
+        container.style.removeProperty("display");
+        container.style.display = "flex";
+    } else {
+        container.style.display = "none";
+    }
+
+    if (checkAll && allBoxes.length > 0) {
+        checkAll.checked = (count === allBoxes.length);
+        checkAll.indeterminate = (count > 0 && count < allBoxes.length);
+    }
+}
+
+// Load danh sách sinh viên đã xóa từ server
 function loadDeletedStudents() {
     const tbody = document.getElementById("deletedStudentsTableBody");
+    const totalBadge = document.getElementById("deletedStudentTotalBadge");
     if (!tbody) return;
 
     tbody.innerHTML = `
-        <tr><td colspan="6" class="text-center text-muted py-4">Đang tải dữ liệu...</td></tr>
+        <tr><td colspan="8" class="text-center text-muted py-5">
+            <div class="spinner-border spinner-border-sm text-primary me-2"></div> Đang tải danh sách sinh viên đã xóa...
+        </td></tr>
     `;
 
-    fetch("/Admin/AdminStudent/GetDeletedList")
+    fetch("/Admin/AdminStudent/GetDeletedList?_t=" + Date.now())
         .then(response => {
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
-            return response.text();
+            return response.json();
         })
-        .then(text => {
-            try {
-                const data = JSON.parse(text);
+        .then(data => {
+            cachedDeletedStudents = Array.isArray(data) ? data : [];
+            if (totalBadge) totalBadge.textContent = `${cachedDeletedStudents.length} sinh viên`;
+            
+            // Xóa nội dung tìm kiếm cũ nếu có
+            const searchInput = document.getElementById("searchDeletedStudents");
+            if (searchInput) searchInput.value = "";
 
-                if (!Array.isArray(data) || data.length === 0) {
-                    tbody.innerHTML = `
-                        <tr><td colspan="6" class="text-center text-muted py-4">
-                            <i class="fas fa-inbox me-2"></i>Không có sinh viên nào đã xóa.
-                        </td></tr>
-                    `;
-                    return;
-                }
-
-                tbody.innerHTML = "";
-                data.forEach((sv, index) => {
-                    const row = document.createElement("tr");
-                    row.innerHTML = `
-                        <td class="fw-medium">${index + 1}</td>
-                        <td><span class="badge bg-secondary">${sv.MSSV}</span></td>
-                        <td class="fw-medium">${sv.HoTen ?? "Chưa có"}</td>
-                        <td><span class="badge bg-info text-dark">${sv.Lop ?? "Chưa có"}</span></td>
-                        <td><small class="text-muted">${sv.Deleted_at}</small></td>
-                        <td>
-                            <div class="d-flex gap-2">
-                                <button class="btn btn-sm btn-success d-flex align-items-center px-3 py-2 rounded-3 shadow-sm"
-                                        onclick="restoreStudent('${sv.MSSV}')"
-                                        title="Khôi phục sinh viên này">
-                                    <i class="fas fa-undo-alt me-2"></i>
-                                    <span>Khôi phục</span>
-                                </button>
-                                <button class="btn btn-sm btn-danger d-flex align-items-center px-3 py-2 rounded-3 shadow-sm"
-                                        onclick="deletePermanent('${sv.MSSV}')"
-                                        title="Xóa vĩnh viễn khỏi hệ thống">
-                                    <i class="fas fa-trash-alt me-2"></i>
-                                    <span>Xóa hẳn</span>
-                                </button>
-                            </div>
-                        </td>
-                    `;
-                    tbody.appendChild(row);
-                });
-            } catch (parseErr) {
-                console.error("Phản hồi không phải JSON:", text);
-                tbody.innerHTML = `
-                    <tr><td colspan="6" class="text-center text-danger py-4">
-                        <i class="fas fa-exclamation-triangle me-2"></i>Server trả về dữ liệu không hợp lệ.
-                    </td></tr>
-                `;
-            }
+            renderDeletedStudents(cachedDeletedStudents);
         })
         .catch(err => {
             console.error("Lỗi khi tải danh sách đã xóa:", err);
             tbody.innerHTML = `
-                <tr><td colspan="6" class="text-center text-danger py-4">
+                <tr><td colspan="8" class="text-center text-danger py-4">
                     <i class="fas fa-exclamation-circle me-2"></i>Lỗi khi tải dữ liệu (${err.message}).
                 </td></tr>
             `;
         });
+}
+
+// Khởi tạo các sự kiện trong modal thùng rác
+function initDeletedModalEvents() {
+    // 1. Tìm kiếm trực tiếp trong thùng rác
+    const searchInput = document.getElementById("searchDeletedStudents");
+    if (searchInput) {
+        searchInput.addEventListener("input", function () {
+            const kw = this.value.trim().toLowerCase();
+            if (!kw) {
+                renderDeletedStudents(cachedDeletedStudents);
+                return;
+            }
+            const filtered = cachedDeletedStudents.filter(s => {
+                const mssv = (s.MSSVDisplay || s.MSSV || "").toString().toLowerCase();
+                const hoten = (s.HoTen || "").toLowerCase();
+                const lop = (s.Lop || "").toLowerCase();
+                const khoa = (s.Khoa || "").toLowerCase();
+                return mssv.includes(kw) || hoten.includes(kw) || lop.includes(kw) || khoa.includes(kw);
+            });
+            renderDeletedStudents(filtered);
+        });
+    }
+
+    // 2. Check all checkbox
+    const checkAll = document.getElementById("checkAllDeletedStudents");
+    if (checkAll) {
+        checkAll.addEventListener("change", function () {
+            const boxes = document.querySelectorAll("#deletedStudentsTableBody .check-item-deleted-student");
+            boxes.forEach(cb => cb.checked = checkAll.checked);
+            updateDeletedBulkActions();
+        });
+    }
+
+    // 3. Delegation cho từng checkbox
+    const tbody = document.getElementById("deletedStudentsTableBody");
+    if (tbody) {
+        tbody.addEventListener("change", function (e) {
+            if (e.target.classList.contains("check-item-deleted-student")) {
+                updateDeletedBulkActions();
+            }
+        });
+    }
+
+    // 4. Nút Khôi phục nhiều đã chọn
+    const btnBulkRestore = document.getElementById("btnBulkRestoreDeleted");
+    if (btnBulkRestore) {
+        btnBulkRestore.addEventListener("click", function () {
+            const checkedBoxes = document.querySelectorAll("#deletedStudentsTableBody .check-item-deleted-student:checked");
+            const ids = Array.from(checkedBoxes).map(cb => parseInt(cb.value, 10)).filter(id => !isNaN(id) && id > 0);
+            if (ids.length === 0) {
+                showToast("Vui lòng chọn ít nhất một sinh viên để khôi phục!", "warning");
+                return;
+            }
+
+            showCustomConfirmModal(
+                "Khôi phục nhiều sinh viên",
+                `Bạn có chắc chắn muốn khôi phục ${ids.length} sinh viên đã chọn về danh sách chính?`,
+                function () {
+                    btnBulkRestore.disabled = true;
+                    btnBulkRestore.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Đang khôi phục...';
+
+                    fetch("/Admin/AdminStudent/RestoreMultipleAjax", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ ids: ids })
+                    })
+                    .then(r => r.json())
+                    .then(res => {
+                        showToast(res.message || "Khôi phục thành công!", res.success ? "success" : "error");
+                        if (res.success) {
+                            loadDeletedStudents();
+                            if (typeof window.loadStudents === "function") window.loadStudents(1);
+                            else if (typeof loadStudents === "function") loadStudents(1);
+                        }
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        showToast("Lỗi kết nối tới server!", "error");
+                    })
+                    .finally(() => {
+                        btnBulkRestore.disabled = false;
+                        btnBulkRestore.innerHTML = '<i class="fas fa-undo-alt"></i> Khôi phục đã chọn';
+                    });
+                }
+            );
+        });
+    }
+
+    // 5. Nút Xóa vĩnh viễn nhiều đã chọn
+    const btnBulkPermanent = document.getElementById("btnBulkPermanentDelete");
+    if (btnBulkPermanent) {
+        btnBulkPermanent.addEventListener("click", function () {
+            const checkedBoxes = document.querySelectorAll("#deletedStudentsTableBody .check-item-deleted-student:checked");
+            const ids = Array.from(checkedBoxes).map(cb => parseInt(cb.value, 10)).filter(id => !isNaN(id) && id > 0);
+            if (ids.length === 0) {
+                showToast("Vui lòng chọn ít nhất một sinh viên để xóa!", "warning");
+                return;
+            }
+
+            showCustomConfirmModal(
+                "Xóa vĩnh viễn nhiều sinh viên",
+                `CẢNH BÁO: Hành động này sẽ XÓA VĨNH VIỄN ${ids.length} sinh viên và tài khoản liên kết khỏi hệ thống. Bạn có chắc chắn muốn tiếp tục không?`,
+                function () {
+                    btnBulkPermanent.disabled = true;
+                    btnBulkPermanent.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Đang xóa...';
+
+                    fetch("/Admin/AdminStudent/DeletePermanentMultipleAjax", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ ids: ids })
+                    })
+                    .then(r => r.json())
+                    .then(res => {
+                        showToast(res.message || "Đã xóa vĩnh viễn!", res.success ? "success" : "error");
+                        if (res.success) {
+                            loadDeletedStudents();
+                        }
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        showToast("Lỗi kết nối tới server!", "error");
+                    })
+                    .finally(() => {
+                        btnBulkPermanent.disabled = false;
+                        btnBulkPermanent.innerHTML = '<i class="fas fa-trash-alt"></i> Xóa vĩnh viễn đã chọn';
+                    });
+                }
+            );
+        });
+    }
 }
 
 // ==================== KHI TRANG TẢI XONG ====================
@@ -223,9 +416,10 @@ document.addEventListener("DOMContentLoaded", function () {
     };
 
     setupEventListeners();
+    initDeletedModalEvents();
     window.loadStudents = loadStudents;
-    loadStudents();
     initFilterSystem();
+    loadStudents(currentPage);
 
     function setupEventListeners() {
         // === NÚT TRÊN THANH CÔNG CỤ ===
@@ -515,10 +709,30 @@ document.addEventListener("DOMContentLoaded", function () {
             .then(d => {
                 if (d.success) {
                     hideModal("createStudentModal");
-                    showToast(d.message || "Thêm sinh viên thành công!", "success");
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Thành công!',
+                            text: d.message || "Thêm sinh viên thành công!",
+                            confirmButtonText: 'Tuyệt vời',
+                            confirmButtonColor: '#198754'
+                        });
+                    } else {
+                        showToast(d.message || "Thêm sinh viên thành công!", "success");
+                    }
                     loadStudents();
                 } else {
-                    showToast(d.message || "Thêm thất bại!", "error");
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Thêm thất bại!',
+                            text: d.message || "Thêm sinh viên thất bại!",
+                            confirmButtonText: 'Đóng & Thử lại',
+                            confirmButtonColor: '#dc3545'
+                        });
+                    } else {
+                        showToast(d.message || "Thêm thất bại!", "error");
+                    }
 
                     if (d.message && d.message.includes("MSSV")) {
                         mssvInput?.focus();
@@ -527,7 +741,17 @@ document.addEventListener("DOMContentLoaded", function () {
             })
             .catch(error => {
                 console.error("Lỗi server:", error);
-                showToast("Lỗi kết nối đến server! Vui lòng thử lại.", "error");
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Lỗi kết nối',
+                        text: 'Lỗi kết nối đến server! Vui lòng thử lại: ' + error,
+                        confirmButtonText: 'Đóng',
+                        confirmButtonColor: '#dc3545'
+                    });
+                } else {
+                    showToast("Lỗi kết nối đến server! Vui lòng thử lại.", "error");
+                }
             })
             .finally(() => {
                 resetButton(btn, "Lưu");
@@ -1060,20 +1284,17 @@ document.addEventListener("DOMContentLoaded", function () {
                     return r.json();
                 })
                 .then(data => {
-                    // SỬA 4: Bỏ lọc khi chọn "0"
-                    const filteredItems = validateFilteredData(data.items || [], khoaFilter);
-
-                    renderStudentTable(filteredItems, page);
+                    renderStudentTable(data.items || [], data.page || page);
                     setupPagination(data.page || 1, data.totalPages || 1);
 
                     setTimeout(hideTableLoading, 100);
                 })
                 .catch(err => {
                     console.error("Load error:", err);
-                    tbody.innerHTML = `<tr><td colspan="7" class="text-danger text-center py-4">Lỗi tải dữ liệu: ${err.message}</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="8" class="text-danger text-center py-4">Lỗi tải dữ liệu: ${err.message}</td></tr>`;
                     hideTableLoading();
                 });
-        }, 300);
+        }, 150);
     }
 
     function validateFilteredData(items, khoaFilter) {
@@ -1116,14 +1337,20 @@ document.addEventListener("DOMContentLoaded", function () {
                 <td class="text-center">
                     <input type="checkbox" class="form-check-input check-item-student" value="${s.MSSV}">
                 </td>
-                <td class="stt-cell">${stt}</td>
-                <td class="fw-bold">${s.MSSV || "-"}</td>
-                <td class="truncate" title="${s.HoTen || "-"}">${s.HoTen || "-"}</td>
-                <td>${s.GioiTinh || "-"}</td>
-                <td class="truncate" title="${s.TenKhoa || "-"}">${s.TenKhoa || "-"}</td>
-                <td class="truncate" title="${s.TenLop || "Chưa có"}">${s.TenLop || "Chưa có"}</td>
+                <td class="stt-cell text-center fw-bold">${stt}</td>
+                <td class="text-center font-monospace fw-bold">${s.MSSVDisplay || s.MSSV || "-"}</td>
+                <td class="text-start ps-2" title="${s.HoTen || "-"}">
+                    <span class="truncate">${s.HoTen || "-"}</span>
+                </td>
+                <td class="text-center">${s.GioiTinh || "-"}</td>
+                <td class="text-start ps-2" title="${s.TenKhoa || "-"}">
+                    <span class="truncate">${s.TenKhoa || "-"}</span>
+                </td>
+                <td class="text-start ps-2" title="${s.TenLop || "Chưa có"}">
+                    <span class="truncate">${s.TenLop || "Chưa có"}</span>
+                </td>
 
-                <td class="action-cell">
+                <td class="action-cell text-center">
                     <button class="btn btn-sm btn-warning btn-edit-student me-1" title="Sửa"
                         data-id="${s.MSSV}"
                         data-hoten="${s.HoTen || ""}"
@@ -1137,12 +1364,13 @@ document.addEventListener("DOMContentLoaded", function () {
                         <i class="fas fa-edit"></i>
                     </button>
 
+                    ${(!window.isManager) ? `
                     <button class="btn btn-sm btn-danger btn-delete-student me-1" title="Xóa"
                         data-id="${s.MSSV}">
                         <i class="fas fa-trash"></i>
-                    </button>
+                    </button>` : ''}
 
-                    <button class="btn btn-sm btn-info btn-detail-student me-1 text-white" title="Chi tiết"
+                    <button class="btn btn-sm btn-info btn-detail-student text-white" title="Chi tiết"
                         data-id="${s.MSSV}">
                         <i class="fas fa-info-circle"></i>
                     </button>
@@ -1301,38 +1529,49 @@ document.addEventListener("DOMContentLoaded", function () {
         const container = document.getElementById("pageNumbersStudent");
         const prevBtn = document.getElementById("prevStudent");
         const nextBtn = document.getElementById("nextStudent");
+        if (!container) return;
         container.innerHTML = "";
 
         if (totalPages <= 1) {
-            prevBtn.disabled = nextBtn.disabled = true;
+            if (prevBtn) prevBtn.disabled = true;
+            if (nextBtn) nextBtn.disabled = true;
             return;
         }
 
-        prevBtn.disabled = page <= 1;
-        nextBtn.disabled = page >= totalPages;
+        if (prevBtn) {
+            prevBtn.disabled = page <= 1;
+            prevBtn.onclick = () => {
+                if (prevBtn.disabled || isLoading) return;
+                showTableLoading();
+                loadStudents(page - 1);
+            };
+        }
 
-        prevBtn.onclick = () => {
-            if (prevBtn.disabled || isLoading) return;
-            showTableLoading();
-            loadStudents(page - 1);
-        };
+        if (nextBtn) {
+            nextBtn.disabled = page >= totalPages;
+            nextBtn.onclick = () => {
+                if (nextBtn.disabled || isLoading) return;
+                showTableLoading();
+                loadStudents(page + 1);
+            };
+        }
 
-        nextBtn.onclick = () => {
-            if (nextBtn.disabled || isLoading) return;
-            showTableLoading();
-            loadStudents(page + 1);
-        };
-
-        const max = 7;
+        const max = 5;
         let start = Math.max(1, page - Math.floor(max / 2));
         let end = Math.min(totalPages, start + max - 1);
         if (end - start + 1 < max) start = Math.max(1, end - max + 1);
 
-        if (start > 1) addBtn(1);
-        if (start > 2) addEllipsis();
-        for (let i = start; i <= end; i++) addBtn(i);
-        if (end < totalPages - 1) addEllipsis();
-        if (end < totalPages) addBtn(totalPages);
+        if (start > 1) {
+            addBtn(1);
+            if (start > 2) addEllipsis();
+        }
+        for (let i = start; i <= end; i++) {
+            addBtn(i);
+        }
+        if (end < totalPages) {
+            if (end < totalPages - 1) addEllipsis();
+            addBtn(totalPages);
+        }
 
         function addBtn(p) {
             const b = document.createElement("button");
@@ -1341,7 +1580,7 @@ document.addEventListener("DOMContentLoaded", function () {
             b.classList.add(p === page ? "btn-primary" : "btn-outline-secondary");
             b.textContent = p;
             b.onclick = () => {
-                if (isLoading) return;
+                if (isLoading || p === page) return;
                 showTableLoading();
                 loadStudents(p);
             };
@@ -1350,7 +1589,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         function addEllipsis() {
             const s = document.createElement("span");
-            s.className = "mx-2 text-muted";
+            s.className = "mx-1 text-muted";
             s.textContent = "...";
             container.appendChild(s);
         }

@@ -413,11 +413,11 @@ table .btn-action i {
 
 /* -------- MODAL (Bootstrap compatible) -------- */
 .modal {
-    z-index: 1050 !important;
+    z-index: 1060 !important;
 }
 
 .modal-backdrop {
-    z-index: 1040 !important;
+    z-index: 1050 !important;
 }
 
 /* -------- FORM CONTROLS -------- */

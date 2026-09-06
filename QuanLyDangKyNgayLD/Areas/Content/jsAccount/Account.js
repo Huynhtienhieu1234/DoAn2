@@ -197,28 +197,53 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     /* ==========================
-       RENDER PHÂN TRANG (DỰA TRÊN MẪU)
+       RENDER PHÂN TRANG GỌN GÀNG (SMART PAGINATION)
        ========================== */
     function renderPagination(container, currentPage, totalPages) {
-        const fragment = document.createDocumentFragment(); // tạo tạm để tránh flicker
+        if (!container) return;
+        container.innerHTML = "";
 
-        for (let i = 1; i <= totalPages; i++) {
+        if (totalPages <= 1) return;
+
+        const maxButtons = 5;
+        let start = Math.max(1, currentPage - Math.floor(maxButtons / 2));
+        let end = Math.min(totalPages, start + maxButtons - 1);
+        if (end - start + 1 < maxButtons) start = Math.max(1, end - maxButtons + 1);
+
+        function addBtn(p) {
             const btn = document.createElement("button");
-            btn.className = "btn btn-sm me-1 page-number";
-            btn.textContent = i;
-
-            if (i === currentPage) {
-                btn.classList.add("btn-primary");
+            btn.type = "button";
+            btn.className = "btn btn-sm mx-1 page-number";
+            btn.textContent = p;
+            if (p === currentPage) {
+                btn.classList.add("btn-primary", "active");
             } else {
                 btn.classList.add("btn-outline-primary");
             }
-
-            btn.addEventListener("click", () => loadAccounts(i));
-            fragment.appendChild(btn);
+            btn.addEventListener("click", () => loadAccounts(p));
+            container.appendChild(btn);
         }
 
-        container.innerHTML = "";
-        container.appendChild(fragment); // render một lần, mượt hơn
+        function addEllipsis() {
+            const span = document.createElement("span");
+            span.className = "px-2 text-muted fw-bold";
+            span.textContent = "...";
+            container.appendChild(span);
+        }
+
+        if (start > 1) {
+            addBtn(1);
+            if (start > 2) addEllipsis();
+        }
+
+        for (let i = start; i <= end; i++) {
+            addBtn(i);
+        }
+
+        if (end < totalPages) {
+            if (end < totalPages - 1) addEllipsis();
+            addBtn(totalPages);
+        }
     }
 
     /* ==========================

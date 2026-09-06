@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
   <!-- EF Runtime content -->
   <edmx:Runtime>
@@ -26,7 +26,7 @@
           <Key>
             <PropertyRef Name="Khoa_id" />
           </Key>
-          <Property Name="Khoa_id" Type="int" Nullable="false" />
+          <Property Name="Khoa_id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="MaKhoa" Type="nvarchar" MaxLength="10" Nullable="false" />
           <Property Name="TenKhoa" Type="nvarchar" MaxLength="255" />
         </EntityType>
@@ -34,7 +34,7 @@
           <Key>
             <PropertyRef Name="Lop_id" />
           </Key>
-          <Property Name="Lop_id" Type="int" Nullable="false" />
+          <Property Name="Lop_id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="MaLop" Type="nvarchar" MaxLength="20" Nullable="false" />
           <Property Name="TenLop" Type="nvarchar" MaxLength="255" />
           <Property Name="Khoa_id" Type="int" />
@@ -427,7 +427,7 @@
           <Key>
             <PropertyRef Name="Khoa_id" />
           </Key>
-          <Property Name="Khoa_id" Type="Int32" Nullable="false" />
+          <Property Name="Khoa_id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
           <Property Name="MaKhoa" Type="String" MaxLength="10" FixedLength="false" Unicode="true" Nullable="false" />
           <Property Name="TenKhoa" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
           <NavigationProperty Name="Lops" Relationship="Self.fk_khoa" FromRole="Khoa" ToRole="Lop" />
@@ -436,7 +436,7 @@
           <Key>
             <PropertyRef Name="Lop_id" />
           </Key>
-          <Property Name="Lop_id" Type="Int32" Nullable="false" />
+          <Property Name="Lop_id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
           <Property Name="MaLop" Type="String" MaxLength="20" FixedLength="false" Unicode="true" Nullable="false" />
           <Property Name="TenLop" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
           <Property Name="Khoa_id" Type="Int32" />

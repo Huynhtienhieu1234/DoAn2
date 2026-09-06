@@ -1,4 +1,4 @@
-﻿/* ============================================================= */
+/* ============================================================= */
 /* ADMINPAGE.CSS - HOÀN CHỈNH, TRẮNG XANH NHẠT, CĂN CHỈNH 100% */
 /* Phù hợp: Desktop, Tablet, Mobile | Chuẩn Figma 2025        */
 /* ============================================================= */
@@ -34,13 +34,16 @@ body {
 }
 
 .container-fluid {
-    max-width: 1400px !important;
-    margin: 0 auto !important;
-    padding: 1.5rem !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
 }
 
 /* ====================== TOOLBAR ====================== */
 .toolbar {
+    position: relative !important;
+    z-index: 20 !important;
     background: rgba(255, 255, 255, 0.94) !important;
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
@@ -50,6 +53,17 @@ body {
     box-shadow: 0 6px 24px var(--shadow);
     margin-bottom: 2rem;
     transition: all 0.3s ease;
+}
+
+.toolbar .dropdown {
+    position: relative !important;
+    z-index: 25 !important;
+}
+
+.toolbar .dropdown-menu,
+.dropdown-menu {
+    z-index: 1000 !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18) !important;
 }
 
     .toolbar:hover {

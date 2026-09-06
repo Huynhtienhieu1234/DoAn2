@@ -1,56 +1,101 @@
 @{
-    ViewBag.Title = "Duyệt hoàn Thành Lao Động";
+    ViewBag.Title = "Duyệt Hoàn Thành Lao Động";
     Layout = "~/Areas/Admin/Views/Shared/ViewShare.cshtml";
 }
-<link rel="stylesheet" href="~/Areas/Admin/Content/css/Adminsuscessword.css" />
+<link href="~/Areas/Content/css/admonWwordRegister.css?v=@DateTime.Now.Ticks" rel="stylesheet" type="text/css" />
+<link href="~/Areas/Content/adminpage.css?v=@DateTime.Now.Ticks" rel="stylesheet" type="text/css" />
+<link href="~/Areas/Admin/Content/css/Adminsuscessword.css?v=@DateTime.Now.Ticks" rel="stylesheet" type="text/css" />
 
-<h2 class="mb-4">Danh sách Phiếu Xác Nhận Hoàn Thành Lao Động</h2>
+@{
+    var vaiTroId = Session["VaiTroId"] as int?;
+}
 
+<!-- THANH CÔNG CỤ (TOOLBAR) -->
+<nav class="navbar navbar-expand-lg toolbar shadow-sm mb-3">
+    <div class="container-fluid p-0">
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <!-- Bên trái -->
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0 d-flex align-items-center">
+                <li class="nav-item">
+                    <span class="toolbar-page-title d-flex align-items-center me-3">
+                        <i class="fas fa-clipboard-check me-2"></i>
+                        <span>Hoàn thành lao động</span>
+                    </span>
+                </li>
+                @if (vaiTroId == 1 || vaiTroId == null)
+                {
+                    <li class="nav-item">
+                        <button class="btn btn-outline-danger btn-sm me-2 btn-delete-selected" id="btnDeleteSelectedDuyet" style="display:none;" title="Xóa các phiếu đã chọn">
+                            <i class="fas fa-trash-alt me-1"></i> Xóa đã chọn (<span class="selected-count">0</span>)
+                        </button>
+                    </li>
+                }
+            </ul>
 
-<div class="filter-bar d-flex align-items-center flex-wrap gap-2">
-    <!-- BULK DELETE -->
-    <button class="btn btn-outline-danger btn-sm shadow-sm btn-delete-selected" id="btnDeleteSelectedDuyet" style="display:none;" title="Xóa các phiếu đã chọn">
-        <i class="fas fa-trash-alt me-1"></i> Xóa đã chọn (<span class="selected-count">0</span>)
-    </button>
+            <!-- Bên phải -->
+            <form class="toolbar-flex align-items-center" role="search">
+                <select id="khoaFilter" class="form-select form-select-sm me-2 shadow-sm" style="min-width: 220px;">
+                    <option value="">-- Tất cả khoa --</option>
+                    <option value="Công nghệ và kỹ thuật">Công nghệ và kỹ thuật</option>
+                    <option value="Khoa Ngoại ngữ">Khoa Ngoại ngữ</option>
+                    <option value="Khoa Kinh tế - Luật">Khoa Kinh tế - Luật</option>
+                    <option value="Nông nghiệp, Tài nguyên và Môi trường">Nông nghiệp, Tài nguyên và Môi trường</option>
+                    <option value="Văn hóa - Du lịch và Công tác xã hội">Văn hóa - Du lịch và Công tác xã hội</option>
+                    <option value="Sư phạm Toán - Tin">Sư phạm Toán - Tin</option>
+                    <option value="Sư phạm Khoa học tự nhiên">Sư phạm Khoa học tự nhiên</option>
+                    <option value="Sư phạm Khoa học xã hội">Sư phạm Khoa học xã hội</option>
+                    <option value="Giáo dục Tiểu học - Mầm non">Giáo dục Tiểu học - Mầm non</option>
+                    <option value="Giáo dục Thể chất - Sư phạm Nghệ thuật">Giáo dục Thể chất - Sư phạm Nghệ thuật</option>
+                </select>
 
-    <!-- SEARCH -->
-    <div class="input-group input-group-sm shadow-sm filter-search">
-        <span class="input-group-text bg-white border-end-0">
-            <i class="fa fa-search text-muted"></i>
-        </span>
-        <input type="text" id="searchBox" class="form-control border-start-0"
-               placeholder="Tìm MSSV, họ tên, lớp, khoa...">
+                <div class="input-group input-group-sm shadow-sm me-2" style="min-width: 260px;">
+                    <span class="input-group-text bg-white border-end-0">
+                        <i class="fa fa-search text-muted"></i>
+                    </span>
+                    <input type="text" id="searchBox" class="form-control border-start-0" placeholder="Tìm MSSV, họ tên, lớp, khoa...">
+                </div>
+
+                <div class="dropdown d-inline-block">
+                    <button class="btn btn-excel-manager dropdown-toggle" type="button" id="excelDropdownSusces" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fa fa-file-excel me-1"></i> Quản lý Excel
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow border-0" aria-labelledby="excelDropdownSusces">
+                        <li>
+                            <a class="dropdown-item py-2" href="@Url.Action("DownloadTemplate", "AdminSuscesWord", new { area = "Admin" })">
+                                <i class="fas fa-file-download text-primary me-2"></i> Xuất mẫu Import
+                            </a>
+                        </li>
+                        <li>
+                            <button class="dropdown-item py-2" type="button" data-bs-toggle="modal" data-bs-target="#modalImportSuscesExcel">
+                                <i class="fas fa-file-upload text-success me-2"></i> Nhập Excel
+                            </button>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <button class="dropdown-item py-2" type="button" id="btnExportSuscesData">
+                                <i class="fas fa-file-export text-info me-2"></i> Xuất dữ liệu
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+            </form>
+        </div>
     </div>
+</nav>
 
-    <!-- FILTER KHOA -->
-    <select id="khoaFilter" class="form-select form-select-sm shadow-sm filter-khoa">
-        <option value="">-- Tất cả khoa --</option>
-        <option value="Công nghệ và kỹ thuật">Công nghệ và kỹ thuật</option>
-        <option value="Khoa Ngoại ngữ">Khoa Ngoại ngữ</option>
-        <option value="Khoa Kinh tế - Luật">Khoa Kinh tế - Luật</option>
-        <option value="Nông nghiệp, Tài nguyên và Môi trường">Nông nghiệp, Tài nguyên và Môi trường</option>
-        <option value="Văn hóa - Du lịch và Công tác xã hội">Văn hóa - Du lịch và Công tác xã hội</option>
-        <option value="Sư phạm Toán - Tin">Sư phạm Toán - Tin</option>
-        <option value="Sư phạm Khoa học tự nhiên">Sư phạm Khoa học tự nhiên</option>
-        <option value="Sư phạm Khoa học xã hội">Sư phạm Khoa học xã hội</option>
-        <option value="Giáo dục Tiểu học - Mầm non">Giáo dục Tiểu học - Mầm non</option>
-        <option value="Giáo dục Thể chất - Sư phạm Nghệ thuật">Giáo dục Thể chất - Sư phạm Nghệ thuật</option>
-    </select>
-
-</div>
-
-<div class="table-responsive">
-    <table class="table table-bordered table-hover text-nowrap">
-        <thead class="text-center">
+<!-- BẢNG DỮ LIỆU -->
+<div class="table-wrapper shadow-sm rounded-3 bg-white p-2">
+    <table class="table table-bordered table-hover align-middle text-center mb-0" style="width:100%; table-layout: fixed;">
+        <thead class="table-light">
             <tr>
-                <th style="width: 40px;"><input type="checkbox" id="checkAllDuyet" class="form-check-input" title="Chọn tất cả"></th>
-                <th style="width: 60px;">STT</th>
-                <th style="width: 120px;">MSSV</th>
-                <th style="min-width: 180px;">Họ và tên</th>
-                <th style="min-width: 160px;">Lớp</th>
-                <th style="min-width: 180px;">Khoa</th>
-                <th style="width: 160px;">Số ngày đã hoàn thành</th>
-                <th style="width: 120px;">Tác vụ</th>
+                <th style="width: 38px;" class="text-center"><input type="checkbox" id="checkAllDuyet" class="form-check-input" title="Chọn tất cả"></th>
+                <th style="width: 48px;">STT</th>
+                <th style="width: 13%;">MSSV</th>
+                <th style="width: 22%;">Họ và tên</th>
+                <th style="width: 18%;">Lớp</th>
+                <th style="width: 22%;">Khoa</th>
+                <th style="width: 13%;">Số ngày hoàn thành</th>
+                <th style="width: 9%;" class="action-header">Tác vụ</th>
             </tr>
         </thead>
         <tbody id="duyetTableBody">
@@ -60,7 +105,6 @@
         </tbody>
     </table>
 </div>
-
 
 <!-- PHÂN TRANG -->
 <div class="d-flex justify-content-center align-items-center flex-wrap gap-3 mt-3 mb-4">
@@ -78,9 +122,185 @@
             <option value="20">20 dòng / trang</option>
             <option value="50">50 dòng / trang</option>
             <option value="100">100 dòng / trang</option>
+            <option value="1000000">Tất cả</option>
         </select>
+    </div>
+</div>
+
+<!-- Modal Import Excel Xác Nhận Hoàn Thành -->
+<div class="modal fade" id="modalImportSuscesExcel" tabindex="-1" aria-labelledby="modalImportSuscesExcelLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 12px; overflow: hidden;">
+            <div class="modal-header bg-success text-white py-3">
+                <h5 class="modal-title fs-5" id="modalImportSuscesExcelLabel">
+                    <i class="fas fa-file-excel me-2"></i>Nhập Danh Sách Xác Nhận Hoàn Thành Từ Excel
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="alert alert-info d-flex align-items-center mb-3">
+                    <i class="fas fa-info-circle fs-4 me-3 text-primary"></i>
+                    <div>
+                        <strong>Lưu ý:</strong> Vui lòng sử dụng đúng file mẫu. Khi import trạng thái <strong>Hoàn Thành</strong>, hệ thống tự động khóa tài khoản sinh viên theo quy định.
+                        <a href="@Url.Action("DownloadTemplate", "AdminSuscesWord", new { area = "Admin" })" class="alert-link text-decoration-underline ms-1">
+                            <i class="fas fa-download me-1"></i>Tải mẫu Excel chuẩn tại đây
+                        </a>.
+                    </div>
+                </div>
+
+                <form id="formImportSuscesExcel" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="excelSuscesFileInput" class="form-label fw-bold">Chọn file Excel (.xlsx):</label>
+                        <input class="form-control" type="file" id="excelSuscesFileInput" name="file" accept=".xlsx, .xls" required>
+                    </div>
+
+                    <div id="importSuscesProgress" class="progress mb-3 d-none" style="height: 20px;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" role="progressbar" style="width: 100%">Đang xử lý dữ liệu...</div>
+                    </div>
+
+                    <div id="importSuscesErrorContainer" class="alert alert-danger d-none" style="max-height: 200px; overflow-y: auto;">
+                        <h6 class="fw-bold mb-2"><i class="fas fa-exclamation-triangle me-2"></i>Chi tiết các dòng bị lỗi / không hợp lệ:</h6>
+                        <ul id="importSuscesErrorList" class="mb-0 ps-3"></ul>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer bg-light border-0 py-3">
+                <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Hủy bỏ</button>
+                <button type="button" class="btn btn-success px-4" id="btnSubmitImportSuscesExcel">
+                    <i class="fas fa-upload me-1"></i> Tiến hành Import
+                </button>
+            </div>
+        </div>
     </div>
 </div>
 
 <script src="~/Areas/Admin/Content/js/Adminsuscessword.js?v=@DateTime.Now.Ticks"></script>
 <script src="~/Areas/Admin/Content/js/duyetHandler.js?v=@DateTime.Now.Ticks"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // 1. Xuất dữ liệu Excel
+        const btnExport = document.getElementById("btnExportSuscesData");
+        if (btnExport) {
+            btnExport.addEventListener("click", function () {
+                const keyword = document.getElementById("searchBox")?.value || "";
+                const khoa = document.getElementById("khoaFilter")?.value || "";
+                let url = '@Url.Action("ExportExcel", "AdminSuscesWord", new { area = "Admin" })';
+                url += `?khoa=${encodeURIComponent(khoa)}&keyword=${encodeURIComponent(keyword)}`;
+                window.location.href = url;
+            });
+        }
+
+        // 2. Import Excel
+        const btnSubmitImport = document.getElementById("btnSubmitImportSuscesExcel");
+        const fileInput = document.getElementById("excelSuscesFileInput");
+        const progress = document.getElementById("importSuscesProgress");
+        const errorContainer = document.getElementById("importSuscesErrorContainer");
+        const errorList = document.getElementById("importSuscesErrorList");
+
+        function notifyAlert(icon, title, message, htmlExtra) {
+            let contentHtml = `<p class="mb-2 fw-semibold">${message}</p>`;
+            if (htmlExtra) contentHtml += htmlExtra;
+
+            if (typeof Swal !== 'undefined') {
+                return Swal.fire({
+                    icon: icon,
+                    title: title,
+                    html: contentHtml,
+                    confirmButtonText: 'Đóng',
+                    confirmButtonColor: icon === 'success' ? '#198754' : '#0d6efd'
+                });
+            } else {
+                alert(title + "\n" + message);
+                return Promise.resolve();
+            }
+        }
+
+        if (btnSubmitImport && fileInput) {
+            btnSubmitImport.addEventListener("click", function () {
+                if (!fileInput.files || fileInput.files.length === 0) {
+                    notifyAlert('warning', 'Chưa chọn file', 'Vui lòng chọn 1 file Excel (.xlsx) trước khi bấm Import!');
+                    return;
+                }
+
+                const formData = new FormData();
+                formData.append("file", fileInput.files[0]);
+
+                progress.classList.remove("d-none");
+                errorContainer.classList.add("d-none");
+                errorList.innerHTML = "";
+                btnSubmitImport.disabled = true;
+
+                fetch('@Url.Action("ImportExcel", "AdminSuscesWord", new { area = "Admin" })', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(res => res.json())
+                .then(data => {
+                    progress.classList.add("d-none");
+                    btnSubmitImport.disabled = false;
+
+                    if (data.success) {
+                        if (data.errors && data.errors.length > 0) {
+                            errorContainer.classList.remove("d-none");
+                            let listHtml = `<div style="max-height: 180px; overflow-y: auto; text-align: left; background: #fff3cd; border: 1px solid #ffeeba; padding: 10px; border-radius: 6px; font-size: 0.85rem;"><ul class="mb-0 ps-3 text-dark">`;
+                            data.errors.forEach(err => {
+                                const li = document.createElement("li");
+                                li.textContent = err;
+                                errorList.appendChild(li);
+                                listHtml += `<li>${err}</li>`;
+                            });
+                            listHtml += `</ul></div>`;
+
+                            notifyAlert('info', 'Nhập thành công một phần', data.message, listHtml).then(() => {
+                                if (typeof fetchList === "function") fetchList(1);
+                                else location.reload();
+                            });
+                        } else {
+                            if (typeof Swal !== 'undefined') {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Thành công!',
+                                    text: data.message,
+                                    timer: 2000,
+                                    showConfirmButton: true,
+                                    confirmButtonText: 'Đóng',
+                                    confirmButtonColor: '#198754'
+                                }).then(() => {
+                                    if (typeof fetchList === "function") fetchList(1);
+                                    else location.reload();
+                                });
+                            } else {
+                                alert(data.message);
+                                if (typeof fetchList === "function") fetchList(1);
+                                else location.reload();
+                            }
+                            const modal = bootstrap.Modal.getInstance(document.getElementById('modalImportSuscesExcel'));
+                            if (modal) modal.hide();
+                        }
+                    } else {
+                        let listHtml = "";
+                        if (data.errors && data.errors.length > 0) {
+                            errorContainer.classList.remove("d-none");
+                            listHtml = `<div style="max-height: 180px; overflow-y: auto; text-align: left; background: #f8d7da; border: 1px solid #f5c6cb; padding: 10px; border-radius: 6px; font-size: 0.85rem;"><ul class="mb-0 ps-3 text-danger">`;
+                            data.errors.forEach(err => {
+                                const li = document.createElement("li");
+                                li.textContent = err;
+                                errorList.appendChild(li);
+                                listHtml += `<li>${err}</li>`;
+                            });
+                            listHtml += `</ul></div>`;
+                        }
+
+                        notifyAlert('error', 'Import thất bại!', data.message, listHtml);
+                    }
+                })
+                .catch(err => {
+                    progress.classList.add("d-none");
+                    btnSubmitImport.disabled = false;
+                    notifyAlert('error', 'Lỗi kết nối máy chủ', 'Có lỗi xảy ra khi gửi dữ liệu lên máy chủ: ' + err);
+                });
+            });
+        }
+    });
+</script>

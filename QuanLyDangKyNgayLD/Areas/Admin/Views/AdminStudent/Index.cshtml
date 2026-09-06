@@ -3,8 +3,10 @@
     ViewBag.Title = "Quản lý Sinh viên";
     Layout = "~/Areas/Admin/Views/Shared/ViewShare.cshtml";
 }
-@section Styles {
-    <link rel="stylesheet" href="~/Areas/Content/css/AdminStudentRegister.css" />
+
+
+@{
+    var vaiTroId = Session["VaiTroId"] as int?;
 }
 
 <!-- THANH CÔNG CỤ -->
@@ -18,16 +20,19 @@
                         <i class="fa fa-plus me-1"></i> Thêm sinh viên
                     </button>
                 </li>
-                <li class="nav-item">
-                    <button class="btn btn-outline-danger btn-sm me-2 btn-delete-selected" id="btnDeleteSelectedStudent" style="display:none;" title="Xóa các sinh viên đã chọn">
-                        <i class="fas fa-trash-alt me-1"></i> Xóa đã chọn (<span class="selected-count">0</span>)
-                    </button>
-                </li>
-                <li class="nav-item">
-                    <button class="btn btn-outline-secondary btn-sm me-2" id="btnViewDeleted">
-                        <i class="fas fa-trash-restore me-1"></i> Sinh viên đã xóa
-                    </button>
-                </li>
+                @if (vaiTroId == 1 || vaiTroId == null)
+                {
+                    <li class="nav-item">
+                        <button class="btn btn-outline-danger btn-sm me-2 btn-delete-selected" id="btnDeleteSelectedStudent" style="display:none;" title="Xóa các sinh viên đã chọn">
+                            <i class="fas fa-trash-alt me-1"></i> Xóa đã chọn (<span class="selected-count">0</span>)
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="btn btn-outline-secondary btn-sm me-2" id="btnViewDeleted">
+                            <i class="fas fa-trash-restore me-1"></i> Sinh viên đã xóa
+                        </button>
+                    </li>
+                }
             </ul>
 
             <!-- Bên phải -->
@@ -56,20 +61,29 @@
                     <input type="text" id="searchBox" class="form-control border-start-0" placeholder="Tìm kiếm...">
                 </div>
 
-                <!-- Nút mở modal -->
-                <button class="btn btn-outline-success btn-sm shadow-sm"
-                        id="btnOpenImportExcel"
-                        type="button"
-                        data-bs-toggle="modal"
-                        data-bs-target="#importExcelModal">
-                    <i class="fa fa-file-excel me-1"></i> Nhập Excel
-                </button>
-
-
-
-                <button class="btn btn-outline-success btn-sm shadow-sm" id="exportAllAccountstudent" type="button">
-                    <i class="fa fa-file-excel me-1"></i> Xuất Excel
-                </button>
+                <div class="dropdown d-inline-block">
+                    <button class="btn btn-excel-manager dropdown-toggle" type="button" id="excelDropdownStudent" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fa fa-file-excel me-1"></i> Quản lý Excel
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow border-0" aria-labelledby="excelDropdownStudent">
+                        <li>
+                            <a class="dropdown-item py-2" href="@Url.Action("DownloadTemplate", "AdminStudent", new { area = "Admin" })">
+                                <i class="fas fa-file-download text-primary me-2"></i> Xuất mẫu Import
+                            </a>
+                        </li>
+                        <li>
+                            <button class="dropdown-item py-2" type="button" data-bs-toggle="modal" data-bs-target="#importExcelModal">
+                                <i class="fas fa-file-upload text-success me-2"></i> Nhập Excel
+                            </button>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <button class="dropdown-item py-2" type="button" id="exportAllAccountstudent">
+                                <i class="fas fa-file-export text-info me-2"></i> Xuất dữ liệu
+                            </button>
+                        </li>
+                    </ul>
+                </div>
             </form>
         </div>
     </div>
@@ -77,17 +91,27 @@
 
 <!-- BẢNG DỮ LIỆU -->
 <div class="table-responsive shadow-sm rounded-3 bg-white p-2">
-    <table class="table table-bordered table-hover align-middle text-center mb-0">
+    <table class="table table-bordered table-hover align-middle mb-0 student-data-table">
+        <colgroup>
+            <col style="width: 45px;">
+            <col style="width: 55px;">
+            <col style="width: 13%;">
+            <col style="width: 20%;">
+            <col style="width: 9%;">
+            <col style="width: 22%;">
+            <col style="width: 16%;">
+            <col style="width: 15%;">
+        </colgroup>
         <thead class="table-light">
             <tr>
-                <th width="40px" class="text-center"><input type="checkbox" id="checkAllStudent" class="form-check-input" title="Chọn tất cả"></th>
-                <th width="6%">STT</th>
-                <th>MSSV</th>
-                <th>Họ tên</th>
-                <th>Giới tính</th>
-                <th>Khoa</th>
-                <th>Lớp</th>
-                <th width="24%" class="action-header">Tác vụ</th>
+                <th class="text-center"><input type="checkbox" id="checkAllStudent" class="form-check-input" title="Chọn tất cả"></th>
+                <th class="text-center">STT</th>
+                <th class="text-center">MSSV</th>
+                <th class="text-center">HỌ TÊN</th>
+                <th class="text-center">GIỚI TÍNH</th>
+                <th class="text-center">KHOA</th>
+                <th class="text-center">LỚP</th>
+                <th class="text-center action-header">TÁC VỤ</th>
             </tr>
         </thead>
         <tbody id="studentTableBody">
@@ -117,6 +141,7 @@
             <option value="20">20 dòng / trang</option>
             <option value="50">50 dòng / trang</option>
             <option value="100">100 dòng / trang</option>
+            <option value="1000000">Tất cả</option>
         </select>
     </div>
 </div>
@@ -214,33 +239,7 @@
 
 
 
-<!-- ====================== MODAL IMPORT EXCEL ====================== -->
-<div class="modal fade" id="importExcelModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content shadow-lg ">
-            <form id="importForm" enctype="multipart/form-data">
-                <div class="modal-header bg-success text-white">
-                    <h5 class="modal-title"><i class="fa fa-file-excel me-2"></i> Nhập danh sách sinh viên từ Excel</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body text-center py-5">
-                    <i class="fa fa-file-excel text-success mb-4" style="font-size: 4rem;"></i>
-                    <p class="fw-bold">Chọn file Excel (.xlsx) để nhập dữ liệu</p>
-                    <input type="file" name="excelFile" id="excelFileInput" accept=".xlsx, .xls" class="form-control form-control-lg" required />
-                    <small class="text-muted d-block mt-3">
-                        File mẫu: <a href="/Template/SinhVien_Template.xlsx" class="text-decoration-underline">Tải về tại đây</a>
-                    </small>
-                </div>
-                <div class="modal-footer bg-light">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                    <button type="submit" class="btn btn-success btn-lg px-5" id="btnSubmitImport">
-                        <i class="fa fa-upload me-2"></i> Nhập dữ liệu
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
+
 
 <!-- ====================== MODAL CHỈNH SỬA ====================== -->
 <div class="modal fade" id="editStudentModal" tabindex="-1" data-bs-backdrop="static">
@@ -400,34 +399,92 @@
 
 
 <!-- ====================== MODAL DANH SÁCH ĐÃ XÓA ====================== -->
-<div class="modal fade" id="deletedStudentsModal" tabindex="-1">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content shadow-lg background ">
-            <div class="modal-header bg-secondary text-white">
-                <h5 class="modal-title"><i class="fas fa-trash-restore me-2"></i> Sinh viên đã xóa</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <div class="table-responsive" style="max-height: 500px;">
-                    <table class="table table-bordered table-hover align-middle">
-                        <thead class="table-light sticky-top">
-                            <tr>
-                                <th>STT</th>
-                                <th>MSSV</th>
-                                <th>Họ tên</th>
-                                <th>Lớp</th>
-                                <th>Ngày xóa</th>
-                                <th>Tác vụ</th>
-                            </tr>
-                        </thead>
-                        <tbody id="deletedStudentsTableBody">
-                            <tr><td colspan="6" class="text-center text-muted py-4">Đang tải dữ liệu...</td></tr>
-                        </tbody>
-                    </table>
+<div class="modal fade" id="deletedStudentsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content shadow-lg border-0 rounded-4 overflow-hidden">
+            <!-- Modal Header -->
+            <div class="modal-header bg-primary text-white py-3 px-4">
+                <div class="d-flex align-items-center">
+                    <div class="rounded-circle bg-white text-primary p-2 me-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                        <i class="fas fa-trash-restore fs-5"></i>
+                    </div>
+                    <div>
+                        <h5 class="modal-title fw-bold mb-0">Thùng Rác - Danh Sách Sinh Viên Đã Xóa</h5>
+                        <small class="text-white-50">Quản lý khôi phục hoặc xóa vĩnh viễn các sinh viên đã xóa mềm</small>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-white text-primary rounded-pill px-3 py-2 fw-bold" id="deletedStudentTotalBadge">0 sinh viên</span>
+                    <button type="button" class="btn-close btn-close-white ms-2" data-bs-dismiss="modal" aria-label="Đóng"></button>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+
+            <!-- Modal Body -->
+            <div class="modal-body p-4 bg-light">
+                <!-- Toolbar: Tìm kiếm & Thao tác hàng loạt -->
+                <div class="card border-0 shadow-sm rounded-3 mb-3">
+                    <div class="card-body p-3">
+                        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+                            <!-- Live Search -->
+                            <div class="input-group input-group-sm" style="max-width: 320px;">
+                                <span class="input-group-text bg-white border-end-0 text-muted">
+                                    <i class="fas fa-search"></i>
+                                </span>
+                                <input type="text" id="searchDeletedStudents" class="form-control border-start-0 ps-0" placeholder="Tìm theo MSSV, Họ tên, Lớp...">
+                            </div>
+
+                            <!-- Bulk Action Buttons -->
+                            <div class="d-flex align-items-center gap-2" id="deletedBulkActionContainer" style="display: none !important;">
+                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2 fw-bold">
+                                    <i class="fas fa-check-square me-1"></i> Đã chọn: <span id="deletedSelectedCount">0</span>
+                                </span>
+                                <button type="button" class="btn btn-sm btn-success shadow-sm d-flex align-items-center gap-1" id="btnBulkRestoreDeleted">
+                                    <i class="fas fa-undo-alt"></i> Khôi phục đã chọn
+                                </button>
+                                <button type="button" class="btn btn-sm btn-danger shadow-sm d-flex align-items-center gap-1" id="btnBulkPermanentDelete">
+                                    <i class="fas fa-trash-alt"></i> Xóa vĩnh viễn đã chọn
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bảng sinh viên đã xóa -->
+                <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
+                    <div class="table-responsive" style="max-height: 480px; min-height: 250px;">
+                        <table class="table table-hover align-middle mb-0 text-nowrap">
+                            <thead class="table-primary sticky-top text-white" style="z-index: 1;">
+                                <tr>
+                                    <th class="text-center" style="width: 45px;">
+                                        <input type="checkbox" class="form-check-input" id="checkAllDeletedStudents" title="Chọn tất cả">
+                                    </th>
+                                    <th class="text-center" style="width: 50px;">STT</th>
+                                    <th class="text-center" style="width: 120px;">MSSV</th>
+                                    <th>HỌ VÀ TÊN</th>
+                                    <th>KHOA</th>
+                                    <th>LỚP</th>
+                                    <th class="text-center" style="width: 160px;">NGÀY XÓA</th>
+                                    <th class="text-center" style="width: 190px;">TÁC VỤ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="deletedStudentsTableBody">
+                                <tr>
+                                    <td colspan="8" class="text-center text-muted py-5">
+                                        <div class="spinner-border spinner-border-sm text-primary me-2"></div> Đang tải dữ liệu...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="modal-footer bg-white border-top py-2 px-4 justify-content-between">
+                <small class="text-muted"><i class="fas fa-info-circle me-1"></i> Sinh viên xóa vĩnh viễn sẽ bị loại bỏ hoàn toàn khỏi cơ sở dữ liệu.</small>
+                <button type="button" class="btn btn-secondary px-4 rounded-3" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i> Đóng
+                </button>
             </div>
         </div>
     </div>
@@ -454,6 +511,53 @@
                 </button>
                 <button type="button" class="btn btn-success" id="confirmOkBtn">
                     <i class="fas fa-check me-1"></i> Xác nhận
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ====================== MODAL NHẬP EXCEL SINH VIÊN ====================== -->
+<div class="modal fade" id="importExcelModal" tabindex="-1" aria-labelledby="importExcelModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 620px; width: 92%; margin: auto;">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden; width: 100%;">
+            <div class="modal-header bg-success text-white py-3">
+                <h5 class="modal-title fs-5 fw-bold" id="importExcelModalLabel">
+                    <i class="fas fa-file-excel me-2"></i>Nhập Danh Sách Sinh Viên Từ Excel
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="alert alert-info d-flex align-items-center mb-3">
+                    <i class="fas fa-info-circle fs-4 me-3 text-primary"></i>
+                    <div>
+                        <strong>Lưu ý:</strong> Vui lòng sử dụng file mẫu chuẩn. Hệ thống tự động kiểm tra trùng lặp <strong>MSSV</strong> và <strong>Email</strong>, tự động cấp tài khoản đăng nhập (mật khẩu mặc định = MSSV).
+                        <a href="@Url.Action("DownloadTemplate", "AdminStudent", new { area = "Admin" })" class="alert-link text-decoration-underline ms-1">
+                            <i class="fas fa-download me-1"></i>Tải file mẫu tại đây
+                        </a>.
+                    </div>
+                </div>
+
+                <form id="importForm" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="excelFileInput" class="form-label fw-bold">Chọn file Excel (.xlsx):</label>
+                        <input class="form-control form-control-lg" type="file" id="excelFileInput" name="file" accept=".xlsx, .xls" required>
+                    </div>
+
+                    <div id="importStudentProgress" class="progress mb-3 d-none" style="height: 20px;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" role="progressbar" style="width: 100%">Đang xử lý dữ liệu...</div>
+                    </div>
+
+                    <div id="importStudentErrorContainer" class="alert alert-danger d-none" style="max-height: 200px; overflow-y: auto;">
+                        <h6 class="fw-bold mb-2"><i class="fas fa-exclamation-triangle me-2"></i>Chi tiết các dòng bị lỗi / trùng lặp:</h6>
+                        <ul id="importStudentErrorList" class="mb-0 ps-3"></ul>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer bg-light border-0 py-3 d-flex justify-content-center gap-3">
+                <button type="button" class="btn btn-secondary px-4 fw-bold" data-bs-dismiss="modal" style="border-radius: 8px;">Hủy bỏ</button>
+                <button type="button" class="btn btn-success px-4 fw-bold" id="btnSubmitImportStudentExcel" style="border-radius: 8px;">
+                    <i class="fas fa-upload me-1"></i> Tiến hành Import
                 </button>
             </div>
         </div>

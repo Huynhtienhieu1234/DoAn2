@@ -34,62 +34,77 @@ body {
 }
 
 .container-fluid {
-    max-width: 1400px !important;
-    margin: 0 auto !important;
-    padding: 1.5rem !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
 }
 
 /* ====================== TOOLBAR ====================== */
 .toolbar {
+    position: relative !important;
+    z-index: 20 !important;
     background: rgba(255, 255, 255, 0.94) !important;
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     border: 1.5px solid rgba(178, 235, 242, 0.4);
     border-radius: var(--radius-lg);
-    padding: 16px 24px !important;
+    padding: 12px 20px !important;
     box-shadow: 0 6px 24px var(--shadow);
-    margin-bottom: 2rem;
+    margin-bottom: 20px !important;
     transition: all 0.3s ease;
+    width: 100% !important;
+}
+
+.toolbar .dropdown {
+    position: relative !important;
+    z-index: 25 !important;
+}
+
+.toolbar .dropdown-menu,
+.dropdown-menu {
+    z-index: 1000 !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18) !important;
 }
 
     .toolbar:hover {
         box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1);
-        transform: translateY(-1px);
     }
 
     .toolbar .navbar-collapse {
         display: flex !important;
         justify-content: space-between !important;
         align-items: center !important;
-        gap: 1.5rem;
+        gap: 1rem;
         padding: 0 !important;
+        width: 100% !important;
     }
 
 .navbar-nav {
     margin: 0 !important;
     padding: 0 !important;
     display: flex;
-    gap: 0.75rem;
-    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+    flex-wrap: nowrap;
 }
 
 .toolbar-flex {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    flex-wrap: wrap;
+    gap: 0.6rem;
+    flex-wrap: nowrap;
     justify-content: flex-end;
 }
 
 /* Nút trong toolbar */
-#btnAdd, #btnViewDeleted, #btnExportExcel {
+#btnAdd, #btnViewDeleted, #btnDeleteSelectedStudent {
     border-radius: var(--radius-sm);
     font-weight: 600;
-    padding: 10px 18px;
+    padding: 9px 16px;
     transition: all 0.3s ease;
     border: none;
-    font-size: 0.94rem;
-    min-width: 130px;
+    font-size: 0.92rem;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -97,54 +112,51 @@ body {
     white-space: nowrap;
 }
 
-.action-cell {
-    text-align: center;
-    width: 140px;
-    padding: 8px;
-}
-
 #btnAdd {
-    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-    color: white;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark)) !important;
+    color: white !important;
+    box-shadow: 0 4px 12px rgba(0, 210, 255, 0.3);
 }
 
     #btnAdd:hover {
         transform: translateY(-2px);
-        box-shadow: 0 10px 25px rgba(0, 210, 255, 0.3);
+        box-shadow: 0 8px 20px rgba(0, 210, 255, 0.4);
     }
 
 #btnViewDeleted {
-    background: #e0f7fa;
-    color: #006064;
-    border: 1.5px solid #80deea;
+    background: #e0f7fa !important;
+    color: #006064 !important;
+    border: 1.5px solid #80deea !important;
 }
 
     #btnViewDeleted:hover {
-        background: #b2ebf2;
-        border-color: #4dd0e1;
+        background: #b2ebf2 !important;
+        border-color: #4dd0e1 !important;
         transform: translateY(-1px);
     }
 
-#btnExportExcel {
-    background: linear-gradient(135deg, #4fc3f7, #29b6f6);
-    color: white;
+#btnDeleteSelectedStudent {
+    background: linear-gradient(135deg, #ff6b6b, #ee5a52) !important;
+    color: white !important;
 }
-
-    #btnExportExcel:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 25px rgba(79, 195, 247, 0.3);
-    }
 
 /* Input & Select */
 #roleFilter, #searchBox {
     border-radius: var(--radius-sm);
     border: 1.5px solid var(--border-light);
-    padding: 8px 12px;
-    font-size: 0.94rem;
+    padding: 7px 12px;
+    font-size: 0.92rem;
     transition: all 0.2s ease;
-    min-width: 150px;
-    flex: 1;
-    max-width: 220px;
+    background-color: #ffffff;
+}
+
+#roleFilter {
+    min-width: 180px;
+    max-width: 260px;
+}
+
+#searchBox {
+    min-width: 160px;
 }
 
     #roleFilter:focus, #searchBox:focus {
@@ -157,29 +169,18 @@ body {
     border-radius: var(--radius-sm);
     overflow: hidden;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    min-width: 180px;
-    flex: 1;
-    /*    max-width: 250px;*/
+    min-width: 200px;
 }
 
 .input-group-text {
-    background: #e0f7fa;
-    border: 1.5px solid var(--border-light);
-    border-right: none;
-    color: #00acc1;
-    padding: 8px 12px;
+    background: #e0f7fa !important;
+    border: 1.5px solid var(--border-light) !important;
+    border-right: none !important;
+    color: #00acc1 !important;
+    padding: 7px 12px;
 }
 
 /* ====================== BẢNG DỮ LIỆU ====================== */
-.table-responsive {
-    max-width: 100% !important;
-    margin: 0 auto !important;
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-    box-shadow: 0 10px 30px var(--shadow);
-    background: var(--card-bg);
-    border: 1px solid var(--border-light);
-}
 
 .table {
     margin: 0;
@@ -1952,21 +1953,24 @@ table {
 }
 
 
+/* Modal widths and centering */
 .modal-dialog.modal-dialog-centered.modal-lg {
-    width: 10000px;
-}
-.modal-content.shadow-lg.background {
-    width: 100pc;
-}
-.modal-content.shadow-lg.detail {
-    width: 51pc;
-}
-.modal-content.shadow-lg.edit {
-    width: 51pc;
+    max-width: 850px;
+    width: 95%;
+    margin: auto;
 }
 
-.modal-content.shadow-lg {
-    width: 30pc;
+#importExcelModal .modal-dialog {
+    max-width: 640px !important;
+    width: 92% !important;
+    margin: auto !important;
+}
+
+#importExcelModal .modal-content {
+    width: 100% !important;
+    max-width: 100% !important;
+    border-radius: 16px !important;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2) !important;
 }
 
 /* thông báo */
@@ -2038,3 +2042,54 @@ table {
         background-color: #6c757d;
         color: white;
     }
+
+/* ============================================================= */
+/* ĐỒNG BỘ CĂN CHỈNH TUYỆT ĐỐI BẢNG DANH SÁCH SINH VIÊN */
+/* ============================================================= */
+.student-data-table {
+    table-layout: fixed !important;
+    width: 100% !important;
+    border-collapse: collapse !important;
+    font-size: 0.92rem;
+    margin-bottom: 0 !important;
+}
+
+.student-data-table thead th {
+    background: #0029c8d9 !important;
+    background-color: #0029c8d9 !important;
+    color: #ffffff !important;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.82rem !important;
+    letter-spacing: 0.5px;
+    border: 1px solid #dee2e6 !important;
+    padding: 13px 6px !important;
+    vertical-align: middle !important;
+    text-align: center !important;
+    box-sizing: border-box !important;
+}
+
+.student-data-table tbody td {
+    padding: 11px 6px !important;
+    vertical-align: middle !important;
+    border: 1px solid #dee2e6 !important;
+    font-size: 0.92rem;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+}
+
+.student-data-table .truncate {
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    display: block;
+    width: 100%;
+}
+
+.student-data-table .action-cell {
+    white-space: nowrap !important;
+    text-align: center !important;
+    padding: 6px 2px !important;
+}

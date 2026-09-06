@@ -4,7 +4,7 @@
     Layout = "~/Areas/Admin/Views/Shared/ViewShare.cshtml";
 }
 @section Styles {
-    <link rel="stylesheet" href="~/Areas/Content/css/AdminCount.css" />
+    <link rel="stylesheet" href="~/Areas/Content/css/AdminCount.css?v=@DateTime.Now.Ticks" />
 }
 <!-- THANH CÔNG CỤ -->
 <nav class="navbar navbar-expand-lg toolbar shadow-sm mb-3">
@@ -34,9 +34,10 @@
                 <select id="roleFilter" class="form-select form-select-sm me-2 shadow-sm" style="min-width: 140px;">
                     <option value="">-- Lọc theo vai trò --</option>
                     <option value="Tất Cả">Tất cả</option>
-                    <option value="SinhVien">Sinh viên</option>
-                    <option value="LopPhoLaoDong">Lớp phó lao động</option>
                     <option value="Admin">Admin</option>
+                    <option value="Quản lý">Quản lý</option>
+                    <option value="Sinh viên">Sinh viên</option>
+                    <option value="Lớp phó lao động">Lớp phó lao động</option>
                 </select>
 
                 <div class="input-group input-group-sm shadow-sm me-2" style="min-width: 180px;">
@@ -47,13 +48,49 @@
                 </div>
 
 
-                <button class="btn btn-outline-success btn-sm shadow-sm" id="exportAllAccounts" type="button">
-                    <i class="fa fa-file-excel me-1"></i> Xuất Excel
-                </button>
+                <div class="dropdown d-inline-block">
+                    <button class="btn btn-excel-manager dropdown-toggle" type="button" id="excelDropdownAccount" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fa fa-file-excel me-1"></i> Quản lý Excel
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow border-0" aria-labelledby="excelDropdownAccount">
+                        <li>
+                            <a class="dropdown-item py-2" href="@Url.Action("DownloadTemplate", "Account", new { area = "Admin" })">
+                                <i class="fas fa-file-download text-primary me-2"></i> Xuất mẫu Import
+                            </a>
+                        </li>
+                        <li>
+                            <button class="dropdown-item py-2" type="button" data-bs-toggle="modal" data-bs-target="#modalImportAccountExcel">
+                                <i class="fas fa-file-upload text-success me-2"></i> Nhập Excel
+                            </button>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <button class="dropdown-item py-2" type="button" id="exportAllAccounts">
+                                <i class="fas fa-file-export text-info me-2"></i> Xuất dữ liệu
+                            </button>
+                        </li>
+                    </ul>
+                </div>
             </form>
         </div>
     </div>
 </nav>
+
+<!-- TAB PHÂN LOẠI TÀI KHOẢN THEO VAI TRÒ -->
+<div class="account-role-tabs mb-3 d-flex flex-wrap gap-2 align-items-center">
+    <button type="button" class="btn role-tab-btn active" data-role="Tất Cả">
+        <i class="fas fa-users me-1"></i> Tất cả tài khoản
+    </button>
+    <button type="button" class="btn role-tab-btn" data-role="CanBo">
+        <i class="fas fa-user-shield me-1"></i> Cán bộ & Quản lý
+    </button>
+    <button type="button" class="btn role-tab-btn" data-role="LopTruong">
+        <i class="fas fa-user-tie me-1"></i> Ban cán sự lớp
+    </button>
+    <button type="button" class="btn role-tab-btn" data-role="SinhVien">
+        <i class="fas fa-user-graduate me-1"></i> Sinh viên
+    </button>
+</div>
 
 <!-- BẢNG DỮ LIỆU -->
 
@@ -143,6 +180,7 @@
             <option value="20">20 dòng / trang</option>
             <option value="50">50 dòng / trang</option>
             <option value="100">100 dòng / trang</option>
+            <option value="1000000">Tất cả</option>
         </select>
     </div>
 </div>
@@ -199,7 +237,7 @@
                             <select name="VaiTro_id" id="createRole" class="form-select form-select-lg" required>
                                 <option value="">-- Chọn vai trò --</option>
                                 <option value="1">Admin</option>
-            
+                                <option value="2">Quản lý</option>
                                 <option value="3">Sinh viên</option>
                                 <option value="4">Lớp phó lao động</option>
                             </select>
@@ -214,7 +252,7 @@
                             <div class="input-group">
                                 <input type="password" name="Password" id="createPassword"
                                        class="form-control form-control-lg"
-                                       placeholder="Chỉ cần nhập khi chọn Admin "
+                                       placeholder="Chỉ cần nhập khi chọn Admin hoặc Quản lý"
                                        minlength="6" autocomplete="new-password" />
                                 <!-- Nút con mắt -->
                                 <button class="btn btn-outline-secondary btn-lg border toggle-password" type="button">
@@ -295,7 +333,7 @@
                         <select style="cursor:pointer" id="editRole" name="VaiTro_id" class="form-select" required>
                             <option value="">-- Chọn vai trò --</option>
                             <option value="1">Admin</option>
-          
+                            <option value="2">Quản lý</option>
                             <option value="3">Sinh viên</option>
                             <option value="4">Lớp phó lao động</option>
                         </select>
@@ -403,34 +441,54 @@
 
 <!-- Modal Danh sách tài khoản đã xóa -->
 <div class="modal fade" id="deletedAccountsModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content shadow-lg dsxoa">
-            <div class="modal-header bg-secondary text-white">
-                <h5 class="modal-title"><i class="fas fa-trash-restore me-2"></i>Danh sách tài khoản đã xóa</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content shadow-lg border-0 rounded-4 dsxoa">
+            <div class="modal-header text-white py-3" style="background: linear-gradient(135deg, #4dd0e1, #00acc1);">
+                <h5 class="modal-title fw-bold d-flex align-items-center mb-0">
+                    <i class="fas fa-trash-restore me-2"></i> Danh sách tài khoản đã xóa
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
-                <div class="table-responsive" style="max-height: 450px;">
-                    <table class="table table-bordered table-hover align-middle">
-                        <thead class="table-light sticky-top">
+            <div class="modal-body p-3">
+                <!-- Thanh công cụ tác vụ trong modal đã xóa -->
+                <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2 px-1">
+                    <div class="d-flex gap-2 align-items-center">
+                        <button type="button" class="btn btn-danger btn-sm px-3 fw-bold shadow-sm" id="btnDeletePermanentSelectedAccount" style="display:none; border-radius: 8px;">
+                            <i class="fas fa-trash-alt me-1"></i> Xóa hẳn đã chọn (<span id="selectedDeletedPermanentCount">0</span>)
+                        </button>
+                        <button type="button" class="btn btn-success btn-sm px-3 fw-bold shadow-sm" id="btnRestoreSelectedAccount" style="display:none; border-radius: 8px;">
+                            <i class="fas fa-undo me-1"></i> Khôi phục đã chọn (<span id="selectedRestoreAccountCount">0</span>)
+                        </button>
+                    </div>
+                    <div class="text-muted small">
+                        <i class="fas fa-info-circle me-1 text-info"></i> Tick vào ô checkbox để chọn một, nhiều hoặc tất cả tài khoản.
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover align-middle text-center mb-0">
+                        <thead class="sticky-top">
                             <tr>
-                                <th class="text-center">STT</th>
-                                <th>Tài khoản</th>
-                                <th>Email</th>
-                                <th class="text-center">Vai trò</th>
-                                <th class="text-center">Ngày xóa</th>
-                                <th class="text-center">Tác vụ</th>
+                                <th style="width: 45px; min-width: 45px;" class="text-center">
+                                    <input type="checkbox" id="checkAllDeletedAccounts" class="form-check-input" title="Chọn tất cả">
+                                </th>
+                                <th style="width: 50px; min-width: 50px;" class="text-center">STT</th>
+                                <th style="width: 140px; min-width: 120px;" class="text-center">TÀI KHOẢN</th>
+                                <th style="min-width: 220px;" class="text-center">EMAIL</th>
+                                <th style="width: 130px; min-width: 120px;" class="text-center">VAI TRÒ</th>
+                                <th style="width: 130px; min-width: 120px;" class="text-center">NGÀY XÓA</th>
+                                <th style="width: 210px; min-width: 200px;" class="text-center">TÁC VỤ</th>
                             </tr>
                         </thead>
                         <tbody id="deletedAccountsTableBody">
-                            <tr><td colspan="6" class="text-center text-muted py-4">Đang tải...</td></tr>
+                            <tr><td colspan="7" class="text-center text-muted py-4">Đang tải...</td></tr>
                         </tbody>
                     </table>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-                <button type="button" class="btn btn-primary" id="btnRefreshDeleted">
+            <div class="modal-footer bg-light border-0 py-3 d-flex justify-content-between">
+                <button type="button" class="btn btn-secondary px-4 py-2" data-bs-dismiss="modal" style="border-radius: 8px; font-weight: 600;">Đóng</button>
+                <button type="button" class="btn btn-primary px-4 py-2" id="btnRefreshDeleted" style="border-radius: 8px; font-weight: 600;">
                     <i class="fas fa-sync-alt me-1"></i> Làm mới
                 </button>
             </div>
@@ -472,6 +530,54 @@
 
 
 
+<!-- Modal Import Excel Tài Khoản -->
+<div class="modal fade" id="modalImportAccountExcel" tabindex="-1" aria-labelledby="modalImportAccountExcelLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 12px; overflow: hidden;">
+            <div class="modal-header bg-success text-white py-3">
+                <h5 class="modal-title fs-5" id="modalImportAccountExcelLabel">
+                    <i class="fas fa-file-excel me-2"></i>Nhập Danh Sách Tài Khoản Từ Excel
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="alert alert-info d-flex align-items-center mb-3">
+                    <i class="fas fa-info-circle fs-4 me-3 text-primary"></i>
+                    <div>
+                        <strong>Lưu ý:</strong> Mật khẩu sẽ tự động được mã hóa an toàn bằng BCrypt.
+                        Hệ thống tự động kiểm tra trùng lặp <strong>Tên đăng nhập</strong> và <strong>Email</strong>.
+                        <a href="@Url.Action("DownloadTemplate", "Account", new { area = "Admin" })" class="alert-link text-decoration-underline ms-1">
+                            <i class="fas fa-download me-1"></i>Tải mẫu Excel chuẩn tại đây
+                        </a>.
+                    </div>
+                </div>
+
+                <form id="formImportAccountExcel" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="excelAccountFileInput" class="form-label fw-bold">Chọn file Excel (.xlsx):</label>
+                        <input class="form-control" type="file" id="excelAccountFileInput" name="file" accept=".xlsx, .xls" required>
+                    </div>
+
+                    <div id="importAccountProgress" class="progress mb-3 d-none" style="height: 20px;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" role="progressbar" style="width: 100%">Đang xử lý dữ liệu...</div>
+                    </div>
+
+                    <div id="importAccountErrorContainer" class="alert alert-danger d-none" style="max-height: 200px; overflow-y: auto;">
+                        <h6 class="fw-bold mb-2"><i class="fas fa-exclamation-triangle me-2"></i>Chi tiết các dòng bị lỗi / trùng lặp:</h6>
+                        <ul id="importAccountErrorList" class="mb-0 ps-3"></ul>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer bg-light border-0 py-3">
+                <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Hủy bỏ</button>
+                <button type="button" class="btn btn-success px-4" id="btnSubmitImportAccountExcel">
+                    <i class="fas fa-upload me-1"></i> Tiến hành Import
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- ĐẶT CHÍNH XÁC VỊ TRÍ NÀY – PHẢI TRƯỚC Account.js -->
 <script>
     window.adminUrls = {
@@ -488,3 +594,144 @@
 <script src="~/Areas/Content/Js/adminCommon.js?v=@DateTime.Now.Ticks"></script>
 <script src="~/Areas/Content/jsAccount/ExportExcel.js?v=@DateTime.Now.Ticks"></script>
 <script src="~/Areas/Content/jsAccount/AdminPagesize.js?v=@DateTime.Now.Ticks"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const btnSubmitImport = document.getElementById("btnSubmitImportAccountExcel");
+        const fileInput = document.getElementById("excelAccountFileInput");
+        const progress = document.getElementById("importAccountProgress");
+        const errorContainer = document.getElementById("importAccountErrorContainer");
+        const errorList = document.getElementById("importAccountErrorList");
+
+        function notifyAlert(icon, title, message, htmlExtra) {
+            let contentHtml = `<p class="mb-2 fw-semibold">${message}</p>`;
+            if (htmlExtra) contentHtml += htmlExtra;
+
+            if (typeof Swal !== 'undefined') {
+                return Swal.fire({
+                    icon: icon,
+                    title: title,
+                    html: contentHtml,
+                    confirmButtonText: 'Đóng',
+                    confirmButtonColor: icon === 'success' ? '#198754' : '#0d6efd'
+                });
+            } else {
+                alert(title + "\n" + message);
+                return Promise.resolve();
+            }
+        }
+
+        if (btnSubmitImport && fileInput) {
+            btnSubmitImport.addEventListener("click", function () {
+                if (!fileInput.files || fileInput.files.length === 0) {
+                    notifyAlert('warning', 'Chưa chọn file', 'Vui lòng chọn 1 file Excel (.xlsx) trước khi bấm Import!');
+                    return;
+                }
+
+                const formData = new FormData();
+                formData.append("file", fileInput.files[0]);
+
+                progress.classList.remove("d-none");
+                errorContainer.classList.add("d-none");
+                errorList.innerHTML = "";
+                btnSubmitImport.disabled = true;
+
+                fetch('@Url.Action("ImportExcel", "Account", new { area = "Admin" })', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(res => res.json())
+                .then(data => {
+                    progress.classList.add("d-none");
+                    btnSubmitImport.disabled = false;
+
+                    if (data.success) {
+                        // Đóng modal import trước
+                        const modalEl = document.getElementById('modalImportAccountExcel');
+                        const modal = bootstrap.Modal.getInstance(modalEl);
+                        if (modal) modal.hide();
+
+                        if (data.errors && data.errors.length > 0) {
+                            let listHtml = `<div style="max-height: 180px; overflow-y: auto; text-align: left; background: #fff3cd; border: 1px solid #ffeeba; padding: 10px; border-radius: 6px; font-size: 0.85rem;"><ul class="mb-0 ps-3 text-dark">`;
+                            data.errors.forEach(err => {
+                                listHtml += `<li>${err}</li>`;
+                            });
+                            listHtml += `</ul></div>`;
+
+                            if (typeof Swal !== 'undefined') {
+                                Swal.fire({
+                                    icon: 'info',
+                                    title: 'Nhập thành công một phần!',
+                                    html: `<p class="fw-bold mb-2 text-dark">${data.message}</p>${listHtml}`,
+                                    confirmButtonText: 'Đóng & Tải lại',
+                                    confirmButtonColor: '#0d6efd'
+                                }).then(() => {
+                                    location.reload();
+                                });
+                            } else {
+                                alert(data.message);
+                                location.reload();
+                            }
+                        } else {
+                            if (typeof Swal !== 'undefined') {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Thành công!',
+                                    text: data.message,
+                                    confirmButtonText: 'Tuyệt vời',
+                                    confirmButtonColor: '#198754'
+                                }).then(() => {
+                                    location.reload();
+                                });
+                            } else {
+                                alert(data.message);
+                                location.reload();
+                            }
+                        }
+                    } else {
+                        // Không đóng modal khi lỗi để người dùng xem chi tiết lỗi
+                        let listHtml = "";
+                        if (data.errors && data.errors.length > 0) {
+                            errorContainer.classList.remove("d-none");
+                            listHtml = `<div style="max-height: 180px; overflow-y: auto; text-align: left; background: #f8d7da; border: 1px solid #f5c6cb; padding: 10px; border-radius: 6px; font-size: 0.85rem;"><ul class="mb-0 ps-3 text-danger">`;
+                            data.errors.forEach(err => {
+                                const li = document.createElement("li");
+                                li.textContent = err;
+                                errorList.appendChild(li);
+                                listHtml += `<li>${err}</li>`;
+                            });
+                            listHtml += `</ul></div>`;
+                        }
+
+                        if (typeof Swal !== 'undefined') {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Nhập file thất bại!',
+                                html: `<p class="fw-bold mb-2 text-danger">${data.message || 'Có lỗi xảy ra'}</p>${listHtml}`,
+                                confirmButtonText: 'Đóng & Thử lại',
+                                confirmButtonColor: '#dc3545'
+                            });
+                        } else {
+                            alert(data.message || "Lỗi nhập file");
+                        }
+                    }
+                })
+                .catch(err => {
+                    progress.classList.add("d-none");
+                    btnSubmitImport.disabled = false;
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Lỗi máy chủ',
+                            text: 'Có lỗi xảy ra khi gửi dữ liệu lên máy chủ: ' + err,
+                            confirmButtonText: 'Đóng',
+                            confirmButtonColor: '#dc3545'
+                        });
+                    } else {
+                        alert('Lỗi: ' + err);
+                    }
+                });
+            });
+        }
+    });
+</script>

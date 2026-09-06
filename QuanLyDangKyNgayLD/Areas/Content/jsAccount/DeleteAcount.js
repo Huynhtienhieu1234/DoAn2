@@ -36,8 +36,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
         deleteId = btn.dataset.id;
         const row = btn.closest("tr");
-        const username = row?.children[1]?.textContent.trim() || "";
-        const email = row?.children[2]?.textContent.trim() || "";
+        const username = row?.children[2]?.textContent.trim() || "";
+        const email = row?.children[3]?.textContent.trim() || "";
 
         document.getElementById("deleteConfirmText").textContent = "Bạn có chắc muốn xóa tài khoản này?";
         document.getElementById("deleteAccountInfo").textContent =
@@ -68,20 +68,16 @@ document.addEventListener("DOMContentLoaded", function () {
                 if (res.success) {
                     showToast(res.message, "success");
                     bootstrap.Modal.getInstance(deleteModal).hide();
-                    if (typeof window.loadFilteredAccounts === "function") {
-                        window.loadFilteredAccounts(currentPage);
-                    } else {
-                        loadAccounts(currentPage);
-                    }
+                    loadAccounts(currentPage);
                 } else {
                     showToast(res.message || "Xóa thất bại!", "error");
                 }
             })
-            .catch(() => showToast("Lỗi kết nối đến server!", "error"));
+            .catch(() => showToast("Lỗi kết nối máy chủ!", "error"));
     });
 
     /* ==========================
-       LOAD DANH SÁCH TÀI KHOẢN + PHÂN TRANG
+       LOAD DANH SÁCH TÀI KHOẢN (AJAX)
        ========================== */
     function loadAccounts(page = 1) {
         const loading = document.getElementById("loadingIndicator");
@@ -98,6 +94,7 @@ document.addEventListener("DOMContentLoaded", function () {
             .then(res => {
                 const data = res.data || [];
                 currentPage = res.currentPage || 1;
+                totalPages = res.totalPages || 1;
 
                 tableBody.innerHTML = "";
                 if (data.length === 0) {
@@ -111,6 +108,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 data.forEach((acc, index) => {
                     const row = document.createElement("tr");
                     row.innerHTML = `
+                        <td class="text-center"><input type="checkbox" class="form-check-input check-item-account" value="${acc.TaiKhoan_id}"></td>
                         <td class="stt-cell text-center">${(currentPage - 1) * pageSize + index + 1}</td>
                         <td>${acc.Username || ""}</td>
                         <td class="text-truncate" style="max-width:200px;" title="${acc.Email ?? ""}">${acc.Email ?? ""}</td>
@@ -204,41 +202,105 @@ document.addEventListener("DOMContentLoaded", function () {
     /* ==========================
        MODAL DANH SÁCH TÀI KHOẢN ĐÃ XÓA
        ========================== */
+    const checkAllDeletedAccounts = document.getElementById("checkAllDeletedAccounts");
+    const btnDeletePermanentSelectedAccount = document.getElementById("btnDeletePermanentSelectedAccount");
+    const btnRestoreSelectedAccount = document.getElementById("btnRestoreSelectedAccount");
+    const selectedDeletedPermanentCount = document.getElementById("selectedDeletedPermanentCount");
+    const selectedRestoreAccountCount = document.getElementById("selectedRestoreAccountCount");
+
+    function updateDeletedAccountsSelection() {
+        const checkedItems = document.querySelectorAll(".check-item-deleted-account:checked");
+        const totalItems = document.querySelectorAll(".check-item-deleted-account");
+        const count = checkedItems.length;
+
+        if (selectedDeletedPermanentCount) selectedDeletedPermanentCount.textContent = count;
+        if (selectedRestoreAccountCount) selectedRestoreAccountCount.textContent = count;
+
+        if (btnDeletePermanentSelectedAccount) {
+            btnDeletePermanentSelectedAccount.style.display = count > 0 ? "inline-flex" : "none";
+        }
+        if (btnRestoreSelectedAccount) {
+            btnRestoreSelectedAccount.style.display = count > 0 ? "inline-flex" : "none";
+        }
+
+        if (checkAllDeletedAccounts) {
+            checkAllDeletedAccounts.checked = totalItems.length > 0 && checkedItems.length === totalItems.length;
+            checkAllDeletedAccounts.indeterminate = count > 0 && count < totalItems.length;
+        }
+    }
+
+    // Sự kiện Chọn tất cả tài khoản đã xóa
+    if (checkAllDeletedAccounts) {
+        checkAllDeletedAccounts.addEventListener("change", function () {
+            const isChecked = this.checked;
+            document.querySelectorAll(".check-item-deleted-account").forEach(cb => {
+                cb.checked = isChecked;
+            });
+            updateDeletedAccountsSelection();
+        });
+    }
+
+    // Bắt sự kiện tick từng checkbox trong bảng tài khoản đã xóa
+    document.addEventListener("change", function (e) {
+        if (e.target && e.target.classList.contains("check-item-deleted-account")) {
+            updateDeletedAccountsSelection();
+        }
+    });
+
     function loadDeletedAccounts() {
-        tbodyDeleted.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-4">Đang tải...</td></tr>`;
+        if (!tbodyDeleted) return;
+        tbodyDeleted.innerHTML = `<tr><td colspan="7" class="text-center text-muted py-4">Đang tải danh sách tài khoản đã xóa...</td></tr>`;
+        if (checkAllDeletedAccounts) checkAllDeletedAccounts.checked = false;
+        updateDeletedAccountsSelection();
 
         fetch("/Admin/Account/GetDeletedAccounts")
             .then(r => r.json())
             .then(res => {
                 tbodyDeleted.innerHTML = "";
                 if (!res || res.length === 0) {
-                    tbodyDeleted.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-4">Không có tài khoản nào đã xóa</td></tr>`;
+                    tbodyDeleted.innerHTML = `<tr><td colspan="7" class="text-center text-muted py-4">Không có tài khoản nào trong thùng rác</td></tr>`;
+                    updateDeletedAccountsSelection();
                     return;
                 }
                 res.forEach((acc, index) => {
                     const row = document.createElement("tr");
                     row.innerHTML = `
-                    <td class="text-center">${index + 1}</td>
-                    <td>${acc.Username || ""}</td>
-                    <td>${acc.Email || ""}</td>
-                    <td class="text-center">${acc.RoleName || ""}</td>
                     <td class="text-center">
-                          ${parseDotNetDate(acc.DeletedAt)}
-
+                        <input type="checkbox" class="form-check-input check-item-deleted-account" value="${acc.TaiKhoan_id}">
                     </td>
-                    <td class="text-center">
-                        <button class="btn btn-sm btn-success btn-restore me-1" data-id="${acc.TaiKhoan_id}">
-                            Khôi phục
-                        </button>
-                        <button class="btn btn-sm btn-danger btn-delete-permanent" data-id="${acc.TaiKhoan_id}">
-                            Xóa hẳn
-                        </button>
+                    <td class="text-center fw-bold">${index + 1}</td>
+                    <td class="text-center fw-bold" style="white-space: nowrap;">${acc.Username || ""}</td>
+                    <td class="text-center" style="white-space: nowrap; max-width: 260px; overflow: hidden; text-overflow: ellipsis;" title="${acc.Email || ''}">${acc.Email || "-"}</td>
+                    <td class="text-center" style="white-space: nowrap;">${acc.RoleName || "N/A"}</td>
+                    <td class="text-center" style="white-space: nowrap;">${parseDotNetDate(acc.DeletedAt)}</td>
+                    <td class="text-center" style="white-space: nowrap;">
+                        <div class="d-inline-flex gap-1 justify-content-center align-items-center">
+                            <button class="btn btn-sm btn-success btn-restore px-2 py-1 fw-bold" data-id="${acc.TaiKhoan_id}" title="Khôi phục tài khoản">
+                                <i class="fas fa-undo me-1"></i> Khôi phục
+                            </button>
+                            <button class="btn btn-sm btn-danger btn-delete-permanent px-2 py-1 fw-bold" data-id="${acc.TaiKhoan_id}" title="Xóa hẳn vĩnh viễn">
+                                <i class="fas fa-trash-alt me-1"></i> Xóa hẳn
+                            </button>
+                        </div>
                     </td>`;
+
+                    // Cho phép click vào dòng để tick/untick checkbox
+                    row.addEventListener("click", function (e) {
+                        if (e.target.closest("button") || e.target.closest("a") || e.target.closest(".form-check-input")) return;
+                        const cb = this.querySelector(".check-item-deleted-account");
+                        if (cb) {
+                            cb.checked = !cb.checked;
+                            updateDeletedAccountsSelection();
+                        }
+                    });
+
                     tbodyDeleted.appendChild(row);
                 });
+                updateDeletedAccountsSelection();
             })
             .catch(() => {
-                tbodyDeleted.innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4">Lỗi tải dữ liệu đã xóa!</td></tr>`;
+                tbodyDeleted.innerHTML = `<tr><td colspan="7" class="text-center text-danger py-4">Lỗi tải dữ liệu đã xóa!</td></tr>`;
+                updateDeletedAccountsSelection();
             });
     }
 
@@ -255,7 +317,7 @@ document.addEventListener("DOMContentLoaded", function () {
         btnRefreshDeleted.addEventListener("click", loadDeletedAccounts);
     }
 
-    // Khôi phục tài khoản
+    // Khôi phục đơn lẻ 1 tài khoản
     document.addEventListener("click", e => {
         const btn = e.target.closest(".btn-restore");
         if (!btn) return;
@@ -274,22 +336,109 @@ document.addEventListener("DOMContentLoaded", function () {
                 if (res.success) {
                     showToast(res.message, "success");
                     loadDeletedAccounts();
-                    loadAccounts(currentPage);
+                    if (typeof window.loadFilteredAccounts === "function") {
+                        window.loadFilteredAccounts(currentPage);
+                    } else {
+                        loadAccounts(currentPage);
+                    }
                 } else {
                     showToast(res.message, "error");
                 }
             })
             .catch(() => showToast("Lỗi khôi phục!", "error"));
     });
+
+    // Khôi phục HÀNG LOẠT tài khoản đã chọn
+    if (btnRestoreSelectedAccount) {
+        btnRestoreSelectedAccount.addEventListener("click", function () {
+            const checkedBoxes = document.querySelectorAll(".check-item-deleted-account:checked");
+            const ids = Array.from(checkedBoxes).map(cb => parseInt(cb.value));
+
+            if (ids.length === 0) {
+                showToast("Vui lòng chọn ít nhất một tài khoản để khôi phục!", "warning");
+                return;
+            }
+
+            fetch("/Admin/Account/RestoreMultipleAjax", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-RequestVerificationToken": document.querySelector('input[name="__RequestVerificationToken"]').value
+                },
+                body: JSON.stringify({ ids: ids })
+            })
+                .then(r => r.json())
+                .then(res => {
+                    if (res.success) {
+                        showToast(res.message, "success");
+                        loadDeletedAccounts();
+                        if (typeof window.loadFilteredAccounts === "function") {
+                            window.loadFilteredAccounts(currentPage);
+                        } else {
+                            loadAccounts(currentPage);
+                        }
+                    } else {
+                        showToast(res.message, "error");
+                    }
+                })
+                .catch(() => showToast("Lỗi kết nối khi khôi phục hàng loạt!", "error"));
+        });
+    }
+
+    // Xóa hẳn HÀNG LOẠT tài khoản đã chọn (vĩnh viễn)
+    if (btnDeletePermanentSelectedAccount) {
+        btnDeletePermanentSelectedAccount.addEventListener("click", function () {
+            const checkedBoxes = document.querySelectorAll(".check-item-deleted-account:checked");
+            const ids = Array.from(checkedBoxes).map(cb => parseInt(cb.value));
+
+            if (ids.length === 0) {
+                showToast("Vui lòng chọn ít nhất một tài khoản để xóa hẳn!", "warning");
+                return;
+            }
+
+            showCustomDeleteModal({
+                id: ids.join(", "),
+                username: `(${ids.length} tài khoản đã chọn)`,
+                email: "Hành động này sẽ XÓA HẲN VĨNH VIỄN toàn bộ tài khoản và dữ liệu liên quan!",
+                isPermanent: true,
+                onConfirm: () => {
+                    fetch("/Admin/Account/DeletePermanentMultipleAjax", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-RequestVerificationToken": document.querySelector('input[name="__RequestVerificationToken"]').value
+                        },
+                        body: JSON.stringify({ ids: ids })
+                    })
+                        .then(r => r.json())
+                        .then(res => {
+                            if (res.success) {
+                                showToast(res.message, "success");
+                                const modalInstance = bootstrap.Modal.getInstance(document.getElementById("customDeleteModal"));
+                                if (modalInstance) modalInstance.hide();
+                                loadDeletedAccounts();
+                            } else {
+                                showToast(res.message || "Xóa hẳn hàng loạt thất bại!", "error");
+                            }
+                        })
+                        .catch(err => {
+                            console.error("Lỗi xóa hẳn hàng loạt:", err);
+                            showToast("Lỗi kết nối máy chủ!", "error");
+                        });
+                }
+            });
+        });
+    }
+
     function showCustomDeleteModal({ id, username, email, isPermanent = false, onConfirm }) {
         document.getElementById("customDeleteTitle").textContent = isPermanent
-            ? "Bạn có chắc muốn XÓA HẲN tài khoản này?"
+            ? "⚠️ CẢNH BÁO: XÓA HẲN VĨNH VIỄN"
             : "Bạn có chắc muốn xóa tài khoản này?";
 
         document.getElementById("customDeleteInfo").textContent =
-            `ID: ${id}` +
-            (username ? ` • Tài khoản: ${username}` : "") +
-            (email ? ` • Email: ${email}` : "");
+            `Danh sách ID: ${id}` +
+            (username ? ` • ${username}` : "") +
+            (email ? ` • ${email}` : "");
 
         const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById("customDeleteModal"));
         modal.show();
@@ -304,15 +453,15 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // Xóa hẳn vĩnh viễn (dùng modal riêng thay confirm)
+    // Xóa hẳn đơn lẻ vĩnh viễn (dùng modal riêng thay confirm)
     document.addEventListener("click", e => {
         const btn = e.target.closest(".btn-delete-permanent");
         if (!btn) return;
 
         const id = btn.dataset.id;
         const row = btn.closest("tr");
-        const username = row?.children[1]?.textContent.trim() || "";
-        const email = row?.children[2]?.textContent.trim() || "";
+        const username = row?.children[2]?.textContent.trim() || "";
+        const email = row?.children[3]?.textContent.trim() || "";
 
         showCustomDeleteModal({
             id,
@@ -335,17 +484,21 @@ document.addEventListener("DOMContentLoaded", function () {
                                 ? `Đã xóa hẳn tài khoản '${res.username}' khỏi hệ thống.`
                                 : res.message;
                             showToast(msg, "success");
-                            bootstrap.Modal.getInstance(deleteModal).hide();
+                            
+                            const modalInstance = bootstrap.Modal.getInstance(document.getElementById("customDeleteModal"));
+                            if (modalInstance) modalInstance.hide();
+
                             loadDeletedAccounts();
                         } else {
-                            showToast(res.message, "error");
+                            showToast(res.message || "Xóa thất bại!", "error");
                         }
                     })
-                    .catch(() => showToast("Lỗi xóa vĩnh viễn!", "error"));
+                    .catch(err => {
+                        console.error("Lỗi xóa vĩnh viễn:", err);
+                        showToast("Lỗi xóa vĩnh viễn!", "error");
+                    });
             }
         });
     });
-
-
 
 });

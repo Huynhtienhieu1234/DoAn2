@@ -1,4 +1,4 @@
-﻿document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", function () {
     const resetPasswordModal = document.getElementById("resetPasswordModal");
     const confirmResetBtn = document.getElementById("confirmResetBtn");
     let resetId = null;
@@ -14,9 +14,9 @@
 
         // Lấy thêm thông tin từ row để hiển thị trong modal
         const row = btn.closest("tr");
-        const username = row ? row.children[1]?.textContent.trim() : "-";
-        const email = row ? row.children[2]?.textContent.trim() : "-";
-        const role = row ? row.children[3]?.textContent.trim() : "-";
+        const username = row ? row.children[2]?.textContent.trim() : "-";
+        const email = row ? row.children[3]?.textContent.trim() : "-";
+        const role = row ? row.children[4]?.textContent.trim() : "-";
 
         document.getElementById("resetCurrentUsername").textContent = username;
         document.getElementById("resetCurrentEmail").textContent = email;

@@ -36,7 +36,15 @@ namespace QuanLyDangKyNgayLD.Controllers
 
             using (var db = DbContextFactory.Create())
             {
-                var user = db.TaiKhoans.FirstOrDefault(u => u.Username == model.Username);
+                string inputUsername = (model.Username ?? "").Trim();
+                string trimmedZero = inputUsername.TrimStart('0');
+                string withZero = "0" + inputUsername;
+
+                var user = db.TaiKhoans.FirstOrDefault(u => 
+                    u.Username == inputUsername || 
+                    (trimmedZero.Length > 0 && u.Username == trimmedZero) || 
+                    u.Username == withZero
+                );
 
                 if (user == null)
                 {

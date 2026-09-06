@@ -77,15 +77,21 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
             using (var db = DbContextFactory.Create())
             {
                 var sv = db.SinhViens
-                           .Include("TaiKhoan1.VaiTro")
-                           .Include("Anh")
-                           .Include("Lop.Khoa")   // ✅ Include thêm Khoa qua Lop
+                           .Include(s => s.TaiKhoan1.VaiTro)
+                           .Include(s => s.Anh)
+                           .Include(s => s.Lop.Khoa)
                            .FirstOrDefault(s => s.TaiKhoan == userId);
 
                 if (sv == null)
                     return Json(new { success = false, message = "Không tìm thấy thông tin sinh viên!" }, JsonRequestBehavior.AllowGet);
 
-                string avatarUrl = sv.Anh != null ? sv.Anh.DuongDan : "/image/Avarta.png";
+                string avatarUrl = (sv.Anh != null && !string.IsNullOrEmpty(sv.Anh.DuongDan)) ? sv.Anh.DuongDan : "/image/Avarta.png";
+                string mssvDisplay = (sv.TaiKhoan1 != null && !string.IsNullOrEmpty(sv.TaiKhoan1.Username)) ? sv.TaiKhoan1.Username : sv.MSSV.ToString();
+
+                // Tính tổng số ngày lao động đã tích lũy
+                int soNgay = db.SoNgayLaoDongs.Where(x => x.MSSV == sv.MSSV).Sum(x => (int?)x.TongSoNgay) ?? 0;
+                int mucTieu = 18;
+                double phanTram = Math.Min(100.0, Math.Round((double)soNgay / mucTieu * 100.0, 1));
 
                 return Json(new
                 {
@@ -93,14 +99,19 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
                     data = new
                     {
                         MSSV = sv.MSSV,
+                        MSSVDisplay = mssvDisplay,
                         HoTen = string.IsNullOrEmpty(sv.HoTen) ? "Chưa có dữ liệu" : sv.HoTen,
                         Email = string.IsNullOrEmpty(sv.Email) ? "Chưa có dữ liệu" : sv.Email,
                         GioiTinh = string.IsNullOrEmpty(sv.GioiTinh) ? "Chưa có dữ liệu" : sv.GioiTinh,
                         SoDienThoai = string.IsNullOrEmpty(sv.SoDienThoaiSinhVien) ? "Chưa có dữ liệu" : sv.SoDienThoaiSinhVien,
                         Lop = sv.Lop != null ? sv.Lop.TenLop : "Chưa có dữ liệu",
-                        Khoa = sv.Lop?.Khoa != null ? sv.Lop.Khoa.TenKhoa : "Chưa có dữ liệu",  // ✅ thêm tên khoa
-                        VaiTro = sv.TaiKhoan1?.VaiTro?.TenVaiTro ?? "Chưa có",
-                        Avatar = avatarUrl
+                        Khoa = sv.Lop?.Khoa != null ? sv.Lop.Khoa.TenKhoa : "Chưa có dữ liệu",
+                        VaiTro = sv.TaiKhoan1?.VaiTro?.TenVaiTro ?? "Sinh viên",
+                        Avatar = avatarUrl,
+                        SoNgay = soNgay,
+                        MucTieu = mucTieu,
+                        PhanTram = phanTram,
+                        TrangThaiLaoDong = soNgay >= mucTieu ? "Đã hoàn thành" : "Đang thực hiện"
                     }
                 }, JsonRequestBehavior.AllowGet);
             }

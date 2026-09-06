@@ -1,5 +1,6 @@
 using OfficeOpenXml;         
 using OfficeOpenXml.Style;    
+using QuanLyDangKyNgayLD.AuditHelper;
 using QuanLyDangKyNgayLD.Factories; 
 using QuanLyDangKyNgayLD.Models;    
 using System;               
@@ -28,7 +29,7 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                 // Lọc theo vai trò
                 if (!string.IsNullOrWhiteSpace(role) && role != "Tất Cả")
                 {
-                    query = query.Where(t => t.VaiTro != null && t.VaiTro.TenVaiTro == role);
+                    query = query.Where(t => t.VaiTro != null && (t.VaiTro.TenVaiTro == role || t.VaiTro.TenVaiTro.Contains(role)));
                 }
 
                 // Lọc theo từ khóa tìm kiếm
@@ -77,7 +78,7 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                 var query = db.TaiKhoans
                     .Include(t => t.VaiTro)
                     .Where(t => t.Deleted_at == null)
-                    .OrderByDescending(t => t.TaiKhoan_id);
+                    .OrderBy(t => t.TaiKhoan_id);
 
                 int totalItems = query.Count();
                 int totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
@@ -316,6 +317,17 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                     if (taiKhoan == null)
                         return Json(new { success = false, message = "Không tìm thấy tài khoản hoặc đã bị xóa." });
 
+                    // 📝 Ghi nhận nhật ký xóa vào QuanLyAuditLog
+                    var dataOld = new
+                    {
+                        taiKhoan.TaiKhoan_id,
+                        taiKhoan.Username,
+                        taiKhoan.Email,
+                        taiKhoan.VaiTro_id,
+                        taiKhoan.IsLocked
+                    };
+                    AuditLogHelper.GhiNhatKy("TaiKhoan", taiKhoan.TaiKhoan_id.ToString(), dataOld, "DELETE");
+
                     taiKhoan.Deleted_at = DateTime.Now;
 
                     // Nếu Username là MSSV dạng số thì xóa mềm bên bảng SinhVien luôn
@@ -324,6 +336,15 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                         var sinhVien = db.SinhViens.FirstOrDefault(sv => sv.MSSV == mssv && sv.Deleted_at == null);
                         if (sinhVien != null)
                         {
+                            var dataSvOld = new
+                            {
+                                sinhVien.MSSV,
+                                sinhVien.HoTen,
+                                sinhVien.Email,
+                                sinhVien.Lop_id,
+                                sinhVien.TaiKhoan
+                            };
+                            AuditLogHelper.GhiNhatKy("SinhVien", sinhVien.MSSV.ToString(), dataSvOld, "DELETE");
                             sinhVien.Deleted_at = DateTime.Now;
                         }
                     }
@@ -358,6 +379,17 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                     int count = 0;
                     foreach (var tk in taiKhoans)
                     {
+                        // 📝 Ghi nhận nhật ký xóa
+                        var dataOld = new
+                        {
+                            tk.TaiKhoan_id,
+                            tk.Username,
+                            tk.Email,
+                            tk.VaiTro_id,
+                            tk.IsLocked
+                        };
+                        AuditLogHelper.GhiNhatKy("TaiKhoan", tk.TaiKhoan_id.ToString(), dataOld, "DELETE");
+
                         tk.Deleted_at = DateTime.Now;
                         count++;
 
@@ -366,6 +398,15 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                             var sinhVien = db.SinhViens.FirstOrDefault(sv => sv.MSSV == mssv && sv.Deleted_at == null);
                             if (sinhVien != null)
                             {
+                                var dataSvOld = new
+                                {
+                                    sinhVien.MSSV,
+                                    sinhVien.HoTen,
+                                    sinhVien.Email,
+                                    sinhVien.Lop_id,
+                                    sinhVien.TaiKhoan
+                                };
+                                AuditLogHelper.GhiNhatKy("SinhVien", sinhVien.MSSV.ToString(), dataSvOld, "DELETE");
                                 sinhVien.Deleted_at = DateTime.Now;
                             }
                         }
@@ -445,8 +486,128 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
             }
         }
 
-        // Xóa hẳn
-        // Xóa hẳn
+        // Khôi phục nhiều tài khoản cùng lúc
+        [HttpPost]
+        public ActionResult RestoreMultipleAjax(List<int> ids)
+        {
+            if (ids == null || !ids.Any())
+                return Json(new { success = false, message = "Vui lòng chọn ít nhất một tài khoản để khôi phục." });
+
+            try
+            {
+                using (var db = DbContextFactory.Create())
+                {
+                    var taiKhoans = db.TaiKhoans.Where(t => ids.Contains(t.TaiKhoan_id) && t.Deleted_at != null).ToList();
+                    int count = 0;
+                    foreach (var tk in taiKhoans)
+                    {
+                        tk.Deleted_at = null;
+                        if (long.TryParse(tk.Username, out long mssv))
+                        {
+                            var sinhVien = db.SinhViens.FirstOrDefault(sv => sv.MSSV == mssv && sv.Deleted_at != null);
+                            if (sinhVien != null) sinhVien.Deleted_at = null;
+                        }
+                        count++;
+                    }
+                    db.SaveChanges();
+                    return Json(new { success = true, message = $"Đã khôi phục thành công {count} tài khoản." });
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Lỗi khôi phục: " + (ex.InnerException?.Message ?? ex.Message) });
+            }
+        }
+
+        // Xóa hẳn vĩnh viễn nhiều tài khoản cùng lúc
+        [HttpPost]
+        public ActionResult DeletePermanentMultipleAjax(List<int> ids)
+        {
+            if (ids == null || !ids.Any())
+                return Json(new { success = false, message = "Vui lòng chọn ít nhất một tài khoản để xóa hẳn." });
+
+            try
+            {
+                using (var db = DbContextFactory.Create())
+                using (var transaction = db.Database.BeginTransaction())
+                {
+                    int deletedCount = 0;
+                    foreach (var id in ids)
+                    {
+                        var taiKhoan = db.TaiKhoans.Include(t => t.VaiTro).FirstOrDefault(t => t.TaiKhoan_id == id && t.Deleted_at != null);
+                        if (taiKhoan == null) continue;
+
+                        // Ghi log
+                        var dataOld = new
+                        {
+                            taiKhoan.TaiKhoan_id,
+                            taiKhoan.Username,
+                            taiKhoan.Email,
+                            taiKhoan.VaiTro_id,
+                            VaiTro = taiKhoan.VaiTro?.TenVaiTro,
+                            taiKhoan.Deleted_at
+                        };
+                        AuditLogHelper.GhiNhatKy("TaiKhoan", taiKhoan.TaiKhoan_id.ToString(), dataOld, "DELETE_PERMANENT_MULTIPLE");
+
+                        string username = taiKhoan.Username;
+                        long mssv = 0;
+                        bool isMssv = long.TryParse(username, out mssv);
+
+                        // Xóa QuanLy
+                        var quanLies = db.QuanLies.Where(q => q.TaiKhoan == id).ToList();
+                        foreach (var ql in quanLies)
+                        {
+                            var phieuDuyets = db.PhieuDuyets.Where(pd => pd.Nguoiduyet == ql.Quanly_id).ToList();
+                            foreach (var pd in phieuDuyets)
+                            {
+                                var pxns = db.PhieuXacNhanHoanThanhs.Where(p => p.phieuduyet == pd.PhieuDuyet_id).ToList();
+                                foreach (var p in pxns) db.PhieuXacNhanHoanThanhs.Remove(p);
+                                db.PhieuDuyets.Remove(pd);
+                            }
+                            db.QuanLies.Remove(ql);
+                        }
+
+                        // Xóa SinhVien & PhieuDangKy
+                        var sinhViens = db.SinhViens.Where(sv => sv.TaiKhoan == id || (isMssv && sv.MSSV == mssv)).ToList();
+                        foreach (var sv in sinhViens)
+                        {
+                            var phieuDangKies = db.PhieuDangKies.Where(p => p.MSSV == sv.MSSV).ToList();
+                            foreach (var phieu in phieuDangKies)
+                            {
+                                var phieuDuyets = db.PhieuDuyets.Where(pd => pd.PhieuDangKy == phieu.PhieuDangKy_id).ToList();
+                                foreach (var pd in phieuDuyets)
+                                {
+                                    var pxns = db.PhieuXacNhanHoanThanhs.Where(p => p.phieuduyet == pd.PhieuDuyet_id).ToList();
+                                    foreach (var p in pxns) db.PhieuXacNhanHoanThanhs.Remove(p);
+                                    db.PhieuDuyets.Remove(pd);
+                                }
+                                db.PhieuDangKies.Remove(phieu);
+                            }
+                            if (sv.Anh_id.HasValue)
+                            {
+                                var anh = db.Anhs.FirstOrDefault(a => a.Anh_id == sv.Anh_id);
+                                if (anh != null) db.Anhs.Remove(anh);
+                            }
+                            db.SinhViens.Remove(sv);
+                        }
+
+                        db.TaiKhoans.Remove(taiKhoan);
+                        deletedCount++;
+                    }
+
+                    db.SaveChanges();
+                    transaction.Commit();
+
+                    return Json(new { success = true, message = $"✅ Đã xóa hẳn vĩnh viễn {deletedCount} tài khoản cùng toàn bộ dữ liệu liên quan." });
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Lỗi khi xóa hẳn hàng loạt: " + (ex.InnerException?.Message ?? ex.Message) });
+            }
+        }
+
+        // Xóa hẳn đơn lẻ
         [HttpPost]
         public ActionResult DeletePermanentAjax(int id)
         {
@@ -461,6 +622,19 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
 
                     if (taiKhoan == null)
                         return Json(new { success = false, message = "Không tìm thấy tài khoản đã xóa." });
+
+                    // 📝 Ghi nhận nhật ký xóa hẳn
+                    var dataOld = new
+                    {
+                        taiKhoan.TaiKhoan_id,
+                        taiKhoan.Username,
+                        taiKhoan.Email,
+                        taiKhoan.VaiTro_id,
+                        VaiTro = taiKhoan.VaiTro?.TenVaiTro,
+                        taiKhoan.IsLocked,
+                        taiKhoan.Deleted_at
+                    };
+                    AuditLogHelper.GhiNhatKy("TaiKhoan", taiKhoan.TaiKhoan_id.ToString(), dataOld, "DELETE_PERMANENT");
 
                     string username = taiKhoan.Username;
                     long mssv = 0;
@@ -706,16 +880,34 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                     .Include(t => t.VaiTro)
                     .Where(t => t.Deleted_at == null);
 
-                // Lọc theo vai trò
+                // Lọc theo vai trò / Tab phân loại
                 if (!string.IsNullOrWhiteSpace(role) && role != "Tất Cả")
                 {
-                    query = query.Where(t => t.VaiTro != null && t.VaiTro.TenVaiTro == role);
+                    if (role == "CanBo" || role == "Cán bộ & Quản lý")
+                    {
+                        // Admin (1) & Quản lý (2)
+                        query = query.Where(t => t.VaiTro_id == 1 || t.VaiTro_id == 2 || (t.VaiTro != null && (t.VaiTro.TenVaiTro.Contains("Admin") || t.VaiTro.TenVaiTro.Contains("Quản lý"))));
+                    }
+                    else if (role == "LopTruong" || role == "Lớp trưởng" || role == "Ban cán sự lớp")
+                    {
+                        // Lớp trưởng / Lớp phó (4)
+                        query = query.Where(t => t.VaiTro_id == 4 || (t.VaiTro != null && (t.VaiTro.TenVaiTro.Contains("Lớp") || t.VaiTro.TenVaiTro.Contains("trưởng"))));
+                    }
+                    else if (role == "SinhVien" || role == "Sinh viên")
+                    {
+                        // Sinh viên (3)
+                        query = query.Where(t => t.VaiTro_id == 3 || (t.VaiTro != null && t.VaiTro.TenVaiTro.Contains("Sinh viên") && !t.VaiTro.TenVaiTro.Contains("Lớp")));
+                    }
+                    else
+                    {
+                        query = query.Where(t => t.VaiTro != null && (t.VaiTro.TenVaiTro == role || t.VaiTro.TenVaiTro.Contains(role)));
+                    }
                 }
 
-                // Tìm kiếm theo tên tài khoản (Username)
+                // Tìm kiếm theo tên tài khoản (Username) hoặc Email
                 if (!string.IsNullOrWhiteSpace(search))
                 {
-                    query = query.Where(t => t.Username.Contains(search));
+                    query = query.Where(t => t.Username.Contains(search) || (t.Email != null && t.Email.Contains(search)));
                 }
 
                 int totalItems = query.Count();
@@ -725,7 +917,7 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                 if (page > totalPages && totalPages > 0) page = totalPages;
 
                 var accounts = query
-                    .OrderByDescending(t => t.TaiKhoan_id)
+                    .OrderBy(t => t.TaiKhoan_id)
                     .Skip((page - 1) * pageSize)
                     .Take(pageSize)
                     .Select(t => new
@@ -747,10 +939,257 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
             }
         }
 
-        // xuât excel
-
+        // ==========================================
+        // 📥 XUẤT MẪU IMPORT EXCEL CHO TÀI KHOẢN
+        // ==========================================
         [HttpGet]
-        public ActionResult exportAllAccounts(string keyword = "")
+        public ActionResult DownloadTemplate()
+        {
+            try
+            {
+                using (var package = new ExcelPackage())
+                {
+                    var ws = package.Workbook.Worksheets.Add("Mau_Import_TaiKhoan");
+
+                    // Tiêu đề bảng
+                    ws.Cells["A1:E1"].Merge = true;
+                    ws.Cells["A1"].Value = "MẪU NHẬP DỮ LIỆU TÀI KHOẢN";
+                    ws.Cells["A1"].Style.Font.Bold = true;
+                    ws.Cells["A1"].Style.Font.Size = 14;
+                    ws.Cells["A1"].Style.Font.Color.SetColor(Color.White);
+                    ws.Cells["A1"].Style.Fill.PatternType = ExcelFillStyle.Solid;
+                    ws.Cells["A1"].Style.Fill.BackgroundColor.SetColor(Color.FromArgb(0, 41, 200));
+                    ws.Cells["A1"].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                    ws.Row(1).Height = 30;
+
+                    // Headers
+                    string[] headers = { 
+                        "STT", 
+                        "Tên Đăng Nhập (Username) *", 
+                        "Mật Khẩu *", 
+                        "Email *", 
+                        "Tên Vai Trò (Admin / Cán bộ quản lý / Sinh viên / Lớp trưởng) *" 
+                    };
+
+                    for (int col = 1; col <= headers.Length; col++)
+                    {
+                        var cell = ws.Cells[2, col];
+                        cell.Value = headers[col - 1];
+                        cell.Style.Font.Bold = true;
+                        cell.Style.Fill.PatternType = ExcelFillStyle.Solid;
+                        cell.Style.Fill.BackgroundColor.SetColor(Color.FromArgb(235, 243, 253));
+                        cell.Style.Border.BorderAround(ExcelBorderStyle.Thin, Color.FromArgb(200, 200, 200));
+                        cell.Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                    }
+                    ws.Row(2).Height = 25;
+
+                    // Dòng ví dụ mẫu 1
+                    ws.Cells[3, 1].Value = 1;
+                    ws.Cells[3, 2].Value = "admin_cntt";
+                    ws.Cells[3, 3].Value = "123456";
+                    ws.Cells[3, 4].Value = "admin_cntt@dthu.edu.vn";
+                    ws.Cells[3, 5].Value = "Admin";
+
+                    // Dòng ví dụ mẫu 2
+                    ws.Cells[4, 1].Value = 2;
+                    ws.Cells[4, 2].Value = "0024000099";
+                    ws.Cells[4, 3].Value = "123456";
+                    ws.Cells[4, 4].Value = "sv0024000099@dthu.edu.vn";
+                    ws.Cells[4, 5].Value = "Sinh viên";
+
+                    // Dòng ví dụ mẫu 3
+                    ws.Cells[5, 1].Value = 3;
+                    ws.Cells[5, 2].Value = "0024000088";
+                    ws.Cells[5, 3].Value = "123456";
+                    ws.Cells[5, 4].Value = "sv0024000088@dthu.edu.vn";
+                    ws.Cells[5, 5].Value = "Lớp trưởng";
+
+                    for (int r = 3; r <= 5; r++)
+                    {
+                        for (int col = 1; col <= headers.Length; col++)
+                        {
+                            ws.Cells[r, col].Style.Border.BorderAround(ExcelBorderStyle.Thin, Color.FromArgb(220, 220, 220));
+                            ws.Cells[r, col].Style.VerticalAlignment = ExcelVerticalAlignment.Center;
+                        }
+                        ws.Cells[r, 1].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                        ws.Cells[r, 5].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                    }
+
+                    // Ghi chú hướng dẫn ở dưới
+                    int noteRow = 7;
+                    ws.Cells[noteRow, 1].Value = "📌 GHI CHÚ HƯỚNG DẪN:";
+                    ws.Cells[noteRow, 1].Style.Font.Bold = true;
+                    ws.Cells[noteRow, 1].Style.Font.Color.SetColor(Color.Red);
+
+                    ws.Cells[noteRow + 1, 1].Value = "1. Các cột có dấu (*) là bắt buộc phải nhập dữ liệu.";
+                    ws.Cells[noteRow + 2, 1].Value = "2. 'Tên Đăng Nhập' và 'Email' không được trùng lặp với tài khoản đã tồn tại trong hệ thống.";
+                    ws.Cells[noteRow + 3, 1].Value = "3. 'Mật Khẩu' sẽ được hệ thống tự động mã hóa bảo mật BCrypt an toàn.";
+                    ws.Cells[noteRow + 4, 1].Value = "4. 'Tên Vai Trò' phải thuộc một trong các loại: Admin, Cán bộ quản lý, Sinh viên, Lớp trưởng.";
+
+                    // Đặt độ rộng cột cố định chuẩn đẹp
+                    ws.Column(1).Width = 8;
+                    ws.Column(2).Width = 22;
+                    ws.Column(3).Width = 16;
+                    ws.Column(4).Width = 30;
+                    ws.Column(5).Width = 20;
+
+                    var fileBytes = package.GetAsByteArray();
+                    string fileName = "Mau_Import_TaiKhoan.xlsx";
+                    return File(fileBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
+                }
+            }
+            catch (Exception ex)
+            {
+                return Content("Lỗi khi tải mẫu Excel: " + ex.Message);
+            }
+        }
+
+        // ==========================================
+        // 📤 NHẬP DỮ LIỆU EXCEL CHO TÀI KHOẢN
+        // ==========================================
+        [HttpPost]
+        public ActionResult ImportExcel(System.Web.HttpPostedFileBase file)
+        {
+            OfficeOpenXml.ExcelPackage.LicenseContext = OfficeOpenXml.LicenseContext.NonCommercial;
+
+            if (file == null || file.ContentLength == 0)
+                return Json(new { success = false, message = "Vui lòng chọn file Excel để nhập dữ liệu." });
+
+            string ext = System.IO.Path.GetExtension(file.FileName).ToLower();
+            if (ext != ".xlsx" && ext != ".xls")
+                return Json(new { success = false, message = "Định dạng file không hợp lệ! Vui lòng tải lên file Excel (.xlsx)." });
+
+            var errors = new List<string>();
+            int successCount = 0;
+            int totalRows = 0;
+
+            try
+            {
+                using (var package = new ExcelPackage(file.InputStream))
+                {
+                    var ws = package.Workbook.Worksheets.FirstOrDefault();
+                    if (ws == null)
+                        return Json(new { success = false, message = "File Excel không chứa bất kỳ sheet dữ liệu nào." });
+
+                    int rowCount = ws.Dimension?.Rows ?? 0;
+                    if (rowCount < 2)
+                    {
+                        return Json(new { success = false, message = "File Excel không có dữ liệu nhập." });
+                    }
+
+                    // Tự động tìm dòng bắt đầu dữ liệu
+                    int startRow = 3;
+                    string cellA1 = ws.Cells[1, 1].Text?.Trim().ToLower() ?? "";
+                    string cellB1 = ws.Cells[1, 2].Text?.Trim().ToLower() ?? "";
+                    if (cellA1.Contains("stt") || cellB1.Contains("tên") || cellB1.Contains("username"))
+                    {
+                        startRow = 2; // Header ở dòng 1
+                    }
+
+                    using (var db = DbContextFactory.Create())
+                    {
+                        var roles = db.VaiTroes.ToList();
+                        var existingUsernames = new HashSet<string>(
+                            db.TaiKhoans.Where(t => t.Deleted_at == null).Select(t => t.Username.ToLower()),
+                            StringComparer.OrdinalIgnoreCase
+                        );
+                        var existingEmails = new HashSet<string>(
+                            db.TaiKhoans.Where(t => t.Deleted_at == null && t.Email != null).Select(t => t.Email.ToLower()),
+                            StringComparer.OrdinalIgnoreCase
+                        );
+
+                        var fileUsernames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                        var fileEmails = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+                        var newAccounts = new List<TaiKhoan>();
+
+                        for (int row = startRow; row <= rowCount; row++)
+                        {
+                            var username = ws.Cells[row, 2].Text?.Trim();
+                            var password = ws.Cells[row, 3].Text?.Trim();
+                            var email = ws.Cells[row, 4].Text?.Trim();
+                            var roleName = ws.Cells[row, 5].Text?.Trim();
+
+                            if (string.IsNullOrWhiteSpace(username) && string.IsNullOrWhiteSpace(email))
+                                continue;
+
+                            totalRows++;
+
+                            if (string.IsNullOrWhiteSpace(username)) { errors.Add($"Dòng {row}: Tên đăng nhập không được để trống."); continue; }
+                            if (string.IsNullOrWhiteSpace(password)) { errors.Add($"Dòng {row}: Mật khẩu không được để trống."); continue; }
+                            if (string.IsNullOrWhiteSpace(email)) { errors.Add($"Dòng {row}: Email không được để trống."); continue; }
+                            
+                            // Nếu thiếu tên vai trò -> Mặc định là Sinh viên
+                            if (string.IsNullOrWhiteSpace(roleName))
+                            {
+                                roleName = "Sinh viên";
+                            }
+
+                            if (fileUsernames.Contains(username)) { errors.Add($"Dòng {row}: Tên đăng nhập '{username}' bị trùng trong file."); continue; }
+                            if (fileEmails.Contains(email)) { errors.Add($"Dòng {row}: Email '{email}' bị trùng trong file."); continue; }
+                            if (existingUsernames.Contains(username)) { errors.Add($"Dòng {row}: Tên đăng nhập '{username}' đã tồn tại."); continue; }
+                            if (existingEmails.Contains(email)) { errors.Add($"Dòng {row}: Email '{email}' đã tồn tại."); continue; }
+
+                            var role = roles.FirstOrDefault(r => 
+                                r.TenVaiTro.Equals(roleName, StringComparison.OrdinalIgnoreCase) ||
+                                (roleName.ToLower().Contains("admin") && r.TenVaiTro.ToLower().Contains("admin")) ||
+                                (roleName.ToLower().Contains("quản lý") && r.TenVaiTro.ToLower().Contains("quản lý")) ||
+                                (roleName.ToLower().Contains("cán bộ") && r.TenVaiTro.ToLower().Contains("quản lý")) ||
+                                (roleName.ToLower().Contains("sinh viên") && r.TenVaiTro.ToLower().Contains("sinh viên")) ||
+                                (roleName.ToLower().Contains("lớp trưởng") && r.TenVaiTro.ToLower().Contains("lớp trưởng")) ||
+                                (roleName.ToLower().Contains("lớp phó") && (r.TenVaiTro.ToLower().Contains("lớp phó") || r.TenVaiTro.ToLower().Contains("lớp trưởng")))
+                            ) ?? roles.FirstOrDefault(r => r.TenVaiTro.ToLower().Contains("sinh viên")) ?? roles.FirstOrDefault();
+
+                            if (role == null) { errors.Add($"Dòng {row}: Không tìm thấy vai trò phù hợp trong hệ thống."); continue; }
+
+                            newAccounts.Add(new TaiKhoan {
+                                Username = username,
+                                Password = BCrypt.Net.BCrypt.HashPassword(password),
+                                Email = email,
+                                VaiTro_id = role.VaiTro_id,
+                                IsLocked = false
+                            });
+
+                            fileUsernames.Add(username);
+                            fileEmails.Add(email);
+                            existingUsernames.Add(username);
+                            existingEmails.Add(email);
+                        }
+
+                        if (newAccounts.Count > 0)
+                        {
+                            db.TaiKhoans.AddRange(newAccounts);
+                            db.SaveChanges();
+                            successCount = newAccounts.Count;
+                        }
+                    }
+                }
+
+                if (successCount == 0 && errors.Count > 0)
+                {
+                    return Json(new { success = false, message = "Không có tài khoản nào được nhập.", errors = errors });
+                }
+
+                return Json(new
+                {
+                    success = true,
+                    message = $"Đã nhập thành công {successCount}/{totalRows} tài khoản.",
+                    successCount = successCount,
+                    totalRows = totalRows,
+                    errors = errors
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Lỗi khi đọc file Excel: " + ex.Message });
+            }
+        }
+
+        // ==========================================
+        // 📊 XUẤT DỮ LIỆU EXCEL CHO TÀI KHOẢN
+        // ==========================================
+        [HttpGet]
+        public ActionResult exportAllAccounts(string keyword = "", string role = "")
         {
             using (var db = DbContextFactory.Create())
             {
@@ -760,8 +1199,14 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
 
                 if (!string.IsNullOrWhiteSpace(keyword))
                 {
+                    keyword = keyword.Trim();
                     query = query.Where(t => (t.Username ?? "").Contains(keyword) ||
                                              (t.Email ?? "").Contains(keyword));
+                }
+
+                if (!string.IsNullOrWhiteSpace(role))
+                {
+                    query = query.Where(t => t.VaiTro != null && t.VaiTro.TenVaiTro == role);
                 }
 
                 var accounts = query.OrderBy(t => t.TaiKhoan_id).ToList();
@@ -770,21 +1215,34 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                 {
                     var ws = package.Workbook.Worksheets.Add("DanhSachTaiKhoan");
 
+                    // Tiêu đề
+                    ws.Cells["A1:E1"].Merge = true;
+                    ws.Cells["A1"].Value = "DANH SÁCH TÀI KHOẢN HỆ THỐNG";
+                    ws.Cells["A1"].Style.Font.Bold = true;
+                    ws.Cells["A1"].Style.Font.Size = 15;
+                    ws.Cells["A1"].Style.Font.Color.SetColor(Color.White);
+                    ws.Cells["A1"].Style.Fill.PatternType = ExcelFillStyle.Solid;
+                    ws.Cells["A1"].Style.Fill.BackgroundColor.SetColor(Color.FromArgb(0, 41, 200));
+                    ws.Cells["A1"].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                    ws.Row(1).Height = 32;
+
                     // ======= Header =======
-                    string[] headers = { "STT", "Tên tài khoản", "Email", "Vai trò" };
+                    string[] headers = { "STT", "Tên tài khoản", "Email", "Vai trò", "Trạng thái" };
                     for (int col = 1; col <= headers.Length; col++)
                     {
-                        ws.Cells[1, col].Value = headers[col - 1];
-                        ws.Cells[1, col].Style.Font.Bold = true;
-                        ws.Cells[1, col].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
-                        ws.Cells[1, col].Style.VerticalAlignment = ExcelVerticalAlignment.Center;
-                        ws.Cells[1, col].Style.Fill.PatternType = ExcelFillStyle.Solid;
-                        ws.Cells[1, col].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGray);
-                        ws.Cells[1, col].Style.Border.BorderAround(ExcelBorderStyle.Thin);
+                        var cell = ws.Cells[2, col];
+                        cell.Value = headers[col - 1];
+                        cell.Style.Font.Bold = true;
+                        cell.Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                        cell.Style.VerticalAlignment = ExcelVerticalAlignment.Center;
+                        cell.Style.Fill.PatternType = ExcelFillStyle.Solid;
+                        cell.Style.Fill.BackgroundColor.SetColor(Color.FromArgb(235, 243, 253));
+                        cell.Style.Border.BorderAround(ExcelBorderStyle.Thin, Color.FromArgb(200, 200, 200));
                     }
+                    ws.Row(2).Height = 25;
 
                     // ======= Dữ liệu =======
-                    int row = 2;
+                    int row = 3;
                     int stt = 1;
                     foreach (var acc in accounts)
                     {
@@ -792,12 +1250,13 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                         ws.Cells[row, 2].Value = acc.Username;
                         ws.Cells[row, 3].Value = acc.Email ?? "";
                         ws.Cells[row, 4].Value = acc.VaiTro?.TenVaiTro ?? "Chưa có vai trò";
+                        ws.Cells[row, 5].Value = acc.IsLocked ? "Đã khóa" : "Hoạt động";
 
                         for (int col = 1; col <= headers.Length; col++)
                         {
-                            ws.Cells[row, col].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
-                            ws.Cells[row, col].Style.VerticalAlignment = ExcelVerticalAlignment.Center;
-                            ws.Cells[row, col].Style.Border.BorderAround(ExcelBorderStyle.Thin);
+                            ws.Cells[row, col].Style.Border.BorderAround(ExcelBorderStyle.Thin, Color.FromArgb(220, 220, 220));
+                            if (col == 1 || col == 4 || col == 5)
+                                ws.Cells[row, col].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
                         }
 
                         ws.Cells[row, 1].Style.Font.Bold = true; // STT in đậm
@@ -807,11 +1266,15 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                         stt++;
                     }
 
-
+                    ws.Column(1).Width = 8;
+                    ws.Column(2).Width = 22;
+                    ws.Column(3).Width = 30;
+                    ws.Column(4).Width = 20;
+                    ws.Column(5).Width = 16;
 
                     // Xuất file
                     var fileBytes = package.GetAsByteArray();
-                    string fileName = $"DanhSachTaiKhoan_{DateTime.Now:ddMMyy}.xlsx";
+                    string fileName = $"DanhSachTaiKhoan_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
 
                     return File(fileBytes,
                                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",

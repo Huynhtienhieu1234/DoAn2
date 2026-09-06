@@ -1,163 +1,276 @@
 @using QuanLyDangKyNgayLD.Areas.Admin.ViewModel
-@model IEnumerable<StudentProgressViewModel>
-
 @{
     ViewBag.Title = "Thống kê tiến độ lao động";
     Layout = "~/Areas/Admin/Views/Shared/ViewShare.cshtml";
+    var khoaList = ViewBag.KhoaList as List<string> ?? new List<string>();
 }
 
-<link rel="stylesheet" href="~/Areas/Admin/Content/css/AdminTK.css" />
+<link rel="stylesheet" href="~/Areas/Admin/Content/css/AdminTK.css?v=@DateTime.Now.Ticks" />
 
-<h2 class="mb-4">Thống kê tiến độ lao động sinh viên</h2>
-
-<!-- Bộ lọc khoa / lớp / xuất file -->
-<div class="mb-3">
-    <div class="row g-2 align-items-center">
-        <div class="col-auto" style="width:20%">
-            <select id="khoaFilter" class="form-select form-select-sm shadow-sm">
-                <option value="">-- Tất cả khoa --</option>
-                <option value="Công nghệ và kỹ thuật">Công nghệ và kỹ thuật</option>
-                <option value="Khoa Ngoại ngữ">Khoa Ngoại ngữ</option>
-                <option value="Khoa Kinh tế - Luật">Khoa Kinh tế - Luật</option>
-                <option value="Nông nghiệp, Tài nguyên và Môi trường">Nông nghiệp, Tài nguyên và Môi trường</option>
-                <option value="Văn hóa - Du lịch và Công tác xã hội">Văn hóa - Du lịch và Công tác xã hội</option>
-                <option value="Sư phạm Toán - Tin">Sư phạm Toán - Tin</option>
-                <option value="Sư phạm Khoa học tự nhiên">Sư phạm Khoa học tự nhiên</option>
-                <option value="Sư phạm Khoa học xã hội">Sư phạm Khoa học xã hội</option>
-                <option value="Giáo dục Tiểu học - Mầm non">Giáo dục Tiểu học - Mầm non</option>
-                <option value="Giáo dục Thể chất - Sư phạm Nghệ thuật">Giáo dục Thể chất - Sư phạm Nghệ thuật</option>
-            </select>
-        </div>
-
-        <div class="col-auto" style="width:20%">
-            <select id="lopFilter" class="form-select form-select-sm shadow-sm" style="margin-right:10px; width:110%">
-                <option value="">-- Tất cả lớp --</option>
-            </select>
-        </div>
-
-        <div class="col-auto" style=" margin-left:2%">
-            <button class="btn btn-outline-success btn-sm shadow-sm" onclick="exportExcel()">
-                <i class="fa fa-file-excel me-1"></i> Xuất Excel
-            </button>
-            <button class="btn btn-primary btn-sm shadow-sm"
-                    data-bs-toggle="modal"
-                    data-bs-target="#sendExcelModal">
-                <i class="fa fa-paper-plane me-1"></i> Gửi Excel qua Email
-            </button>
-
-        </div>
-    </div>
-</div>
-
-<!-- Thống kê tổng quan -->
-<div class="row mb-4" id="stats-bar">
-    <div class="col-md-4">
-        <div class="card text-white bg-primary">
-            <div class="card-header">Tổng số sinh viên</div>
-            <div class="card-body">
-                <h5 class="card-title">@ViewBag.TongSinhVien</h5>
+<div class="tk-dashboard-wrapper">
+    <!-- 1. Header Banner -->
+    <div class="tk-header-card">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+            <div>
+                <h2 class="tk-header-title">
+                    <i class="fas fa-chart-pie text-warning"></i>
+                    Thống Kê Tiến Độ Lao Động Sinh Viên
+                </h2>
+                <p class="tk-header-subtitle">
+                    Theo dõi, phân tích và xuất báo cáo tiến độ hoàn thành chỉ tiêu 18 ngày lao động công ích
+                </p>
+            </div>
+            <div class="d-flex gap-2 flex-wrap">
+                <button class="btn btn-tk-export" onclick="exportExcel()">
+                    <i class="fas fa-file-excel"></i> Xuất Báo Cáo Excel
+                </button>
+                <button class="btn btn-tk-email" data-bs-toggle="modal" data-bs-target="#sendExcelModal">
+                    <i class="fas fa-paper-plane"></i> Gửi File Qua Email
+                </button>
             </div>
         </div>
     </div>
-    <div class="col-md-4">
-        <div class="card text-white bg-success">
-            <div class="card-header">Đã hoàn thành (≥18 ngày)</div>
-            <div class="card-body">
-                <h5 class="card-title">@ViewBag.DaHoanThanh</h5>
+
+    <!-- 2. Smart Filter Card -->
+    <div class="tk-filter-card">
+        <div class="row g-3 align-items-end">
+            <div class="col-lg-3 col-md-6">
+                <label class="tk-filter-label" for="khoaFilter">
+                    <i class="fas fa-university text-primary"></i> Khoa:
+                </label>
+                <select id="khoaFilter" class="tk-form-select">
+                    <option value="">-- Tất cả khoa --</option>
+                    @foreach (var khoa in khoaList)
+                    {
+                        <option value="@khoa">@khoa</option>
+                    }
+                </select>
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+                <label class="tk-filter-label" for="lopFilter">
+                    <i class="fas fa-users-class text-info"></i> Lớp:
+                </label>
+                <select id="lopFilter" class="tk-form-select">
+                    <option value="">-- Tất cả lớp --</option>
+                </select>
+            </div>
+
+            <div class="col-lg-2 col-md-6">
+                <label class="tk-filter-label" for="statusFilter">
+                    <i class="fas fa-filter text-success"></i> Trạng thái:
+                </label>
+                <select id="statusFilter" class="tk-form-select">
+                    <option value="">-- Tất cả --</option>
+                    <option value="completed">Đã hoàn thành (≥18)</option>
+                    <option value="incomplete">Chưa đạt (&lt;18)</option>
+                </select>
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+                <label class="tk-filter-label" for="searchKeyword">
+                    <i class="fas fa-search text-secondary"></i> Tìm sinh viên:
+                </label>
+                <div class="position-relative">
+                    <input type="text" id="searchKeyword" class="tk-form-input pe-4" placeholder="Nhập MSSV hoặc Họ tên..." autocomplete="off">
+                </div>
+            </div>
+
+            <div class="col-lg-1 col-md-12 text-end">
+                <button type="button" class="btn btn-outline-secondary w-100 py-2 rounded-3" id="btnResetFilter" title="Đặt lại bộ lọc">
+                    <i class="fas fa-redo"></i>
+                </button>
             </div>
         </div>
     </div>
-    <div class="col-md-4">
-        <div class="card text-white bg-danger">
-            <div class="card-header">Chưa hoàn thành</div>
-            <div class="card-body">
-                <h5 class="card-title">@ViewBag.ChuaHoanThanh</h5>
+
+    <!-- 3. KPI Stat Cards -->
+    <div class="row g-4 mb-4" id="stats-bar">
+        <div class="col-md-4">
+            <div class="tk-kpi-card tk-kpi-total">
+                <div class="tk-kpi-header">
+                    <span class="tk-kpi-title">Tổng số sinh viên</span>
+                    <div class="tk-kpi-icon-wrapper">
+                        <i class="fas fa-user-graduate"></i>
+                    </div>
+                </div>
+                <div>
+                    <div class="tk-kpi-value" id="statTongSV">0</div>
+                    <div class="tk-kpi-footer">
+                        <span>Danh sách trong phạm vi lọc</span>
+                        <span class="tk-kpi-badge">100% dữ liệu</span>
+                    </div>
+                </div>
             </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="tk-kpi-card tk-kpi-completed">
+                <div class="tk-kpi-header">
+                    <span class="tk-kpi-title">Đã hoàn thành nghĩa vụ</span>
+                    <div class="tk-kpi-icon-wrapper">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                </div>
+                <div>
+                    <div class="tk-kpi-value" id="statDaHoanThanh">0</div>
+                    <div class="tk-kpi-footer">
+                        <span>Đủ chỉ tiêu ≥ 18 ngày</span>
+                        <span class="tk-kpi-badge" id="statTyLeHoanThanh">0%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="tk-kpi-card tk-kpi-incomplete">
+                <div class="tk-kpi-header">
+                    <span class="tk-kpi-title">Chưa hoàn thành</span>
+                    <div class="tk-kpi-icon-wrapper">
+                        <i class="fas fa-hourglass-half"></i>
+                    </div>
+                </div>
+                <div>
+                    <div class="tk-kpi-value" id="statChuaHoanThanh">0</div>
+                    <div class="tk-kpi-footer">
+                        <span>Cần tiếp tục tham gia</span>
+                        <span class="tk-kpi-badge" id="statTyLeChuaHoanThanh">0%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. Progress Section Card -->
+    <div class="tk-progress-card">
+        <div class="tk-progress-header">
+            <h5 class="tk-progress-title">
+                <i class="fas fa-tasks text-primary"></i>
+                Tiến độ hoàn thành chỉ tiêu toàn bộ sinh viên
+            </h5>
+            <div class="tk-progress-percent" id="progressText">0%</div>
+        </div>
+        <div class="tk-progress-track">
+            <div class="tk-progress-fill" id="progressBarFill" style="width: 0%;"></div>
+        </div>
+        <div class="tk-progress-meta">
+            <span><i class="fas fa-flag-checkered text-success me-1"></i> Mục tiêu chuẩn: <strong>18 ngày lao động</strong></span>
+            <span id="progressSummaryText">Đang tính toán dữ liệu...</span>
+        </div>
+    </div>
+
+    <!-- 5. Table Data Card -->
+    <div class="tk-table-card">
+        <div class="tk-table-toolbar">
+            <h5 class="tk-table-toolbar-title">
+                <i class="fas fa-list text-primary"></i>
+                Bảng Chi Tiết Tiến Độ Sinh Viên
+            </h5>
+            <div class="d-flex align-items-center gap-2">
+                <span class="text-muted small fw-semibold">Hiển thị:</span>
+                <select id="pageSizeSelector" class="form-select form-select-sm" style="width: 140px; border-radius: 8px;">
+                    <option value="5">5 dòng / trang</option>
+                    <option value="10" selected>10 dòng / trang</option>
+                    <option value="20">20 dòng / trang</option>
+                    <option value="50">50 dòng / trang</option>
+                    <option value="100">100 dòng / trang</option>
+                    <option value="1000000">Tất cả</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="tk-table-responsive">
+            <div id="studentTable">
+                <!-- Sẽ được nạp động từ AJAX JS -->
+            </div>
+        </div>
+
+        <div class="tk-pagination-bar">
+            <div class="text-muted small" id="paginationInfo">
+                Đang hiển thị dữ liệu...
+            </div>
+            <div id="pagination" class="d-flex gap-1"></div>
         </div>
     </div>
 </div>
 
-<!-- Thanh tiến độ -->
-<div class="mb-4" id="progress-bar">
-    <h5>Tiến độ hoàn thành:</h5>
-    <div class="progress">
-        <div class="progress-bar" role="progressbar"
-             style="width: @ViewBag.TienDoHoanThanh%" aria-valuenow="@ViewBag.TienDoHoanThanh"
-             aria-valuemin="0" aria-valuemax="100">
-            @ViewBag.TienDoHoanThanh%
-        </div>
-    </div>
-</div>
-
-<!-- Danh sách sinh viên -->
-<div id="admin-tk-page">
-    <div id="studentTable">
-        <!-- Bảng sẽ được AJAX dựng lại -->
-    </div>
-    <div id="pagination" class="d-flex justify-content-center mt-3"></div>
-</div>
-<div class="modal fade" id="sendExcelModal" tabindex="-1">
+<!-- Modal Gửi Email Báo Cáo -->
+<div class="modal fade" id="sendExcelModal" tabindex="-1" aria-labelledby="sendExcelModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content shadow">
-
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title">
-                    <i class="fa fa-envelope-open me-2"></i> Gửi file Excel
+        <div class="modal-content shadow-lg border-0 rounded-4 overflow-hidden">
+            <div class="modal-header bg-primary text-white py-3">
+                <h5 class="modal-title fw-bold" id="sendExcelModalLabel">
+                    <i class="fas fa-envelope-open-text me-2"></i> Gửi Báo Cáo Excel Qua Email
                 </h5>
-                <button type="button" class="btn-close btn-close-white"
-                        data-bs-dismiss="modal"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
 
-            <div class="modal-body">
-
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Email người nhận</label>
-                    <input type="email"
-                           id="emailTo"
-                           class="form-control"
-                           placeholder="vd: phongdaotao@gmail.com">
+            <div class="modal-body p-4">
+                <div class="alert alert-info border-0 rounded-3 small mb-3">
+                    <i class="fas fa-info-circle me-1"></i>
+                    Báo cáo sẽ được gửi đính kèm dưới dạng file Excel chuẩn (.xlsx) đến địa chỉ email được chỉ định.
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label fw-bold">Chọn file Excel</label>
-                    <input type="file"
-                           id="excelFile"
-                           class="form-control"
-                           accept=".xls,.xlsx">
+                    <label class="form-label fw-bold text-dark" for="emailTo">
+                        Email người nhận <span class="text-danger">*</span>
+                    </label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light"><i class="fas fa-at text-muted"></i></span>
+                        <input type="email" id="emailTo" class="form-control" placeholder="vd: banql@dthu.edu.vn" required>
+                    </div>
                 </div>
 
+                <div class="mb-3">
+                    <label class="form-label fw-bold text-dark" for="excelFile">
+                        Chọn file Excel đính kèm <span class="text-danger">*</span>
+                    </label>
+                    <input type="file" id="excelFile" class="form-control" accept=".xls,.xlsx" required>
+                    <div class="form-text small text-muted">
+                        <i class="fas fa-lightbulb text-warning me-1"></i>
+                        Mẹo: Bạn có thể bấm nút <strong>"Xuất Báo Cáo Excel"</strong> ở góc trên để tải file về máy trước, sau đó chọn đính kèm tại đây.
+                    </div>
+                </div>
+
+                <div id="emailSendingProgress" class="progress d-none mb-2" style="height: 12px;">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-primary" role="progressbar" style="width: 100%"></div>
+                </div>
             </div>
 
-            <div class="modal-footer">
-                <button class="btn btn-secondary btn-sm"
-                        data-bs-dismiss="modal">
-                    Hủy
-                </button>
-                <button class="btn btn-success btn-sm"
-                        onclick="sendExcelMail()">
-                    <i class="bi bi-send"></i> Gửi
+            <div class="modal-footer bg-light border-0 py-3">
+                <button type="button" class="btn btn-secondary px-4 rounded-3" data-bs-dismiss="modal">Hủy bỏ</button>
+                <button type="button" class="btn btn-primary px-4 rounded-3 fw-bold" id="btnSendMail" onclick="sendExcelMail()">
+                    <i class="fas fa-paper-plane me-1"></i> Tiến hành Gửi
                 </button>
             </div>
-
         </div>
     </div>
 </div>
 
-
-<script src="~/Areas/Admin/Content/js/AdminTK.js"></script>
+<script src="~/Areas/Admin/Content/js/AdminTK.js?v=@DateTime.Now.Ticks"></script>
 
 <script>
     function sendExcelMail() {
         const email = document.getElementById("emailTo").value.trim();
         const fileInput = document.getElementById("excelFile");
+        const btnSend = document.getElementById("btnSendMail");
+        const progress = document.getElementById("emailSendingProgress");
 
         if (!email) {
-            alert("❗ Vui lòng nhập email");
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({ icon: 'warning', title: 'Thiếu thông tin', text: 'Vui lòng nhập địa chỉ email người nhận!' });
+            } else {
+                alert("Vui lòng nhập địa chỉ email người nhận!");
+            }
             return;
         }
 
-        if (fileInput.files.length === 0) {
-            alert("❗ Vui lòng chọn file Excel");
+        if (!fileInput.files || fileInput.files.length === 0) {
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({ icon: 'warning', title: 'Chưa chọn file', text: 'Vui lòng chọn file Excel đính kèm trước khi gửi!' });
+            } else {
+                alert("Vui lòng chọn file Excel đính kèm!");
+            }
             return;
         }
 
@@ -165,24 +278,51 @@
         formData.append("email", email);
         formData.append("excelFile", fileInput.files[0]);
 
+        btnSend.disabled = true;
+        progress.classList.remove("d-none");
+
         fetch("/Admin/AdminTK/SendExcelMail", {
             method: "POST",
             body: formData
         })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    alert("📧 Gửi email thành công!");
-                    document.getElementById("sendExcelModal").querySelector(".btn-close").click();
-                    fileInput.value = "";
-                    document.getElementById("emailTo").value = "";
+        .then(res => res.json())
+        .then(data => {
+            btnSend.disabled = false;
+            progress.classList.add("d-none");
+
+            if (data.success) {
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Thành công!',
+                        text: 'File báo cáo Excel đã được gửi thành công đến ' + email,
+                        timer: 3000,
+                        confirmButtonColor: '#10b981'
+                    });
                 } else {
-                    alert("❌ " + data.message);
+                    alert("Gửi email thành công!");
                 }
-            })
-            .catch(err => {
-                console.error(err);
-                alert("❌ Lỗi khi gửi email");
-            });
+                const modal = bootstrap.Modal.getInstance(document.getElementById('sendExcelModal'));
+                if (modal) modal.hide();
+                fileInput.value = "";
+                document.getElementById("emailTo").value = "";
+            } else {
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({ icon: 'error', title: 'Gửi thất bại', text: data.message });
+                } else {
+                    alert("Gửi email thất bại: " + data.message);
+                }
+            }
+        })
+        .catch(err => {
+            btnSend.disabled = false;
+            progress.classList.add("d-none");
+            console.error(err);
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({ icon: 'error', title: 'Lỗi', text: 'Có lỗi xảy ra trong quá trình gửi mail: ' + err });
+            } else {
+                alert("Có lỗi xảy ra: " + err);
+            }
+        });
     }
 </script>

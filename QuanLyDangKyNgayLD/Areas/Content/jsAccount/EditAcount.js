@@ -1,4 +1,4 @@
-﻿document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", function () {
     const editModal = document.getElementById("editModal");
     const editForm = document.getElementById("editForm");
     const editId = document.getElementById("editId");
@@ -143,6 +143,7 @@
                 data.forEach((acc, index) => {
                     const row = document.createElement("tr");
                     row.innerHTML = `
+                    <td class="text-center"><input type="checkbox" class="form-check-input check-item-account" value="${acc.TaiKhoan_id}"></td>
                     <td class="stt-cell text-center">${(currentPage - 1) * pageSize + index + 1}</td>
                     <td>${acc.Username}</td>
                     <td class="text-truncate" style="max-width:200px;" title="${acc.Email ?? ""}">

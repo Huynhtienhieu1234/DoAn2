@@ -11,6 +11,7 @@ namespace QuanLyDangKyNgayLD
     {
         protected void Application_Start()
         {
+            OfficeOpenXml.ExcelPackage.LicenseContext = OfficeOpenXml.LicenseContext.NonCommercial;
             AreaRegistration.RegisterAllAreas();
             RouteConfig.RegisterRoutes(RouteTable.Routes);
         }

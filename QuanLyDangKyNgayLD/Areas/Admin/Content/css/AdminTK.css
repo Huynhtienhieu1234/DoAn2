@@ -1,207 +1,462 @@
-/* =======================
-   PAGE SCOPE
-======================= */
-#admin-tk-page {
-    background: rgba(255, 255, 255, 0.92);
-    border-radius: 15px;
-    padding: 30px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+/* =========================================================
+   THỐNG KÊ TIẾN ĐỘ LAO ĐỘNG - MODERN & PREMIUM UI
+   ========================================================= */
+
+/* --- Container Scope --- */
+.tk-dashboard-wrapper {
+    padding: 10px 5px 30px;
 }
 
-
-/* =======================
-   TITLE - THỐNG KÊ
-======================= */
-h2 {
-    font-size: 1.8rem;
-    font-weight: 700;
-    color: #00796b;
-    text-align: center;
+/* --- Page Header Banner --- */
+.tk-header-card {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0d47a1 100%);
+    border-radius: 16px;
+    padding: 24px 28px;
+    color: #ffffff;
+    box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.25), 0 8px 10px -6px rgba(15, 23, 42, 0.2);
     position: relative;
-    padding-bottom: 12px;
-    margin-bottom: 30px;
-}
-
-    /* Gạch trang trí dưới tiêu đề */
-    h2::after {
-        content: "";
-        position: absolute;
-        left: 50%;
-        bottom: 0;
-        transform: translateX(-50%);
-        width: 120px;
-        height: 4px;
-        background: linear-gradient(to right, #009688, #4caf50);
-        border-radius: 2px;
-    }
-
-
-    /* =======================
-   TITLE
-======================= */
-    #admin-tk-page h2 {
-        font-weight: 700;
-        color: #00796b;
-        text-align: center;
-        margin-bottom: 30px;
-        position: relative;
-    }
-
-        #admin-tk-page h2::after {
-            content: '';
-            width: 100px;
-            height: 4px;
-            background: linear-gradient(to right, #009688, #4caf50);
-            display: block;
-            margin: 10px auto;
-            border-radius: 2px;
-        }
-
-    /* =======================
-   FILTER BAR / FORM
-======================= */
-    #admin-tk-page form {
-        background: #f8f9fa;
-        padding: 15px;
-        border-radius: 10px;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-    }
-
-    /* =======================
-   BUTTON
-======================= */
-    #admin-tk-page .btn-primary {
-        background: linear-gradient(to right, #009688, #00796b);
-        border: none;
-        transition: all 0.3s ease;
-        position: relative;
-        overflow: hidden;
-    }
-
-        #admin-tk-page .btn-primary:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 15px rgba(0, 150, 136, 0.3);
-        }
-
-        #admin-tk-page .btn-primary::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            background: rgba(255,255,255,0.3);
-            border-radius: 50%;
-            transform: translate(-50%, -50%);
-            transition: width 0.6s, height 0.6s;
-        }
-
-        #admin-tk-page .btn-primary:active::after {
-            width: 300px;
-            height: 300px;
-        }
-
-    /* =======================
-   STAT CARDS
-======================= */
-    #admin-tk-page .stats-card {
-        border: none;
-        border-radius: 15px;
-        overflow: hidden;
-        transition: all 0.4s ease;
-        box-shadow: 0 6px 15px rgba(0,0,0,0.1);
-    }
-
-        #admin-tk-page .stats-card:hover {
-            transform: translateY(-10px) scale(1.03);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-        }
-
-    #admin-tk-page .total-card {
-        background: linear-gradient(135deg, #42a5f5, #1e88e5);
-    }
-
-    #admin-tk-page .completed-card {
-        background: linear-gradient(135deg, #66bb6a, #43a047);
-    }
-
-    #admin-tk-page .incomplete-card {
-        background: linear-gradient(135deg, #ef5350, #d32f2f);
-    }
-
-    #admin-tk-page .card-header {
-        font-weight: 600;
-        font-size: 1.1rem;
-    }
-
-    #admin-tk-page .card-title {
-        font-size: 2.5rem;
-        font-weight: 700;
-    }
-
-    /* =======================
-   PROGRESS BAR
-======================= */
-    #admin-tk-page .progress {
-        height: 30px;
-        border-radius: 15px;
-        overflow: hidden;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    }
-
-    #admin-tk-page .progress-bar {
-        background: linear-gradient(to right, #43a047, #66bb6a);
-        animation: progressAnimate 2s ease-in-out;
-        font-weight: bold;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-@keyframes progressAnimate {
-    0% {
-        width: 0%;
-    }
-}
-
-/* =======================
-   TABLE
-======================= */
-#admin-tk-page .table {
-    border-radius: 15px;
     overflow: hidden;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    margin-bottom: 24px;
 }
 
-    #admin-tk-page .table thead th {
-        background: #0029c8d9 !important;
-        color: white;
-        text-transform: uppercase;
-        font-size: 0.8rem;
-        letter-spacing: 0.8px;
-        padding: 12px;
-        border: none;
+.tk-header-card::before {
+    content: "";
+    position: absolute;
+    top: -50%;
+    right: -10%;
+    width: 350px;
+    height: 350px;
+    background: radial-gradient(circle, rgba(59, 130, 246, 0.25) 0%, rgba(255, 255, 255, 0) 70%);
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.tk-header-title {
+    font-size: 1.65rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.tk-header-subtitle {
+    color: #94a3b8;
+    font-size: 0.92rem;
+    margin-bottom: 0;
+}
+
+/* --- Action Buttons --- */
+.btn-tk-export {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: #ffffff !important;
+    border: none;
+    font-weight: 600;
+    padding: 9px 18px;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    transition: all 0.25s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-tk-export:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(16, 185, 129, 0.45);
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+}
+
+.btn-tk-email {
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    color: #ffffff !important;
+    border: none;
+    font-weight: 600;
+    padding: 9px 18px;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    transition: all 0.25s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-tk-email:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(59, 130, 246, 0.45);
+    background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+}
+
+/* --- Smart Filter Bar --- */
+.tk-filter-card {
+    background: #ffffff;
+    border-radius: 14px;
+    padding: 18px 22px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    margin-bottom: 24px;
+}
+
+.tk-filter-label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #64748b;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.tk-form-select, .tk-form-input {
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 9px 14px;
+    font-size: 0.9rem;
+    color: #1e293b;
+    background-color: #f8fafc;
+    transition: all 0.2s ease;
+    width: 100%;
+}
+
+.tk-form-select:focus, .tk-form-input:focus {
+    border-color: #3b82f6;
+    background-color: #ffffff;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12);
+    outline: none;
+}
+
+/* --- KPI Stats Cards --- */
+.tk-kpi-card {
+    border-radius: 16px;
+    padding: 22px 24px;
+    color: #ffffff;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.tk-kpi-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.2);
+}
+
+.tk-kpi-total {
+    background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+}
+
+.tk-kpi-completed {
+    background: linear-gradient(135deg, #065f46 0%, #10b981 100%);
+}
+
+.tk-kpi-incomplete {
+    background: linear-gradient(135deg, #991b1b 0%, #ef4444 100%);
+}
+
+.tk-kpi-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+}
+
+.tk-kpi-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.9);
+    letter-spacing: 0.2px;
+}
+
+.tk-kpi-icon-wrapper {
+    width: 46px;
+    height: 46px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.18);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.35rem;
+}
+
+.tk-kpi-value {
+    font-size: 2.3rem;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -1px;
+    margin-bottom: 6px;
+}
+
+.tk-kpi-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.82rem;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.tk-kpi-badge {
+    background: rgba(255, 255, 255, 0.22);
+    backdrop-filter: blur(4px);
+    padding: 3px 9px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 0.78rem;
+}
+
+/* --- Progress Section Card --- */
+.tk-progress-card {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 22px 26px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    margin-bottom: 24px;
+}
+
+.tk-progress-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.tk-progress-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #1e293b;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+}
+
+.tk-progress-percent {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #10b981;
+}
+
+.tk-progress-track {
+    height: 18px;
+    background-color: #f1f5f9;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06);
+    position: relative;
+}
+
+.tk-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #10b981 0%, #34d399 50%, #60a5fa 100%);
+    border-radius: 12px;
+    transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    background-size: 30px 30px;
+    background-image: linear-gradient(
+        45deg,
+        rgba(255, 255, 255, 0.2) 25%,
+        transparent 25%,
+        transparent 50%,
+        rgba(255, 255, 255, 0.2) 50%,
+        rgba(255, 255, 255, 0.2) 75%,
+        transparent 75%,
+        transparent
+    );
+    animation: progressStripe 2s linear infinite;
+}
+
+@keyframes progressStripe {
+    0% { background-position: 0 0; }
+    100% { background-position: 60px 0; }
+}
+
+.tk-progress-meta {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+    font-size: 0.84rem;
+    color: #64748b;
+}
+
+/* --- Table Card Container --- */
+.tk-table-card {
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    overflow: hidden;
+    margin-bottom: 24px;
+}
+
+.tk-table-toolbar {
+    padding: 16px 22px;
+    border-bottom: 1px solid #f1f5f9;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    background: #fafbfc;
+}
+
+.tk-table-toolbar-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.tk-table-responsive {
+    overflow-x: auto;
+}
+
+.tk-table {
+    width: 100%;
+    margin-bottom: 0;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.tk-table thead th {
+    background: #0029c8d9 !important;
+    color: #ffffff !important;
+    font-weight: 700;
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    padding: 14px 16px;
+    text-align: center;
+    vertical-align: middle;
+    border: none;
+}
+
+.tk-table tbody tr {
+    transition: all 0.2s ease;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.tk-table tbody tr:hover {
+    background-color: #f8fafc !important;
+}
+
+.tk-table tbody td {
+    padding: 14px 16px;
+    vertical-align: middle;
+    font-size: 0.9rem;
+    color: #334155;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+/* Student Avatar bubble */
+.student-avatar-pill {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+    color: #4338ca;
+    font-weight: 700;
+    font-size: 0.88rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 10px;
+    flex-shrink: 0;
+}
+
+/* Status Badges in Table */
+.badge-status-completed {
+    background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+    color: #166534;
+    border: 1px solid #86efac;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 0.82rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 2px 5px rgba(22, 101, 52, 0.08);
+}
+
+.badge-status-progress {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    color: #92400e;
+    border: 1px solid #fcd34d;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 0.82rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 2px 5px rgba(146, 64, 14, 0.08);
+}
+
+/* --- Pagination & Page Size --- */
+.tk-pagination-bar {
+    padding: 16px 24px;
+    background: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    border-top: 1px solid #f1f5f9;
+}
+
+.tk-page-btn {
+    border: 1.5px solid #e2e8f0;
+    background: #ffffff;
+    color: #475569;
+    font-weight: 600;
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 0.86rem;
+    transition: all 0.2s ease;
+}
+
+.tk-page-btn:hover:not(:disabled) {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+    color: #1e293b;
+}
+
+.tk-page-btn.active {
+    background: #0029c8d9 !important;
+    border-color: #0029c8d9 !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 10px rgba(0, 41, 200, 0.25);
+}
+
+.tk-page-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+/* --- Loading Spinner --- */
+.tk-loading-overlay {
+    padding: 60px 20px;
+    text-align: center;
+    color: #64748b;
+}
+
+/* --- Responsive adjustments --- */
+@media (max-width: 991px) {
+    .tk-header-card {
+        padding: 20px;
     }
-
-    #admin-tk-page .table tbody tr {
-        transition: all 0.3s ease;
-    }
-
-        #admin-tk-page .table tbody tr:hover {
-            background: #e0f2f1;
-            transform: scale(1.01);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-        }
-
-    #admin-tk-page .table td {
-        vertical-align: middle;
-    }
-
-/* =======================
-   RESPONSIVE
-======================= */
-@media (max-width: 768px) {
-    #admin-tk-page .row .col-md-4 {
-        margin-bottom: 20px;
+    .tk-kpi-value {
+        font-size: 1.9rem;
     }
 }

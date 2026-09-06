@@ -8,9 +8,13 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
 <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
 
-<link href="~/Areas/Content/css/admonWwordRegister.css" rel="stylesheet" type="text/css" />
-<link href="~/Areas/Content/adminpage.css" rel="stylesheet" type="text/css" />
+<link href="~/Areas/Content/css/admonWwordRegister.css?v=@DateTime.Now.Ticks" rel="stylesheet" type="text/css" />
+<link href="~/Areas/Content/adminpage.css?v=@DateTime.Now.Ticks" rel="stylesheet" type="text/css" />
 
+
+@{
+    var vaiTroId = Session["VaiTroId"] as int?;
+}
 
 <!-- THANH CÔNG CỤ -->
 <nav class="navbar navbar-expand-lg toolbar shadow-sm mb-3">
@@ -23,16 +27,19 @@
                         <i class="fa fa-plus me-1"></i> Tạo đợt mới
                     </button>
                 </li>
-                <li class="nav-item">
-                    <button class="btn btn-outline-danger btn-sm me-2 btn-delete-selected" id="btnDeleteSelectedDot" style="display:none;" title="Xóa các đợt đã chọn">
-                        <i class="fas fa-trash-alt me-1"></i> Xóa đã chọn (<span class="selected-count">0</span>)
-                    </button>
-                </li>
-                <li class="nav-item">
-                    <button class="btn btn-outline-secondary btn-sm me-2" id="btnViewDeleted">
-                        <i class="fas fa-trash-restore me-1"></i> Đợt đã xóa
-                    </button>
-                </li>
+                @if (vaiTroId == 1 || vaiTroId == null)
+                {
+                    <li class="nav-item">
+                        <button class="btn btn-outline-danger btn-sm me-2 btn-delete-selected" id="btnDeleteSelectedDot" style="display:none;" title="Xóa các đợt đã chọn">
+                            <i class="fas fa-trash-alt me-1"></i> Xóa đã chọn (<span class="selected-count">0</span>)
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="btn btn-outline-secondary btn-sm me-2" id="btnViewDeleted">
+                            <i class="fas fa-trash-restore me-1"></i> Đợt đã xóa
+                        </button>
+                    </li>
+                }
             </ul>
 
             <!-- Bên phải -->
@@ -72,35 +79,51 @@
 
 
 
-                <button id="exportExcel" type="button" class="btn btn-outline-success btn-sm shadow-sm">
-                    <i class="fa fa-file-excel me-1"></i> Xuất Excel
-                </button>
+                <div class="dropdown d-inline-block">
+                    <button class="btn btn-excel-manager dropdown-toggle" type="button" id="excelDropdownDot" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fa fa-file-excel me-1"></i> Quản lý Excel
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow border-0" aria-labelledby="excelDropdownDot">
+                        <li>
+                            <a class="dropdown-item py-2" href="@Url.Action("DownloadTemplate", "AdminWordRegister", new { area = "Admin" })">
+                                <i class="fas fa-file-download text-primary me-2"></i> Xuất mẫu Import
+                            </a>
+                        </li>
+                        <li>
+                            <button class="dropdown-item py-2" type="button" data-bs-toggle="modal" data-bs-target="#modalImportDotExcel">
+                                <i class="fas fa-file-upload text-success me-2"></i> Nhập Excel
+                            </button>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <button class="dropdown-item py-2" type="button" id="btnExportDotData">
+                                <i class="fas fa-file-export text-info me-2"></i> Xuất dữ liệu
+                            </button>
+                        </li>
+                    </ul>
+                </div>
 
             </form>
         </div>
     </div>
 </nav>
 
-<div class="table-wrapper shadow-sm rounded-3 bg-white p-2" style="overflow-x: auto;">
-    <table class="table table-bordered table-hover align-middle text-center mb-0">
+<div class="table-wrapper shadow-sm rounded-3 bg-white p-2">
+    <table class="table table-bordered table-hover align-middle text-center mb-0" style="width:100%; table-layout: fixed;">
         <thead class="table-light">
             <tr>
-                <th style="width:40px;" class="text-center"><input type="checkbox" id="checkAllDot" class="form-check-input" title="Chọn tất cả"></th>
-                <th style="width:5%;">STT</th>
-                <th style="width:18%;">Tên Đợt</th>
-                <th style="width:8%;">Buổi</th>
-                <th style="width:12%;">Loại LD</th>
-                <th style="width:10%;">Giá Trị</th>
-                <th class="text-center px-1" style="width:80px;" title="Ngày Lao Động">
-                    <span class="d-inline-block w-100 text-truncate">Ngày LD</span>
-                </th>
-                <th style="width:12%;">Khu Vực</th>
-                <th>Đăng ký/Quy định</th>
-
-                <th style="width:10%;">Trạng Thái</th>
-                <th style="width:15%;">Tác vụ</th>
+                <th style="width: 38px;" class="text-center"><input type="checkbox" id="checkAllDot" class="form-check-input" title="Chọn tất cả"></th>
+                <th style="width: 45px;">STT</th>
+                <th style="width: 14%;">Tên Đợt</th>
+                <th style="width: 12%;">Buổi</th>
+                <th style="width: 9%;">Loại LĐ</th>
+                <th style="width: 7%;">Giá Trị</th>
+                <th style="width: 10%;">Ngày LĐ</th>
+                <th style="width: 9%;">Khu Vực</th>
+                <th style="width: 13%;">Đăng ký/Quy định</th>
+                <th style="width: 10%;">Trạng Thái</th>
+                <th style="width: 16%; min-width: 155px;" class="action-header">Tác vụ</th>
             </tr>
-
         </thead>
         <tbody id="dotLaoDongTableBody">
             @if (Model != null && Model.Any())
@@ -134,7 +157,11 @@
 
 
                         <td>
-                            @if (item.TrangThaiDuyet == true)
+                            @if (item.TrangThaiDot == "Tạm ngưng")
+                            {
+                                <span class="badge bg-danger">Tạm ngưng</span>
+                            }
+                            else if (item.TrangThaiDuyet == true)
                             {
                                 <span class="badge bg-success">Đã duyệt</span>
                             }
@@ -144,25 +171,36 @@
                             }
                         </td>
                         <td class="action-cell">
-                            <button class="btn btn-sm btn-warning btn-edit me-1" title="Sửa"
-                                    data-id="@item.TaoDotLaoDong_id">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="btn btn-sm btn-danger btn-delete me-1" title="Xóa"
-                                    data-id="@item.TaoDotLaoDong_id">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                            <button class="btn btn-sm btn-info btn-detail me-1 text-white" title="Chi tiết"
-                                    data-id="@item.TaoDotLaoDong_id">
-                                <i class="fas fa-info-circle"></i>
-                            </button>
-                            @if (item.TrangThaiDuyet == false)
-                            {
-                                <button class="btn btn-sm btn-success btn-approve" title="Duyệt ngay"
+                            <div class="d-flex justify-content-center align-items-center gap-1 flex-nowrap w-100">
+                                <button class="btn btn-sm btn-warning btn-edit" title="Sửa"
                                         data-id="@item.TaoDotLaoDong_id">
-                                    <i class="fas fa-check"></i>
+                                    <i class="fas fa-edit"></i>
                                 </button>
-                            }
+                                @if (vaiTroId == 1 || vaiTroId == null)
+                                {
+                                    <button class="btn btn-sm btn-danger btn-delete" title="Xóa"
+                                            data-id="@item.TaoDotLaoDong_id">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                }
+                                <button class="btn btn-sm btn-info btn-detail text-white" title="Chi tiết"
+                                        data-id="@item.TaoDotLaoDong_id">
+                                    <i class="fas fa-info-circle"></i>
+                                </button>
+                                <button class="btn btn-sm @(item.TrangThaiDot == "Tạm ngưng" ? "btn-secondary" : "btn-warning text-dark") btn-toggle-tamngung" 
+                                        title="@(item.TrangThaiDot == "Tạm ngưng" ? "Mở lại đợt lao động" : "Tạm ngưng đợt lao động")"
+                                        data-id="@item.TaoDotLaoDong_id"
+                                        data-status="@item.TrangThaiDot">
+                                    <i class="fas @(item.TrangThaiDot == "Tạm ngưng" ? "fa-play" : "fa-pause")"></i>
+                                </button>
+                                @if (item.TrangThaiDuyet == false)
+                                {
+                                    <button class="btn btn-sm btn-success btn-approve" title="Duyệt ngay"
+                                            data-id="@item.TaoDotLaoDong_id">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                }
+                            </div>
                         </td>
                     </tr>
                     stt++;
@@ -199,6 +237,7 @@
             <option value="20">20 dòng / trang</option>
             <option value="50">50 dòng / trang</option>
             <option value="100">100 dòng / trang</option>
+            <option value="1000000">Tất cả</option>
         </select>
     </div>
 </div>
@@ -207,29 +246,29 @@
 <!-- ==================== TẤT CẢ MODAL ==================== -->
 <!-- Modal Tạo Mới -->
 <div class="modal fade" id="createModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content shadow">
-            <form id="createForm" action="/AdminWordRegister/CreateAjax" method="post">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content shadow-lg border-0" style="border-radius: 16px; overflow: hidden;">
+            <form id="createForm" action="/Admin/AdminWordRegister/CreateAjax" method="post">
                 @Html.AntiForgeryToken()
-                <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title"><i class="fa fa-plus me-2"></i> Tạo Đợt Lao Động Mới</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <div class="modal-header bg-primary text-white py-3">
+                    <h5 class="modal-title fw-bold"><i class="fa fa-plus-circle me-2"></i> Tạo Đợt Lao Động Mới</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body">
-                    <div class="row">
+                <div class="modal-body p-4">
+                    <div class="row g-4 align-items-stretch">
                         <!-- Khung ảnh bên trái -->
-                        <div class="col-md-4">
-                            <div class="khuvuc-frame mb-3">
-                                <img id="createKhuVucImage" alt="Ảnh khu vực" class="img-fluid rounded border" />
+                        <div class="col-lg-5 col-md-5 d-flex flex-column">
+                            <div class="khuvuc-frame h-100 mb-0 d-flex flex-column align-items-center justify-content-center p-2 rounded-4 border bg-light position-relative" style="min-height: 420px; box-shadow: inset 0 2px 6px rgba(0,0,0,0.04);">
+                                <img id="createKhuVucImage" alt="Ảnh khu vực" class="img-fluid rounded-3" style="max-height: 450px; width: 100%; object-fit: contain;" />
                             </div>
                         </div>
 
                         <!-- Form bên phải -->
-                        <div class="col-md-8">
+                        <div class="col-lg-7 col-md-7">
                             <div class="row g-3">
                                 <div class="col-md-6">
                                     <label class="form-label fw-bold">Đợt lao động (Tháng) <span class="text-danger">*</span></label>
-                                    <select name="DotLaoDong" id="dotLaoDongMonth" class="form-select" required>
+                                    <select name="DotLaoDong" id="dotLaoDongMonth" class="form-select shadow-sm" required>
                                         <option value="">-- Chọn tháng --</option>
                                         <option value="Tháng 1">Tháng 1</option>
                                         <option value="Tháng 2">Tháng 2</option>
@@ -248,7 +287,7 @@
 
                                 <div class="col-md-6">
                                     <label class="form-label fw-bold">Buổi <span class="text-danger">*</span></label>
-                                    <select name="Buoi" class="form-select" required>
+                                    <select name="Buoi" class="form-select shadow-sm" required>
                                         <option value="">-- Chọn buổi --</option>
                                         <option value="Sáng">Sáng (7h-8h30)</option>
                                         <option value="Chiều">Chiều (13h-14h)</option>
@@ -257,7 +296,7 @@
 
                                 <div class="col-md-6">
                                     <label class="form-label fw-bold">Loại lao động</label>
-                                    <select name="LoaiLaoDong" class="form-select" required>
+                                    <select name="LoaiLaoDong" class="form-select shadow-sm" required>
                                         <option value="">-- Chọn loại lao động --</option>
                                         <option value="Cá Nhân">Cá Nhân</option>
                                         <option value="Lớp">Lớp</option>
@@ -266,19 +305,19 @@
 
                                 <div class="col-md-6">
                                     <label class="form-label fw-bold">Giá trị (điểm)</label>
-                                    <input name="GiaTri" type="number" step="0.1" class="form-control" value="1" min="0" />
+                                    <input name="GiaTri" type="number" step="0.1" class="form-control shadow-sm" value="1" min="0" />
                                 </div>
 
                                 <div class="col-md-6">
                                     <label class="form-label fw-bold">Ngày lao động <span class="text-danger">*</span></label>
-                                    <select name="NgayLaoDong" id="dotLaoDongDay" class="form-select" required>
+                                    <select name="NgayLaoDong" id="dotLaoDongDay" class="form-select shadow-sm" required>
                                         <option value="">-- Chọn ngày --</option>
                                     </select>
                                 </div>
 
                                 <div class="col-md-6">
-                                    <label class="form-label fw-bold">Khu vực</label>
-                                    <select id="createKhuVuc" name="KhuVuc" class="form-select">
+                                    <label class="form-label fw-bold">Khu vực <span class="text-danger">*</span></label>
+                                    <select id="createKhuVuc" name="KhuVuc" class="form-select shadow-sm" required>
                                         <option value="">-- Chọn khu vực --</option>
                                         <option value="A1">Tòa A1</option>
                                         <option value="A2">Tòa A2</option>
@@ -297,20 +336,20 @@
 
                                 <div class="col-md-6">
                                     <label class="form-label fw-bold">Số lượng sinh viên</label>
-                                    <input name="SoLuongSinhVien" type="number" class="form-control" min="1" value="20" />
+                                    <input name="SoLuongSinhVien" type="number" class="form-control shadow-sm" min="1" value="20" />
                                 </div>
 
                                 <div class="col-12">
                                     <label class="form-label fw-bold">Mô tả công việc</label>
-                                    <textarea name="MoTa" class="form-control" rows="4"></textarea>
+                                    <textarea name="MoTa" class="form-control shadow-sm" rows="3" placeholder="Nhập mô tả chi tiết công việc nếu có..."></textarea>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                    <button type="submit" class="btn btn-success"><i class="fa fa-check me-1"></i> Tạo đợt</button>
+                <div class="modal-footer bg-light border-0 py-3">
+                    <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-success px-4 fw-bold"><i class="fa fa-check me-1"></i> Tạo đợt</button>
                 </div>
             </form>
         </div>
@@ -319,105 +358,107 @@
 
 <!-- Modal Chỉnh Sửa -->
 <div class="modal fade" id="editModal" tabindex="-1" data-bs-backdrop="static">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content shadow-lg">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content shadow-lg border-0 rounded-4">
             <form id="editForm" action="/AdminWordRegister/EditAjax" method="post">
                 @Html.AntiForgeryToken()
                 <input type="hidden" name="TaoDotLaoDong_id" id="editId" />
-                <div class="modal-header bg-warning text-dark">
-                    <h5 class="modal-title"><i class="fas fa-edit me-2"></i> Chỉnh sửa đợt lao động</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <div class="modal-header bg-primary text-white py-3">
+                    <h5 class="modal-title fw-bold"><i class="fas fa-edit me-2"></i> Chỉnh sửa đợt lao động</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
 
-                <div class="modal-body text-center">
-                    <!-- ✅ Khung ảnh khu vực -->
-                    <div class="khuvuc-frame mb-4">
-                        <img id="editKhuVucImage" alt="Ảnh khu vực" />
-                    </div>
-
-                    <!-- ✅ Form chỉnh sửa -->
-                    <div class="row g-3 text-start">
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold">Đợt lao động (Tháng) <span class="text-danger">*</span></label>
-                            <select name="DotLaoDong" id="editDotLaoDong" class="form-select" required>
-                                <option value="">-- Chọn tháng --</option>
-                                <option value="Tháng 1">Tháng 1</option>
-                                <option value="Tháng 2">Tháng 2</option>
-                                <option value="Tháng 3">Tháng 3</option>
-                                <option value="Tháng 4">Tháng 4</option>
-                                <option value="Tháng 5">Tháng 5</option>
-                                <option value="Tháng 6">Tháng 6</option>
-                                <option value="Tháng 7">Tháng 7</option>
-                                <option value="Tháng 8">Tháng 8</option>
-                                <option value="Tháng 9">Tháng 9</option>
-                                <option value="Tháng 10">Tháng 10</option>
-                                <option value="Tháng 11">Tháng 11</option>
-                                <option value="Tháng 12">Tháng 12</option>
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold">Buổi <span class="text-danger">*</span></label>
-                            <select name="Buoi" id="editBuoi" class="form-select" required>
-                                <option value="Sáng">Sáng (7h-8h30h)</option>
-                                <option value="Chiều">Chiều (13h-14h)</option>
-                            </select>
+                <div class="modal-body p-4">
+                    <div class="row g-4 align-items-stretch">
+                        <!-- Khung ảnh bên trái -->
+                        <div class="col-lg-5 col-md-5 d-flex flex-column">
+                            <div class="khuvuc-frame h-100 mb-0 d-flex flex-column align-items-center justify-content-center p-2 rounded-4 border bg-light position-relative" style="min-height: 420px; box-shadow: inset 0 2px 6px rgba(0,0,0,0.04);">
+                                <img id="editKhuVucImage" alt="Ảnh khu vực" class="img-fluid rounded-3" style="max-height: 450px; width: 100%; object-fit: contain;" />
+                            </div>
                         </div>
 
+                        <!-- Form bên phải -->
+                        <div class="col-lg-7 col-md-7">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Đợt lao động (Tháng) <span class="text-danger">*</span></label>
+                                    <select name="DotLaoDong" id="editDotLaoDong" class="form-select shadow-sm" required>
+                                        <option value="">-- Chọn tháng --</option>
+                                        <option value="Tháng 1">Tháng 1</option>
+                                        <option value="Tháng 2">Tháng 2</option>
+                                        <option value="Tháng 3">Tháng 3</option>
+                                        <option value="Tháng 4">Tháng 4</option>
+                                        <option value="Tháng 5">Tháng 5</option>
+                                        <option value="Tháng 6">Tháng 6</option>
+                                        <option value="Tháng 7">Tháng 7</option>
+                                        <option value="Tháng 8">Tháng 8</option>
+                                        <option value="Tháng 9">Tháng 9</option>
+                                        <option value="Tháng 10">Tháng 10</option>
+                                        <option value="Tháng 11">Tháng 11</option>
+                                        <option value="Tháng 12">Tháng 12</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Buổi <span class="text-danger">*</span></label>
+                                    <select name="Buoi" id="editBuoi" class="form-select shadow-sm" required>
+                                        <option value="Sáng">Sáng (7h-8h30)</option>
+                                        <option value="Chiều">Chiều (13h-14h)</option>
+                                    </select>
+                                </div>
 
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Loại lao động</label>
+                                    <select name="LoaiLaoDong" id="editLoaiLaoDong" class="form-select shadow-sm" required>
+                                        <option value="">-- Chọn loại lao động --</option>
+                                        <option value="Cá nhân">Cá nhân</option>
+                                        <option value="Lớp">Lớp</option>
+                                    </select>
+                                </div>
 
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold">Loại lao động</label>
-                            <select name="LoaiLaoDong" id="editLoaiLaoDong" class="form-select" required>
-                                <option value="">-- Chọn loại lao động --</option>
-                                <option value="Cá nhân">Cá nhân</option>
-                                <option value="Lớp">Lớp</option>
-                            </select>
-                        </div>
-
-
-
-
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold">Giá trị</label>
-                            <input name="GiaTri" id="editGiaTri" type="number" step="0.1" class="form-control" />
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold">Ngày lao động <span class="text-danger">*</span></label>
-                            <select name="NgayLaoDong" id="editNgayLaoDong" class="form-select" required>
-                                <option value="">-- Chọn ngày --</option>
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold">Khu vực <span class="text-danger">*</span></label>
-                            <select name="KhuVuc" id="editKhuVuc" class="form-select" required>
-                                <option value="A1">Tòa A1</option>
-                                <option value="A2">Tòa A2</option>
-                                <option value="B1">Tòa B1</option>
-                                <option value="B2">Tòa B2</option>
-                                <option value="B3">Tòa B3</option>
-                                <option value="B4">Tòa B4</option>
-                                <option value="C1">Tòa C1</option>
-                                <option value="C2">Tòa C2</option>
-                                <option value="H1">Tòa H1</option>
-                                <option value="H2">Tòa H2</option>
-                                <option value="T2">Tòa T2</option>
-                                <option value="Trước cổng trường">Trước cổng trường</option>
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold">Số lượng SV</label>
-                            <input name="SoLuongSinhVien" id="editSoLuongSinhVien" type="number" class="form-control" />
-                        </div>
-                        <div class="col-12">
-                            <label class="form-label fw-bold">Mô tả</label>
-                            <textarea name="MoTa" id="editMoTa" class="form-control" rows="4"></textarea>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Giá trị (điểm)</label>
+                                    <input name="GiaTri" id="editGiaTri" type="number" step="0.1" class="form-control shadow-sm" />
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Ngày lao động <span class="text-danger">*</span></label>
+                                    <select name="NgayLaoDong" id="editNgayLaoDong" class="form-select shadow-sm" required>
+                                        <option value="">-- Chọn ngày --</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Khu vực <span class="text-danger">*</span></label>
+                                    <select name="KhuVuc" id="editKhuVuc" class="form-select shadow-sm" required>
+                                        <option value="">-- Chọn khu vực --</option>
+                                        <option value="A1">Tòa A1</option>
+                                        <option value="A2">Tòa A2</option>
+                                        <option value="B1">Tòa B1</option>
+                                        <option value="B2">Tòa B2</option>
+                                        <option value="B3">Tòa B3</option>
+                                        <option value="B4">Tòa B4</option>
+                                        <option value="C1">Tòa C1</option>
+                                        <option value="C2">Tòa C2</option>
+                                        <option value="H1">Tòa H1</option>
+                                        <option value="H2">Tòa H2</option>
+                                        <option value="T2">Tòa T2</option>
+                                        <option value="Trước cổng trường">Trước cổng trường</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Số lượng SV</label>
+                                    <input name="SoLuongSinhVien" id="editSoLuongSinhVien" type="number" class="form-control shadow-sm" />
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label fw-bold">Mô tả công việc</label>
+                                    <textarea name="MoTa" id="editMoTa" class="form-control shadow-sm" rows="3" placeholder="Nhập mô tả chi tiết công việc nếu có..."></textarea>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="modal-footer justify-content-center">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                    <button type="submit" class="btn btn-primary"><i class="fa fa-save me-1"></i> Lưu thay đổi</button>
+                <div class="modal-footer bg-light border-0 py-3 justify-content-center gap-2">
+                    <button type="button" class="btn btn-secondary px-4 py-2" data-bs-dismiss="modal" style="border-radius: 8px; font-weight: 600;">Hủy</button>
+                    <button type="submit" class="btn btn-primary px-4 py-2 fw-bold" style="border-radius: 8px;"><i class="fa fa-save me-1"></i> Lưu thay đổi</button>
                 </div>
             </form>
         </div>
@@ -427,62 +468,67 @@
 
 <!-- Modal Chi Tiết -->
 <div class="modal fade" id="detailModal" tabindex="-1">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content shadow-lg">
-            <div class="modal-header bg-info text-white">
-                <h5 class="modal-title">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content shadow-lg border-0 rounded-4">
+            <div class="modal-header bg-info text-white py-3">
+                <h5 class="modal-title fw-bold">
                     <i class="fa fa-info-circle me-2"></i> Chi Tiết Đợt Lao Động
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
 
-            <div class="modal-body text-center">
-                <!-- Ảnh khu vực -->
-                <div class="khuvuc-frame mb-3">
-                    <img id="detailKhuVucImage" alt="Ảnh khu vực" />
-                </div>
+            <div class="modal-body p-4">
+                <div class="row g-4 align-items-stretch">
+                    <!-- Ảnh khu vực bên trái -->
+                    <div class="col-lg-5 col-md-5 d-flex flex-column">
+                        <div class="khuvuc-frame h-100 mb-0 d-flex flex-column align-items-center justify-content-center p-2 rounded-4 border bg-light position-relative" style="min-height: 400px; box-shadow: inset 0 2px 6px rgba(0,0,0,0.04);">
+                            <img id="detailKhuVucImage" alt="Ảnh khu vực" class="img-fluid rounded-3" style="max-height: 420px; width: 100%; object-fit: contain;" />
+                        </div>
+                    </div>
 
-                <!-- Thông tin chi tiết -->
-                <div class="d-inline-block text-start" style="max-width:600px; margin:0 auto;">
-                    <dl class="row mb-0">
-                        <dt class="col-sm-4">Tên đợt</dt>
-                        <dd class="col-sm-8 fw-bold" id="detailDotLaoDong"></dd>
+                    <!-- Thông tin chi tiết bên phải -->
+                    <div class="col-lg-7 col-md-7 d-flex flex-column justify-content-center">
+                        <div class="p-3 bg-light rounded-4 border">
+                            <dl class="row mb-0 g-2">
+                                <dt class="col-sm-4 text-muted">Tên đợt:</dt>
+                                <dd class="col-sm-8 fw-bold text-dark" id="detailDotLaoDong"></dd>
 
-                        <dt class="col-sm-4">Buổi</dt>
-                        <dd class="col-sm-8" id="detailBuoi"></dd>
+                                <dt class="col-sm-4 text-muted">Buổi:</dt>
+                                <dd class="col-sm-8" id="detailBuoi"></dd>
 
-                        <dt class="col-sm-4">Loại lao động</dt>
-                        <dd class="col-sm-8" id="detailLoaiLaoDong"></dd>
+                                <dt class="col-sm-4 text-muted">Loại lao động:</dt>
+                                <dd class="col-sm-8" id="detailLoaiLaoDong"></dd>
 
-                        <dt class="col-sm-4">Giá trị</dt>
-                        <dd class="col-sm-8 text-success fw-bold" id="detailGiaTri"></dd>
+                                <dt class="col-sm-4 text-muted">Giá trị:</dt>
+                                <dd class="col-sm-8 text-success fw-bold" id="detailGiaTri"></dd>
 
-                        <dt class="col-sm-4">Ngày lao động</dt>
-                        <dd class="col-sm-8" id="detailNgayLaoDong"></dd>
+                                <dt class="col-sm-4 text-muted">Ngày lao động:</dt>
+                                <dd class="col-sm-8 fw-semibold" id="detailNgayLaoDong"></dd>
 
-                        <dt class="col-sm-4">Khu vực</dt>
-                        <dd class="col-sm-8" id="detailKhuVuc"></dd>
+                                <dt class="col-sm-4 text-muted">Khu vực:</dt>
+                                <dd class="col-sm-8 fw-semibold text-primary" id="detailKhuVuc"></dd>
 
-                        <dt class="col-sm-4">Số lượng SV</dt>
-                        <dd class="col-sm-8">
-                            <span id="detailSoLuongSinhVien" class="fw-bold"></span>
+                                <dt class="col-sm-4 text-muted">Số lượng SV:</dt>
+                                <dd class="col-sm-8">
+                                    <span id="detailSoLuongSinhVien" class="fw-bold"></span>
+                                </dd>
 
-                        </dd>
+                                <dt class="col-sm-4 text-muted">Trạng thái:</dt>
+                                <dd class="col-sm-8" id="detailTrangThaiDuyet"></dd>
 
-                        <dt class="col-sm-4">Trạng thái</dt>
-                        <dd class="col-sm-8" id="detailTrangThaiDuyet"></dd>
+                                <dt class="col-sm-4 text-muted">Người tạo:</dt>
+                                <dd class="col-sm-8" id="detailNguoiTao"></dd>
 
-                        <dt class="col-sm-4">Người tạo</dt>
-                        <dd class="col-sm-8" id="detailNguoiTao"></dd>
-
-                        <dt class="col-sm-4">Mô tả</dt>
-                        <dd class="col-sm-8" id="detailMoTa"></dd>
-                    </dl>
+                                <dt class="col-sm-4 text-muted">Mô tả:</dt>
+                                <dd class="col-sm-8 text-break" id="detailMoTa"></dd>
+                            </dl>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div class="modal-footer justify-content-center">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            <div class="modal-footer bg-light border-0 py-3 justify-content-center">
+                <button type="button" class="btn btn-secondary px-4 py-2" data-bs-dismiss="modal" style="border-radius: 8px; font-weight: 600;">Đóng</button>
             </div>
         </div>
     </div>
@@ -546,35 +592,49 @@
 </div>
 
 <!-- Modal Danh sách đã xóa -->
-<div class="modal fade" id="deletedModal" tabindex="-1">
-    <div class="modal-dialog modal-xl">
-        <div class="modal-content shadow-lg">
-            <div class="modal-header bg-secondary text-white">
-                <h5 class="modal-title"><i class="fas fa-trash-restore me-2"></i> Đợt lao động đã hủy</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+<div class="modal fade" id="deletedModal" tabindex="-1" aria-labelledby="deletedModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content shadow-lg border-0">
+            <div class="modal-header text-white">
+                <h5 class="modal-title d-flex align-items-center" id="deletedModalLabel">
+                    <i class="fas fa-trash-restore text-warning me-2 fs-5"></i>
+                    <span>Đợt Lao Động Đã Hủy / Đã Xóa</span>
+                    <span class="deleted-badge-count ms-3" id="deletedCountBadge">0 đợt</span>
+                </h5>
+                <button type="button" class="btn-close btn-close-white shadow-none" data-bs-dismiss="modal" aria-label="Đóng"></button>
             </div>
-            <div class="modal-body">
-                <div class="table-responsive" style="max-height: 500px;">
-                    <table class="table table-bordered table-hover">
-                        <thead class="table-light sticky-top">
+            <div class="modal-body p-3 p-md-4">
+                <div class="table-responsive rounded-3 border" style="max-height: 520px;">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="sticky-top">
                             <tr>
-                                <th>STT</th>
-                                <th>Tên đợt</th>
-                                <th>Buổi</th>
-                                <th>Ngày LD</th>
-                                <th>Khu vực</th>
-                                <th>Ngày xóa</th>
-                                <th>Tác vụ</th>
+                                <th class="col-stt">STT</th>
+                                <th class="col-name">Tên đợt lao động</th>
+                                <th class="col-session">Buổi</th>
+                                <th class="col-date">Ngày LD</th>
+                                <th class="col-area">Khu vực</th>
+                                <th class="col-deleted-date">Ngày xóa</th>
+                                <th class="col-actions">Tác vụ</th>
                             </tr>
                         </thead>
                         <tbody id="deletedTableBody">
-                            <tr><td colspan="7" class="text-center text-muted py-4">Đang tải dữ liệu...</td></tr>
+                            <tr>
+                                <td colspan="7" class="text-center py-5">
+                                    <div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div>
+                                    <span class="text-muted">Đang tải dữ liệu...</span>
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            <div class="modal-footer bg-white border-top px-4 py-3 d-flex justify-content-between align-items-center">
+                <div class="footer-info text-muted small">
+                    <i class="fas fa-info-circle text-primary me-1"></i> Các đợt khôi phục sẽ xuất hiện lại trong danh sách quản lý chính.
+                </div>
+                <button type="button" class="btn btn-close-modal px-4 py-2" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i> Đóng
+                </button>
             </div>
         </div>
     </div>
@@ -717,7 +777,262 @@
     </div>
 </div>
 
+<!-- Modal Import Excel Đợt Lao Động -->
+<div class="modal fade" id="modalImportDotExcel" tabindex="-1" aria-labelledby="modalImportDotExcelLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 12px; overflow: hidden;">
+            <div class="modal-header bg-success text-white py-3">
+                <h5 class="modal-title fs-5" id="modalImportDotExcelLabel">
+                    <i class="fas fa-file-excel me-2"></i>Nhập Danh Sách Đợt Lao Động Từ Excel
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="alert alert-info d-flex align-items-center mb-3">
+                    <i class="fas fa-info-circle fs-4 me-3 text-primary"></i>
+                    <div>
+                        <strong>Lưu ý:</strong> Vui lòng sử dụng đúng file mẫu để đảm bảo dữ liệu hợp lệ.
+                        Hệ thống tự động kiểm tra trùng lịch (<strong>Khu Vực + Ngày + Buổi</strong>).
+                        <a href="@Url.Action("DownloadTemplate", "AdminWordRegister", new { area = "Admin" })" class="alert-link text-decoration-underline ms-1">
+                            <i class="fas fa-download me-1"></i>Tải mẫu Excel chuẩn tại đây
+                        </a>.
+                    </div>
+                </div>
+
+                <form id="formImportDotExcel" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="excelDotFileInput" class="form-label fw-bold">Chọn file Excel (.xlsx):</label>
+                        <input class="form-control" type="file" id="excelDotFileInput" name="file" accept=".xlsx, .xls" required>
+                    </div>
+
+                    <div id="importDotProgress" class="progress mb-3 d-none" style="height: 20px;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" role="progressbar" style="width: 100%">Đang xử lý dữ liệu...</div>
+                    </div>
+
+                    <div id="importDotErrorContainer" class="alert alert-danger d-none" style="max-height: 200px; overflow-y: auto;">
+                        <h6 class="fw-bold mb-2"><i class="fas fa-exclamation-triangle me-2"></i>Chi tiết các dòng bị lỗi / trùng lịch:</h6>
+                        <ul id="importDotErrorList" class="mb-0 ps-3"></ul>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer bg-light border-0 py-3">
+                <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Hủy bỏ</button>
+                <button type="button" class="btn btn-success px-4" id="btnSubmitImportDotExcel">
+                    <i class="fas fa-upload me-1"></i> Tiến hành Import
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== MODAL NHẬP LÝ DO TẠM NGƯNG ĐỢT LAO ĐỘNG ==================== -->
+<div class="modal fade" id="modalTamDungDot" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow-lg border-0" style="border-radius: 16px; overflow: hidden;">
+            <div class="modal-header bg-warning text-dark py-3 px-4">
+                <h5 class="modal-title fw-bold d-flex align-items-center mb-0">
+                    <i class="fas fa-pause-circle me-2 fs-5"></i> <span id="modalTamDungTitle">Tạm ngưng đợt lao động</span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+            <div class="modal-body py-4 px-4">
+                <input type="hidden" id="tamDungDotId" />
+                <input type="hidden" id="tamDungActionType" value="pause" />
+                
+                <div class="alert alert-warning py-2 px-3 small d-flex align-items-center mb-3" style="border-radius: 8px;">
+                    <i class="fas fa-exclamation-triangle me-2 fs-5"></i>
+                    <div>
+                        Đợt lao động: <strong id="tamDungTenDot" class="text-dark">-</strong>
+                    </div>
+                </div>
+
+                <div id="tamDungReasonGroup">
+                    <label for="tamDungLyDo" class="form-label fw-bold text-dark mb-1">
+                        Lý do tạm ngưng <span class="text-danger">*</span>
+                    </label>
+                    <textarea class="form-control" id="tamDungLyDo" rows="3" 
+                              placeholder="Nhập lý do tạm ngưng đợt lao động (ví dụ: Thời tiết xấu, bảo trì khu vực, dời lịch...)"
+                              style="border-radius: 8px; font-size: 0.9rem;"></textarea>
+                    <div class="form-text text-muted small mt-1">
+                        <i class="fas fa-info-circle me-1"></i> Lý do này sẽ được đồng bộ và hiển thị trên cả tài khoản Admin và Quản lý.
+                    </div>
+                </div>
+
+                <div id="tamDungResumeGroup" style="display: none;">
+                    <p class="text-dark mb-0 fs-6">Bạn có chắc chắn muốn <strong>mở lại đợt lao động</strong> này để tiếp tục hoạt động?</p>
+                </div>
+            </div>
+            <div class="modal-footer bg-light border-0 py-3 px-4 d-flex justify-content-end gap-2">
+                <button type="button" class="btn btn-secondary px-3" data-bs-dismiss="modal" style="border-radius: 8px; font-weight: 600;">
+                    <i class="fas fa-times me-1"></i> Hủy bỏ
+                </button>
+                <button type="button" class="btn btn-warning px-4 text-dark fw-bold" id="btnConfirmTamDung" style="border-radius: 8px;">
+                    <i class="fas fa-check me-1"></i> <span id="btnConfirmTamDungText">Xác nhận tạm ngưng</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Các script cũ giữ nguyên -->
 <script src="~/Areas/Content/Js/adminCommon.js?v=@DateTime.Now.Ticks"></script>
 <script src="~/Areas/Content/Js/adminWordRegistor.js?v=@DateTime.Now.Ticks"></script>
 <script src="~/Areas/Content/Js/CreateCode.js?v=@DateTime.Now.Ticks"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // 1. Xuất dữ liệu Excel với bộ lọc hiện tại
+        const btnExport = document.getElementById("btnExportDotData");
+        if (btnExport) {
+            btnExport.addEventListener("click", function () {
+                const keyword = document.getElementById("searchBox")?.value || "";
+                const buoi = document.getElementById("sessionFilter")?.value || "";
+                const status = document.getElementById("statusFilter")?.value || "";
+
+                let url = '@Url.Action("ExportExcel", "AdminWordRegister", new { area = "Admin" })';
+                url += `?keyword=${encodeURIComponent(keyword)}&buoi=${encodeURIComponent(buoi)}&trangthai=${encodeURIComponent(status)}`;
+                window.location.href = url;
+            });
+        }
+
+        // 2. Xử lý Import Excel
+        const btnSubmitImport = document.getElementById("btnSubmitImportDotExcel");
+        const fileInput = document.getElementById("excelDotFileInput");
+        const progress = document.getElementById("importDotProgress");
+        const errorContainer = document.getElementById("importDotErrorContainer");
+        const errorList = document.getElementById("importDotErrorList");
+
+        function notifyAlert(icon, title, message, htmlExtra) {
+            let contentHtml = `<p class="mb-2 fw-semibold">${message}</p>`;
+            if (htmlExtra) contentHtml += htmlExtra;
+
+            if (typeof Swal !== 'undefined') {
+                return Swal.fire({
+                    icon: icon,
+                    title: title,
+                    html: contentHtml,
+                    confirmButtonText: 'Đóng',
+                    confirmButtonColor: icon === 'success' ? '#198754' : '#0d6efd'
+                });
+            } else {
+                alert(title + "\n" + message);
+                return Promise.resolve();
+            }
+        }
+
+        if (btnSubmitImport && fileInput) {
+            btnSubmitImport.addEventListener("click", function () {
+                if (!fileInput.files || fileInput.files.length === 0) {
+                    notifyAlert('warning', 'Chưa chọn file', 'Vui lòng chọn 1 file Excel (.xlsx) trước khi bấm Import!');
+                    return;
+                }
+
+                const formData = new FormData();
+                formData.append("file", fileInput.files[0]);
+
+                progress.classList.remove("d-none");
+                errorContainer.classList.add("d-none");
+                errorList.innerHTML = "";
+                btnSubmitImport.disabled = true;
+
+                fetch('@Url.Action("ImportExcel", "AdminWordRegister", new { area = "Admin" })', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(res => res.json())
+                .then(data => {
+                    progress.classList.add("d-none");
+                    btnSubmitImport.disabled = false;
+
+                    if (data.success) {
+                        const modalEl = document.getElementById('modalImportDotExcel');
+                        const modal = bootstrap.Modal.getInstance(modalEl);
+                        if (modal) modal.hide();
+
+                        if (data.errors && data.errors.length > 0) {
+                            let listHtml = `<div style="max-height: 180px; overflow-y: auto; text-align: left; background: #fff3cd; border: 1px solid #ffeeba; padding: 10px; border-radius: 6px; font-size: 0.85rem;"><ul class="mb-0 ps-3 text-dark">`;
+                            data.errors.forEach(err => {
+                                listHtml += `<li>${err}</li>`;
+                            });
+                            listHtml += `</ul></div>`;
+
+                            if (typeof Swal !== 'undefined') {
+                                Swal.fire({
+                                    icon: 'info',
+                                    title: 'Nhập thành công một phần!',
+                                    html: `<p class="fw-bold mb-2 text-dark">${data.message}</p>${listHtml}`,
+                                    confirmButtonText: 'Đóng & Tải lại',
+                                    confirmButtonColor: '#0d6efd'
+                                }).then(() => {
+                                    if (typeof loadTableData === "function") loadTableData();
+                                    else location.reload();
+                                });
+                            } else {
+                                alert(data.message);
+                                if (typeof loadTableData === "function") loadTableData();
+                                else location.reload();
+                            }
+                        } else {
+                            if (typeof Swal !== 'undefined') {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Thành công!',
+                                    text: data.message,
+                                    confirmButtonText: 'Tuyệt vời',
+                                    confirmButtonColor: '#198754'
+                                }).then(() => {
+                                    if (typeof loadTableData === "function") loadTableData();
+                                    else location.reload();
+                                });
+                            } else {
+                                alert(data.message);
+                                if (typeof loadTableData === "function") loadTableData();
+                                else location.reload();
+                            }
+                        }
+                    } else {
+                        let listHtml = "";
+                        if (data.errors && data.errors.length > 0) {
+                            errorContainer.classList.remove("d-none");
+                            listHtml = `<div style="max-height: 180px; overflow-y: auto; text-align: left; background: #f8d7da; border: 1px solid #f5c6cb; padding: 10px; border-radius: 6px; font-size: 0.85rem;"><ul class="mb-0 ps-3 text-danger">`;
+                            data.errors.forEach(err => {
+                                const li = document.createElement("li");
+                                li.textContent = err;
+                                errorList.appendChild(li);
+                                listHtml += `<li>${err}</li>`;
+                            });
+                            listHtml += `</ul></div>`;
+                        }
+
+                        if (typeof Swal !== 'undefined') {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Nhập file thất bại!',
+                                html: `<p class="fw-bold mb-2 text-danger">${data.message || 'Có lỗi xảy ra'}</p>${listHtml}`,
+                                confirmButtonText: 'Đóng & Thử lại',
+                                confirmButtonColor: '#dc3545'
+                            });
+                        } else {
+                            alert(data.message || "Lỗi nhập file");
+                        }
+                    }
+                })
+                .catch(err => {
+                    progress.classList.add("d-none");
+                    btnSubmitImport.disabled = false;
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Lỗi máy chủ',
+                            text: 'Có lỗi xảy ra khi gửi dữ liệu lên máy chủ: ' + err,
+                            confirmButtonText: 'Đóng',
+                            confirmButtonColor: '#dc3545'
+                        });
+                    } else {
+                        alert('Lỗi: ' + err);
+                    }
+                });
+            });
+        }
+    });
+</script>

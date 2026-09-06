@@ -64,8 +64,8 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
 
-    let currentSortField = localStorage.getItem("sortField") || "date";
-    let currentSortDir = localStorage.getItem("sortDir") || "desc";
+    let currentSortField = "id";
+    let currentSortDir = "asc";
     let thang = "";
 
     // ==============================
@@ -94,27 +94,56 @@ document.addEventListener("DOMContentLoaded", function () {
             })
             .then((data) => {
                 if (data.success) {
-                    bootstrap.Modal.getInstance(document.getElementById("createModal")).hide();
-                    showToast(data.message || "Tạo đợt thành công!");
+                    const modalInstance = bootstrap.Modal.getInstance(document.getElementById("createModal"));
+                    if (modalInstance) modalInstance.hide();
+
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Thành công!',
+                            text: data.message || "Tạo đợt lao động thành công!",
+                            confirmButtonText: 'Tuyệt vời',
+                            confirmButtonColor: '#198754'
+                        });
+                    } else if (typeof showToast === 'function') {
+                        showToast(data.message || "Tạo đợt thành công!", "success");
+                    } else {
+                        alert(data.message || "Tạo đợt thành công!");
+                    }
 
                     // Tải lại dữ liệu
                     loadDataToTable(currentPage);
-
-                    // Sau khi tải xong, sắp xếp lại để dòng mới nằm cuối
-                    //setTimeout(() => {
-                    //    sortDotLaoDong(true); // hoặc false nếu bạn muốn tháng mới nhất lên đầu
-                    //}, 400);
-
-
-
-
                 } else {
-                    showToast(data.message || "Tạo thất bại!");
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Thêm thất bại!',
+                            text: data.message || "Tạo đợt thất bại!",
+                            confirmButtonText: 'Đóng & Thử lại',
+                            confirmButtonColor: '#dc3545'
+                        });
+                    } else if (typeof showToast === 'function') {
+                        showToast(data.message || "Tạo thất bại!", "error");
+                    } else {
+                        alert(data.message || "Tạo thất bại!");
+                    }
                 }
             })
             .catch((err) => {
                 console.error("Lỗi:", err);
-                showToast("Lỗi kết nối hoặc server không phản hồi.");
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Lỗi kết nối',
+                        text: 'Lỗi kết nối hoặc server không phản hồi: ' + err,
+                        confirmButtonText: 'Đóng',
+                        confirmButtonColor: '#dc3545'
+                    });
+                } else if (typeof showToast === 'function') {
+                    showToast("Lỗi kết nối hoặc server không phản hồi.", "error");
+                } else {
+                    alert("Lỗi kết nối hoặc server không phản hồi.");
+                }
             });
     });
 
@@ -262,56 +291,68 @@ document.addEventListener("DOMContentLoaded", function () {
                 <!-- HẾT CỘT SỐ LƯỢNG -->
 
                 <td>
-                    <span class="badge ${item.TrangThaiDuyet === 'Đã duyệt' ? 'bg-success' : 'bg-warning text-dark'}">
-                        ${item.TrangThaiDuyet}
-                    </span>
+                    ${(item.TrangThaiDot === 'Tạm ngưng' || item.TrangThaiDuyet === 'Tạm ngưng') ? `
+                        <span class="badge bg-danger" title="${item.MoTa ? 'Lý do: ' + item.MoTa : 'Tạm ngưng'}">Tạm ngưng</span>
+                    ` : `
+                        <span class="badge ${item.TrangThaiDuyet === 'Đã duyệt' ? 'bg-success' : (item.TrangThaiDuyet === 'Kết thúc' ? 'bg-secondary' : 'bg-warning text-dark')}">
+                            ${item.TrangThaiDuyet}
+                        </span>
+                    `}
                 </td>
-                <td class="action-cell text-center d-flex justify-content-center gap-1 align-items-center flex-wrap">
-                    <!-- Nút Chi tiết - luôn hiển thị -->
-                    
-                    <button class="btn btn-sm btn-info btn-detail-dot text-white"
-                            data-id="${item.TaoDotLaoDong_id}"
-                            data-loai="${item.LoaiLaoDong || ''}"
-                            title="Xem chi tiết đợt">
-                        <i class="fas fa-info-circle"></i>
-                    </button>
-
-
-
-
-
-
-                    <!-- 2 nút mới: chỉ hiển thị khi ĐÃ DUYỆT -->
-                    ${item.TrangThaiDuyet === 'Đã duyệt' ? `
-                        <button class="btn btn-sm btn-primary btn-show-code"
+                <td class="action-cell">
+                    <div class="d-flex justify-content-center align-items-center gap-1 flex-nowrap w-100">
+                        <!-- Nút Chi tiết - luôn hiển thị -->
+                        <button class="btn btn-sm btn-info btn-detail-dot text-white"
                                 data-id="${item.TaoDotLaoDong_id}"
-                                title="Hiển thị mã điểm danh">
-                            <i class="fas fa-key"></i>
+                                data-loai="${item.LoaiLaoDong || ''}"
+                                title="Xem chi tiết đợt">
+                            <i class="fas fa-info-circle"></i>
                         </button>
-                        <button class="btn btn-sm btn-success btn-view-attendance"
+
+                        <!-- Nút Tạm ngưng / Mở lại đợt lao động -->
+                        <button class="btn btn-sm ${(item.TrangThaiDot === 'Tạm ngưng' || item.TrangThaiDuyet === 'Tạm ngưng') ? 'btn-secondary' : 'btn-warning text-dark'} btn-toggle-tamngung"
                                 data-id="${item.TaoDotLaoDong_id}"
-                                title="Xem danh sách sinh viên đã điểm danh">
-                            <i class="fas fa-list-check"></i>
+                                data-dotname="${item.DotLaoDong || ''}"
+                                data-status="${(item.TrangThaiDot === 'Tạm ngưng' || item.TrangThaiDuyet === 'Tạm ngưng') ? 'Tạm ngưng' : 'Hoạt động'}"
+                                title="${(item.TrangThaiDot === 'Tạm ngưng' || item.TrangThaiDuyet === 'Tạm ngưng') ? 'Mở lại đợt lao động' : 'Tạm ngưng đợt lao động'}">
+                            <i class="fas ${(item.TrangThaiDot === 'Tạm ngưng' || item.TrangThaiDuyet === 'Tạm ngưng') ? 'fa-play' : 'fa-pause'}"></i>
                         </button>
-                    ` : ''}
-                    <!-- Các nút cũ: chỉ hiển thị khi CHƯA DUYỆT -->
-                    ${item.TrangThaiDuyet === 'Chưa duyệt' ? `
-                        <button class="btn btn-sm btn-warning btn-edit"
-                                data-id="${item.TaoDotLaoDong_id}"
-                                title="Chỉnh sửa đợt">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="btn btn-sm btn-danger btn-delete"
-                                data-id="${item.TaoDotLaoDong_id}"
-                                title="Xóa đợt">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                        <button class="btn btn-sm btn-success btn-approve"
-                                data-id="${item.TaoDotLaoDong_id}"
-                                title="Duyệt đợt">
-                            <i class="fas fa-check"></i>
-                        </button>
-                    ` : ''}
+
+                        <!-- 2 nút mới: chỉ hiển thị khi ĐÃ DUYỆT -->
+                        ${item.TrangThaiDuyet === 'Đã duyệt' ? `
+                            <button class="btn btn-sm btn-primary btn-show-code"
+                                    data-id="${item.TaoDotLaoDong_id}"
+                                    title="Hiển thị mã điểm danh">
+                                <i class="fas fa-key"></i>
+                            </button>
+                            <button class="btn btn-sm btn-success btn-view-attendance"
+                                    data-id="${item.TaoDotLaoDong_id}"
+                                    title="Xem danh sách sinh viên đã điểm danh">
+                                <i class="fas fa-list-check"></i>
+                            </button>
+                        ` : ''}
+
+                        <!-- Các nút khi CHƯA DUYỆT hoặc TẠM NGƯNG -->
+                        ${(item.TrangThaiDuyet === 'Chưa duyệt' || item.TrangThaiDuyet === 'Tạm ngưng') ? `
+                            <button class="btn btn-sm btn-warning btn-edit"
+                                    data-id="${item.TaoDotLaoDong_id}"
+                                    title="Chỉnh sửa đợt">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            ${(!window.isManager) ? `
+                            <button class="btn btn-sm btn-danger btn-delete"
+                                    data-id="${item.TaoDotLaoDong_id}"
+                                    title="Xóa đợt">
+                                <i class="fas fa-trash"></i>
+                            </button>` : ''}
+                            ${item.TrangThaiDuyet === 'Chưa duyệt' ? `
+                            <button class="btn btn-sm btn-success btn-approve"
+                                    data-id="${item.TaoDotLaoDong_id}"
+                                    title="Duyệt đợt">
+                                <i class="fas fa-check"></i>
+                            </button>` : ''}
+                        ` : ''}
+                    </div>
                 </td>
             </tr>
         `;
@@ -392,13 +433,29 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("btnAdd")?.addEventListener("click", function () {
         const form = document.getElementById("createForm");
         if (form) form.reset();
+        
+        const createKhuVuc = document.getElementById("createKhuVuc");
+        const createImg = document.getElementById("createKhuVucImage");
+        if (createKhuVuc && createImg) {
+            createKhuVuc.value = "A1";
+            setAreaImage(createImg, "A1");
+        }
         new bootstrap.Modal(document.getElementById("createModal")).show();
     });
 
     // Replace btnViewDeleted fetch handler with this improved version
     document.getElementById("btnViewDeleted")?.addEventListener("click", function () {
         const body = document.getElementById("deletedTableBody");
-        body.innerHTML = `<tr><td colspan="7" class="text-center"><div class="spinner"></div> Đang tải...</td></tr>`;
+        const countBadge = document.getElementById("deletedCountBadge");
+        if (countBadge) countBadge.textContent = "...";
+
+        body.innerHTML = `
+            <tr>
+                <td colspan="7" class="text-center py-5">
+                    <div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div>
+                    <span class="text-muted">Đang tải dữ liệu...</span>
+                </td>
+            </tr>`;
 
         fetch("/Admin/AdminWordRegister/GetDeletedDotLaoDong", { credentials: 'same-origin' })
             .then(res => {
@@ -414,26 +471,51 @@ document.addEventListener("DOMContentLoaded", function () {
             })
             .then(data => {
                 if (!data.items || data.items.length === 0) {
-                    body.innerHTML = `<tr><td colspan="7" class="text-center text-muted">Không có dữ liệu</td></tr>`;
+                    if (countBadge) countBadge.textContent = "0 đợt";
+                    body.innerHTML = `
+                        <tr>
+                            <td colspan="7">
+                                <div class="deleted-empty-state">
+                                    <div class="deleted-empty-icon"><i class="fas fa-trash-alt"></i></div>
+                                    <div class="deleted-empty-text">Thùng rác trống</div>
+                                    <div class="deleted-empty-subtext">Không có đợt lao động nào bị xóa hoặc hủy</div>
+                                </div>
+                            </td>
+                        </tr>`;
                 } else {
+                    if (countBadge) countBadge.textContent = `${data.items.length} đợt`;
                     const rows = data.items.map((x, i) => {
-                        const buoiText = x.Buoi === "Sáng" ? "Sáng (7h-8h30)" :
-                            x.Buoi === "Chiều" ? "Chiều (13h-14h)" : (x.Buoi || "");
+                        const isMorning = x.Buoi === "Sáng";
+                        const isAfternoon = x.Buoi === "Chiều";
+                        const buoiTag = isMorning
+                            ? `<span class="session-tag morning"><i class="fas fa-sun text-warning"></i> Sáng (7h-8h30)</span>`
+                            : isAfternoon
+                            ? `<span class="session-tag afternoon"><i class="fas fa-cloud-sun text-warning"></i> Chiều (13h-14h)</span>`
+                            : `<span class="badge bg-light text-dark">${x.Buoi || "--"}</span>`;
+
                         return `
                         <tr>
-                            <td>${i + 1}</td>
-                            <td>${x.DotLaoDong || ""}</td>
-                            <td>${buoiText}</td>
-                            <td>${x.NgayLaoDong || ""}</td>
-                            <td>${x.KhuVuc || ""}</td>
-                            <td>${x.Ngayxoa || ""}</td>
-                            <td>
-                                <button class="btn btn-sm btn-success btn-restore me-1" data-id="${x.TaoDotLaoDong_id}">
-                                    Khôi phục
-                                </button>
-                                <button class="btn btn-sm btn-danger btn-permanent-delete" data-id="${x.TaoDotLaoDong_id}">
-                                    Xóa vĩnh viễn
-                                </button>
+                            <td class="col-stt">${i + 1}</td>
+                            <td class="col-name">${x.DotLaoDong || "Chưa có tên"}</td>
+                            <td class="col-session">${buoiTag}</td>
+                            <td class="col-date">
+                                <span class="date-tag"><i class="far fa-calendar-alt text-primary"></i> ${x.NgayLaoDong || "--"}</span>
+                            </td>
+                            <td class="col-area">
+                                <span class="area-badge"><i class="fas fa-map-marker-alt text-danger"></i> ${x.KhuVuc || "--"}</span>
+                            </td>
+                            <td class="col-deleted-date">
+                                <span class="deleted-date-tag"><i class="far fa-clock"></i> ${x.Ngayxoa || "--"}</span>
+                            </td>
+                            <td class="col-actions">
+                                <div class="action-btn-group">
+                                    <button type="button" class="btn-restore-action btn-restore" data-id="${x.TaoDotLaoDong_id}" title="Khôi phục lại đợt này">
+                                        <i class="fas fa-undo-alt"></i> Khôi phục
+                                    </button>
+                                    <button type="button" class="btn-perm-delete-action btn-permanent-delete" data-id="${x.TaoDotLaoDong_id}" title="Xóa vĩnh viễn khỏi hệ thống">
+                                        <i class="fas fa-trash-alt"></i> Xóa vĩnh viễn
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                     `;
@@ -445,7 +527,8 @@ document.addEventListener("DOMContentLoaded", function () {
             })
             .catch(err => {
                 console.error("Load deleted items failed:", err);
-                body.innerHTML = `<tr><td colspan="7" class="text-center text-danger">Lỗi tải dữ liệu</td></tr>`;
+                if (countBadge) countBadge.textContent = "Lỗi";
+                body.innerHTML = `<tr><td colspan="7" class="text-center text-danger py-4"><i class="fas fa-exclamation-triangle me-2"></i>Lỗi tải dữ liệu đợt đã xóa</td></tr>`;
                 new bootstrap.Modal(document.getElementById("deletedModal")).show();
             });
     });
@@ -460,6 +543,52 @@ document.addEventListener("DOMContentLoaded", function () {
         const approveBtn = e.target.closest(".btn-approve");
         const restoreBtn = e.target.closest(".btn-restore");
         const permanentDeleteBtn = e.target.closest(".btn-permanent-delete");
+        const tamNgungBtn = e.target.closest(".btn-toggle-tamngung");
+
+        // Xử lý nút Tạm ngưng / Mở lại đợt lao động
+        if (tamNgungBtn) {
+            const id = tamNgungBtn.dataset.id;
+            const currentStatus = tamNgungBtn.dataset.status;
+            const dotName = tamNgungBtn.dataset.dotname || "";
+            const isTamNgung = currentStatus === "Tạm ngưng";
+
+            const modalEl = document.getElementById("modalTamDungDot");
+            if (!modalEl) {
+                console.warn("Không tìm thấy modalTamDungDot");
+                return;
+            }
+
+            document.getElementById("tamDungDotId").value = id;
+            document.getElementById("tamDungTenDot").textContent = dotName ? `${dotName} (ID: ${id})` : `ID: ${id}`;
+
+            const reasonGroup = document.getElementById("tamDungReasonGroup");
+            const resumeGroup = document.getElementById("tamDungResumeGroup");
+            const modalTitle = document.getElementById("modalTamDungTitle");
+            const confirmBtnText = document.getElementById("btnConfirmTamDungText");
+            const lyDoInput = document.getElementById("tamDungLyDo");
+
+            if (isTamNgung) {
+                document.getElementById("tamDungActionType").value = "resume";
+                if (modalTitle) modalTitle.textContent = "Mở lại đợt lao động";
+                if (reasonGroup) reasonGroup.style.display = "none";
+                if (resumeGroup) resumeGroup.style.display = "block";
+                if (confirmBtnText) confirmBtnText.textContent = "Mở lại đợt";
+            } else {
+                document.getElementById("tamDungActionType").value = "pause";
+                if (modalTitle) modalTitle.textContent = "Tạm ngưng đợt lao động";
+                if (reasonGroup) reasonGroup.style.display = "block";
+                if (resumeGroup) resumeGroup.style.display = "none";
+                if (lyDoInput) {
+                    lyDoInput.value = "";
+                    setTimeout(() => lyDoInput.focus(), 500);
+                }
+                if (confirmBtnText) confirmBtnText.textContent = "Xác nhận tạm ngưng";
+            }
+
+            const modalInstance = bootstrap.Modal.getOrCreateInstance(modalEl);
+            modalInstance.show();
+            return;
+        }
 
         // Xem chi tiết sinh viên tham gia (nút "Xem" trong modal chi tiết đợt)
         const btnXemChiTiet = e.target.closest("#btnXemChiTietSinhVien, .btn-view-sinhvien");
@@ -541,7 +670,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         // XỬ LÝ NÚT CHI TIẾT ĐỢT (HOÀN CHỈNH THEO YÊU CẦU MỚI)
-        const detailBtn = e.target.closest(".btn-detail-dot");
+        const detailBtn = e.target.closest(".btn-detail-dot") || e.target.closest(".btn-detail");
         if (detailBtn) {
             const dotId = detailBtn.dataset.id;
             const loaiLaoDong = detailBtn.dataset.loai || "";
@@ -561,14 +690,14 @@ document.addEventListener("DOMContentLoaded", function () {
                     if (el) el.textContent = value || "";
                 };
 
-                setText("detailDotLaoDong", cells[1]?.textContent?.trim());
-                setText("detailBuoi", cells[2]?.textContent?.trim());
-                setText("detailLoaiLaoDong", cells[3]?.textContent?.trim());
-                setText("detailGiaTri", cells[4]?.textContent?.trim());
-                setText("detailNgayLaoDong", cells[5]?.textContent?.trim());
-                setText("detailKhuVuc", cells[6]?.textContent?.trim());
+                setText("detailDotLaoDong", (tr.querySelector(".Dotloaodong")?.textContent || cells[2]?.textContent || "").trim());
+                setText("detailBuoi", cells[3]?.textContent?.trim());
+                setText("detailLoaiLaoDong", cells[4]?.textContent?.trim());
+                setText("detailGiaTri", cells[5]?.textContent?.trim());
+                setText("detailNgayLaoDong", cells[6]?.textContent?.trim());
+                setText("detailKhuVuc", cells[7]?.textContent?.trim());
 
-                const soLuongRaw = cells[7]?.textContent?.trim() || "";
+                const soLuongRaw = cells[8]?.textContent?.trim() || "";
                 let soDangKy = "0", soQuyDinh = "";
                 if (soLuongRaw.includes("/")) {
                     [soDangKy, soQuyDinh] = soLuongRaw.split("/").map(x => x.trim());
@@ -588,7 +717,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 setText("detailMoTa", tr.dataset.mota || "");
                 setText("detailNguoiTao", tr.dataset.nguoitao || "");
 
-                const khuVucValue = cells[6]?.textContent?.trim() || "";
+                const khuVucValue = (cells[7]?.textContent?.trim() || "").replace(/^Tòa\s+/i, "");
                 const imgEl = document.getElementById("detailKhuVucImage");
                 if (imgEl) setAreaImage(imgEl, khuVucValue);
 
@@ -596,15 +725,6 @@ document.addEventListener("DOMContentLoaded", function () {
             }
             return;
         }
-
-
-
-
-
-
-
-
-
 
         // sửa
         if (editBtn) {
@@ -624,20 +744,41 @@ document.addEventListener("DOMContentLoaded", function () {
             };
 
             setInputValue("editId", editBtn.dataset.id);
-            const dotText = cells[1]?.textContent?.trim() || "";
+            const dotText = (tr.querySelector(".Dotloaodong")?.textContent || cells[2]?.textContent || "").trim();
             const editMonthSelectEl = document.getElementById("editDotLaoDong");
+            const editDaySelectEl = document.getElementById("editNgayLaoDong");
+
             if (editMonthSelectEl) {
                 editMonthSelectEl.value = [...editMonthSelectEl.options].some(opt => opt.value === dotText) ? dotText : "";
+
+                // Tự động sinh danh sách ngày theo tháng
+                if (editMonthSelectEl.value && editDaySelectEl) {
+                    const monthLabel = editMonthSelectEl.value;
+                    const currentYear = new Date().getFullYear();
+                    const monthNumber = parseInt(monthLabel.replace("Tháng ", "")) || 1;
+                    const daysInMonth = new Date(currentYear, monthNumber, 0).getDate();
+
+                    editDaySelectEl.innerHTML = '<option value="">-- Chọn ngày --</option>';
+                    for (let d = 1; d <= daysInMonth; d++) {
+                        const dayStr = String(d).padStart(2, "0");
+                        const monthStr = String(monthNumber).padStart(2, "0");
+                        const value = `${currentYear}-${monthStr}-${dayStr}`;
+                        const label = `${dayStr}/${monthStr}/${currentYear}`;
+                        const option = document.createElement("option");
+                        option.value = value;
+                        option.textContent = label;
+                        editDaySelectEl.appendChild(option);
+                    }
+                }
             }
 
-
-            let buoiRaw = cells[2]?.textContent || "";
+            // Buổi
+            let buoiRaw = cells[3]?.textContent || "";
             let buoiValue = buoiRaw.includes("Sáng") ? "Sáng" : buoiRaw.includes("Chiều") ? "Chiều" : "";
             setInputValue("editBuoi", buoiValue);
 
-
-
-            const loaiTextRaw = cells[3]?.textContent || "";
+            // Loại lao động
+            const loaiTextRaw = cells[4]?.textContent || "";
             const loaiText = loaiTextRaw.toLowerCase().trim();
             const loaiSelect = document.getElementById("editLoaiLaoDong");
 
@@ -651,52 +792,57 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
             }
 
+            // Giá trị
+            setInputValue("editGiaTri", (cells[5]?.textContent || "").trim().replace(/[^\d.]/g, ""));
 
-
-
-
-
-            setInputValue("editGiaTri", (cells[4]?.textContent || "").replace(/\D/g, ""));
-
-            // ===== FIX LOAD NGÀY LAO ĐỘNG (EDIT) =====
-            const ngayText = cells[5]?.textContent?.trim(); // dd/MM/yyyy
-            const editNgay = document.getElementById("editNgayLaoDong");
-            if (editNgay) {
-                editNgay.innerHTML = '<option value="">-- Chọn ngày --</option>';
-                if (ngayText) {
-                    const parts = ngayText.split("/");
-                    if (parts.length === 3) {
-                        const value = `${parts[2]}-${parts[1]}-${parts[0]}`; // yyyy-MM-dd
+            // Ngày lao động
+            const ngayText = cells[6]?.textContent?.trim(); // dd/MM/yyyy
+            if (editDaySelectEl && ngayText) {
+                const parts = ngayText.split("/");
+                if (parts.length === 3) {
+                    const value = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+                    let found = false;
+                    for (let opt of editDaySelectEl.options) {
+                        if (opt.value === value || opt.textContent.trim() === ngayText) {
+                            opt.selected = true;
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found) {
                         const opt = document.createElement("option");
                         opt.value = value;
                         opt.textContent = ngayText;
                         opt.selected = true;
-                        editNgay.appendChild(opt);
+                        editDaySelectEl.appendChild(opt);
                     }
                 }
             }
 
-            const khuVucRaw = cells[6]?.textContent?.trim() || "";
+            // Khu vực
+            const khuVucRaw = (cells[7]?.textContent?.trim() || "").replace(/^Tòa\s+/i, "");
             const khuVucSelect = document.getElementById("editKhuVuc");
             if (khuVucSelect) {
-                khuVucSelect.value = khuVucRaw;
+                for (let opt of khuVucSelect.options) {
+                    if (opt.value === khuVucRaw || opt.value === `Tòa ${khuVucRaw}` || opt.textContent.includes(khuVucRaw)) {
+                        khuVucSelect.value = opt.value;
+                        break;
+                    }
+                }
                 setAreaImage(document.getElementById("editKhuVucImage"), khuVucSelect.value);
             }
 
-            // ===== SỬA LỖI SỐ LƯỢNG (KHÔNG LẤY CHỮ "LỚP" HOẶC "NULL") =====
-            let soLuongRaw = cells[7]?.textContent?.trim() || "";
-            // Loại bỏ chữ "Lớp" và mọi ký tự không phải số ở phần sau dấu "/"
+            // Số lượng
+            let soLuongRaw = cells[8]?.textContent?.trim() || "";
             let soLuongThucTe = 20; // mặc định
 
             if (soLuongRaw.includes("/")) {
                 const parts = soLuongRaw.split("/");
                 if (parts.length >= 2) {
-                    // Lấy phần sau dấu /, loại bỏ chữ "Lớp", "null", khoảng trắng
                     let phanSau = parts[1].trim().replace(/Lớp|null/gi, "").trim();
                     soLuongThucTe = parseInt(phanSau) || 20;
                 }
             } else {
-                // Nếu không có dấu /, lấy số trực tiếp
                 soLuongThucTe = parseInt(soLuongRaw.replace(/\D/g, "")) || 20;
             }
 
@@ -715,7 +861,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (deleteBtn) {
             const tr = deleteBtn.closest("tr");
             if (!tr) return;
-            const tenDot = tr.querySelector("td:nth-child(2)")?.textContent || "";
+            const tenDot = tr.querySelector(".Dotloaodong")?.textContent?.trim() || tr.querySelector("td:nth-child(3)")?.textContent?.trim() || "";
             const id = deleteBtn.dataset.id;
 
             const isApproved = tr.querySelector(".badge")?.textContent === "Đã duyệt";
@@ -748,7 +894,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (permanentDeleteBtn) {
             const tr = permanentDeleteBtn.closest("tr");
             if (!tr) return;
-            const tenDot = tr.querySelector("td:nth-child(2)")?.textContent || "";
+            const tenDot = tr.querySelector(".Dotloaodong")?.textContent?.trim() || tr.querySelector("td:nth-child(3)")?.textContent?.trim() || "";
             const id = permanentDeleteBtn.dataset.id;
 
             const isApproved = tr.querySelector(".badge")?.textContent === "Đã duyệt";
@@ -808,9 +954,30 @@ document.addEventListener("DOMContentLoaded", function () {
                 .then(data => {
                     showToast(data.message || (data.success ? "Đã khôi phục đợt lao động!" : "Khôi phục thất bại"), data.success ? "success" : "error");
                     if (data.success && row) {
-                        row.style.transition = "opacity 0.4s ease";
+                        row.style.transition = "opacity 0.3s ease, transform 0.3s ease";
                         row.style.opacity = "0";
-                        setTimeout(() => row.remove(), 400);
+                        row.style.transform = "scale(0.95)";
+                        setTimeout(() => {
+                            row.remove();
+                            const tbody = document.getElementById("deletedTableBody");
+                            const countBadge = document.getElementById("deletedCountBadge");
+                            const remainingRows = tbody ? tbody.querySelectorAll("tr").length : 0;
+                            if (remainingRows === 0 && tbody) {
+                                if (countBadge) countBadge.textContent = "0 đợt";
+                                tbody.innerHTML = `
+                                    <tr>
+                                        <td colspan="7">
+                                            <div class="deleted-empty-state">
+                                                <div class="deleted-empty-icon"><i class="fas fa-trash-alt"></i></div>
+                                                <div class="deleted-empty-text">Thùng rác trống</div>
+                                                <div class="deleted-empty-subtext">Không có đợt lao động nào bị xóa hoặc hủy</div>
+                                            </div>
+                                        </td>
+                                    </tr>`;
+                            } else if (countBadge) {
+                                countBadge.textContent = `${remainingRows} đợt`;
+                            }
+                        }, 300);
                     }
                     loadDataToTable(currentPage);
                 })
@@ -1253,6 +1420,55 @@ document.addEventListener("DOMContentLoaded", function () {
             });
     };
 
+    // ==============================
+    // XỬ LÝ XÁC NHẬN TẠM NGƯNG / MỞ LẠI ĐỢT TỪ MODAL
+    // ==============================
+    const btnConfirmTamDung = document.getElementById("btnConfirmTamDung");
+    if (btnConfirmTamDung) {
+        btnConfirmTamDung.addEventListener("click", function () {
+            const id = document.getElementById("tamDungDotId")?.value;
+            const actionType = document.getElementById("tamDungActionType")?.value;
+            const lyDoInput = document.getElementById("tamDungLyDo");
+            let lyDo = lyDoInput ? lyDoInput.value.trim() : "";
 
+            if (actionType === "pause" && !lyDo) {
+                showToast("Vui lòng nhập lý do tạm ngưng đợt lao động!", "warning");
+                if (lyDoInput) lyDoInput.focus();
+                return;
+            }
+
+            btnConfirmTamDung.disabled = true;
+            btnConfirmTamDung.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Đang xử lý...';
+
+            fetch(`/Admin/AdminWordRegister/ToggleTamNgung`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ id: parseInt(id, 10), lyDo: lyDo })
+            })
+            .then(r => r.json())
+            .then(res => {
+                btnConfirmTamDung.disabled = false;
+                btnConfirmTamDung.innerHTML = '<i class="fas fa-check me-1"></i> <span id="btnConfirmTamDungText">Xác nhận</span>';
+
+                if (res.success) {
+                    showToast(res.message || "Cập nhật trạng thái thành công!", "success");
+                    const modalEl = document.getElementById("modalTamDungDot");
+                    if (modalEl) {
+                        const modalInstance = bootstrap.Modal.getInstance(modalEl);
+                        if (modalInstance) modalInstance.hide();
+                    }
+                    loadDataToTable(currentPage);
+                } else {
+                    showToast(res.message || "Lỗi cập nhật trạng thái!", "error");
+                }
+            })
+            .catch(err => {
+                console.error("Lỗi:", err);
+                btnConfirmTamDung.disabled = false;
+                btnConfirmTamDung.innerHTML = '<i class="fas fa-check me-1"></i> <span id="btnConfirmTamDungText">Xác nhận</span>';
+                showToast("Lỗi kết nối server!", "error");
+            });
+        });
+    }
 
 });

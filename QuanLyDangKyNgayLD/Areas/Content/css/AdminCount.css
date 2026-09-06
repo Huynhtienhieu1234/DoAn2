@@ -34,35 +34,50 @@ body {
 }
 
 .container-fluid {
-    max-width: 1400px !important;
-    margin: 0 auto !important;
-    padding: 1.5rem !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
 }
 
 /* ====================== TOOLBAR ====================== */
 .toolbar {
-    background: rgba(255, 255, 255, 0.94) !important;
+    background: rgba(255, 255, 255, 0.96) !important;
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border: 1.5px solid rgba(178, 235, 242, 0.4);
+    border: 1.5px solid rgba(178, 235, 242, 0.5);
     border-radius: var(--radius-lg);
-    padding: 16px 24px !important;
+    padding: 14px 20px !important;
     box-shadow: 0 6px 24px var(--shadow);
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
+    position: relative !important;
+    z-index: 20 !important;
+    overflow: visible !important;
     transition: all 0.3s ease;
+}
+
+.toolbar .dropdown {
+    position: relative !important;
+    z-index: 25 !important;
+}
+
+.toolbar .dropdown-menu,
+.dropdown-menu {
+    z-index: 1000 !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18) !important;
 }
 
     .toolbar:hover {
         box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1);
-        transform: translateY(-1px);
     }
 
     .toolbar .navbar-collapse {
         display: flex !important;
         justify-content: space-between !important;
         align-items: center !important;
-        gap: 1.5rem;
+        gap: 1.25rem;
         padding: 0 !important;
+        overflow: visible !important;
     }
 
 .navbar-nav {
@@ -71,6 +86,7 @@ body {
     display: flex;
     gap: 0.75rem;
     flex-wrap: wrap;
+    align-items: center;
 }
 
 .toolbar-flex {
@@ -79,16 +95,64 @@ body {
     gap: 0.75rem;
     flex-wrap: wrap;
     justify-content: flex-end;
+    overflow: visible !important;
+}
+
+/* ====================== TAB PHÂN LOẠI VAI TRÒ TÀI KHOẢN ====================== */
+.account-role-tabs {
+    background: rgba(255, 255, 255, 0.95) !important;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1.5px solid rgba(178, 235, 242, 0.6);
+    border-radius: var(--radius-md);
+    padding: 8px 12px !important;
+    box-shadow: 0 4px 18px var(--shadow);
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 1.25rem;
+}
+
+.role-tab-btn {
+    border-radius: 10px !important;
+    padding: 7px 18px !important;
+    font-size: 0.88rem !important;
+    font-weight: 600 !important;
+    border: 1.5px solid transparent !important;
+    color: #4a5568 !important;
+    background: #f1f5f9 !important;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    cursor: pointer !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+}
+
+.role-tab-btn:hover {
+    color: #0029c8 !important;
+    background: #e0f2fe !important;
+    border-color: #bae6fd !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 10px rgba(0, 41, 200, 0.12) !important;
+}
+
+.role-tab-btn.active {
+    background: linear-gradient(135deg, #0029c8 0%, #2563eb 100%) !important;
+    color: #ffffff !important;
+    border-color: transparent !important;
+    box-shadow: 0 4px 14px rgba(0, 41, 200, 0.35) !important;
+    transform: translateY(-1px) !important;
 }
 
 /* Nút trong toolbar */
 #btnAdd, #btnViewDeleted, #btnExportExcel {
     border-radius: var(--radius-sm);
     font-weight: 600;
-    padding: 10px 18px;
+    padding: 9px 16px;
     transition: all 0.3s ease;
     border: none;
-    font-size: 0.94rem;
+    font-size: 0.92rem;
     min-width: 130px;
     display: inline-flex;
     align-items: center;
@@ -97,20 +161,16 @@ body {
     white-space: nowrap;
 }
 
-.action-cell {
-    text-align: center;
-    width: 140px;
-    padding: 8px;
-}
-
 #btnAdd {
-    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    background: linear-gradient(135deg, #00b4db, #0083b0);
     color: white;
+    box-shadow: 0 4px 12px rgba(0, 180, 219, 0.25);
 }
 
     #btnAdd:hover {
         transform: translateY(-2px);
-        box-shadow: 0 10px 25px rgba(0, 210, 255, 0.3);
+        box-shadow: 0 8px 20px rgba(0, 180, 219, 0.4);
+        color: white;
     }
 
 #btnViewDeleted {
@@ -123,24 +183,84 @@ body {
         background: #b2ebf2;
         border-color: #4dd0e1;
         transform: translateY(-1px);
+        color: #006064;
     }
 
-#btnExportExcel {
-    background: linear-gradient(135deg, #4fc3f7, #29b6f6);
-    color: white;
+#excelDropdownAccount {
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    padding: 9px 16px;
+    font-size: 0.92rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: linear-gradient(135deg, #10b981, #059669) !important;
+    color: white !important;
+    border: none !important;
+    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+    transition: all 0.3s ease;
 }
 
-    #btnExportExcel:hover {
+    #excelDropdownAccount:hover {
         transform: translateY(-2px);
-        box-shadow: 0 10px 25px rgba(79, 195, 247, 0.3);
+        box-shadow: 0 8px 22px rgba(16, 185, 129, 0.45);
+        background: linear-gradient(135deg, #059669, #047857) !important;
+        color: white !important;
     }
+
+/* Dropdown Menu nổi lên trên bảng */
+.toolbar .dropdown {
+    position: relative !important;
+    z-index: 1040 !important;
+}
+
+.toolbar .dropdown-menu {
+    position: absolute !important;
+    z-index: 1060 !important;
+    min-width: 220px !important;
+    border-radius: 12px !important;
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.18) !important;
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+    padding: 8px 0 !important;
+    margin-top: 8px !important;
+    background: #ffffff !important;
+    animation: dropdownFadeIn 0.2s ease-out;
+}
+
+@keyframes dropdownFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.toolbar .dropdown-item {
+    font-size: 0.92rem !important;
+    padding: 10px 18px !important;
+    font-weight: 500 !important;
+    display: flex !important;
+    align-items: center !important;
+    color: #334155 !important;
+    transition: all 0.2s ease !important;
+    cursor: pointer !important;
+}
+
+.toolbar .dropdown-item:hover {
+    background-color: #f0f9ff !important;
+    color: #0288d1 !important;
+    padding-left: 22px !important;
+}
 
 /* Input & Select */
 #roleFilter, #searchBox {
     border-radius: var(--radius-sm);
     border: 1.5px solid var(--border-light);
     padding: 8px 12px;
-    font-size: 0.94rem;
+    font-size: 0.92rem;
     transition: all 0.2s ease;
     min-width: 150px;
     flex: 1;
@@ -155,11 +275,9 @@ body {
 
 .input-group {
     border-radius: var(--radius-sm);
-    overflow: hidden;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
     min-width: 180px;
     flex: 1;
-    /*    max-width: 250px;*/
 }
 
 .input-group-text {
@@ -188,20 +306,21 @@ body {
 }
 
     .table thead th {
-        background: #0029c8d9 !important;
-        background-color: #0029c8d9 !important;
+        background: linear-gradient(135deg, #1e40af, #1d4ed8) !important;
+        background-color: #1e40af !important;
         color: #ffffff !important;
-        font-weight: 600;
+        font-weight: 700;
         text-transform: uppercase;
-        font-size: 0.78rem;
+        font-size: 0.82rem;
         letter-spacing: 0.8px;
         border: none;
-        padding: 16px 14px;
+        padding: 15px 12px;
         text-align: center;
+        vertical-align: middle;
     }
 
     .table tbody td {
-        padding: 5px 14px;
+        padding: 10px 12px;
         vertical-align: middle;
         border-bottom: 1px solid #e0f7fa;
         color: var(--text);
@@ -222,94 +341,87 @@ body {
 /* Cột STT */
 .stt-cell {
     font-weight: 700;
-    color: var(--primary);
-    font-size: 1rem;
+    color: #0284c7;
+    font-size: 0.98rem;
 }
 
 /* Email */
 .email-cell {
-    max-width: 180px;
+    max-width: 200px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    color: #0288d1;
+    color: #0369a1;
     font-weight: 500;
 }
 
 /* Cột Tác vụ */
-.action-header, td:has(.btn-action) {
+.action-header {
+    min-width: 180px !important;
     text-align: center !important;
-    padding: 12px 8px !important;
+    vertical-align: middle !important;
 }
 
-/* Nút Tác Vụ */
-.btn-action {
-    width: 40px;
-    height: 40px;
-    border-radius: var(--radius-md);
-    border: none;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
-    overflow: hidden;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    margin: 0 3px;
+.action-cell {
+    text-align: center !important;
+    white-space: nowrap !important;
+    min-width: 180px !important;
+    padding: 8px 10px !important;
 }
 
-    .btn-action::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(255, 255, 255, 0.3);
-        opacity: 0;
-        transition: opacity 0.3s;
+/* 4 Nút Tác Vụ Chuẩn Đẹp */
+.action-cell .btn, .btn-action {
+    width: 36px !important;
+    height: 36px !important;
+    border-radius: 9px !important;
+    border: none !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    color: #ffffff !important;
+    font-size: 0.92rem !important;
+    margin: 0 3px !important;
+    padding: 0 !important;
+    transition: all 0.25s ease !important;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12) !important;
+    cursor: pointer !important;
+}
+
+    .action-cell .btn:hover, .btn-action:hover {
+        transform: translateY(-2px) scale(1.08) !important;
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2) !important;
     }
 
-    .btn-action:hover::before {
-        opacity: 1;
-    }
-
-    .btn-action:active {
-        transform: scale(0.88);
-    }
-
-/* Gradient giữ nguyên */
+/* Màu Gradient đẹp cho 4 nút */
 .btn-edit {
-    background: linear-gradient(135deg, #4facfe, #00f2fe);
+    background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+}
+.btn-edit:hover {
+    box-shadow: 0 6px 16px rgba(245, 158, 11, 0.45) !important;
 }
 
 .btn-delete {
-    background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+    background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+}
+.btn-delete:hover {
+    box-shadow: 0 6px 16px rgba(239, 68, 68, 0.45) !important;
 }
 
 .btn-detail {
-    background: linear-gradient(135deg, #f093fb, #f5576c);
+    background: linear-gradient(135deg, #0ea5e9, #0284c7) !important;
 }
-
-btn-reset {
-    background: linear-gradient(314deg, #edcfa8, #fed6e3);
-}
-
-.btn-edit:hover {
-    box-shadow: 0 8px 20px rgba(79, 172, 254, 0.4);
-}
-
-.btn-delete:hover {
-    box-shadow: 0 8px 20px rgba(255, 107, 107, 0.4);
-}
-
 .btn-detail:hover {
-    box-shadow: 0 8px 20px rgba(245, 87, 108, 0.4);
+    box-shadow: 0 6px 16px rgba(14, 165, 233, 0.45) !important;
 }
 
-.btn-reset:hover {
-    box-shadow: 0 8px 20px rgba(168, 237, 234, 0.4);
+.btn-reset {
+    background: linear-gradient(135deg, #475569, #334155) !important;
 }
+.btn-reset:hover {
+    box-shadow: 0 6px 16px rgba(71, 85, 105, 0.45) !important;
+}
+
+
 
 /* ====================== PHÂN TRANG ====================== */
 .d-flex.justify-content-between {
@@ -747,40 +859,128 @@ btn-reset {
 
 /* ------- Make deletedAccountsModal wider and keep table scrollable ------- */
 #deletedAccountsModal .modal-dialog {
-    max-width: 1100px; /* larger maximum width on desktop */
-    width: 90%; /* responsive width */
-    margin: 1.5rem auto;
+    max-width: 1250px !important;
+    width: 95% !important;
+    margin: 1.25rem auto !important;
 }
 
 #deletedAccountsModal .modal-content {
-    max-height: 82vh; /* keep modal inside viewport */
-    overflow: hidden;
+    max-height: 88vh !important;
+    height: auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+    border-radius: 16px !important;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25) !important;
 }
 
-/* allow the inner table area to scroll vertically while header stays visible */
+#deletedAccountsModal .modal-header {
+    background: linear-gradient(135deg, #4dd0e1, #00acc1) !important;
+    color: #ffffff !important;
+    border-bottom: none !important;
+    padding: 14px 20px !important;
+    flex-shrink: 0 !important;
+}
+
+#deletedAccountsModal .modal-header .modal-title {
+    font-weight: 700;
+    font-size: 1.15rem;
+    letter-spacing: 0.3px;
+}
+
+#deletedAccountsModal .modal-body {
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+    padding: 16px 20px !important;
+}
+
 #deletedAccountsModal .modal-body .table-responsive {
-    max-height: 56vh;
-    overflow-y: auto;
-    padding-right: 6px; /* avoid content bumping into scrollbar */
+    flex: 1 1 auto !important;
+    max-height: calc(88vh - 220px) !important;
+    overflow-y: auto !important;
+    overflow-x: auto !important;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding-right: 0 !important;
+}
+
+#deletedAccountsModal .table {
+    margin-bottom: 0 !important;
+    width: 100% !important;
+}
+
+#deletedAccountsModal .table thead th {
+    background: #1b5cd6 !important;
+    color: #ffffff !important;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 0.5px;
+    vertical-align: middle;
+    border-color: #154cbd;
+    padding: 12px 8px;
+    white-space: nowrap;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+#deletedAccountsModal .table tbody td {
+    vertical-align: middle;
+    padding: 8px 8px;
+    font-size: 13.5px;
+}
+
+#deletedAccountsModal .table tbody tr:hover {
+    background-color: #f8fafc;
+    cursor: pointer;
+}
+
+#deletedAccountsModal .form-check-input {
+    cursor: pointer;
+    width: 18px;
+    height: 18px;
+    margin: 0;
+}
+
+#deletedAccountsModal .modal-footer {
+    flex-shrink: 0 !important;
+    padding: 12px 20px !important;
+    border-top: 1px solid #e9ecef !important;
+    background-color: #f8fafc !important;
+}
+
+#deletedAccountsModal .btn-restore,
+#deletedAccountsModal .btn-delete-permanent {
+    padding: 5px 12px !important;
+    font-size: 12.5px !important;
+    font-weight: 600 !important;
+    border-radius: 6px !important;
+    white-space: nowrap !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
 }
 
 /* tighten spacing on smaller screens */
 @media (max-width: 1200px) {
     #deletedAccountsModal .modal-dialog {
-        max-width: 1000px;
-        width: 94%;
+        max-width: 96% !important;
+        width: 96% !important;
     }
 }
 
 @media (max-width: 768px) {
     #deletedAccountsModal .modal-dialog {
-        max-width: 720px;
-        width: 98%;
-        margin: 0.5rem;
+        max-width: 98% !important;
+        width: 98% !important;
+        margin: 0.5rem auto !important;
     }
 
     #deletedAccountsModal .modal-body .table-responsive {
-        max-height: 50vh;
+        max-height: 52vh !important;
     }
 }
 /*Khu vự fomr bảng */
@@ -1955,24 +2155,26 @@ table {
 }
 
 
+/* Modal widths and centering */
 .modal-dialog.modal-dialog-centered.modal-lg {
-    width: 10000px;
+    max-width: 850px;
+    width: 95%;
+    margin: auto;
 }
 
-.modal-content.shadow-lg.background {
-    width: 100pc;
+#modalImportAccountExcel .modal-dialog,
+#importExcelModal .modal-dialog {
+    max-width: 640px !important;
+    width: 92% !important;
+    margin: auto !important;
 }
 
-.modal-content.shadow-lg.detail {
-    width: 51pc;
-}
-
-.modal-content.shadow-lg.edit {
-    width: 51pc;
-}
-
-.modal-content.shadow-lg {
-    width: 53pc;
+#modalImportAccountExcel .modal-content,
+#importExcelModal .modal-content {
+    width: 100% !important;
+    max-width: 100% !important;
+    border-radius: 16px !important;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2) !important;
 }
 
 /* thông báo */
@@ -2263,7 +2465,7 @@ table {
         cursor: not-allowed;
     }
 .modal-content.shadow-lg.dsxoa {
-    width: 9000px;
+    width: 100%;
 }
 
 

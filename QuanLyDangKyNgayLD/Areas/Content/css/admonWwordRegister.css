@@ -1,78 +1,149 @@
-/* Khung bảng cho phép cuộn ngang */
+/* Khung bảng vừa khít màn hình */
 .table-wrapper {
-    overflow-x: auto;
-    width: 100%;
+    overflow-x: hidden !important;
+    width: 100% !important;
+    max-width: 100% !important;
 }
 
-/* Bảng gọn, không giãn lung tung */
+/* Bảng vừa khít màn hình, không trượt ngang, kích thước rộng rãi rõ nét */
 .table {
-    table-layout: auto;
-    width: max-content;
-    min-width: 100%;
+    table-layout: fixed !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
     border-collapse: collapse;
-    font-size: 14px;
+    font-size: 0.92rem;
 }
 
-    /* Header và nội dung bảng */
-    .table thead th {
-        background: #0029c8d9 !important;
-        background-color: #0029c8d9 !important;
-        color: #ffffff !important;
-        font-weight: 600;
-        text-transform: uppercase;
-        font-size: 0.78rem;
-        letter-spacing: 0.8px;
-        border: none;
-        padding: 14px 12px;
-        text-align: center;
-    }
+/* Header và nội dung bảng */
+.table thead th {
+    background: #0029c8d9 !important;
+    background-color: #0029c8d9 !important;
+    color: #ffffff !important;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.82rem !important;
+    letter-spacing: 0.5px;
+    border: none;
+    padding: 13px 6px !important;
+    text-align: center;
+    vertical-align: middle;
+}
 
-    .table th,
-    .table td {
-        white-space: nowrap;
-        text-overflow: ellipsis;
-        overflow: hidden;
-        padding: 10px 12px;
-        vertical-align: middle;
-        text-align: center;
-        line-height: 1.4;
-    }
-
-/* Cột có nội dung dài thì rút gọn */
-.text-truncate {
-    display: inline-block;
-    white-space: nowrap;
+.table th,
+.table td {
+    padding: 11px 6px !important;
+    vertical-align: middle;
+    text-align: center;
+    line-height: 1.4;
+    font-size: 0.92rem;
     overflow: hidden;
     text-overflow: ellipsis;
+    white-space: normal;
+    word-break: break-word;
 }
 
-/* Cột Tác vụ giữ nguyên độ rộng */
-.table th:last-child,
-.table td:last-child {
-    min-width: 200px;
+/* Cột tác vụ */
+.table th.action-header,
+.table td.action-cell {
+    white-space: nowrap !important;
+    padding: 6px 4px !important;
+    text-align: center !important;
+    vertical-align: middle !important;
 }
 
-/* Nút tác vụ gọn nhưng không ép nhỏ */
+/* Nút tác vụ chuẩn đẹp, rõ nét */
+.action-cell .btn,
 .action-cell button {
-    margin: 2px;
-    padding: 6px 10px;
-    font-size: 13px;
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+    max-width: 32px !important;
+    padding: 0 !important;
+    margin: 0 2px !important;
+    font-size: 0.85rem !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 8px !important;
+    border: none !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08) !important;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    flex-shrink: 0 !important;
+}
+
+.action-cell .btn:hover {
+    transform: translateY(-2px) scale(1.05) !important;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.18) !important;
+}
+
+.action-cell .btn-info, .action-cell .btn-detail, .action-cell .btn-detail-dot {
+    background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;
+    color: #ffffff !important;
+}
+
+.action-cell .btn-toggle-tamngung {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
+    color: #ffffff !important;
+}
+
+.action-cell .btn-toggle-tamngung.btn-secondary {
+    background: linear-gradient(135deg, #64748b 0%, #475569 100%) !important;
+    color: #ffffff !important;
+}
+
+.action-cell .btn-show-code {
+    background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%) !important;
+    color: #ffffff !important;
+}
+
+.action-cell .btn-view-attendance {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+    color: #ffffff !important;
+}
+
+.action-cell .btn-edit {
+    background: linear-gradient(135deg, #eab308 0%, #ca8a04 100%) !important;
+    color: #ffffff !important;
+}
+
+.action-cell .btn-delete {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+    color: #ffffff !important;
+}
+
+.action-cell .btn-approve {
+    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%) !important;
+    color: #ffffff !important;
 }
 
 /* Badge trạng thái */
 .badge {
-    font-size: 12px;
-    padding: 4px 8px;
+    font-size: 0.82rem !important;
+    padding: 5px 9px !important;
 }
 
 /* Thanh công cụ gọn thành một hàng ngang */
 .toolbar {
+    position: relative !important;
+    z-index: 20 !important;
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
     gap: 12px;
     padding: 8px 16px;
+}
+
+.toolbar .dropdown {
+    position: relative !important;
+    z-index: 25 !important;
+}
+
+.toolbar .dropdown-menu,
+.dropdown-menu {
+    z-index: 1000 !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18) !important;
 }
 
     /* Nhóm nút bên trái */
@@ -118,96 +189,386 @@
         opacity: 1;
     }
 
- /* ==================== MODAL TẠO ĐỢT LAO ĐỘNG MỚI - CẢI TIẾN PHẦN ẢNH ==================== */
-/* Modal tổng thể - giữ nguyên hoặc điều chỉnh nhẹ cho gọn hơn */
+ /* ==================== MODAL TẠO ĐỢT LAO ĐỘNG MỚI - TỐI ƯU HIỂN THỊ TRỌN VẸN ẢNH ==================== */
 #createModal .modal-dialog {
-    max-width: 900px;
+    max-width: 1050px;
     width: 95%;
     margin: 1.5rem auto;
 }
 
 #createModal .modal-content {
-    border-radius: 14px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    border-radius: 16px;
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.2);
     border: none;
     overflow: hidden;
     background: #ffffff;
 }
 
+#createModal .modal-header {
+    background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+    padding: 16px 24px;
+}
+
 /* Cải thiện phần khung ảnh bên trái */
 #createModal .khuvuc-frame {
-    /* Loại bỏ min-height cố định để linh hoạt theo nội dung form bên phải */
-    height: 100%; /* Chiếm toàn bộ chiều cao của row */
-    min-height: 380px; /* Giảm xuống một chút để modal gọn hơn */
-    max-height: 500px; /* Giới hạn tối đa tránh quá dài */
+    height: 100%;
+    min-height: 420px;
+    max-height: 520px;
     overflow: hidden;
     border-radius: 14px;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
-    background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
+    border: 1px solid #e2e8f0;
+    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.04), 0 4px 12px rgba(0, 0, 0, 0.05);
+    background: #f8fafc;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     position: relative;
+    padding: 10px;
 }
 
-/* Ảnh khu vực - hiển thị đầy đủ và đẹp nhất có thể */
+/* Ảnh khu vực - hiển thị đầy đủ 100% không bị cắt góc */
 #createModal #createKhuVucImage {
     width: 100%;
     height: 100%;
-    object-fit: cover; /* Phủ kín khung, cắt phần thừa nếu cần */
-    object-position: center; /* Giữ phần trung tâm quan trọng */
-    border-radius: 14px;
-    transition: transform 0.4s ease;
+    max-height: 480px;
+    object-fit: contain; /* Giữ nguyên toàn bộ khung hình ảnh, hiển thị trọn vẹn mọi chi tiết */
+    object-position: center;
+    border-radius: 10px;
+    transition: transform 0.3s ease;
+    filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.1));
 }
 
-    /* Hover effect nhẹ nhàng */
-    #createModal #createKhuVucImage:hover {
-        transform: scale(1.08);
-    }
+#createModal #createKhuVucImage:hover {
+    transform: scale(1.02);
+}
 
-    /* Placeholder khi chưa chọn khu vực (hiển thị text hoặc icon) */
-    #createModal #createKhuVucImage:empty,
-    #createModal #createKhuVucImage[src=""] {
-        background: #ced4da;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #6c757d;
-        font-size: 1rem;
-        font-weight: 500;
-    }
-
-        #createModal #createKhuVucImage:empty::before,
-        #createModal #createKhuVucImage[src=""]::before {
-            content: "Chưa chọn khu vực";
-        }
-
-/* Đảm bảo row chính có chiều cao bằng nhau giữa ảnh và form */
+/* Đảm bảo row chính có chiều cao cân đối giữa ảnh và form */
 #createModal .modal-body .row {
-    align-items: stretch; /* Quan trọng: làm 2 cột có chiều cao bằng nhau */
-    min-height: 400px;
+    align-items: stretch;
 }
 
-/* Responsive - mobile: ảnh xuống dưới, nhưng vẫn đẹp */
+/* Responsive */
 @media (max-width: 768px) {
     #createModal .khuvuc-frame {
-        min-height: 280px;
-        max-height: 350px;
-        border-radius: 12px;
-    }
-
-    /* Ảnh vẫn phủ đẹp trên mobile */
-    #createModal #createKhuVucImage {
-        object-fit: cover;
-    }
-
-    /* Form lên trên, ảnh xuống dưới */
-    #createModal .row > .col-md-4 {
-        order: 2;
-        margin-top: 1.5rem;
-    }
-
-    #createModal .row > .col-md-8 {
-        order: 1;
+        min-height: 260px;
+        max-height: 320px;
     }
 }
+
+/* ==================== MODAL ĐỢT LAO ĐỘNG ĐÃ HỦY / ĐÃ XÓA ==================== */
+#deletedModal .modal-dialog {
+    max-width: 1240px !important;
+    width: 96% !important;
+    margin: 1.5rem auto !important;
+}
+
+#deletedModal .modal-content {
+    border-radius: 16px;
+    box-shadow: 0 20px 45px rgba(15, 23, 42, 0.2);
+    border: none;
+    overflow: hidden;
+    background: #ffffff;
+}
+
+#deletedModal .modal-header {
+    background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+    padding: 16px 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+#deletedModal .modal-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    margin: 0;
+}
+
+#deletedModal .deleted-badge-count {
+    font-size: 0.75rem;
+    background: rgba(255, 255, 255, 0.25);
+    color: #ffffff;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-weight: 600;
+    backdrop-filter: blur(4px);
+}
+
+#deletedModal .modal-body {
+    background: #f8fafc;
+    padding: 20px !important;
+}
+
+#deletedModal .table-responsive {
+    background: #ffffff;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 10px !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    overflow-x: auto !important;
+    overflow-y: auto !important;
+}
+
+/* Bảng hiển thị co giãn linh hoạt 100% không bị cắt góc */
+#deletedModal .table {
+    table-layout: auto !important;
+    width: 100% !important;
+    min-width: 100% !important;
+    margin-bottom: 0 !important;
+    border-collapse: collapse !important;
+}
+
+#deletedModal .table thead th {
+    background: #f1f5f9 !important;
+    background-color: #f1f5f9 !important;
+    color: #334155 !important;
+    font-size: 0.8rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    border-top: none !important;
+    border-left: none !important;
+    border-right: none !important;
+    border-bottom: 2px solid #cbd5e1 !important;
+    padding: 12px 8px !important;
+    text-align: center !important;
+    vertical-align: middle !important;
+    white-space: nowrap !important;
+}
+
+#deletedModal .table tbody td {
+    padding: 11px 8px !important;
+    vertical-align: middle !important;
+    border-top: none !important;
+    border-left: none !important;
+    border-right: none !important;
+    border-bottom: 1px solid #f1f5f9 !important;
+    color: #334155 !important;
+    font-size: 0.88rem !important;
+    line-height: 1.5 !important;
+    overflow: visible !important;
+    text-align: center;
+    white-space: nowrap;
+}
+
+#deletedModal .table tbody tr:hover {
+    background-color: #f8fafc;
+}
+
+#deletedModal .col-stt {
+    width: 48px !important;
+    min-width: 45px !important;
+    max-width: 55px !important;
+    text-align: center !important;
+    font-weight: 600;
+    color: #64748b;
+}
+
+#deletedModal .col-name {
+    min-width: 180px !important;
+    text-align: left !important;
+    white-space: normal !important;
+    word-break: break-word !important;
+    color: #0f172a;
+    font-weight: 600;
+}
+
+#deletedModal .col-session {
+    width: 135px !important;
+    min-width: 130px !important;
+}
+
+#deletedModal .col-date {
+    width: 115px !important;
+    min-width: 110px !important;
+    color: #475569;
+    font-weight: 500;
+}
+
+#deletedModal .col-area {
+    width: 115px !important;
+    min-width: 110px !important;
+}
+
+#deletedModal .col-deleted-date {
+    width: 125px !important;
+    min-width: 120px !important;
+}
+
+#deletedModal .col-actions {
+    width: 220px !important;
+    min-width: 215px !important;
+    white-space: nowrap !important;
+    text-align: center !important;
+}
+
+/* Badges and Tags */
+.session-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 9px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+.session-tag.morning {
+    background: #e0f2fe;
+    color: #0369a1;
+    border: 1px solid #bae6fd;
+}
+.session-tag.afternoon {
+    background: #fef3c7;
+    color: #b45309;
+    border: 1px solid #fde68a;
+}
+
+.date-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.86rem;
+    color: #334155;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.area-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: #f1f5f9;
+    color: #334155;
+    border: 1px solid #e2e8f0;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.deleted-date-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: #dc2626;
+    background: #fee2e2;
+    border: 1px solid #fecaca;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* Action button group and buttons */
+.action-btn-group {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    flex-wrap: nowrap;
+}
+
+#deletedModal .btn-restore-action {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 4px !important;
+    width: auto !important;
+    height: auto !important;
+    min-width: unset !important;
+    max-width: unset !important;
+    padding: 5px 10px !important;
+    font-size: 0.8rem !important;
+    font-weight: 600 !important;
+    border-radius: 6px !important;
+    background: #10b981 !important;
+    color: #ffffff !important;
+    border: none !important;
+    box-shadow: 0 2px 4px rgba(16, 185, 129, 0.25) !important;
+    transition: all 0.2s ease !important;
+    cursor: pointer !important;
+    white-space: nowrap !important;
+}
+
+#deletedModal .btn-restore-action:hover {
+    background: #059669 !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(16, 185, 129, 0.35) !important;
+}
+
+#deletedModal .btn-perm-delete-action {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 4px !important;
+    width: auto !important;
+    height: auto !important;
+    min-width: unset !important;
+    max-width: unset !important;
+    padding: 5px 10px !important;
+    font-size: 0.8rem !important;
+    font-weight: 600 !important;
+    border-radius: 6px !important;
+    background: #ef4444 !important;
+    color: #ffffff !important;
+    border: none !important;
+    box-shadow: 0 2px 4px rgba(239, 68, 68, 0.25) !important;
+    transition: all 0.2s ease !important;
+    cursor: pointer !important;
+    white-space: nowrap !important;
+}
+
+#deletedModal .btn-perm-delete-action:hover {
+    background: #dc2626 !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(239, 68, 68, 0.35) !important;
+}
+
+/* Empty State */
+.deleted-empty-state {
+    padding: 40px 20px;
+    text-align: center;
+}
+
+.deleted-empty-icon {
+    width: 60px;
+    height: 60px;
+    background: #f1f5f9;
+    color: #94a3b8;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+    margin-bottom: 12px;
+}
+
+.deleted-empty-text {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #475569;
+    margin-bottom: 4px;
+}
+
+.deleted-empty-subtext {
+    font-size: 0.84rem;
+    color: #94a3b8;
+}
+
+#deletedModal .btn-close-modal {
+    padding: 7px 18px;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 0.88rem;
+    background: #64748b;
+    color: #ffffff;
+    border: none;
+    transition: background 0.2s;
+}
+
+#deletedModal .btn-close-modal:hover {
+    background: #475569;
+    color: #ffffff;
+}

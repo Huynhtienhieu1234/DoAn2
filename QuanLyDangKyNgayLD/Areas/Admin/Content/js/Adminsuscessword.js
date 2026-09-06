@@ -96,27 +96,20 @@ document.addEventListener("DOMContentLoaded", function () {
                 /* ===== RENDER ROW ===== */
                 data.forEach((item, index) => {
                     const tr = document.createElement("tr");
-                    tr.style.opacity = "0";
-                    tr.style.animationDelay = `${index * 0.08}s`;
-
                     tr.innerHTML = `
                         <td class="text-center"><input type="checkbox" class="form-check-input check-item-duyet" value="${item.id}"></td>
-                        <td class="text-center">${(currentPage - 1) * pageSize + index + 1}</td>
-                        <td class="text-center">${item.MSSV}</td>
-                        <td>${item.HoTen}</td>
-                        <td>${item.Lop}</td>
-                        <td>${item.Khoa}</td>
-                        <td class="text-center fw-bold">${item.SoNgay ?? 0}</td>
+                        <td class="stt-cell">${(currentPage - 1) * pageSize + index + 1}</td>
+                        <td class="text-center fw-semibold text-primary">${item.MSSV || ""}</td>
+                        <td class="text-start fw-semibold">${item.HoTen || ""}</td>
+                        <td class="text-start">${item.Lop || ""}</td>
+                        <td class="text-start">${item.Khoa || ""}</td>
+                        <td class="text-center"><span class="badge bg-success-subtle text-success fw-bold px-2 py-1">${item.SoNgay ?? 0} ngày</span></td>
                         <td class="action-cell text-center">
                             <button class="btn btn-sm btn-success btn-duyet" data-id="${item.id}" title="Duyệt hoàn thành">
                                 <i class="fas fa-check"></i>
                             </button>
                         </td>`;
                     tbody.appendChild(tr);
-
-                    setTimeout(() => {
-                        tr.style.animation = 'rowSlideDown 0.45s ease-out forwards';
-                    }, 10);
                 });
 
                 renderPagination();
