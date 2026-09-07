@@ -34,8 +34,9 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
                 if (sv == null)
                     return RedirectToAction("Login", "Login");
 
-                // ✅ Truyền avatar và tên lên ViewBag
-                ViewBag.AvatarUrl = sv.Anh != null ? sv.Anh.DuongDan : "/image/Avarta.png";
+                // ✅ Truyền avatar và tên lên ViewBag (Fallback UI-Avatars an toàn)
+                string fallbackAvatar = "https://ui-avatars.com/api/?name=" + HttpUtility.UrlEncode(sv.HoTen ?? "Sinh Vien") + "&background=2563eb&color=fff&size=150&bold=true";
+                ViewBag.AvatarUrl = (sv.Anh != null && !string.IsNullOrEmpty(sv.Anh.DuongDan)) ? sv.Anh.DuongDan : fallbackAvatar;
                 ViewBag.HoTen = sv.HoTen ?? "Sinh viên";
 
                 return View("Index", sv);
@@ -85,7 +86,8 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
                 if (sv == null)
                     return Json(new { success = false, message = "Không tìm thấy thông tin sinh viên!" }, JsonRequestBehavior.AllowGet);
 
-                string avatarUrl = (sv.Anh != null && !string.IsNullOrEmpty(sv.Anh.DuongDan)) ? sv.Anh.DuongDan : "/image/Avarta.png";
+                string fallbackAvatar = "https://ui-avatars.com/api/?name=" + HttpUtility.UrlEncode(sv.HoTen ?? "Sinh Vien") + "&background=2563eb&color=fff&size=150&bold=true";
+                string avatarUrl = (sv.Anh != null && !string.IsNullOrEmpty(sv.Anh.DuongDan)) ? sv.Anh.DuongDan : fallbackAvatar;
                 string mssvDisplay = (sv.TaiKhoan1 != null && !string.IsNullOrEmpty(sv.TaiKhoan1.Username)) ? sv.TaiKhoan1.Username : sv.MSSV.ToString();
 
                 // Tính tổng số ngày lao động đã tích lũy

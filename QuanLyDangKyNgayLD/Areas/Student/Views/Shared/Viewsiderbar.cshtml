@@ -1,139 +1,178 @@
-﻿<!DOCTYPE html>
+@using System.Web.Mvc
+@{
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+    var currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+}
+<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title - Hệ Thống Lao Động Sinh Viên</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap JS (gọi ở cuối để load nhanh hơn) -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- CSS riêng -->
-    <link rel="stylesheet" href="~/Areas/Student/Content/Css/Dashboard.css">
-    <!--Css sidebar-->
-    <link rel="stylesheet" href="~/Areas/Student/Content/Css/Siderbarmain.css">
     <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <!--biểu tượng-->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    
+    <!-- Custom Layout CSS -->
+    <link rel="stylesheet" href="@Url.Content("~/Areas/Student/Content/Css/Siderbarmain.css?v=" + DateTime.Now.Ticks)">
+    <link rel="stylesheet" href="@Url.Content("~/Areas/Student/Content/Css/Toast.css?v=" + DateTime.Now.Ticks)">
+
+    <!-- Favicon -->
     <link rel="icon" type="image/png" href="https://cdn.jsdelivr.net/gh/Huynhtienhieu1234/UploadAnh/logoxoanen.png" />
-    <!--links javascript-->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-    <!-- JavaScript -->
-    <script src="~/Areas/Student/Content/Js/Viewsider/Viewsider.js"></script>
-    <script src="~/Areas/Student/Content/Js/Viewsider/LayoutUser.js"></script>
-
-
-
-
-    <!--csss-->
-    <link rel="stylesheet" href="~/Areas/Student/Content/Css/Toast.css">
-
-    <title>@ViewBag.Title</title>
-
-
-
+    <!-- jQuery & Scripts -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="@Url.Content("~/Areas/Student/Content/Js/Viewsider/LayoutUser.js?v=" + DateTime.Now.Ticks)"></script>
+    <script src="@Url.Content("~/Areas/Student/Content/Js/Viewsider/Viewsider.js?v=" + DateTime.Now.Ticks)"></script>
 </head>
 
-
-<!-- TOAST SIÊU ĐẸP CÓ HIỆU ỨNG CHẠY -->
-<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999;">
-    @if (TempData["Message"] != null)
-    {
-        var type = (TempData["MessageType"]?.ToString() ?? "info").ToLower();
-        var bgClass = type == "success" ? "bg-success" :
-                     (type.Contains("error") || type.Contains("danger") ? "bg-danger" : "bg-primary");
-
-        <div class="toast custom-toast text-white @bgClass border-0" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="d-flex flex-column w-100">
-                <!-- Nội dung + nút đóng cùng một hàng -->
-                <div class="toast-body fw-bold d-flex align-items-center justify-content-between">
-                    <div class="d-flex align-items-center">
-                        @if (type == "success")
-                        {
-                            <i class="fas fa-check-circle me-2 fs-4"></i>
-                        }
-                        else if (type.Contains("error") || type.Contains("danger"))
-                        {
-                            <i class="fas fa-exclamation-triangle me-2 fs-4"></i>
-                        }
-                        else
-                        {
-                            <i class="fas fa-info-circle me-2 fs-4"></i>
-                        }
-                        @TempData["Message"]
-                    </div>
-                    <!-- ✅ Nút đóng nằm trong nội dung -->
-                    <button type="button" class="btn-close btn-close-white ms-3" data-bs-dismiss="toast"></button>
-                </div>
-
-                <!-- Thanh tiến trình chạy -->
-                <div class="progress toast-progress">
-                    <div class="progress-bar bg-light" role="progressbar"></div>
-                </div>
-            </div>
-        </div>
-    }
-</div>
-
 <body>
-    <!-- Bong bóng chat -->
-    <div id="chatBubble" class="chat-bubble">
-        <i class="fa fa-comments"></i>
+    <!-- TOAST THÔNG BÁO -->
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999;">
+        @if (TempData["Message"] != null)
+        {
+            var type = (TempData["MessageType"]?.ToString() ?? "info").ToLower();
+            var bgClass = type == "success" ? "bg-success" :
+                         (type.Contains("error") || type.Contains("danger") ? "bg-danger" : "bg-primary");
+
+            <div class="toast custom-toast text-white @bgClass border-0 shadow-lg rounded-3" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="d-flex flex-column w-100">
+                    <div class="toast-body fw-bold d-flex align-items-center justify-content-between py-2">
+                        <div class="d-flex align-items-center">
+                            @if (type == "success")
+                            {
+                                <i class="fas fa-check-circle me-2 fs-5"></i>
+                            }
+                            else if (type.Contains("error") || type.Contains("danger"))
+                            {
+                                <i class="fas fa-exclamation-triangle me-2 fs-5"></i>
+                            }
+                            else
+                            {
+                                <i class="fas fa-info-circle me-2 fs-5"></i>
+                            }
+                            @TempData["Message"]
+                        </div>
+                        <button type="button" class="btn-close btn-close-white ms-3" data-bs-dismiss="toast"></button>
+                    </div>
+                    <div class="progress toast-progress" style="height: 4px;">
+                        <div class="progress-bar bg-light" role="progressbar"></div>
+                    </div>
+                </div>
+            </div>
+        }
     </div>
+
+    <!-- Bong bóng chat hỗ trợ -->
+    <div id="chatBubble" class="chat-bubble shadow-lg" title="Trợ lý ảo hỗ trợ sinh viên">
+        <i class="fas fa-robot"></i>
+        <span class="chat-badge-pulse"></span>
+    </div>
+
     <!-- Khung chat -->
-    <div id="chatBox" class="chat-box card shadow">
-        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-            <span>Chat hỗ trợ</span>
-            <button type="button" class="btn-close btn-close-white" id="closeChat"></button>
+    <div id="chatBox" class="chat-box card shadow-lg border-0 rounded-4 overflow-hidden">
+        <div class="chat-header text-white d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center gap-2">
+                <div class="chat-bot-avatar">
+                    <i class="fas fa-robot"></i>
+                    <span class="chat-status-online"></span>
+                </div>
+                <div>
+                    <div class="fw-bold fs-6 lh-1">Trợ Lý Lao Động AI</div>
+                    <small class="text-white-50 fs-7">Sẵn sàng hỗ trợ 24/7</small>
+                </div>
+            </div>
+            <div class="d-flex align-items-center gap-1">
+                <button type="button" class="btn btn-sm btn-icon-header" id="resetChat" title="Làm mới cuộc trò chuyện">
+                    <i class="fas fa-redo-alt"></i>
+                </button>
+                <button type="button" class="btn btn-sm btn-icon-header" id="closeChat" title="Đóng khung chat">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
         </div>
-        <div class="card-body" id="chatMessages" style="height:200px; overflow-y:auto;">
-            <div class="text-muted">Xin chào, bạn cần hỗ trợ gì?</div>
+
+        <!-- Khung tin nhắn -->
+        <div class="card-body p-3" id="chatMessages" style="height: 330px; overflow-y: auto; background-color: #f8fafc;">
+            <!-- Tin nhắn sẽ được render tự động qua JS -->
         </div>
-        <div class="card-footer">
+
+        <!-- Thanh gợi ý câu hỏi nhanh -->
+        <div class="chat-suggestions-bar px-2 py-1 bg-light border-top" id="chatSuggestionsBar">
+            <div class="d-flex gap-1 overflow-x-auto py-1 custom-scrollbar">
+                <button type="button" class="btn btn-sm chat-chip" data-query="Tiến độ lao động của tôi">
+                    <i class="fas fa-chart-pie text-primary me-1"></i>Tiến độ
+                </button>
+                <button type="button" class="btn btn-sm chat-chip" data-query="Lịch lao động tôi đã đăng ký">
+                    <i class="fas fa-calendar-alt text-success me-1"></i>Lịch trực
+                </button>
+                <button type="button" class="btn btn-sm chat-chip" data-query="Quy định ca trực và giờ giấc">
+                    <i class="fas fa-clock text-warning me-1"></i>Giờ giấc
+                </button>
+                <button type="button" class="btn btn-sm chat-chip" data-query="Hướng dẫn cách điểm danh">
+                    <i class="fas fa-qrcode text-info me-1"></i>Điểm danh
+                </button>
+                <button type="button" class="btn btn-sm chat-chip" data-query="Điều kiện nhận giấy xác nhận hoàn thành">
+                    <i class="fas fa-certificate text-danger me-1"></i>Giấy xác nhận
+                </button>
+            </div>
+        </div>
+
+        <!-- Ô nhập câu hỏi -->
+        <div class="card-footer bg-white border-top p-2">
             <div class="input-group">
-                <input type="text" id="chatInput" class="form-control" placeholder="Nhập tin nhắn...">
-                <button class="btn btn-primary" id="sendChat"><i class="fa fa-paper-plane"></i></button>
+                <input type="text" id="chatInput" class="form-control rounded-pill-start border-end-0 shadow-none ps-3" placeholder="Nhập câu hỏi (tiến độ, lịch, quy định...)" autocomplete="off">
+                <button class="btn btn-primary rounded-pill-end px-3" id="sendChat" title="Gửi câu hỏi">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
             </div>
         </div>
     </div>
 
-    <!-- Header -->
-    <nav>
+    <!-- Top Navigation Header -->
+    <nav class="student-navbar">
         <div class="nav-content">
-            <!-- Logo -->
-            <a href="@Url.Action("Index","MainSinhVien",new{area="Student"})">
-                <img src="https://cdn.jsdelivr.net/gh/Huynhtienhieu1234/UploadAnh/sinhvien/LogoTruong.png"
-                     alt="Logo" class="logo">
+            <!-- Brand Logo -->
+            <a href="@Url.Action("Index", "MainSinhVien", new { area = "Student" })" class="d-flex align-items-center text-decoration-none">
+                <img src="https://cdn.jsdelivr.net/gh/Huynhtienhieu1234/UploadAnh/sinhvien/LogoTruong.png" alt="Logo DThU" class="logo-brand">
             </a>
 
-            <div class="nav-content-text"></div>
+            <!-- User Menu Dropdown -->
+            <div class="user-menu-pill" id="userMenu">
+                <div class="user-avatar-wrapper">
+                    <img id="layoutAvatar"
+                         src="https://ui-avatars.com/api/?name=SV&background=2563eb&color=fff&size=100&bold=true"
+                         alt="Avatar"
+                         class="user-avatar" />
+                    <span class="user-status-dot"></span>
+                </div>
 
-            <!-- User menu -->
-            <div class="user-menu" id="userMenu">
-                <img id="layoutAvatar"
-                     src="/image/Avarta.png"
-                     alt="User Avatar"
-                     class="user-avatar rounded-circle"
-                     style="width:40px;height:40px;object-fit:cover;">
-
-                <span id="layoutUserName" class="user-name">
-                    Sinh viên
+                <span id="layoutUserName" class="user-name-text">
+                    @(ViewBag.HoTen ?? "Sinh viên")
                 </span>
 
-                <i class="fa fa-caret-down"></i>
+                <i class="fas fa-chevron-down user-dropdown-arrow ms-1"></i>
 
-                <ul class="dropdown-menu" id="dropdownMenu">
+                <ul class="user-dropdown-menu" id="dropdownMenu">
                     <li>
-                        <a class="a-color" href="@Url.Action("Detail","MainSinhVien",new{area="Student"})">
-                            <i class="fa fa-user me-1"></i> Thông tin cá nhân
+                        <a href="@Url.Action("Detail", "MainSinhVien", new { area = "Student" })">
+                            <i class="fas fa-user-circle text-primary"></i>
+                            <span>Thông tin cá nhân</span>
                         </a>
                     </li>
-
-                    <li class="dropdown-divider"></li>
+                    <li class="user-dropdown-divider"></li>
                     <li>
-                        <a class="a-color text-danger"
-                           href="@Url.Action("Logout", "Login", new { area = "" })">
-                            <i class="fa fa-sign-out"></i> Đăng xuất
+                        <a href="@Url.Action("Logout", "Login", new { area = "" })" class="text-danger">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Đăng xuất</span>
                         </a>
                     </li>
                 </ul>
@@ -141,68 +180,100 @@
         </div>
     </nav>
 
-
-    <!-- Sidebar -->
-    <div class="sidebar" id="sidebar">
-        <!-- Nút toggle -->
-        <div class="toggle-btn text-end px-2">
-            <button id="toggleSidebar" class="btn btn-sm btn-outline-secondary">
-                <i class="fa fa-bars"></i>
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar collapsed" id="sidebar">
+        <!-- Sidebar Toggle Header -->
+        <div class="sidebar-header-toggle">
+            <span class="sidebar-title-badge">Menu Quản Lý</span>
+            <button type="button" id="toggleSidebar" class="btn-sidebar-toggle" title="Thu gọn / Mở rộng">
+                <i class="fas fa-bars" id="toggleIcon"></i>
             </button>
         </div>
 
-        <ul class="nav flex-column mt-3">
-            <li class="nav-item">
-                <a href="@Url.Action("Index","MainSinhVien",new{area="Student"})" class="nav-link">
-                    <i class="fa fa-home"></i> <span class="menu-text">Trang chủ</span>
+        <!-- Sidebar Menu Items -->
+        <ul class="sidebar-menu-list">
+            <!-- 1. Trang chủ -->
+            <li class="sidebar-menu-item">
+                <a href="@Url.Action("Index", "MainSinhVien", new { area = "Student" })" 
+                   class="sidebar-nav-link @(currentController == "MainSinhVien" && currentAction == "Index" ? "active" : "")" 
+                   data-tooltip="Trang chủ">
+                    <i class="fas fa-home nav-icon"></i>
+                    <span class="menu-text">Trang chủ</span>
                 </a>
             </li>
-            <li class="nav-item">
-                <a href="@Url.Action("Index","StudentRegisterWord",new{area="Student"})" class="nav-link">
-                    <i class="fa fa-user-plus"></i> <span class="menu-text">Đăng Ký Lao Động</span>
+
+            <!-- 2. Đăng ký lao động -->
+            <li class="sidebar-menu-item">
+                <a href="@Url.Action("Index", "StudentRegisterWord", new { area = "Student" })" 
+                   class="sidebar-nav-link @(currentController == "StudentRegisterWord" ? "active" : "")" 
+                   data-tooltip="Đăng Ký Lao Động">
+                    <i class="fas fa-clipboard-list nav-icon"></i>
+                    <span class="menu-text">Đăng Ký Lao Động</span>
                 </a>
             </li>
-            <li class="nav-item">
-                <a href="@Url.Action("Index","StudentTK",new{area="Student"})" class="nav-link">
-                    <i class="fa fa-chart-bar"></i> <span class="menu-text">Thống Kê</span>
+
+            <!-- 3. Thống kê -->
+            <li class="sidebar-menu-item">
+                <a href="@Url.Action("Index", "StudentTK", new { area = "Student" })" 
+                   class="sidebar-nav-link @(currentController == "StudentTK" ? "active" : "")" 
+                   data-tooltip="Thống Kê Ngày Công">
+                    <i class="fas fa-chart-line nav-icon"></i>
+                    <span class="menu-text">Thống Kê Ngày Công</span>
                 </a>
             </li>
-            <li class="nav-item">
-                <a href="@Url.Action("Index","StudentListDay",new{area="Student"})" class="nav-link">
-                    <i class="fa fa-calendar-alt"></i> <span class="menu-text">Lịch Lao Động</span>
+
+            <!-- 4. Lịch lao động -->
+            <li class="sidebar-menu-item">
+                <a href="@Url.Action("Index", "StudentListDay", new { area = "Student" })" 
+                   class="sidebar-nav-link @(currentController == "StudentListDay" ? "active" : "")" 
+                   data-tooltip="Lịch Lao Động">
+                    <i class="fas fa-calendar-alt nav-icon"></i>
+                    <span class="menu-text">Lịch Lao Động</span>
                 </a>
             </li>
-            <li class="nav-item">
-                <a href="@Url.Action("Index","StudentCheckDay",new{area="Student"})" class="nav-link">
-                    <i class="fa fa-user-check"></i> <span class="menu-text">Điểm Danh Lao Động</span>
+
+            <!-- 5. Điểm danh lao động -->
+            <li class="sidebar-menu-item">
+                <a href="@Url.Action("Index", "StudentCheckDay", new { area = "Student" })" 
+                   class="sidebar-nav-link @(currentController == "StudentCheckDay" ? "active" : "")" 
+                   data-tooltip="Điểm Danh Lao Động">
+                    <i class="fas fa-clipboard-check nav-icon"></i>
+                    <span class="menu-text">Điểm Danh Lao Động</span>
+                </a>
+            </li>
+
+            <!-- 6. Hồ sơ cá nhân -->
+            <li class="sidebar-menu-item">
+                <a href="@Url.Action("Detail", "MainSinhVien", new { area = "Student" })" 
+                   class="sidebar-nav-link @(currentController == "MainSinhVien" && currentAction == "Detail" ? "active" : "")" 
+                   data-tooltip="Hồ Sơ Cá Nhân">
+                    <i class="fas fa-id-card nav-icon"></i>
+                    <span class="menu-text">Hồ Sơ Cá Nhân</span>
                 </a>
             </li>
         </ul>
-    </div>
-    <script>
-        // Mặc định thu gọn sidebar khi trang vừa load
-        document.addEventListener("DOMContentLoaded", function () {
-            document.getElementById("sidebar").classList.add("collapsed");
-        });
+    </aside>
 
-        // Toggle khi bấm nút ☰
-        document.getElementById("toggleSidebar").addEventListener("click", function () {
-            document.getElementById("sidebar").classList.toggle("collapsed");
-        });
-    </script>
-
-
-
-
-
-    <!-- Nội dung chính -->
-    <div class="content">
-        <div class="container-fluid">
+    <!-- Main Content Area -->
+    <main class="content-wrapper">
+        <div class="container-fluid p-0">
             @RenderBody()
         </div>
-    </div>
+    </main>
 
+    <script>
+        // Toggle Sidebar Action
+        document.addEventListener("DOMContentLoaded", function () {
+            const sidebar = document.getElementById("sidebar");
+            const toggleBtn = document.getElementById("toggleSidebar");
 
-
+            if (toggleBtn && sidebar) {
+                toggleBtn.addEventListener("click", function (e) {
+                    e.preventDefault();
+                    sidebar.classList.toggle("collapsed");
+                });
+            }
+        });
+    </script>
 </body>
 </html>

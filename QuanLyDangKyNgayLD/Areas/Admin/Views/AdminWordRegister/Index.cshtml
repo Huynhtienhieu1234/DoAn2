@@ -138,8 +138,8 @@
                         <td>@item.Buoi</td>
                         <td>@item.LoaiLaoDong</td>
                         <td class="text-success fw-bold">@String.Format("{0:N0}", item.GiaTri)</td>
-                        <td class="px-1 text-center">
-                            <span class="text-truncate d-inline-block w-100" style="max-width:80px;" title="@(item.NgayLaoDong?.ToString("dd/MM/yyyy"))">
+                        <td class="px-2 text-center text-nowrap">
+                            <span class="fw-semibold">
                                 @(item.NgayLaoDong?.ToString("dd/MM/yyyy"))
                             </span>
                         </td>
@@ -151,6 +151,31 @@
                                 var soDangKy = (dict != null && dict.ContainsKey(key)) ? dict[key] : 0;
                                 var quyDinh = item.SoLuongSinhVien ?? 0;
                                 var mau = soDangKy < quyDinh ? "text-danger fw-bold" : "text-success fw-bold";
+
+                                var now = DateTime.Now;
+                                var today = DateTime.Today;
+                                var nowTime = now.TimeOfDay;
+                                bool isPast = false;
+                                if (item.NgayLaoDong.HasValue)
+                                {
+                                    if (item.NgayLaoDong.Value.Date < today)
+                                    {
+                                        isPast = true;
+                                    }
+                                    else if (item.NgayLaoDong.Value.Date == today)
+                                    {
+                                        bool isSang = string.Equals(item.Buoi?.Trim(), "Sáng", StringComparison.OrdinalIgnoreCase) || (item.Buoi != null && item.Buoi.ToLower().Contains("sáng"));
+                                        bool isChieu = string.Equals(item.Buoi?.Trim(), "Chiều", StringComparison.OrdinalIgnoreCase) || (item.Buoi != null && item.Buoi.ToLower().Contains("chiều"));
+                                        if (isSang && nowTime >= new TimeSpan(7, 0, 0))
+                                        {
+                                            isPast = true;
+                                        }
+                                        else if (isChieu && nowTime >= new TimeSpan(13, 30, 0))
+                                        {
+                                            isPast = true;
+                                        }
+                                    }
+                                }
                             }
                             <span class="@mau">@soDangKy/@quyDinh</span>
                         </td>
@@ -160,6 +185,10 @@
                             @if (item.TrangThaiDot == "Tạm ngưng")
                             {
                                 <span class="badge bg-danger">Tạm ngưng</span>
+                            }
+                            else if (isPast && (item.TrangThaiDuyet != true || soDangKy < quyDinh))
+                            {
+                                <span class="badge bg-secondary">Kết thúc</span>
                             }
                             else if (item.TrangThaiDuyet == true)
                             {

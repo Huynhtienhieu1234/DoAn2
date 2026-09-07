@@ -73,37 +73,52 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
         [HttpGet]
         public ActionResult GetAccounts(int page = 1, int pageSize = 10)
         {
-            using (var db = DbContextFactory.Create())
+            try
             {
-                var query = db.TaiKhoans
-                    .Include(t => t.VaiTro)
-                    .Where(t => t.Deleted_at == null)
-                    .OrderBy(t => t.TaiKhoan_id);
+                using (var db = DbContextFactory.Create())
+                {
+                    var query = db.TaiKhoans
+                        .Include(t => t.VaiTro)
+                        .Where(t => t.Deleted_at == null)
+                        .OrderBy(t => t.TaiKhoan_id);
 
-                int totalItems = query.Count();
-                int totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
+                    int totalItems = query.Count();
+                    if (pageSize <= 0) pageSize = 10;
+                    int totalPages = totalItems > 0 ? (int)Math.Ceiling((double)totalItems / pageSize) : 1;
 
-                if (page < 1) page = 1;
-                if (page > totalPages && totalPages > 0) page = totalPages;
+                    if (page < 1) page = 1;
+                    if (page > totalPages) page = totalPages;
 
-                var accounts = query
-                    .Skip((page - 1) * pageSize)
-                    .Take(pageSize)
-                    .Select(t => new
+                    var accounts = query
+                        .Skip((page - 1) * pageSize)
+                        .Take(pageSize)
+                        .Select(t => new
+                        {
+                            t.TaiKhoan_id,
+                            t.Username,
+                            t.Email,
+                            RoleName = t.VaiTro != null ? t.VaiTro.TenVaiTro : "Chưa có vai trò"
+                        })
+                        .ToList();
+
+                    return Json(new
                     {
-                        t.TaiKhoan_id,
-                        t.Username,
-                        t.Email,
-                        RoleName = t.VaiTro.TenVaiTro
-                    })
-                    .ToList();
-
+                        data = accounts,
+                        currentPage = page,
+                        totalPages = totalPages,
+                        totalItems = totalItems
+                    }, JsonRequestBehavior.AllowGet);
+                }
+            }
+            catch (Exception ex)
+            {
                 return Json(new
                 {
-                    data = accounts,
-                    currentPage = page,
-                    totalPages = totalPages,
-                    totalItems = totalItems
+                    data = new List<object>(),
+                    currentPage = 1,
+                    totalPages = 1,
+                    totalItems = 0,
+                    error = ex.Message
                 }, JsonRequestBehavior.AllowGet);
             }
         }
@@ -120,15 +135,6 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                 {
                     if (!ModelState.IsValid)
                         return Json(new { success = false, message = "Dữ liệu không hợp lệ." });
-
-                    // Kiểm tra trùng Username
-                    if (db.TaiKhoans.Any(t => t.Username == model.Username && t.Deleted_at == null))
-                        return Json(new { success = false, message = "Tên tài khoản đã tồn tại." });
-
-                    // Kiểm tra trùng Email
-                    if (!string.IsNullOrWhiteSpace(model.Email) &&
-                        db.TaiKhoans.Any(t => t.Email == model.Email && t.Deleted_at == null))
-                        return Json(new { success = false, message = "Email đã tồn tại." });
 
                     bool isStudentRole = model.VaiTro_id == 3 || model.VaiTro_id == 4;
                     string rawPassword;
@@ -156,14 +162,63 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                     // Hash mật khẩu
                     string hashedPassword = PasswordHelper.HashPassword(rawPassword);
 
-                    // Tạo tài khoản
+                    // Kiểm tra trùng Username
+                    var existingTk = db.TaiKhoans.FirstOrDefault(t => t.Username == model.Username);
+                    if (existingTk != null)
+                    {
+                        if (existingTk.Deleted_at == null)
+                            return Json(new { success = false, message = "Tên tài khoản đã tồn tại." });
+
+                        // Tài khoản đã từng bị xóa mềm -> Kích hoạt lại
+                        existingTk.Password = hashedPassword;
+                        existingTk.Email = model.Email?.Trim();
+                        existingTk.VaiTro_id = model.VaiTro_id;
+                        existingTk.Deleted_at = null;
+                        existingTk.IsLocked = false;
+                        db.SaveChanges();
+
+                        if (isStudentRole)
+                        {
+                            long mssvVal = Convert.ToInt64(existingTk.Username);
+                            var existingSv = db.SinhViens.FirstOrDefault(s => s.MSSV == mssvVal);
+                            if (existingSv != null)
+                            {
+                                existingSv.Email = existingTk.Email;
+                                existingSv.TaiKhoan = existingTk.TaiKhoan_id;
+                                existingSv.Deleted_at = null;
+                            }
+                            else
+                            {
+                                var sinhVien = new SinhVien
+                                {
+                                    MSSV = mssvVal,
+                                    Email = existingTk.Email,
+                                    TaiKhoan = existingTk.TaiKhoan_id,
+                                    Deleted_at = null
+                                };
+                                db.SinhViens.Add(sinhVien);
+                            }
+                            db.SaveChanges();
+                        }
+
+                        transaction.Commit();
+                        return Json(new { success = true, message = isStudentRole ? $"Đã khôi phục và kích hoạt tài khoản sinh viên thành công! Mật khẩu mặc định: <strong>{rawPassword}</strong>" : "Đã khôi phục và kích hoạt tài khoản thành công!" });
+                    }
+
+                    // Kiểm tra trùng Email
+                    if (!string.IsNullOrWhiteSpace(model.Email) &&
+                        db.TaiKhoans.Any(t => t.Email == model.Email && t.Deleted_at == null))
+                        return Json(new { success = false, message = "Email đã tồn tại." });
+
+                    // Tạo tài khoản mới
                     var taiKhoan = new TaiKhoan
                     {
                         Username = model.Username.Trim(),
                         Email = model.Email?.Trim(),
                         Password = hashedPassword,
                         VaiTro_id = model.VaiTro_id,
-                        Deleted_at = null
+                        Deleted_at = null,
+                        IsLocked = false
                     };
 
                     db.TaiKhoans.Add(taiKhoan);
@@ -172,21 +227,25 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                     // Nếu là Sinh viên hoặc Lớp phó lao động thì thêm vào bảng SinhVien
                     if (isStudentRole)
                     {
-                        if (db.SinhViens.Any(s => s.MSSV.ToString() == taiKhoan.Username && s.Deleted_at == null))
+                        long mssvVal = Convert.ToInt64(taiKhoan.Username);
+                        var existingSv = db.SinhViens.FirstOrDefault(s => s.MSSV == mssvVal);
+                        if (existingSv != null)
                         {
-                            transaction.Rollback();
-                            return Json(new { success = false, message = "Sinh viên với MSSV này đã tồn tại trong hệ thống!" });
+                            existingSv.Email = taiKhoan.Email;
+                            existingSv.TaiKhoan = taiKhoan.TaiKhoan_id;
+                            existingSv.Deleted_at = null;
                         }
-
-                        var sinhVien = new SinhVien
+                        else
                         {
-                            MSSV = Convert.ToInt64(taiKhoan.Username),
-                            Email = taiKhoan.Email, // ✅ Gán email từ tài khoản
-                            TaiKhoan = taiKhoan.TaiKhoan_id,
-                            Deleted_at = null
-                        };
-
-                        db.SinhViens.Add(sinhVien);
+                            var sinhVien = new SinhVien
+                            {
+                                MSSV = mssvVal,
+                                Email = taiKhoan.Email,
+                                TaiKhoan = taiKhoan.TaiKhoan_id,
+                                Deleted_at = null
+                            };
+                            db.SinhViens.Add(sinhVien);
+                        }
                         db.SaveChanges();
                     }
 
@@ -201,7 +260,9 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = "Lỗi: " + ex.Message });
+                var inner = ex;
+                while (inner.InnerException != null) inner = inner.InnerException;
+                return Json(new { success = false, message = "Lỗi: " + inner.Message });
             }
         }
 
@@ -567,31 +628,26 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                             db.QuanLies.Remove(ql);
                         }
 
-                        // Xóa SinhVien & PhieuDangKy
-                        var sinhViens = db.SinhViens.Where(sv => sv.TaiKhoan == id || (isMssv && sv.MSSV == mssv)).ToList();
-                        foreach (var sv in sinhViens)
+                        // Xóa SinhVien và toàn bộ dữ liệu liên quan
+                        if (isMssv)
                         {
-                            var phieuDangKies = db.PhieuDangKies.Where(p => p.MSSV == sv.MSSV).ToList();
-                            foreach (var phieu in phieuDangKies)
+                            AdminStudentController.CascadeDeleteStudent(db, mssv, id);
+                        }
+                        else
+                        {
+                            var sinhViens = db.SinhViens.Where(sv => sv.TaiKhoan == id).ToList();
+                            foreach (var sv in sinhViens)
                             {
-                                var phieuDuyets = db.PhieuDuyets.Where(pd => pd.PhieuDangKy == phieu.PhieuDangKy_id).ToList();
-                                foreach (var pd in phieuDuyets)
-                                {
-                                    var pxns = db.PhieuXacNhanHoanThanhs.Where(p => p.phieuduyet == pd.PhieuDuyet_id).ToList();
-                                    foreach (var p in pxns) db.PhieuXacNhanHoanThanhs.Remove(p);
-                                    db.PhieuDuyets.Remove(pd);
-                                }
-                                db.PhieuDangKies.Remove(phieu);
+                                AdminStudentController.CascadeDeleteStudent(db, sv.MSSV, id);
                             }
-                            if (sv.Anh_id.HasValue)
-                            {
-                                var anh = db.Anhs.FirstOrDefault(a => a.Anh_id == sv.Anh_id);
-                                if (anh != null) db.Anhs.Remove(anh);
-                            }
-                            db.SinhViens.Remove(sv);
                         }
 
-                        db.TaiKhoans.Remove(taiKhoan);
+                        // Xóa tài khoản nếu còn tồn tại
+                        var tkToRemove = db.TaiKhoans.FirstOrDefault(t => t.TaiKhoan_id == id);
+                        if (tkToRemove != null)
+                        {
+                            db.TaiKhoans.Remove(tkToRemove);
+                        }
                         deletedCount++;
                     }
 
@@ -603,7 +659,9 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = "Lỗi khi xóa hẳn hàng loạt: " + (ex.InnerException?.Message ?? ex.Message) });
+                var inner = ex;
+                while (inner.InnerException != null) inner = inner.InnerException;
+                return Json(new { success = false, message = "Lỗi khi xóa hẳn hàng loạt: " + inner.Message });
             }
         }
 
@@ -643,120 +701,44 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                     try
                     {
                         // Step 0: Xóa QuanLy (có FK -> TaiKhoan)
-                        try
+                        var quanLies = db.QuanLies.Where(q => q.TaiKhoan == id).ToList();
+                        foreach (var ql in quanLies)
                         {
-                            var quanLies = db.QuanLies.Where(q => q.TaiKhoan == id).ToList();
-                            foreach (var ql in quanLies)
+                            var phieuDuyets = db.PhieuDuyets.Where(pd => pd.Nguoiduyet == ql.Quanly_id).ToList();
+                            foreach (var pd in phieuDuyets)
                             {
-                                // Xóa PhieuDuyet liên quan
-                                var phieuDuyets = db.PhieuDuyets.Where(pd => pd.Nguoiduyet == ql.Quanly_id).ToList();
-                                foreach (var pd in phieuDuyets)
+                                var phieuXacNhans = db.PhieuXacNhanHoanThanhs.Where(pxn => pxn.phieuduyet == pd.PhieuDuyet_id).ToList();
+                                foreach (var pxn in phieuXacNhans)
                                 {
-                                    // Xóa PhieuXacNhanHoanThanh
-                                    var phieuXacNhans = db.PhieuXacNhanHoanThanhs.Where(pxn => pxn.phieuduyet == pd.PhieuDuyet_id).ToList();
-                                    foreach (var pxn in phieuXacNhans)
-                                    {
-                                        db.PhieuXacNhanHoanThanhs.Remove(pxn);
-                                    }
-                                    db.PhieuDuyets.Remove(pd);
+                                    db.PhieuXacNhanHoanThanhs.Remove(pxn);
                                 }
-                                db.QuanLies.Remove(ql);
+                                db.PhieuDuyets.Remove(pd);
                             }
-                            db.SaveChanges();
-                        }
-                        catch (Exception ex)
-                        {
-                            throw new Exception($"❌ Lỗi khi xóa QuanLy: {ex.Message}", ex);
+                            db.QuanLies.Remove(ql);
                         }
 
-                        // Step 1: Xóa PhieuDangKy (có FK -> SinhVien)
-                        try
+                        // Step 1: Xóa SinhVien và dữ liệu cascading
+                        if (isMssv)
                         {
-                            var sinhViens = db.SinhViens.ToList();
-                            var sinhViensToDelete = sinhViens
-                                .Where(sv => sv.TaiKhoan == id || (isMssv && sv.MSSV == mssv))
-                                .ToList();
-
-                            foreach (var sv in sinhViensToDelete)
+                            AdminStudentController.CascadeDeleteStudent(db, mssv, id);
+                        }
+                        else
+                        {
+                            var sinhViens = db.SinhViens.Where(sv => sv.TaiKhoan == id).ToList();
+                            foreach (var sv in sinhViens)
                             {
-                                var phieuDangKies = db.PhieuDangKies.Where(p => p.MSSV == sv.MSSV).ToList();
-                                foreach (var phieu in phieuDangKies)
-                                {
-                                    // Xóa PhieuDuyet liên quan
-                                    var phieuDuyets = db.PhieuDuyets.Where(pd => pd.PhieuDangKy == phieu.PhieuDangKy_id).ToList();
-                                    foreach (var pd in phieuDuyets)
-                                    {
-                                        var phieuXacNhans = db.PhieuXacNhanHoanThanhs.Where(pxn => pxn.phieuduyet == pd.PhieuDuyet_id).ToList();
-                                        foreach (var pxn in phieuXacNhans)
-                                        {
-                                            db.PhieuXacNhanHoanThanhs.Remove(pxn);
-                                        }
-                                        db.PhieuDuyets.Remove(pd);
-                                    }
-                                    db.PhieuDangKies.Remove(phieu);
-                                }
+                                AdminStudentController.CascadeDeleteStudent(db, sv.MSSV, id);
                             }
-                            db.SaveChanges();
-                        }
-                        catch (Exception ex)
-                        {
-                            throw new Exception($"❌ Lỗi khi xóa PhieuDangKy: {ex.Message}", ex);
                         }
 
-                        // Step 2: Xóa Anh
-                        try
+                        // Step 2: Xóa TaiKhoan nếu còn
+                        var tkToRemove = db.TaiKhoans.FirstOrDefault(t => t.TaiKhoan_id == id);
+                        if (tkToRemove != null)
                         {
-                            var sinhViens = db.SinhViens.ToList();
-                            var sinhViensToDelete = sinhViens
-                                .Where(sv => sv.TaiKhoan == id || (isMssv && sv.MSSV == mssv))
-                                .ToList();
-
-                            foreach (var sv in sinhViensToDelete)
-                            {
-                                if (sv.Anh_id.HasValue)
-                                {
-                                    var anh = db.Anhs.FirstOrDefault(a => a.Anh_id == sv.Anh_id);
-                                    if (anh != null)
-                                        db.Anhs.Remove(anh);
-                                }
-                            }
-                            db.SaveChanges();
-                        }
-                        catch (Exception ex)
-                        {
-                            throw new Exception($"❌ Lỗi khi xóa Anh: {ex.Message}", ex);
+                            db.TaiKhoans.Remove(tkToRemove);
                         }
 
-                        // Step 3: Xóa SinhVien
-                        try
-                        {
-                            var sinhViens = db.SinhViens.ToList();
-                            var sinhViensToDelete = sinhViens
-                                .Where(sv => sv.TaiKhoan == id || (isMssv && sv.MSSV == mssv))
-                                .ToList();
-
-                            foreach (var sv in sinhViensToDelete)
-                            {
-                                db.SinhViens.Remove(sv);
-                            }
-                            db.SaveChanges();
-                        }
-                        catch (Exception ex)
-                        {
-                            throw new Exception($"❌ Lỗi khi xóa SinhVien: {ex.Message}", ex);
-                        }
-
-                        // Step 4: Xóa TaiKhoan
-                        try
-                        {
-                            db.TaiKhoans.Remove(taiKhoan);
-                            db.SaveChanges();
-                        }
-                        catch (Exception ex)
-                        {
-                            throw new Exception($"❌ Lỗi khi xóa TaiKhoan: {ex.Message}", ex);
-                        }
-
+                        db.SaveChanges();
                         transaction.Commit();
 
                         return Json(new
@@ -769,7 +751,6 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                     catch (Exception innerEx)
                     {
                         transaction.Rollback();
-
                         var fullMessage = innerEx.Message;
                         if (innerEx.InnerException != null)
                         {
@@ -779,28 +760,16 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                         return Json(new
                         {
                             success = false,
-                            message = fullMessage,
-                            stack = innerEx.StackTrace,
-                            detail = innerEx.ToString()
+                            message = fullMessage
                         });
                     }
                 }
             }
             catch (Exception ex)
             {
-                var fullMessage = ex.Message;
-                if (ex.InnerException != null)
-                {
-                    fullMessage += " | InnerException: " + ex.InnerException.Message;
-                }
-
-                return Json(new
-                {
-                    success = false,
-                    message = fullMessage,
-                    stack = ex.StackTrace,
-                    detail = ex.ToString()
-                });
+                var inner = ex;
+                while (inner.InnerException != null) inner = inner.InnerException;
+                return Json(new { success = false, message = "Lỗi khi xóa hẳn tài khoản: " + inner.Message });
             }
         }
 

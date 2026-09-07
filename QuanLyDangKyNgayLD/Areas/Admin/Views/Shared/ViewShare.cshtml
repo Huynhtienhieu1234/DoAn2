@@ -1198,15 +1198,49 @@
                     if (!pageNumbers) return;
                     pageNumbers.innerHTML = "";
 
-                    for (let i = 1; i <= totalPages; i++) {
+                    if (totalPages <= 1) return;
+
+                    let start = Math.max(1, currentPage - 2);
+                    let end = Math.min(totalPages, currentPage + 2);
+
+                    if (currentPage <= 3) {
+                        start = 1;
+                        end = Math.min(totalPages, 5);
+                    } else if (currentPage >= totalPages - 2) {
+                        start = Math.max(1, totalPages - 4);
+                        end = totalPages;
+                    }
+
+                    function addBtn(p) {
                         const btn = document.createElement("button");
-                        btn.textContent = i;
-                        btn.className = "btn btn-sm " + (i === currentPage ? "btn-primary active" : "btn-outline-secondary");
+                        btn.textContent = p;
+                        btn.className = "btn btn-sm mx-1 " + (p === currentPage ? "btn-primary active" : "btn-outline-primary");
                         btn.addEventListener("click", () => {
-                            currentPage = i;
+                            currentPage = p;
                             updateDisplay();
                         });
                         pageNumbers.appendChild(btn);
+                    }
+
+                    function addEllipsis() {
+                        const span = document.createElement("span");
+                        span.className = "px-2 text-muted fw-bold page-ellipsis";
+                        span.textContent = "...";
+                        pageNumbers.appendChild(span);
+                    }
+
+                    if (start > 1) {
+                        addBtn(1);
+                        if (start > 2) addEllipsis();
+                    }
+
+                    for (let i = start; i <= end; i++) {
+                        addBtn(i);
+                    }
+
+                    if (end < totalPages) {
+                        if (end < totalPages - 1) addEllipsis();
+                        addBtn(totalPages);
                     }
 
                     const pageInfo = document.getElementById("pageInfo");

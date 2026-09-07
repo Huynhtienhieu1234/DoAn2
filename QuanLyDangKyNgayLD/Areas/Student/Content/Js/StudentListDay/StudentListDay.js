@@ -1,4 +1,4 @@
-﻿// ==============================
+// ==============================
 // CẤU HÌNH HÌNH ẢNH KHU VỰC
 // ==============================
 const khuVucImages = {
@@ -84,31 +84,48 @@ function loadLich() {
             const cell = document.getElementById(cellId);
             if (!cell) return;
 
-            // ===== MÀU THEO TRẠNG THÁI =====
-            let bgClass = "bg-light";
+            // ===== MÀU THEO TRẠNG THÁI (ĐỒNG BỘ VỚI TRANG TẠO ĐỢT LAO ĐỘNG) =====
+            let badgeHtml = "";
+            let cardBorder = "border-secondary";
             switch (item.TrangThaiText?.trim()) {
                 case "Đã duyệt":
-                    bgClass = "bg-success text-white";
+                    cardBorder = "border-success";
+                    badgeHtml = `<span class="badge bg-success"><i class="fas fa-check-circle me-1"></i>Đã duyệt</span>`;
                     break;
                 case "Chưa duyệt":
-                    bgClass = "bg-warning";
+                    cardBorder = "border-warning";
+                    badgeHtml = `<span class="badge bg-warning text-dark"><i class="fas fa-clock me-1"></i>Chưa duyệt</span>`;
                     break;
                 case "Kết thúc":
-                    bgClass = "bg-secondary text-white";
+                    cardBorder = "border-secondary";
+                    badgeHtml = `<span class="badge bg-secondary"><i class="fas fa-ban me-1"></i>Kết thúc</span>`;
                     break;
-                case "Hoàn thành":
-                    bgClass = "bg-primary text-white";
+                case "Tạm ngưng":
+                    cardBorder = "border-danger";
+                    badgeHtml = `<span class="badge bg-danger"><i class="fas fa-pause-circle me-1"></i>Tạm ngưng</span>`;
+                    break;
+                case "Đã điểm danh":
+                    cardBorder = "border-info";
+                    badgeHtml = `<span class="badge bg-info text-white"><i class="fas fa-user-check me-1"></i>Đã điểm danh</span>`;
+                    break;
+                default:
+                    cardBorder = "border-secondary";
+                    badgeHtml = `<span class="badge bg-light text-dark">${item.TrangThaiText || ''}</span>`;
                     break;
             }
 
             // ===== TẠO Ô HIỂN THỊ =====
             const div = document.createElement("div");
-            div.className = `p-2 rounded ${bgClass}`;
+            div.className = `p-2 mb-1 rounded-3 bg-white border ${cardBorder} shadow-sm text-start`;
             div.style.cursor = "pointer";
+            div.style.transition = "all .2s ease";
+            div.onmouseover = () => { div.style.transform = "translateY(-2px)"; div.style.boxShadow = "0 4px 10px rgba(0,0,0,0.12)"; };
+            div.onmouseout = () => { div.style.transform = "none"; div.style.boxShadow = ""; };
             div.innerHTML = `
-                ${item.LoaiLaoDong} - ${item.DiaDiem}
-                <br>
-                <small>${item.TrangThaiText}</small>
+                <div class="fw-bold text-dark mb-1" style="font-size: 13px;">
+                    <i class="fas fa-map-marker-alt text-danger me-1"></i>${item.LoaiLaoDong || ''} - ${item.DiaDiem || ''}
+                </div>
+                <div>${badgeHtml}</div>
             `;
 
             div.addEventListener("click", () => showChiTiet(item));
@@ -123,13 +140,13 @@ function loadLich() {
 // HIỂN THỊ CHI TIẾT
 // ==============================
 function showChiTiet(item) {
-    document.getElementById("ctNgay").innerText = item.Ngay;
-    document.getElementById("ctBuoi").innerText = item.Buoi;
-    document.getElementById("ctLoai").innerText = item.LoaiLaoDong;
-    document.getElementById("ctDiaDiem").innerText = item.DiaDiem;
-    document.getElementById("ctTrangThai").innerText = item.TrangThaiText;
+    document.getElementById("ctNgay").innerText = item.Ngay || "";
+    document.getElementById("ctBuoi").innerText = item.Buoi || "";
+    document.getElementById("ctLoai").innerText = item.LoaiLaoDong || "";
+    document.getElementById("ctDiaDiem").innerText = item.DiaDiem || "";
+    document.getElementById("ctTrangThai").innerText = item.TrangThaiText || "";
 
-    const imgUrl = khuVucImages[item.DiaDiem] || "https://via.placeholder.com/400x200?text=No+Image";
+    const imgUrl = khuVucImages[item.DiaDiem] || "https://raw.githubusercontent.com/Huynhtienhieu1234/KhuVucLaoDong/main/1.jpg";
     document.getElementById("ctHinh").src = imgUrl;
 
     new bootstrap.Modal(document.getElementById("modalChiTiet")).show();

@@ -1002,7 +1002,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     <div class="col-md-6">
                         <div class="mb-3">
                             <label class="form-label fw-bold text-primary">MSSV:</label>
-                            <div class="bg-light p-2 rounded">${sv.MSSV || "-"}</div>
+                            <div class="bg-light p-2 rounded">${sv.MSSVDisplay || sv.MSSV || "-"}</div>
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-bold text-primary">Họ tên:</label>
@@ -1051,7 +1051,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         hideModal("detailStudentModal");
 
                         // Điền dữ liệu vào modal chỉnh sửa
-                        document.getElementById("editMSSV").value = sv.MSSV || "";
+                        document.getElementById("editMSSV").value = sv.MSSVDisplay || sv.MSSV || "";
                         document.getElementById("editHoTen").value = sv.HoTen || "";
                         document.getElementById("editNgaySinh").value = sv.NgaySinh || "";
                         document.getElementById("editGioiTinh").value = sv.GioiTinh || "Nam";
@@ -1332,13 +1332,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
         tbody.innerHTML = items.map((s, i) => {
             const stt = (page - 1) * pageSize + i + 1;
+            let mssvText = (s.MSSVDisplay || (s.MSSV !== undefined && s.MSSV !== null ? s.MSSV.toString() : "")).trim();
+            if (mssvText.length === 9 && !mssvText.startsWith("0")) mssvText = "0" + mssvText;
+
             return `
             <tr>
                 <td class="text-center">
                     <input type="checkbox" class="form-check-input check-item-student" value="${s.MSSV}">
                 </td>
                 <td class="stt-cell text-center fw-bold">${stt}</td>
-                <td class="text-center font-monospace fw-bold">${s.MSSVDisplay || s.MSSV || "-"}</td>
+                <td class="text-center font-monospace fw-bold">${mssvText || "-"}</td>
                 <td class="text-start ps-2" title="${s.HoTen || "-"}">
                     <span class="truncate">${s.HoTen || "-"}</span>
                 </td>

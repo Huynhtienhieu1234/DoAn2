@@ -1,4 +1,4 @@
-﻿document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", function () {
 
     // Hàm mở modal và load danh sách lớp
     window.moModalDangKyLop = function (dotId) {
@@ -97,7 +97,7 @@
                         if (!modal) modal = new bootstrap.Modal(modalElement);
                         modal.hide();
 
-                        loadAndRenderData(); // cập nhật lại bảng
+                        loadAndRenderData(false); // cập nhật lại bảng mà không cần tải lại toàn bộ trang
 
                         // Cập nhật nút xác nhận
                         btn.innerText = "Chỉnh sửa danh sách";

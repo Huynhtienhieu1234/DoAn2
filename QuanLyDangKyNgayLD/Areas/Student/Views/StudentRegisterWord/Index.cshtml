@@ -1,42 +1,40 @@
-﻿@model IEnumerable<QuanLyDangKyNgayLD.Models.TaoDotNgayLaoDong>
+@model IEnumerable<QuanLyDangKyNgayLD.Models.TaoDotNgayLaoDong>
 @{
     ViewBag.Title = "Đăng ký đợt lao động";
     Layout = "~/Areas/Student/Views/Shared/Viewsiderbar.cshtml";
 }
 
-<link href="~/Areas/Student/Content/Css/Table.css" rel="stylesheet" type="text/css" />
-<script src="~/Areas/Student/Content/Js/StudentRegister/StudentRegister.js"></script>
-<script src="~/Areas/Student/Content/Js/StudentRegister/StudentListClass.js"></script>
+<link href="@Url.Content("~/Areas/Student/Content/Css/Table.css?v=" + DateTime.Now.Ticks)" rel="stylesheet" type="text/css" />
+<script src="@Url.Content("~/Areas/Student/Content/Js/StudentRegister/StudentRegister.js?v=" + DateTime.Now.Ticks)"></script>
+<script src="@Url.Content("~/Areas/Student/Content/Js/StudentRegister/StudentListClass.js?v=" + DateTime.Now.Ticks)"></script>
 @*<script src="~/Areas/Student/Content/Js/StudentRegister/LopPhoTableOverride.js"></script>*@
 <div id="student-toast" style="position: fixed; top: 20px; right: 20px; padding: 12px 18px; background: #333; color: #fff; border-radius: 6px; z-index: 9999; display: none; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.2); transition: all .3s ease;"></div>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-<div class="card-header-custom">
-    <h4 class="title-gradient mb-0">
-        <i class="fas fa-clipboard-list me-2"></i>Danh sách đợt lao động
-    </h4>
-</div>
-
 <!-- ================== NẾU LÀ LỚP PHÓ LAO ĐỘNG: HIỂN THỊ 2 BẢNG RIÊNG ================== -->
 @if (ViewBag.Role?.ToString().Trim().Equals("LopPhoLaoDong", StringComparison.OrdinalIgnoreCase) == true)
 {
-    <!-- Nút chuyển tab (tùy chọn, có thể làm active nếu muốn) -->
-    <div class="two-buton my-3">
-        <button class="btn btn-primary active">Đăng ký cá nhân</button>
-        <button class="btn btn-outline-primary ms-2" disabled>Đăng ký lớp (xem bên dưới)</button>
+    <div class="two-buton mb-3">
+        <button class="btn btn-primary active rounded-pill px-4 shadow-sm">
+            <i class="fas fa-user me-1"></i> Đăng ký cá nhân
+        </button>
+        <button class="btn btn-outline-primary ms-2 rounded-pill px-4" disabled>
+            <i class="fas fa-users me-1"></i> Đăng ký lớp (xem bên dưới)
+        </button>
     </div>
 
     <!-- BẢNG 1: LAO ĐỘNG CÁ NHÂN -->
-    <div id="sectionCaNhan">
-
-        <div class="container-lg card-shadow mb-5">
-            <h5 class="mt-4 mb-3 text-primary">
-                <i class="fas fa-user me-2"></i>Đợt lao động Cá nhân
-            </h5>
+    <div id="sectionCaNhan" class="mb-4">
+        <div class="card card-shadow border-0 rounded-4 overflow-hidden shadow-sm">
+            <div class="card-header-custom py-3 px-4">
+                <h4 class="title-gradient mb-0 fs-5">
+                    <i class="fas fa-user me-2"></i>Danh Sách Đợt Lao Động Cá Nhân
+                </h4>
+            </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
-                    <table class="table table-hover align-middle table-custom">
+                    <table class="table table-hover align-middle table-custom mb-0">
                         <thead class="table-header-gradient">
                             <tr>
                                 <th class="text-center ps-4">STT</th>
@@ -66,16 +64,18 @@
             <button class="btn btn-secondary btn-sm ms-1" id="nextCaNhan">&gt;</button>
         </div>
     </div>
+
     <!-- BẢNG 2: LAO ĐỘNG LỚP -->
     <div id="sectionLop">
-
-        <div class="container-lg card-shadow">
-            <h5 class="mt-4 mb-3 text-primary">
-                <i class="fas fa-users me-2"></i>Đợt lao động Lớp
-            </h5>
+        <div class="card card-shadow border-0 rounded-4 overflow-hidden shadow-sm">
+            <div class="card-header-custom py-3 px-4">
+                <h4 class="title-gradient mb-0 fs-5">
+                    <i class="fas fa-users me-2"></i>Danh Sách Đợt Lao Động Theo Lớp
+                </h4>
+            </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
-                    <table class="table table-hover align-middle table-custom">
+                    <table class="table table-hover align-middle table-custom mb-0">
                         <thead class="table-header-gradient">
                             <tr>
                                 <th class="text-center ps-4">STT</th>
@@ -98,7 +98,7 @@
         </div>
     </div>
     <!-- PHÂN TRANG CHO BẢNG LỚP -->
-    <div class="d-flex justify-content-center align-items-center mt-3">
+    <div class="d-flex justify-content-center align-items-center mt-3 mb-4">
         <div id="paginationLop" class="pagination-container">
             <button class="btn btn-secondary btn-sm me-1" id="prevLop">&lt;</button>
             <span id="pageNumbersLop"></span>
@@ -109,10 +109,15 @@
 else
 {
     <!-- BẢNG DUY NHẤT CHO SINH VIÊN THƯỜNG -->
-    <div class="container-lg mt-4 card-shadow">
+    <div class="card card-shadow border-0 rounded-4 overflow-hidden shadow-sm mb-4">
+        <div class="card-header-custom py-3 px-4">
+            <h4 class="title-gradient mb-0 fs-5">
+                <i class="fas fa-clipboard-list me-2"></i>Danh Sách Đợt Lao Động
+            </h4>
+        </div>
         <div class="card-body p-0">
             <div class="table-responsive">
-                <table class="table table-hover align-middle table-custom">
+                <table class="table table-hover align-middle table-custom mb-0">
                     <thead class="table-header-gradient">
                         <tr>
                             <th class="text-center ps-4">STT</th>
@@ -133,8 +138,9 @@ else
             </div>
         </div>
     </div>
+
     <!-- PHÂN TRANG CHO SINH VIÊN THƯỜNG -->
-    <div class="d-flex justify-content-center align-items-center mt-4">
+    <div class="d-flex justify-content-center align-items-center mt-3 mb-4">
         <div id="pagination" class="pagination-container">
             <button class="btn btn-secondary btn-sm me-1" id="prev">&lt;</button>
             <span id="pageNumbers"></span>
@@ -179,19 +185,31 @@ else
 
 
 <script>
+    let toastTimeout = null;
     window.showMainToast = function (message, type = "success") {
         const toast = document.getElementById("student-toast");
+        if (!toast) return;
+
+        if (toastTimeout) {
+            clearTimeout(toastTimeout);
+        }
+
         if (type === "success") toast.style.background = "#28a745";
         else if (type === "error") toast.style.background = "#dc3545";
+        else if (type === "warning") toast.style.background = "#ffc107";
         else toast.style.background = "#007bff";
+
         toast.innerText = message;
         toast.style.display = "block";
         toast.style.opacity = "1";
         toast.style.transform = "translateY(0)";
-        setTimeout(() => {
+
+        toastTimeout = setTimeout(() => {
             toast.style.opacity = "0";
             toast.style.transform = "translateY(-20px)";
-            setTimeout(() => toast.style.display = "none", 300);
-        }, 2500);
+            setTimeout(() => {
+                toast.style.display = "none";
+            }, 300);
+        }, 5000); // Hiển thị 5 giây
     };
 </script>

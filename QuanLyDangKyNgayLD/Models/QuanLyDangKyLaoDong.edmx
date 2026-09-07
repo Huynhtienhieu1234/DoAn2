@@ -43,7 +43,7 @@
           <Key>
             <PropertyRef Name="PhieuDangKy_id" />
           </Key>
-          <Property Name="PhieuDangKy_id" Type="int" Nullable="false" />
+          <Property Name="PhieuDangKy_id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="MSSV" Type="bigint" Nullable="false" />
           <Property Name="LaoDongTheoLop" Type="bit" />
           <Property Name="LaoDongCaNhan" Type="bit" />
@@ -447,7 +447,7 @@
           <Key>
             <PropertyRef Name="PhieuDangKy_id" />
           </Key>
-          <Property Name="PhieuDangKy_id" Type="Int32" Nullable="false" />
+          <Property Name="PhieuDangKy_id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
           <Property Name="MSSV" Type="Int64" Nullable="false" />
           <Property Name="LaoDongTheoLop" Type="Boolean" />
           <Property Name="LaoDongCaNhan" Type="Boolean" />

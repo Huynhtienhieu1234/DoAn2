@@ -15,13 +15,13 @@
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <!-- Bên trái -->
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                <li class="nav-item">
-                    <button class="btn btn-outline-primary btn-sm me-2" id="btnAdd">
-                        <i class="fa fa-plus me-1"></i> Thêm sinh viên
-                    </button>
-                </li>
                 @if (vaiTroId == 1 || vaiTroId == null)
                 {
+                    <li class="nav-item">
+                        <button class="btn btn-outline-primary btn-sm me-2" id="btnAdd">
+                            <i class="fa fa-plus me-1"></i> Thêm sinh viên
+                        </button>
+                    </li>
                     <li class="nav-item">
                         <button class="btn btn-outline-danger btn-sm me-2 btn-delete-selected" id="btnDeleteSelectedStudent" style="display:none;" title="Xóa các sinh viên đã chọn">
                             <i class="fas fa-trash-alt me-1"></i> Xóa đã chọn (<span class="selected-count">0</span>)
@@ -66,17 +66,20 @@
                         <i class="fa fa-file-excel me-1"></i> Quản lý Excel
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end shadow border-0" aria-labelledby="excelDropdownStudent">
-                        <li>
-                            <a class="dropdown-item py-2" href="@Url.Action("DownloadTemplate", "AdminStudent", new { area = "Admin" })">
-                                <i class="fas fa-file-download text-primary me-2"></i> Xuất mẫu Import
-                            </a>
-                        </li>
-                        <li>
-                            <button class="dropdown-item py-2" type="button" data-bs-toggle="modal" data-bs-target="#importExcelModal">
-                                <i class="fas fa-file-upload text-success me-2"></i> Nhập Excel
-                            </button>
-                        </li>
-                        <li><hr class="dropdown-divider"></li>
+                        @if (vaiTroId == 1 || vaiTroId == null)
+                        {
+                            <li>
+                                <a class="dropdown-item py-2" href="@Url.Action("DownloadTemplate", "AdminStudent", new { area = "Admin" })">
+                                    <i class="fas fa-file-download text-primary me-2"></i> Xuất mẫu Import
+                                </a>
+                            </li>
+                            <li>
+                                <button class="dropdown-item py-2" type="button" data-bs-toggle="modal" data-bs-target="#importExcelModal">
+                                    <i class="fas fa-file-upload text-success me-2"></i> Nhập Excel
+                                </button>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                        }
                         <li>
                             <button class="dropdown-item py-2" type="button" id="exportAllAccountstudent">
                                 <i class="fas fa-file-export text-info me-2"></i> Xuất dữ liệu

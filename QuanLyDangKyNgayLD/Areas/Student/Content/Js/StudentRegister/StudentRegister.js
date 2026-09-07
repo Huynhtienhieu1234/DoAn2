@@ -1,4 +1,4 @@
-﻿//==============================
+//==============================
 // ĐĂNG KÝ LAO ĐỘNG SINH VIÊN - PHIÊN BẢN HOÀN CHỈNH
 // MỖI BẢNG CÓ PHÂN TRANG RIÊNG
 //==============================
@@ -14,6 +14,30 @@ function parseDate(dateStr) {
     if (!dateStr) return null;
     const [day, month, year] = dateStr.split('/');
     return new Date(year, month - 1, day);
+}
+
+function isShiftExpired(ngayStr, buoi) {
+    const d = parseDate(ngayStr);
+    if (!d) return false;
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    
+    if (d < today) return true;
+    
+    if (d.getTime() === today.getTime()) {
+        const totalMinutes = now.getHours() * 60 + now.getMinutes();
+        const buoiStr = (buoi || "").toLowerCase().trim();
+        
+        // Ca sáng: Bắt đầu 07:00 (420 phút)
+        if (buoiStr.includes("sáng") && totalMinutes >= 7 * 60) {
+            return true;
+        }
+        // Ca chiều: Bắt đầu 13:30 (810 phút)
+        if (buoiStr.includes("chiều") && totalMinutes >= 13 * 60 + 30) {
+            return true;
+        }
+    }
+    return false;
 }
 
 // Hàm render phân trang
@@ -71,23 +95,27 @@ function renderPagination(containerId, pageNumbersId, prevId, nextId, currentPag
 }
 
 
+let globalAllItems = [];
+
 // Tải và render toàn bộ dữ liệu
-function loadAndRenderData() {
-    // Hiển thị loading cho tất cả các bảng có thể tồn tại
-    ["tableBody", "tableBodyCaNhan", "tableBodyLop"].forEach(id => {
-        const tbody = document.getElementById(id);
-        if (tbody) {
-            tbody.innerHTML = `
-                <tr>
-                    <td colspan="9" class="text-center py-4">
-                        <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">Đang tải...</span>
-                        </div>
-                        <p class="mt-2 text-muted">Đang tải dữ liệu...</p>
-                    </td>
-                </tr>`;
-        }
-    });
+function loadAndRenderData(showSpinner = true) {
+    // Hiển thị loading khi cần
+    if (showSpinner) {
+        ["tableBody", "tableBodyCaNhan", "tableBodyLop"].forEach(id => {
+            const tbody = document.getElementById(id);
+            if (tbody) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="9" class="text-center py-4">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Đang tải...</span>
+                            </div>
+                            <p class="mt-2 text-muted">Đang tải dữ liệu...</p>
+                        </td>
+                    </tr>`;
+            }
+        });
+    }
 
     $.get("/Student/StudentRegisterWord/LoadDotLaoDong", {
         page: 1,
@@ -97,7 +125,7 @@ function loadAndRenderData() {
         trangThai: ""
     }, function (res) {
         if (!res.success) {
-            showMainToast("Không thể tải dữ liệu từ máy chủ.", "error");
+            showMainToast(res.message || "Không thể tải dữ liệu từ máy chủ.", "error");
             return;
         }
 
@@ -105,6 +133,7 @@ function loadAndRenderData() {
         const isSinhVien = res.role && res.role.trim() === "SinhVien";
 
         let allItems = res.items || [];
+        globalAllItems = allItems;
         let itemsCaNhan = allItems;
         let itemsLop = [];
 
@@ -125,11 +154,11 @@ function loadAndRenderData() {
             const sorted = [...dataItems].sort((a, b) => {
                 const dateA = parseDate(a.NgayLaoDong);
                 const dateB = parseDate(b.NgayLaoDong);
-                const pastA = dateA < todayStart;
-                const pastB = dateB < todayStart;
+                const pastA = a.IsPast !== undefined ? a.IsPast : isShiftExpired(a.NgayLaoDong, a.Buoi);
+                const pastB = b.IsPast !== undefined ? b.IsPast : isShiftExpired(b.NgayLaoDong, b.Buoi);
                 if (!pastA && pastB) return -1;
                 if (pastA && !pastB) return 1;
-                return dateA - dateB;
+                return (dateA || 0) - (dateB || 0);
             });
 
             const totalPages = Math.ceil(sorted.length / pageSize) || 1;
@@ -170,13 +199,13 @@ function loadAndRenderData() {
                     }
 
                     const mauSoLuong = daDangKy >= can ? "text-success fw-bold" : "text-danger fw-bold";
-                    const isPast = parseDate(item.NgayLaoDong) < todayStart;
+                    const isPast = item.IsPast !== undefined ? item.IsPast : isShiftExpired(item.NgayLaoDong, item.Buoi);
 
                     let thaoTacHTML = "";
 
                     if (isLoaiLop && isLopPho) {
                         if (isPast) {
-                            thaoTacHTML = `<span class="text-muted fw-bold"><i class="fas fa-calendar-times me-1"></i>Đã kết thúc</span>`;
+                            thaoTacHTML = `<span class="text-muted fw-bold"><i class="fas fa-clock me-1"></i>Đã quá giờ</span>`;
                         } else if (item.DaDuyet) {
                             thaoTacHTML = `<span class="text-warning fw-bold"><i class="fas fa-lock me-1"></i>Đợt đã duyệt</span>`;
                         } else {
@@ -189,13 +218,13 @@ function loadAndRenderData() {
                             <button class="btn ${btnClass} btn-sm px-4 fw-bold" onclick="moModalDangKyLop(${item.TaoDotLaoDong_id})">
                                 <i class="fas fa-users me-2"></i>${btnText}
                             </button>`;
-                                const cell = tbody.querySelector(`tr[data-dot-id="${item.TaoDotLaoDong_id}"] td:last-child`);
+                                const cell = tbody.querySelector(`tr[data-dot-id="${item.TaoDotLaoDong_id}"] td.action-cell`);
                                 if (cell) cell.innerHTML = btnHTML;
                             });
                         }
                     } else {
                         if (isPast) {
-                            thaoTacHTML = `<span class="text-danger fw-bold"><i class="fas fa-calendar-times me-1"></i>Đã kết thúc</span>`;
+                            thaoTacHTML = `<span class="text-danger fw-bold"><i class="fas fa-clock me-1"></i>Đã quá giờ</span>`;
                         } else if (item.DaDuyet) {
                             thaoTacHTML = item.DaDangKy
                                 ? `<span class="text-success fw-bold"><i class="fas fa-check-double me-1"></i>Đã đăng ký (đã duyệt)</span>`
@@ -218,23 +247,21 @@ function loadAndRenderData() {
                     tbody.innerHTML += `
             <tr class="table-row-hover" data-dot-id="${item.TaoDotLaoDong_id}">
                 <td class="text-center fw-bold text-muted ps-4">${startIdx + idx + 1}</td>
-                <td class="px-1 text-center">
-                    <span class="text-truncate d-inline-block w-100" style="max-width:83px;" title="${item.NgayLaoDong}">
-                        ${item.NgayLaoDong}
-                    </span>
+                <td class="px-2 text-center text-nowrap">
+                    <span class="fw-semibold">${item.NgayLaoDong}</span>
                 </td>
                 <td><span class="badge badge-session">${item.Buoi || ''}</span></td>
                 <td><span class="badge badge-type">${item.LoaiLaoDong || ''}</span></td>
                 <td class="fw-bold text-success-emphasis">${item.GiaTri || 0}</td>
                 <td><span class="badge badge-location"><i class="fas fa-map-marker-alt me-1"></i>${item.KhuVuc || ''}</span></td>
-                <td>
+                <td class="count-cell">
                     <div class="d-flex align-items-center justify-content-center">
                         <i class="fas fa-users me-2 text-info"></i>
                         <span class="${mauSoLuong}">${hienThiSoLuong}</span>
                     </div>
                 </td>
                 <td>${trangThaiHTML}</td>
-                <td class="text-center pe-4">${thaoTacHTML}</td>
+                <td class="text-center pe-4 action-cell">${thaoTacHTML}</td>
             </tr>`;
                 });
             }
@@ -291,40 +318,110 @@ function loadAndRenderData() {
             if (secCaNhan) secCaNhan.style.display = "none";
             if (secLop) secLop.style.display = "none";
         }
-
-        showMainToast("Tải dữ liệu thành công!", "success");
     }).fail(() => showMainToast("Lỗi kết nối máy chủ!", "error"));
 }
 
-
-
-
-
-
-
-
-
-
-
-
 // Khởi tạo
-document.addEventListener("DOMContentLoaded", loadAndRenderData);
+document.addEventListener("DOMContentLoaded", function () {
+    loadAndRenderData(true);
+});
 
-// Đăng ký & Hủy - reload lại để cập nhật chính xác
+// Cập nhật trạng thái một dòng mà không cần tải lại toàn bộ bảng
+function updateRowUI(id, isRegistered, newCount, totalCount) {
+    // 1. Cập nhật dữ liệu bộ nhớ
+    const item = globalAllItems.find(x => x.TaoDotLaoDong_id === id);
+    if (item) {
+        item.DaDangKy = isRegistered;
+        if (newCount !== undefined && newCount !== null) {
+            item.SoLuongDaDangKy = newCount;
+        }
+        if (totalCount !== undefined && totalCount !== null) {
+            item.SoLuongSinhVien = totalCount;
+        }
+    }
+
+    // 2. Cập nhật DOM trực tiếp các dòng chứa đợt này
+    const rows = document.querySelectorAll(`tr[data-dot-id="${id}"]`);
+    rows.forEach(tr => {
+        // Cập nhật nút bấm thao tác
+        const actionCell = tr.querySelector(".action-cell") || tr.querySelector("td:last-child");
+        if (actionCell) {
+            if (isRegistered) {
+                actionCell.innerHTML = `
+                    <div class="btn-group-action">
+                        <button class="btn btn-cancel btn-sm" onclick="huyDangKy(${id})">
+                            <i class="fas fa-user-minus me-1"></i>Hủy đăng ký
+                        </button>
+                    </div>`;
+            } else {
+                actionCell.innerHTML = `
+                    <div class="btn-group-action">
+                        <button class="btn btn-register btn-sm" onclick="dangKy(${id})">
+                            <i class="fas fa-user-plus me-1"></i>Đăng ký
+                        </button>
+                    </div>`;
+            }
+        }
+
+        // Cập nhật số lượng hiển thị
+        if (newCount !== undefined && newCount !== null && totalCount !== undefined && totalCount !== null) {
+            const countSpan = tr.querySelector(".count-cell span");
+            if (countSpan) {
+                const isLoaiLop = item && (item.LoaiLaoDong || "").toLowerCase().trim() === "lớp";
+                let hienThi;
+                if (isLoaiLop) {
+                    const soLop = newCount > 0 ? 1 : 0;
+                    hienThi = `${soLop}/${totalCount} lớp`;
+                } else {
+                    hienThi = `${newCount}/${totalCount}`;
+                }
+                const mauSoLuong = newCount >= totalCount ? "text-success fw-bold" : "text-danger fw-bold";
+                countSpan.className = mauSoLuong;
+                countSpan.textContent = hienThi;
+            }
+        }
+    });
+}
+
+// Đăng ký & Hủy - cập nhật trực tiếp tại dòng, không tải lại bảng
 function dangKy(id) {
-    showMainToast("Đang xử lý đăng ký...", "info");
     $.post("/Student/StudentRegisterWord/DangKy", { id: id }, function (res) {
-        if (!res.success) return showMainToast(res.message || "Đăng ký thất bại!", "error");
-        showMainToast("Đăng ký thành công!", "success");
-        loadAndRenderData();
-    }).fail(() => showMainToast("Lỗi kết nối!", "error"));
+        if (!res.success) {
+            return showMainToast(res.message || "Đăng ký thất bại!", "error");
+        }
+        showMainToast(res.message || "Đăng ký thành công!", "success");
+        updateRowUI(id, true, res.soLuongDaDangKy, res.soLuongSinhVien);
+    }).fail(function (xhr) {
+        let msg = "Lỗi kết nối máy chủ!";
+        if (xhr && xhr.responseJSON && xhr.responseJSON.message) {
+            msg = xhr.responseJSON.message;
+        } else if (xhr && xhr.responseText) {
+            try {
+                let parsed = JSON.parse(xhr.responseText);
+                if (parsed.message) msg = parsed.message;
+            } catch (e) {}
+        }
+        showMainToast(msg, "error");
+    });
 }
 
 function huyDangKy(id) {
-    showMainToast("Đang hủy đăng ký...", "info");
     $.post("/Student/StudentRegisterWord/HuyDangKy", { id: id }, function (res) {
-        if (!res.success) return showMainToast(res.message || "Hủy thất bại!", "error");
-        showMainToast("Hủy đăng ký thành công!", "success");
-        loadAndRenderData();
-    }).fail(() => showMainToast("Lỗi kết nối!", "error"));
+        if (!res.success) {
+            return showMainToast(res.message || "Hủy thất bại!", "error");
+        }
+        showMainToast(res.message || "Hủy đăng ký thành công!", "success");
+        updateRowUI(id, false, res.soLuongDaDangKy, res.soLuongSinhVien);
+    }).fail(function (xhr) {
+        let msg = "Lỗi kết nối máy chủ!";
+        if (xhr && xhr.responseJSON && xhr.responseJSON.message) {
+            msg = xhr.responseJSON.message;
+        } else if (xhr && xhr.responseText) {
+            try {
+                let parsed = JSON.parse(xhr.responseText);
+                if (parsed.message) msg = parsed.message;
+            } catch (e) {}
+        }
+        showMainToast(msg, "error");
+    });
 }

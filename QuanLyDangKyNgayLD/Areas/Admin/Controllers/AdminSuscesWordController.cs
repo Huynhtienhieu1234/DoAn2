@@ -38,7 +38,7 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                             select new
                             {
                                 id = phieu.id,
-                                MSSV = sv.MSSV,
+                                MSSV = (sv.TaiKhoan1 != null && sv.TaiKhoan1.Username != null) ? sv.TaiKhoan1.Username : sv.MSSV.ToString(),
                                 HoTen = sv.HoTen,
                                 Lop = lop.TenLop,
                                 Khoa = k.TenKhoa,
@@ -55,11 +55,13 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                 if (!string.IsNullOrEmpty(keyword))
                 {
                     keyword = keyword.Trim();
+                    string trimmedZero = keyword.TrimStart('0');
                     query = query.Where(x =>
-                        x.MSSV.ToString() == keyword || // khớp chính xác MSSV
-                        x.HoTen.Equals(keyword, StringComparison.OrdinalIgnoreCase) || // khớp chính xác Họ tên
-                        x.Lop.Contains(keyword) || // cho phép tìm mờ theo lớp
-                        x.Khoa.Contains(keyword)); // cho phép tìm mờ theo khoa
+                        x.MSSV == keyword ||
+                        (trimmedZero.Length > 0 && x.MSSV.Contains(trimmedZero)) ||
+                        x.HoTen.Contains(keyword) ||
+                        x.Lop.Contains(keyword) ||
+                        x.Khoa.Contains(keyword));
                 }
 
                 query = query.OrderBy(x => x.id);

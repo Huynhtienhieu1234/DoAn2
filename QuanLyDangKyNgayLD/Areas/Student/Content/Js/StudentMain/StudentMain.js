@@ -43,8 +43,12 @@ function loadStudentData() {
                 // Avatar
                 const avatarEl = document.getElementById("avatarImg");
                 if (avatarEl) {
-                    const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(hoten)}&background=0D8ABC&color=fff&size=150`;
-                    avatarEl.src = sv.Avatar || fallbackUrl;
+                    const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(hoten)}&background=2563eb&color=fff&size=150&bold=true`;
+                    if (sv.Avatar && sv.Avatar.trim() !== "" && !sv.Avatar.includes("Avarta.png")) {
+                        avatarEl.src = sv.Avatar;
+                    } else {
+                        avatarEl.src = fallbackUrl;
+                    }
                     avatarEl.onerror = function () {
                         this.onerror = null;
                         this.src = fallbackUrl;

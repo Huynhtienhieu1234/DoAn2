@@ -68,7 +68,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 if (res.success) {
                     showToast(res.message, "success");
                     bootstrap.Modal.getInstance(deleteModal).hide();
-                    loadAccounts(currentPage);
+                    if (typeof window.loadAccountsAfterDelete === "function") {
+                        window.loadAccountsAfterDelete(currentPage);
+                    } else if (typeof loadAccounts === "function") {
+                        loadAccounts(currentPage);
+                    }
                 } else {
                     showToast(res.message || "Xóa thất bại!", "error");
                 }
@@ -130,42 +134,71 @@ document.addEventListener("DOMContentLoaded", function () {
                     tableBody.appendChild(row);
                 });
 
-                // Render phân trang
+                // Render phân trang gọn gàng
                 pageNumbers.innerHTML = "";
-                for (let i = 1; i <= res.totalPages; i++) {
-                    const btn = document.createElement("button");
-                    btn.className = `btn btn-sm mx-1 ${i === currentPage ? "btn-primary" : "btn-outline-primary"}`;
-                    btn.textContent = i;
-                    btn.addEventListener("click", () => loadAccounts(i));
-                    pageNumbers.appendChild(btn);
+                const totalPages = res.totalPages || 1;
+                if (totalPages > 1) {
+                    let start = Math.max(1, currentPage - 2);
+                    let end = Math.min(totalPages, currentPage + 2);
+
+                    if (currentPage <= 3) {
+                        start = 1;
+                        end = Math.min(totalPages, 5);
+                    } else if (currentPage >= totalPages - 2) {
+                        start = Math.max(1, totalPages - 4);
+                        end = totalPages;
+                    }
+
+                    function addBtn(p) {
+                        const btn = document.createElement("button");
+                        btn.className = `btn btn-sm mx-1 ${p === currentPage ? "btn-primary active" : "btn-outline-primary"}`;
+                        btn.textContent = p;
+                        btn.addEventListener("click", () => loadAccounts(p));
+                        pageNumbers.appendChild(btn);
+                    }
+
+                    function addEllipsis() {
+                        const span = document.createElement("span");
+                        span.className = "px-2 text-muted fw-bold page-ellipsis";
+                        span.textContent = "...";
+                        pageNumbers.appendChild(span);
+                    }
+
+                    if (start > 1) {
+                        addBtn(1);
+                        if (start > 2) addEllipsis();
+                    }
+
+                    for (let i = start; i <= end; i++) {
+                        addBtn(i);
+                    }
+
+                    if (end < totalPages) {
+                        if (end < totalPages - 1) addEllipsis();
+                        addBtn(totalPages);
+                    }
                 }
 
                 prevBtn.disabled = currentPage <= 1;
                 nextBtn.disabled = currentPage >= res.totalPages;
             })
-            .catch(() => {
-                showToast("Không thể tải dữ liệu!", "error");
-                tableBody.innerHTML = `<tr><td colspan="6" class="text-danger text-center py-4">Lỗi tải dữ liệu</td></tr>`;
+            .catch(err => {
+                console.error("Lỗi tải dữ liệu tài khoản:", err);
             })
             .finally(() => {
                 if (loading) loading.style.display = "none";
             });
     }
 
-    // Nút phân trang
-    let totalPages = 1; // Khai báo biến toàn cục
-
-    document.getElementById("next").addEventListener("click", () => {
-        if (currentPage < totalPages) loadAccounts(currentPage + 1);
-    });
-
-    document.getElementById("prev").addEventListener("click", () => {
-        if (currentPage > 1) loadAccounts(currentPage - 1);
-    });
-
-
-    // Load lần đầu
-    loadAccounts(1);
+    // Nút phân trang nếu chưa có listener
+    let totalPages = 1;
+    window.loadAccountsAfterDelete = function(p) {
+        if (typeof window.loadFilteredAccounts === "function") {
+            window.loadFilteredAccounts(p || currentPage);
+        } else {
+            loadAccounts(p || currentPage);
+        }
+    };
 
     /* ==========================
        HIỆU ỨNG KHI LOAD BẢNG

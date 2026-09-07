@@ -95,11 +95,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 /* ===== RENDER ROW ===== */
                 data.forEach((item, index) => {
+                    let mssvText = (item.MSSV || "").toString().trim();
+                    if (mssvText.length === 9) mssvText = "0" + mssvText;
+
                     const tr = document.createElement("tr");
                     tr.innerHTML = `
                         <td class="text-center"><input type="checkbox" class="form-check-input check-item-duyet" value="${item.id}"></td>
                         <td class="stt-cell">${(currentPage - 1) * pageSize + index + 1}</td>
-                        <td class="text-center fw-semibold text-primary">${item.MSSV || ""}</td>
+                        <td class="text-center fw-semibold text-primary">${mssvText || ""}</td>
                         <td class="text-start fw-semibold">${item.HoTen || ""}</td>
                         <td class="text-start">${item.Lop || ""}</td>
                         <td class="text-start">${item.Khoa || ""}</td>

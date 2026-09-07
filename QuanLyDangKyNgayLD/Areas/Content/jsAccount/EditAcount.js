@@ -159,18 +159,49 @@ document.addEventListener("DOMContentLoaded", function () {
                     tableBody.appendChild(row);
                 });
 
-                // Render phân trang mượt hơn
-                const fragment = document.createDocumentFragment();
-                for (let i = 1; i <= totalPages; i++) {
-                    const btn = document.createElement("button");
-                    btn.className = "btn btn-sm mx-1 page-number " +
-                        (i === currentPage ? "btn-primary" : "btn-outline-primary");
-                    btn.textContent = i;
-                    btn.addEventListener("click", () => loadAccounts(i));
-                    fragment.appendChild(btn);
-                }
+                // Render phân trang gọn gàng
                 pageNumbers.innerHTML = "";
-                pageNumbers.appendChild(fragment);
+                if (totalPages > 1) {
+                    let start = Math.max(1, currentPage - 2);
+                    let end = Math.min(totalPages, currentPage + 2);
+
+                    if (currentPage <= 3) {
+                        start = 1;
+                        end = Math.min(totalPages, 5);
+                    } else if (currentPage >= totalPages - 2) {
+                        start = Math.max(1, totalPages - 4);
+                        end = totalPages;
+                    }
+
+                    function addBtn(p) {
+                        const btn = document.createElement("button");
+                        btn.className = `btn btn-sm mx-1 page-number ${p === currentPage ? "btn-primary active" : "btn-outline-primary"}`;
+                        btn.textContent = p;
+                        btn.addEventListener("click", () => loadAccounts(p));
+                        pageNumbers.appendChild(btn);
+                    }
+
+                    function addEllipsis() {
+                        const span = document.createElement("span");
+                        span.className = "px-2 text-muted fw-bold page-ellipsis";
+                        span.textContent = "...";
+                        pageNumbers.appendChild(span);
+                    }
+
+                    if (start > 1) {
+                        addBtn(1);
+                        if (start > 2) addEllipsis();
+                    }
+
+                    for (let i = start; i <= end; i++) {
+                        addBtn(i);
+                    }
+
+                    if (end < totalPages) {
+                        if (end < totalPages - 1) addEllipsis();
+                        addBtn(totalPages);
+                    }
+                }
 
                 // Cập nhật trạng thái prev/next
                 prevBtn.disabled = currentPage <= 1;
@@ -178,21 +209,13 @@ document.addEventListener("DOMContentLoaded", function () {
                 prevBtn.classList.toggle("disabled", currentPage <= 1);
                 nextBtn.classList.toggle("disabled", currentPage >= totalPages);
             })
-            .catch(() => showToast("Không thể tải dữ liệu mới!", "error"))
+            .catch(err => {
+                console.error("Lỗi tải dữ liệu EditAcount:", err);
+            })
             .finally(() => {
                 if (loading) loading.style.display = "none";
             });
     }
-
-
-    document.getElementById("prev").addEventListener("click", () => {
-        if (currentPage > 1) loadAccounts(currentPage - 1);
-    });
-    document.getElementById("next").addEventListener("click", () => {
-        loadAccounts(currentPage + 1);
-    });
-
-    loadAccounts(1);
 
     /* ==========================
        HIỆU ỨNG FADE-IN/FADE-OUT

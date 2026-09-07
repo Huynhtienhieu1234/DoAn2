@@ -42,6 +42,7 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                             select new StudentProgressViewModel
                             {
                                 MSSV = sv.MSSV,
+                                MSSVDisplay = (sv.TaiKhoan1 != null && sv.TaiKhoan1.Username != null) ? sv.TaiKhoan1.Username : sv.MSSV.ToString(),
                                 HoTen = sv.HoTen,
                                 Lop = lopObj.TenLop,
                                 Khoa = k.TenKhoa,
@@ -57,7 +58,12 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                 if (!string.IsNullOrEmpty(keyword))
                 {
                     keyword = keyword.Trim();
-                    query = query.Where(x => x.MSSV.ToString().Contains(keyword) || (x.HoTen ?? "").Contains(keyword));
+                    string trimmedZero = keyword.TrimStart('0');
+                    query = query.Where(x => 
+                        x.MSSV.ToString().Contains(keyword) || 
+                        (trimmedZero.Length > 0 && x.MSSV.ToString().Contains(trimmedZero)) || 
+                        (x.MSSVDisplay != null && x.MSSVDisplay.Contains(keyword)) ||
+                        (x.HoTen ?? "").Contains(keyword));
                 }
 
                 var allData = query.ToList(); // thực thi sớm để tính thống kê
@@ -139,6 +145,7 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                             select new
                             {
                                 sv.MSSV,
+                                MSSVDisplay = (sv.TaiKhoan1 != null && sv.TaiKhoan1.Username != null) ? sv.TaiKhoan1.Username : sv.MSSV.ToString(),
                                 sv.HoTen,
                                 Lop = l.TenLop,
                                 Khoa = k.TenKhoa,
@@ -154,7 +161,12 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                 if (!string.IsNullOrEmpty(keyword))
                 {
                     keyword = keyword.Trim();
-                    query = query.Where(x => x.MSSV.ToString().Contains(keyword) || (x.HoTen ?? "").Contains(keyword));
+                    string trimmedZero = keyword.TrimStart('0');
+                    query = query.Where(x => 
+                        x.MSSV.ToString().Contains(keyword) || 
+                        (trimmedZero.Length > 0 && x.MSSV.ToString().Contains(trimmedZero)) || 
+                        (x.MSSVDisplay != null && x.MSSVDisplay.Contains(keyword)) ||
+                        (x.HoTen ?? "").Contains(keyword));
                 }
 
                 var list = query.ToList();
@@ -204,8 +216,12 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                     int stt = 1;
                     foreach (var sv in list)
                     {
+                        string mssvText = (sv.MSSVDisplay ?? sv.MSSV.ToString()).Trim();
+                        if (mssvText.Length == 9) mssvText = "0" + mssvText;
+
                         ws.Cells[row, 1].Value = stt;
-                        ws.Cells[row, 2].Value = sv.MSSV;
+                        ws.Cells[row, 2].Style.Numberformat.Format = "@";
+                        ws.Cells[row, 2].Value = mssvText;
                         ws.Cells[row, 3].Value = sv.HoTen;
                         ws.Cells[row, 4].Value = sv.Lop;
                         ws.Cells[row, 5].Value = sv.Khoa;

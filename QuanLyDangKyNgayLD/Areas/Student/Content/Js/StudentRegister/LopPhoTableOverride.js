@@ -1,4 +1,4 @@
-﻿// LopTableHandler.js
+// LopTableHandler.js
 // Chỉ chạy khi có bảng Lớp (tức là tài khoản Lớp phó lao động)
 // Mục đích: Render riêng bảng Lớp với nút "Đăng ký lớp" mở modal
 
@@ -70,7 +70,7 @@ document.addEventListener("DOMContentLoaded", function () {
             tbody.innerHTML += `
                 <tr class="table-row-hover">
                     <td class="text-center fw-bold text-muted ps-4">${startIdx + idx + 1}</td>
-                    <td class="px-1 text-center"><span class="text-truncate d-inline-block w-100" style="max-width:83px;" title="${item.NgayLaoDong}">${item.NgayLaoDong}</span></td>
+                    <td class="px-2 text-center text-nowrap"><span class="fw-semibold">${item.NgayLaoDong}</span></td>
                     <td><span class="badge badge-session">${item.Buoi || ''}</span></td>
                     <td><span class="badge badge-type">${item.LoaiLaoDong || ''}</span></td>
                     <td class="fw-bold text-success-emphasis">${item.GiaTri || 0}</td>

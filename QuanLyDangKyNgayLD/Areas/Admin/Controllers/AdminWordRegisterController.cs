@@ -172,35 +172,77 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                         g => g.Select(x => x.LopId.GetValueOrDefault()).Distinct().Count()
                     );
 
-                // === TẠO DANH SÁCH TRẢ VỀ JSON ===
-                var items = rawItems.Select(x => new
-                {
-                    x.TaoDotLaoDong_id,
-                    x.DotLaoDong,
-                    x.Buoi,
-                    x.LoaiLaoDong,
-                    GiaTri = x.GiaTri,
-                    NgayLaoDong = x.NgayLaoDong.HasValue ? x.NgayLaoDong.Value.ToString("dd/MM/yyyy") : "",
-                    x.KhuVuc,
-                    x.SoLuongSinhVien,
-                    SoLuongDangKy = db.PhieuDangKies.Count(p => p.TaoDotLaoDong_id == x.TaoDotLaoDong_id),
-                    TrangThaiDot = x.TrangThaiDot ?? "",
-                    TrangThaiDuyet = x.TrangThaiDot == "Tạm ngưng"
-                        ? "Tạm ngưng"
-                        : (x.TrangThaiDuyet == true
-                            ? "Đã duyệt"
-                            : (x.NgayLaoDong.HasValue && x.NgayLaoDong.Value.Date < DateTime.Today ? "Kết thúc" : "Chưa duyệt")),
+                var now = DateTime.Now;
+                var today = DateTime.Today;
+                var nowTime = now.TimeOfDay;
 
-                    x.MoTa,
-                    x.NguoiTao,
-                    // Số lớp đã đăng ký (chỉ cho loại "Lớp")
-                    SoLuongLopDaDangKy = (x.LoaiLaoDong == "Lớp")
-                        ? (lopDaDangKyDict.ContainsKey(x.TaoDotLaoDong_id) ? lopDaDangKyDict[x.TaoDotLaoDong_id] : 0)
-                        : 0,
-                    // Tổng số lớp cần (dùng SoLuongSinhVien làm chỉ tiêu lớp, nếu null → mặc định 20)
-                    TongSoLopCan = (x.LoaiLaoDong == "Lớp")
-                        ? x.SoLuongSinhVien.GetValueOrDefault(20)
-                        : 0
+                // === TẠO DANH SÁCH TRẢ VỀ JSON ===
+                var items = rawItems.Select(x =>
+                {
+                    bool isPastTime = false;
+                    if (x.NgayLaoDong.HasValue)
+                    {
+                        if (x.NgayLaoDong.Value.Date < today)
+                        {
+                            isPastTime = true;
+                        }
+                        else if (x.NgayLaoDong.Value.Date == today)
+                        {
+                            bool isSang = string.Equals(x.Buoi?.Trim(), "Sáng", StringComparison.OrdinalIgnoreCase) || (x.Buoi != null && x.Buoi.ToLower().Contains("sáng"));
+                            bool isChieu = string.Equals(x.Buoi?.Trim(), "Chiều", StringComparison.OrdinalIgnoreCase) || (x.Buoi != null && x.Buoi.ToLower().Contains("chiều"));
+
+                            if (isSang && nowTime >= new TimeSpan(7, 0, 0))
+                            {
+                                isPastTime = true;
+                            }
+                            else if (isChieu && nowTime >= new TimeSpan(13, 30, 0))
+                            {
+                                isPastTime = true;
+                            }
+                        }
+                    }
+
+                    int soLuongDangKy = db.PhieuDangKies.Count(p => p.TaoDotLaoDong_id == x.TaoDotLaoDong_id && p.TrangThai == "DangKy");
+                    int soLuongCan = x.SoLuongSinhVien ?? 20;
+                    bool isLoaiLop = string.Equals(x.LoaiLaoDong?.Trim(), "Lớp", StringComparison.OrdinalIgnoreCase);
+                    int soLopDaDangKy = isLoaiLop && lopDaDangKyDict.ContainsKey(x.TaoDotLaoDong_id) ? lopDaDangKyDict[x.TaoDotLaoDong_id] : 0;
+                    int tongLopCan = x.SoLuongSinhVien.GetValueOrDefault(20);
+
+                    bool khongDuSoLuong = isLoaiLop ? (soLopDaDangKy < tongLopCan) : (soLuongDangKy < soLuongCan);
+
+                    // Tự động chuyển thành 'Kết thúc' nếu đã qua thời gian đăng ký mà chưa được duyệt hoặc không đủ số lượng
+                    string trangThaiDuyet = "Chưa duyệt";
+                    if (x.TrangThaiDot == "Tạm ngưng")
+                    {
+                        trangThaiDuyet = "Tạm ngưng";
+                    }
+                    else if (isPastTime && (x.TrangThaiDuyet != true || khongDuSoLuong))
+                    {
+                        trangThaiDuyet = "Kết thúc";
+                    }
+                    else if (x.TrangThaiDuyet == true)
+                    {
+                        trangThaiDuyet = "Đã duyệt";
+                    }
+
+                    return new
+                    {
+                        x.TaoDotLaoDong_id,
+                        x.DotLaoDong,
+                        x.Buoi,
+                        x.LoaiLaoDong,
+                        GiaTri = x.GiaTri,
+                        NgayLaoDong = x.NgayLaoDong.HasValue ? x.NgayLaoDong.Value.ToString("dd/MM/yyyy") : "",
+                        x.KhuVuc,
+                        x.SoLuongSinhVien,
+                        SoLuongDangKy = soLuongDangKy,
+                        TrangThaiDot = x.TrangThaiDot ?? "",
+                        TrangThaiDuyet = trangThaiDuyet,
+                        x.MoTa,
+                        x.NguoiTao,
+                        SoLuongLopDaDangKy = soLopDaDangKy,
+                        TongSoLopCan = tongLopCan
+                    };
                 }).ToList();
 
                 return Json(new
@@ -254,6 +296,32 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                     if (!model.NgayLaoDong.HasValue)
                         return Json(new { success = false, message = "Bạn phải chọn ngày lao động." });
 
+                    var today = DateTime.Today;
+                    var nowTime = DateTime.Now.TimeOfDay;
+                    var dotDate = model.NgayLaoDong.Value.Date;
+
+                    // 1. Chặn tạo đợt ở ngày trong quá khứ hoặc tháng đã qua
+                    if (dotDate < today)
+                    {
+                        return Json(new { success = false, message = "Không thể tạo đợt lao động vào ngày trong quá khứ hoặc tháng đã qua!" });
+                    }
+
+                    // 2. Chặn nếu là ngày hôm nay và đã qua thời gian của ca đó
+                    if (dotDate == today)
+                    {
+                        bool isSang = string.Equals(model.Buoi?.Trim(), "Sáng", StringComparison.OrdinalIgnoreCase) || (model.Buoi != null && model.Buoi.ToLower().Contains("sáng"));
+                        bool isChieu = string.Equals(model.Buoi?.Trim(), "Chiều", StringComparison.OrdinalIgnoreCase) || (model.Buoi != null && model.Buoi.ToLower().Contains("chiều"));
+
+                        if (isSang && nowTime >= new TimeSpan(7, 0, 0))
+                        {
+                            return Json(new { success = false, message = "Ca sáng ngày hôm nay đã bắt đầu (07h00), đã quá thời gian quy định để tạo đợt lao động!" });
+                        }
+                        else if (isChieu && nowTime >= new TimeSpan(13, 30, 0))
+                        {
+                            return Json(new { success = false, message = "Ca chiều ngày hôm nay đã bắt đầu (13h30), đã quá thời gian quy định để tạo đợt lao động!" });
+                        }
+                    }
+
                     if (string.IsNullOrWhiteSpace(model.Buoi))
                         return Json(new { success = false, message = "Bạn phải chọn buổi." });
 
@@ -299,6 +367,33 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                     var dot = db.TaoDotNgayLaoDongs.Find(model.TaoDotLaoDong_id);
                     if (dot == null || dot.Ngayxoa != null)
                         return Json(new { success = false, message = "Không tìm thấy đợt lao động." });
+
+                    if (!model.NgayLaoDong.HasValue)
+                        return Json(new { success = false, message = "Bạn phải chọn ngày lao động." });
+
+                    var today = DateTime.Today;
+                    var nowTime = DateTime.Now.TimeOfDay;
+                    var dotDate = model.NgayLaoDong.Value.Date;
+
+                    if (dotDate < today)
+                    {
+                        return Json(new { success = false, message = "Không thể chuyển ngày đợt lao động về ngày trong quá khứ hoặc tháng đã qua!" });
+                    }
+
+                    if (dotDate == today)
+                    {
+                        bool isSang = string.Equals(model.Buoi?.Trim(), "Sáng", StringComparison.OrdinalIgnoreCase) || (model.Buoi != null && model.Buoi.ToLower().Contains("sáng"));
+                        bool isChieu = string.Equals(model.Buoi?.Trim(), "Chiều", StringComparison.OrdinalIgnoreCase) || (model.Buoi != null && model.Buoi.ToLower().Contains("chiều"));
+
+                        if (isSang && nowTime >= new TimeSpan(7, 0, 0))
+                        {
+                            return Json(new { success = false, message = "Ca sáng ngày hôm nay đã bắt đầu (07h00), đã quá thời gian quy định để chỉnh sửa đợt!" });
+                        }
+                        else if (isChieu && nowTime >= new TimeSpan(13, 30, 0))
+                        {
+                            return Json(new { success = false, message = "Ca chiều ngày hôm nay đã bắt đầu (13h30), đã quá thời gian quy định để chỉnh sửa đợt!" });
+                        }
+                    }
 
                     dot.DotLaoDong = model.DotLaoDong;
                     dot.Buoi = model.Buoi;
@@ -1169,6 +1264,28 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                             {
                                 errors.Add($"Dòng {row}: Ngày lao động '{ngayStr}' không đúng định dạng (yêu cầu: dd/MM/yyyy).");
                                 continue;
+                            }
+
+                            // 4.1. Kiểm tra ngày trong quá khứ / tháng đã qua hoặc ca hôm nay đã qua thời gian bắt đầu
+                            DateTime today = DateTime.Today;
+                            TimeSpan nowTime = DateTime.Now.TimeOfDay;
+                            if (ngayLaoDong < today)
+                            {
+                                errors.Add($"Dòng {row}: Ngày lao động ({ngayLaoDong:dd/MM/yyyy}) là ngày trong quá khứ hoặc tháng đã qua, không thể tạo đợt!");
+                                continue;
+                            }
+                            if (ngayLaoDong == today)
+                            {
+                                if (buoiNormalized == "Sáng" && nowTime >= new TimeSpan(7, 0, 0))
+                                {
+                                    errors.Add($"Dòng {row}: Ca Sáng hôm nay ({today:dd/MM/yyyy}) đã bắt đầu (sau 07:00), đã quá thời gian quy định tạo đợt!");
+                                    continue;
+                                }
+                                if (buoiNormalized == "Chiều" && nowTime >= new TimeSpan(13, 30, 0))
+                                {
+                                    errors.Add($"Dòng {row}: Ca Chiều hôm nay ({today:dd/MM/yyyy}) đã bắt đầu (sau 13:30), đã quá thời gian quy định tạo đợt!");
+                                    continue;
+                                }
                             }
 
                             // 5. Parse Giá trị / Điểm

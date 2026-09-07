@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Web.Mvc;
 using QuanLyDangKyNgayLD.Models;
@@ -60,34 +60,110 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
                          orderby d.NgayLaoDong
                          select new
                          {
+                             d.TaoDotLaoDong_id,
+                             d.DotLaoDong,
                              d.Buoi,
                              d.NgayLaoDong,
                              d.LoaiLaoDong,
                              d.KhuVuc,
                              d.TrangThaiDot,
-
+                             d.TrangThaiDuyet,
+                             d.SoLuongSinhVien,
+                             d.GiaTri,
+                             d.MoTa,
                              DaDiemDanh = diemDanh != null
                          }).ToList();
 
-                    var list = rawList.Select(x => new
-                    {
-                        Buoi = x.Buoi,
-                        Ngay = x.NgayLaoDong.HasValue
-                            ? x.NgayLaoDong.Value.ToString("dd/MM/yyyy")
-                            : "",
-                        LoaiLaoDong = x.LoaiLaoDong,
-                        DiaDiem = x.KhuVuc,
+                    var now = DateTime.Now;
+                    var todayDate = DateTime.Today;
+                    var nowTime = now.TimeOfDay;
 
-                        TrangThaiText =
-                            x.DaDiemDanh
-                                ? "Đã điểm danh"
-                                : string.IsNullOrEmpty(x.TrangThaiDot)
-                                    ? "Chưa duyệt"
-                                    : (x.TrangThaiDot == "Đã duyệt"
-                                       && x.NgayLaoDong.HasValue
-                                       && x.NgayLaoDong.Value.Date < DateTime.Today
-                                        ? "Hoàn thành"
-                                        : x.TrangThaiDot)
+                    var dotIds = rawList.Select(x => x.TaoDotLaoDong_id).Distinct().ToList();
+                    var dangKyCounts = db.PhieuDangKies
+                        .Where(p => dotIds.Contains(p.TaoDotLaoDong_id.Value) && p.TrangThai == "DangKy")
+                        .GroupBy(p => p.TaoDotLaoDong_id.Value)
+                        .ToDictionary(g => g.Key, g => g.Count());
+
+                    var phieuLopList = db.PhieuDangKies
+                        .Where(p => p.TaoDotLaoDong_id.HasValue && dotIds.Contains(p.TaoDotLaoDong_id.Value) && p.LaoDongTheoLop == true)
+                        .Select(p => new { TaoDotLaoDong_id = p.TaoDotLaoDong_id.Value, p.MSSV })
+                        .ToList();
+
+                    var lopDangKyDict = phieuLopList
+                        .Join(db.SinhViens, p => p.MSSV, s => s.MSSV, (p, s) => new { p.TaoDotLaoDong_id, LopId = s.Lop_id })
+                        .GroupBy(x => x.TaoDotLaoDong_id)
+                        .ToDictionary(
+                            g => g.Key,
+                            g => g.Select(x => x.LopId.GetValueOrDefault()).Distinct().Count()
+                        );
+
+                    var list = rawList.Select(x =>
+                    {
+                        bool isPastTime = false;
+                        if (x.NgayLaoDong.HasValue)
+                        {
+                            if (x.NgayLaoDong.Value.Date < todayDate)
+                            {
+                                isPastTime = true;
+                            }
+                            else if (x.NgayLaoDong.Value.Date == todayDate)
+                            {
+                                bool isSang = string.Equals(x.Buoi?.Trim(), "Sáng", StringComparison.OrdinalIgnoreCase) || (x.Buoi != null && x.Buoi.ToLower().Contains("sáng"));
+                                bool isChieu = string.Equals(x.Buoi?.Trim(), "Chiều", StringComparison.OrdinalIgnoreCase) || (x.Buoi != null && x.Buoi.ToLower().Contains("chiều"));
+
+                                if (isSang && nowTime >= new TimeSpan(7, 0, 0))
+                                {
+                                    isPastTime = true;
+                                }
+                                else if (isChieu && nowTime >= new TimeSpan(13, 30, 0))
+                                {
+                                    isPastTime = true;
+                                }
+                            }
+                        }
+
+                        int soLuongDangKy = dangKyCounts.ContainsKey(x.TaoDotLaoDong_id) ? dangKyCounts[x.TaoDotLaoDong_id] : 0;
+                        int soLuongCan = x.SoLuongSinhVien ?? 20;
+                        bool isLoaiLop = string.Equals(x.LoaiLaoDong?.Trim(), "Lớp", StringComparison.OrdinalIgnoreCase);
+                        int soLopDaDangKy = isLoaiLop && lopDangKyDict.ContainsKey(x.TaoDotLaoDong_id) ? lopDangKyDict[x.TaoDotLaoDong_id] : 0;
+                        int tongLopCan = x.SoLuongSinhVien.GetValueOrDefault(20);
+
+                        bool khongDuSoLuong = isLoaiLop ? (soLopDaDangKy < tongLopCan) : (soLuongDangKy < soLuongCan);
+
+                        string trangThaiText = "Chưa duyệt";
+                        if (x.DaDiemDanh)
+                        {
+                            trangThaiText = "Đã điểm danh";
+                        }
+                        else if (x.TrangThaiDot == "Tạm ngưng")
+                        {
+                            trangThaiText = "Tạm ngưng";
+                        }
+                        else if (isPastTime && (x.TrangThaiDuyet != true || khongDuSoLuong))
+                        {
+                            trangThaiText = "Kết thúc";
+                        }
+                        else if (x.TrangThaiDuyet == true)
+                        {
+                            trangThaiText = "Đã duyệt";
+                        }
+                        else
+                        {
+                            trangThaiText = "Chưa duyệt";
+                        }
+
+                        return new
+                        {
+                            TaoDotLaoDong_id = x.TaoDotLaoDong_id,
+                            DotLaoDong = x.DotLaoDong,
+                            Buoi = x.Buoi,
+                            Ngay = x.NgayLaoDong.HasValue ? x.NgayLaoDong.Value.ToString("dd/MM/yyyy") : "",
+                            LoaiLaoDong = x.LoaiLaoDong,
+                            DiaDiem = x.KhuVuc,
+                            GiaTri = x.GiaTri ?? 0,
+                            MoTa = x.MoTa ?? "",
+                            TrangThaiText = trangThaiText
+                        };
                     }).ToList();
 
                     return Json(new { success = true, list }, JsonRequestBehavior.AllowGet);

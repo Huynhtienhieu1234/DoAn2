@@ -1,4 +1,4 @@
-﻿$(document).ready(function () {
+$(document).ready(function () {
     loadLayoutUser();
 });
 
@@ -11,11 +11,11 @@ function loadLayoutUser() {
 
                 $('#layoutUserName').text(res.data.HoTen || 'Sinh viên');
 
-                if (res.data.Avatar && res.data.Avatar !== '') {
-                    $('#layoutAvatar').attr('src', res.data.Avatar);
-                } else {
-                    $('#layoutAvatar').attr('src', '/image/Avarta.png');
-                }
+                var avatarUrl = (res.data.Avatar && res.data.Avatar !== '' && !res.data.Avatar.includes('Avarta.png')) 
+                    ? res.data.Avatar 
+                    : 'https://ui-avatars.com/api/?name=' + encodeURIComponent(res.data.HoTen || 'SV') + '&background=2563eb&color=fff&size=150&bold=true';
+                
+                $('#layoutAvatar').attr('src', avatarUrl);
             }
         },
         error: function () {

@@ -1,4 +1,4 @@
-﻿@{
+@{
     ViewBag.Title = "Lịch Lao Động";
     Layout = "~/Areas/Student/Views/Shared/Viewsiderbar.cshtml";
 }
@@ -88,4 +88,4 @@
     </div>
 </div>
 
-<script src="~/Areas/Student/Content/Js/StudentListDay/StudentListDay.js"></script>
+<script src="@Url.Content("~/Areas/Student/Content/Js/StudentListDay/StudentListDay.js?v=" + DateTime.Now.Ticks)"></script>

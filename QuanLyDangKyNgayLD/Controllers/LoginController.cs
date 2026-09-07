@@ -113,10 +113,12 @@ namespace QuanLyDangKyNgayLD.Controllers
 
                 switch (user.VaiTro_id)
                 {
-                    case 1: return RedirectToAction("Index", "Admin", new { area = "Admin" });
-                    case 2: return RedirectToAction("Index", "AdminWordRegister", new { area = "Admin" }); // Cán bộ quản lý lao động
-                    case 3: return RedirectToAction("Index", "MainSinhVien", new { area = "Student" });
-                    case 4: return RedirectToAction("Index", "MainSinhVien", new { area = "Student" });
+                    case 1:
+                    case 2: 
+                        return RedirectToAction("Index", "Admin", new { area = "Admin" }); // Admin & Quản lý lao động -> Trang Chủ
+                    case 3: 
+                    case 4: 
+                        return RedirectToAction("Index", "MainSinhVien", new { area = "Student" }); // Sinh viên & Lớp trưởng -> Trang Sinh viên
                     default:
                         ModelState.AddModelError("", "Vai trò tài khoản không hợp lệ.");
                         return View(model);

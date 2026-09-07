@@ -85,6 +85,9 @@ function loadData(page = 1) {
                     const percent = Math.min(100, Math.round((sv.SoNgay / 18) * 100));
                     const initial = getStudentInitial(sv.HoTen);
 
+                    let mssvText = (sv.MSSVDisplay || (sv.MSSV !== undefined && sv.MSSV !== null ? sv.MSSV.toString() : "")).trim();
+                    if (mssvText.length === 9) mssvText = "0" + mssvText;
+
                     const statusBadge = isCompleted
                         ? `<span class="badge-status-completed">
                                <i class="fas fa-check-circle"></i> ${sv.SoNgay}/18 Ngày (Hoàn thành)
@@ -97,7 +100,7 @@ function loadData(page = 1) {
                         <tr>
                             <td class="text-center fw-bold text-muted" style="width: 60px;">${stt}</td>
                             <td class="text-center font-monospace fw-bold" style="width: 130px;">
-                                <span class="badge bg-light text-dark border px-2 py-1">${sv.MSSV}</span>
+                                <span class="badge bg-light text-dark border px-2 py-1">${mssvText || "N/A"}</span>
                             </td>
                             <td>
                                 <div class="d-flex align-items-center">
