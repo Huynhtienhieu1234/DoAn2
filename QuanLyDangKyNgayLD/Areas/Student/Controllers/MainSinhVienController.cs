@@ -257,11 +257,60 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
             }
         }
 
+        // API Lấy danh sách thông báo đợt lao động mới
+        [HttpGet]
+        public JsonResult GetThongBaoDotMoi()
+        {
+            try
+            {
+                using (var db = DbContextFactory.Create())
+                {
+                    var today = DateTime.Today;
+                    var nowTime = DateTime.Now.TimeOfDay;
 
+                    var query = db.TaoDotNgayLaoDongs
+                        .Where(x => x.Ngayxoa == null && x.TrangThaiDot != "Tạm ngưng" && x.NgayLaoDong.HasValue)
+                        .OrderByDescending(x => x.NgayLaoDong)
+                        .ThenByDescending(x => x.TaoDotLaoDong_id)
+                        .Take(30)
+                        .ToList();
 
+                    var list = query
+                        .Where(x =>
+                        {
+                            var dotDate = x.NgayLaoDong.Value.Date;
+                            if (dotDate < today) return false;
+                            if (dotDate == today)
+                            {
+                                bool isSang = string.Equals(x.Buoi?.Trim(), "Sáng", StringComparison.OrdinalIgnoreCase) || (x.Buoi != null && x.Buoi.ToLower().Contains("sáng"));
+                                bool isChieu = string.Equals(x.Buoi?.Trim(), "Chiều", StringComparison.OrdinalIgnoreCase) || (x.Buoi != null && x.Buoi.ToLower().Contains("chiều"));
 
+                                if (isSang && nowTime >= new TimeSpan(7, 0, 0)) return false;
+                                if (isChieu && nowTime >= new TimeSpan(13, 30, 0)) return false;
+                            }
+                            return true;
+                        })
+                        .Select(x => new
+                        {
+                            TaoDotLaoDong_id = x.TaoDotLaoDong_id,
+                            TieuDe = string.IsNullOrEmpty(x.DotLaoDong) ? $"Đợt lao động {x.LoaiLaoDong} - Khu vực {x.KhuVuc}" : x.DotLaoDong,
+                            Buoi = x.Buoi,
+                            NgayLaoDong = x.NgayLaoDong.Value.ToString("dd/MM/yyyy"),
+                            LoaiLaoDong = x.LoaiLaoDong,
+                            KhuVuc = x.KhuVuc,
+                            GiaTri = x.GiaTri ?? 1,
+                            SoLuongSinhVien = x.SoLuongSinhVien ?? 20,
+                            MoTa = string.IsNullOrWhiteSpace(x.MoTa) ? $"Mở đăng ký ca {x.Buoi} ngày {x.NgayLaoDong.Value:dd/MM/yyyy} tại khu vực {x.KhuVuc} ({x.GiaTri ?? 1} điểm)." : x.MoTa
+                        })
+                        .ToList();
 
-
-
+                    return Json(new { success = true, data = list, count = list.Count }, JsonRequestBehavior.AllowGet);
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Lỗi tải thông báo: " + ex.Message }, JsonRequestBehavior.AllowGet);
+            }
+        }
     }
 }

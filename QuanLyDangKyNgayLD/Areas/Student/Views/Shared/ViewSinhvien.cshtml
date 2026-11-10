@@ -28,18 +28,49 @@
             </a>
 
             <!-- Right Actions -->
-            <div class="d-flex align-items-center gap-3">
-                <!-- User greeting pill -->
-                <div class="user-greeting-pill d-none d-sm-flex align-items-center gap-2 py-1 px-3 rounded-pill bg-white shadow-sm border">
-                    <span class="status-indicator online"></span>
-                    <span class="fw-semibold text-dark small" id="navStudentName">Sinh viên</span>
-                </div>
-
-                <!-- Nút Đăng xuất -->
-                <button type="button" class="btn btn-outline-danger btn-sm rounded-pill px-3 py-1 d-flex align-items-center gap-2 shadow-sm header-logout-btn" id="logoutIcon">
-                    <i class="fas fa-sign-out-alt"></i>
-                    <span class="d-none d-md-inline fw-medium">Đăng xuất</span>
+            <div class="d-flex align-items-center gap-2">
+                <!-- Chuông thông báo (bên trái tên sinh viên) -->
+                <button type="button" 
+                        class="btn btn-light position-relative rounded-circle shadow-sm border p-0 d-flex align-items-center justify-content-center header-bell-btn me-1"
+                        id="headerBellBtn"
+                        data-bs-toggle="modal" 
+                        data-bs-target="#modalThongBao"
+                        title="Xem thông báo đợt lao động mới"
+                        style="width: 38px; height: 38px; color: #334155; background-color: #ffffff; transition: all .2s ease; cursor: pointer;">
+                    <i class="fas fa-bell fs-5 text-primary"></i>
+                    <span id="headerBellBadge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-white" style="display: none; font-size: 0.65rem; padding: 3px 6px;">
+                        0
+                    </span>
                 </button>
+
+                <!-- User Dropdown (Gồm Hồ sơ cá nhân và Đăng xuất) -->
+                <div class="dropdown">
+                    <button class="btn user-greeting-pill d-flex align-items-center gap-2 py-1 px-3 rounded-pill bg-white shadow-sm border dropdown-toggle" 
+                            type="button" 
+                            id="userDropdownBtn" 
+                            data-bs-toggle="dropdown" 
+                            aria-expanded="false"
+                            style="cursor: pointer; transition: all .2s ease;">
+                        <span class="status-indicator online"></span>
+                        <span class="fw-semibold text-dark small" id="navStudentName">Sinh viên</span>
+                        <i class="fas fa-chevron-down text-muted ms-1" style="font-size: 0.72rem;"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-4 mt-2 py-2" aria-labelledby="userDropdownBtn" style="min-width: 210px;">
+                        <li>
+                            <a class="dropdown-item d-flex align-items-center gap-2 py-2 px-3 text-dark" href="@Url.Action("Detail", "MainSinhVien", new { area = "Student" })">
+                                <i class="fas fa-id-card text-primary fs-6"></i>
+                                <span class="fw-medium">Hồ sơ cá nhân</span>
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider my-1"></li>
+                        <li>
+                            <a class="dropdown-item d-flex align-items-center gap-2 py-2 px-3 text-danger" href="javascript:void(0);" id="logoutDropdownItem">
+                                <i class="fas fa-sign-out-alt fs-6"></i>
+                                <span class="fw-medium">Đăng xuất</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
             </div>
         </div>
     </header>
@@ -48,6 +79,54 @@
     <main class="student-main-content py-4">
         @RenderBody()
     </main>
+
+    <!-- Modal Thông Báo Lao Động Mới -->
+    <div class="modal fade" id="modalThongBao" tabindex="-1" aria-labelledby="modalThongBaoLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="modal-header bg-primary text-white py-3 px-4">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="rounded-circle bg-white text-primary p-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                            <i class="fas fa-bell"></i>
+                        </div>
+                        <h5 class="modal-title fw-bold mb-0" id="modalThongBaoLabel">Thông Báo Đợt Lao Động Mới</h5>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                </div>
+                <div class="modal-body p-4 bg-light">
+                    <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="text-center" style="width: 50px;">STT</th>
+                                        <th style="min-width: 180px;">Tiêu đề</th>
+                                        <th>Nội dung</th>
+                                        <th class="text-center" style="min-width: 130px;">Thời gian</th>
+                                        <th class="text-center" style="min-width: 130px;">Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="thongBaoTableBody">
+                                    <tr>
+                                        <td colspan="5" class="text-center text-muted py-5">
+                                            <div class="spinner-border text-primary spinner-border-sm me-2" role="status"></div>
+                                            <span class="fw-medium">Đang tải thông báo...</span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-white border-top py-2 px-4 d-flex justify-content-between">
+                    <a href="@Url.Action("Index", "StudentRegisterWord", new { area = "Student" })" class="btn btn-primary rounded-pill px-4 fw-bold">
+                        <i class="fas fa-clipboard-list me-1"></i> Đến trang Đăng ký lao động
+                    </a>
+                    <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Đóng</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Toast container -->
     <div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastContainer" style="z-index: 1090;"></div>
@@ -81,9 +160,11 @@
 
     <script>
         // Mở modal khi click icon thoát
-        document.getElementById("logoutIcon")?.addEventListener("click", function () {
-            var modal = new bootstrap.Modal(document.getElementById("logoutModal"));
-            modal.show();
+        document.querySelectorAll("#logoutIcon, #logoutDropdownItem").forEach(el => {
+            el.addEventListener("click", function () {
+                var modal = new bootstrap.Modal(document.getElementById("logoutModal"));
+                modal.show();
+            });
         });
 
         // Hàm show toast

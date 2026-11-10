@@ -965,6 +965,9 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
         // ==============================================================
         // 📥 XUẤT MẪU IMPORT EXCEL (CÓ DÒNG VÍ DỤ VÀ HƯỚNG DẪN)
         // ==============================================================
+        // ==============================================================
+        // 📥 XUẤT MẪU IMPORT EXCEL (LẤY ĐÚNG GIÁ TRỊ VÀ ĐỊNH DẠNG DATABASE)
+        // ==============================================================
         [HttpGet]
         public ActionResult DownloadTemplate()
         {
@@ -992,10 +995,10 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                         "STT",
                         "Tên Đợt Lao Động (*)",
                         "Buổi (*) (Sáng / Chiều)",
-                        "Loại Lao Động (*) (Cá nhân / Lớp)",
+                        "Loại Lao Động (*) (Cá Nhân / Lớp)",
                         "Điểm / Giá Trị (*)",
                         "Ngày Lao Động (*) (dd/MM/yyyy)",
-                        "Khung Giờ (Ví dụ: 07:00 - 10:30)",
+                        "Khung Giờ (07:00 - 08:30 / 13:00 - 14:00)",
                         "Khu Vực (*)",
                         "Số Lượng SV (*)",
                         "Mô Tả Công Việc"
@@ -1014,44 +1017,72 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                     }
                     ws.Row(2).Height = 28;
 
-                    // 3. Dòng ví dụ mẫu (Ví dụ cụ thể, không lấy dữ liệu DB)
-                    // Dòng ví dụ 1: Sáng cá nhân
-                    ws.Cells[3, 1].Value = 1;
-                    ws.Cells[3, 2].Value = "Dọn vệ sinh khuôn viên B1";
-                    ws.Cells[3, 3].Value = "Sáng";
-                    ws.Cells[3, 4].Value = "Cá nhân";
-                    ws.Cells[3, 5].Value = 5;
-                    ws.Cells[3, 6].Value = DateTime.Now.AddDays(7).ToString("dd/MM/yyyy");
-                    ws.Cells[3, 7].Value = "07:00 - 10:30";
-                    ws.Cells[3, 8].Value = "Khu B1 - Sân trước";
-                    ws.Cells[3, 9].Value = 40;
-                    ws.Cells[3, 10].Value = "Quét dọn lá cây, thu gom rác xung quanh tòa nhà B1";
+                    // 3. Dòng dữ liệu mẫu chuẩn theo định dạng Database
+                    DateTime sampleDate1 = DateTime.Today.AddDays(3);
+                    DateTime sampleDate2 = DateTime.Today.AddDays(4);
+                    DateTime sampleDate3 = DateTime.Today.AddDays(5);
 
-                    // Dòng ví dụ 2: Chiều theo lớp
+                    // Dòng ví dụ 1: Sáng cá nhân khu C1
+                    ws.Cells[3, 1].Value = 1;
+                    ws.Cells[3, 2].Value = $"Tháng {sampleDate1.Month}";
+                    ws.Cells[3, 3].Value = "Sáng";
+                    ws.Cells[3, 4].Value = "Cá Nhân";
+                    ws.Cells[3, 5].Value = 1;
+                    ws.Cells[3, 6].Value = sampleDate1.ToString("dd/MM/yyyy");
+                    ws.Cells[3, 7].Value = "07:00 - 08:30";
+                    ws.Cells[3, 8].Value = "C1";
+                    ws.Cells[3, 9].Value = 20;
+                    ws.Cells[3, 10].Value = "Vệ sinh hành lang và khuôn viên tòa C1";
+
+                    // Dòng ví dụ 2: Chiều theo lớp khu H1
                     ws.Cells[4, 1].Value = 2;
-                    ws.Cells[4, 2].Value = "Chăm sóc vườn hoa khu Trung tâm";
+                    ws.Cells[4, 2].Value = $"Tháng {sampleDate1.Month}";
                     ws.Cells[4, 3].Value = "Chiều";
                     ws.Cells[4, 4].Value = "Lớp";
-                    ws.Cells[4, 5].Value = 10;
-                    ws.Cells[4, 6].Value = DateTime.Now.AddDays(7).ToString("dd/MM/yyyy");
-                    ws.Cells[4, 7].Value = "13:30 - 16:30";
-                    ws.Cells[4, 8].Value = "Vườn hoa Trung tâm";
-                    ws.Cells[4, 9].Value = 60;
-                    ws.Cells[4, 10].Value = "Tưới cây, tỉa cành và nhổ cỏ bồn hoa";
+                    ws.Cells[4, 5].Value = 1;
+                    ws.Cells[4, 6].Value = sampleDate1.ToString("dd/MM/yyyy");
+                    ws.Cells[4, 7].Value = "13:00 - 14:00";
+                    ws.Cells[4, 8].Value = "H1";
+                    ws.Cells[4, 9].Value = 20;
+                    ws.Cells[4, 10].Value = "Tưới cây, tỉa cành và nhổ cỏ bồn hoa tòa H1";
 
-                    // Dòng ví dụ 3: Cùng tên đợt nhưng khác ngày hoặc buổi (hợp lệ)
+                    // Dòng ví dụ 3: Sáng theo lớp khu B3
                     ws.Cells[5, 1].Value = 3;
-                    ws.Cells[5, 2].Value = "Dọn vệ sinh khuôn viên B1";
-                    ws.Cells[5, 3].Value = "Chiều";
-                    ws.Cells[5, 4].Value = "Cá nhân";
-                    ws.Cells[5, 5].Value = 5;
-                    ws.Cells[5, 6].Value = DateTime.Now.AddDays(8).ToString("dd/MM/yyyy");
-                    ws.Cells[5, 7].Value = "13:30 - 16:30";
-                    ws.Cells[5, 8].Value = "Khu B1 - Sân sau";
-                    ws.Cells[5, 9].Value = 35;
-                    ws.Cells[5, 10].Value = "Vệ sinh hành lang và khuôn viên sau";
+                    ws.Cells[5, 2].Value = $"Tháng {sampleDate2.Month}";
+                    ws.Cells[5, 3].Value = "Sáng";
+                    ws.Cells[5, 4].Value = "Lớp";
+                    ws.Cells[5, 5].Value = 1;
+                    ws.Cells[5, 6].Value = sampleDate2.ToString("dd/MM/yyyy");
+                    ws.Cells[5, 7].Value = "07:00 - 08:30";
+                    ws.Cells[5, 8].Value = "B3";
+                    ws.Cells[5, 9].Value = 20;
+                    ws.Cells[5, 10].Value = "Dọn dẹp vệ sinh khuôn viên xung quanh tòa B3";
 
-                    for (int r = 3; r <= 5; r++)
+                    // Dòng ví dụ 4: Sáng cá nhân khu A1
+                    ws.Cells[6, 1].Value = 4;
+                    ws.Cells[6, 2].Value = $"Tháng {sampleDate2.Month}";
+                    ws.Cells[6, 3].Value = "Sáng";
+                    ws.Cells[6, 4].Value = "Cá Nhân";
+                    ws.Cells[6, 5].Value = 1;
+                    ws.Cells[6, 6].Value = sampleDate2.ToString("dd/MM/yyyy");
+                    ws.Cells[6, 7].Value = "07:00 - 08:30";
+                    ws.Cells[6, 8].Value = "A1";
+                    ws.Cells[6, 9].Value = 20;
+                    ws.Cells[6, 10].Value = "Quét dọn lá cây và thu gom rác sân A1";
+
+                    // Dòng ví dụ 5: Sáng cá nhân khu T2
+                    ws.Cells[7, 1].Value = 5;
+                    ws.Cells[7, 2].Value = $"Tháng {sampleDate3.Month}";
+                    ws.Cells[7, 3].Value = "Sáng";
+                    ws.Cells[7, 4].Value = "Cá Nhân";
+                    ws.Cells[7, 5].Value = 1;
+                    ws.Cells[7, 6].Value = sampleDate3.ToString("dd/MM/yyyy");
+                    ws.Cells[7, 7].Value = "07:00 - 08:30";
+                    ws.Cells[7, 8].Value = "T2";
+                    ws.Cells[7, 9].Value = 20;
+                    ws.Cells[7, 10].Value = "Vệ sinh khuôn viên và bồn cây tòa T2";
+
+                    for (int r = 3; r <= 7; r++)
                     {
                         for (int c = 1; c <= headers.Length; c++)
                         {
@@ -1059,43 +1090,116 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                             ws.Cells[r, c].Style.VerticalAlignment = ExcelVerticalAlignment.Center;
                         }
                         ws.Cells[r, 1].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                        ws.Cells[r, 2].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
                         ws.Cells[r, 3].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
                         ws.Cells[r, 4].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
                         ws.Cells[r, 5].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
                         ws.Cells[r, 6].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
                         ws.Cells[r, 7].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                        ws.Cells[r, 8].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
                         ws.Cells[r, 9].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
                     }
 
                     // 4. Ghi chú hướng dẫn chi tiết
-                    int noteRow = 7;
+                    int noteRow = 9;
                     ws.Cells[noteRow, 1].Value = "📌 GHI CHÚ HƯỚNG DẪN QUAN TRỌNG KHI NHẬP EXCEL:";
                     ws.Cells[noteRow, 1].Style.Font.Bold = true;
                     ws.Cells[noteRow, 1].Style.Font.Color.SetColor(Color.FromArgb(220, 53, 69));
 
                     ws.Cells[noteRow + 1, 1].Value = "1. Các cột có dấu (*) là thông tin bắt buộc.";
-                    ws.Cells[noteRow + 2, 1].Value = "2. 'Buổi' chỉ chấp nhận: 'Sáng' hoặc 'Chiều'.";
-                    ws.Cells[noteRow + 3, 1].Value = "3. 'Loại Lao Động' chỉ chấp nhận: 'Cá nhân' hoặc 'Lớp'.";
-                    ws.Cells[noteRow + 4, 1].Value = "4. 'Ngày Lao Động' nhập đúng định dạng ngày/tháng/năm: dd/MM/yyyy (Ví dụ: 25/10/2026).";
-                    ws.Cells[noteRow + 5, 1].Value = "5. 'Điểm / Giá Trị' và 'Số Lượng SV' phải là số nguyên dương (> 0).";
-                    ws.Cells[noteRow + 6, 1].Value = "6. QUY TẮC TRÙNG LỊCH: Tên đợt có thể trùng nhau, nhưng nếu trùng cùng (Khu Vực + Ngày Lao Động + Buổi) thì hệ thống sẽ báo lỗi trùng lịch và KHÔNG thực hiện import dòng đó.";
+                    ws.Cells[noteRow + 2, 1].Value = "2. 'Tên Đợt Lao Động': Nhập theo tháng chuẩn hệ thống (Ví dụ: Tháng 1, Tháng 2, ..., Tháng 12).";
+                    ws.Cells[noteRow + 3, 1].Value = "3. 'Buổi' chuẩn hệ thống: 'Sáng' (07:00 - 08:30) hoặc 'Chiều' (13:00 - 14:00).";
+                    ws.Cells[noteRow + 4, 1].Value = "4. 'Loại Lao Động' chuẩn hệ thống: 'Cá Nhân' hoặc 'Lớp'.";
+                    ws.Cells[noteRow + 5, 1].Value = "5. 'Ngày Lao Động' nhập đúng định dạng ngày/tháng/năm: dd/MM/yyyy (Ví dụ: 15/09/2026), không được nhập ngày trong quá khứ.";
+                    ws.Cells[noteRow + 6, 1].Value = "6. 'Khu Vực' chuẩn hệ thống: A1, A2, B1, B2, B3, B4, C1, C2, H1, H2, T2, Trước cổng trường (xem tab 'Danh_Muc_Tham_Chieu').";
+                    ws.Cells[noteRow + 7, 1].Value = "7. 'Điểm / Giá Trị' (mặc định là 1) và 'Số Lượng SV' (mặc định là 20) phải là số nguyên dương (> 0).";
+                    ws.Cells[noteRow + 8, 1].Value = "8. QUY TẮC TRÙNG LỊCH: Hệ thống sẽ tự động kiểm tra và ngăn chặn nếu bị trùng (Khu Vực + Ngày Lao Động + Buổi).";
 
-                    for (int nr = noteRow; nr <= noteRow + 6; nr++)
+                    for (int nr = noteRow; nr <= noteRow + 8; nr++)
                     {
                         ws.Cells[nr, 1].Style.Font.Size = 10;
                     }
 
                     // Đặt độ rộng cột cố định chuẩn đẹp
                     ws.Column(1).Width = 8;
-                    ws.Column(2).Width = 32;
+                    ws.Column(2).Width = 22;
                     ws.Column(3).Width = 14;
                     ws.Column(4).Width = 18;
                     ws.Column(5).Width = 16;
                     ws.Column(6).Width = 18;
-                    ws.Column(7).Width = 20;
-                    ws.Column(8).Width = 25;
+                    ws.Column(7).Width = 24;
+                    ws.Column(8).Width = 18;
                     ws.Column(9).Width = 16;
                     ws.Column(10).Width = 45;
+
+                    // ==============================================================
+                    // 5. SHEET 2: DANH MỤC THAM CHIẾU GIÁ TRỊ CHUẨN TRONG HỆ THỐNG
+                    // ==============================================================
+                    var refWs = package.Workbook.Worksheets.Add("Danh_Muc_Tham_Chieu");
+                    refWs.Cells["A1:F1"].Merge = true;
+                    refWs.Cells["A1"].Value = "BẢNG DANH MỤC GIÁ TRỊ CHUẨN TRONG HỆ THỐNG (DATABASE)";
+                    refWs.Cells["A1"].Style.Font.Bold = true;
+                    refWs.Cells["A1"].Style.Font.Size = 12;
+                    refWs.Cells["A1"].Style.Font.Color.SetColor(Color.White);
+                    refWs.Cells["A1"].Style.Fill.PatternType = ExcelFillStyle.Solid;
+                    refWs.Cells["A1"].Style.Fill.BackgroundColor.SetColor(Color.FromArgb(25, 135, 84)); // Green
+                    refWs.Cells["A1"].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                    refWs.Cells["A1"].Style.VerticalAlignment = ExcelVerticalAlignment.Center;
+                    refWs.Row(1).Height = 28;
+
+                    string[] refHeaders = new string[]
+                    {
+                        "Tên Đợt Chuẩn",
+                        "Buổi Chuẩn",
+                        "Loại Lao Động",
+                        "Mã Khu Vực Chuẩn",
+                        "Khung Giờ Chuẩn",
+                        "Giá Trị / Số Lượng"
+                    };
+
+                    for (int i = 0; i < refHeaders.Length; i++)
+                    {
+                        var cell = refWs.Cells[2, i + 1];
+                        cell.Value = refHeaders[i];
+                        cell.Style.Font.Bold = true;
+                        cell.Style.Fill.PatternType = ExcelFillStyle.Solid;
+                        cell.Style.Fill.BackgroundColor.SetColor(Color.FromArgb(235, 247, 238));
+                        cell.Style.Border.BorderAround(ExcelBorderStyle.Thin, Color.FromArgb(200, 200, 200));
+                        cell.Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                    }
+
+                    // Dữ liệu tham chiếu
+                    string[] listThang = new string[] { "Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6", "Tháng 7", "Tháng 8", "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12" };
+                    string[] listBuoi = new string[] { "Sáng", "Chiều" };
+                    string[] listLoai = new string[] { "Cá Nhân", "Lớp" };
+                    string[] listKhuVuc = new string[] { "A1", "A2", "B1", "B2", "B3", "B4", "C1", "C2", "H1", "H2", "T2", "Trước cổng trường" };
+                    string[] listKhungGio = new string[] { "07:00 - 08:30 (Sáng)", "13:00 - 14:00 (Chiều)" };
+                    string[] listMacDinh = new string[] { "Giá trị mặc định: 1", "Số lượng SV: 20", "Số lượng Lớp: 20" };
+
+                    int maxRefRows = Math.Max(listThang.Length, Math.Max(listKhuVuc.Length, 12));
+                    for (int r = 0; r < maxRefRows; r++)
+                    {
+                        int rowIdx = r + 3;
+                        if (r < listThang.Length) refWs.Cells[rowIdx, 1].Value = listThang[r];
+                        if (r < listBuoi.Length) refWs.Cells[rowIdx, 2].Value = listBuoi[r];
+                        if (r < listLoai.Length) refWs.Cells[rowIdx, 3].Value = listLoai[r];
+                        if (r < listKhuVuc.Length) refWs.Cells[rowIdx, 4].Value = listKhuVuc[r];
+                        if (r < listKhungGio.Length) refWs.Cells[rowIdx, 5].Value = listKhungGio[r];
+                        if (r < listMacDinh.Length) refWs.Cells[rowIdx, 6].Value = listMacDinh[r];
+
+                        for (int c = 1; c <= 6; c++)
+                        {
+                            refWs.Cells[rowIdx, c].Style.Border.BorderAround(ExcelBorderStyle.Thin, Color.FromArgb(230, 230, 230));
+                            refWs.Cells[rowIdx, c].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                        }
+                    }
+
+                    refWs.Column(1).Width = 18;
+                    refWs.Column(2).Width = 16;
+                    refWs.Column(3).Width = 18;
+                    refWs.Column(4).Width = 24;
+                    refWs.Column(5).Width = 26;
+                    refWs.Column(6).Width = 24;
 
                     var fileBytes = package.GetAsByteArray();
                     string fileName = "Mau_Import_TaoDotLaoDong.xlsx";
@@ -1210,7 +1314,7 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                             }
                             if (string.IsNullOrWhiteSpace(loaiLD))
                             {
-                                errors.Add($"Dòng {row}: 'Loại lao động' không được để trống (phải là 'Cá nhân' hoặc 'Lớp').");
+                                errors.Add($"Dòng {row}: 'Loại lao động' không được để trống (phải là 'Cá Nhân' hoặc 'Lớp').");
                                 continue;
                             }
                             if (string.IsNullOrWhiteSpace(khuVuc))
@@ -1224,11 +1328,12 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                                 continue;
                             }
 
-                            // 2. Chuẩn hóa Buổi
+                            // 2. Chuẩn hóa Buổi linh hoạt
                             string buoiNormalized = "";
-                            if (buoi.Equals("Sáng", StringComparison.OrdinalIgnoreCase) || buoi.Equals("Sang", StringComparison.OrdinalIgnoreCase))
+                            string buoiLower = buoi.ToLower();
+                            if (buoiLower.Contains("sáng") || buoiLower.Contains("sang") || buoiLower.Contains("7h"))
                                 buoiNormalized = "Sáng";
-                            else if (buoi.Equals("Chiều", StringComparison.OrdinalIgnoreCase) || buoi.Equals("Chieu", StringComparison.OrdinalIgnoreCase))
+                            else if (buoiLower.Contains("chiều") || buoiLower.Contains("chieu") || buoiLower.Contains("13h"))
                                 buoiNormalized = "Chiều";
                             else
                             {
@@ -1236,11 +1341,12 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                                 continue;
                             }
 
-                            // 3. Chuẩn hóa Loại lao động
+                            // 3. Chuẩn hóa Loại lao động linh hoạt
                             string loaiNormalized = "";
-                            if (loaiLD.IndexOf("cá nhân", StringComparison.OrdinalIgnoreCase) >= 0 || loaiLD.IndexOf("ca nhan", StringComparison.OrdinalIgnoreCase) >= 0)
+                            string loaiLower = loaiLD.ToLower();
+                            if (loaiLower.Contains("cá nhân") || loaiLower.Contains("ca nhan"))
                                 loaiNormalized = "Cá Nhân";
-                            else if (loaiLD.IndexOf("lớp", StringComparison.OrdinalIgnoreCase) >= 0 || loaiLD.IndexOf("lop", StringComparison.OrdinalIgnoreCase) >= 0)
+                            else if (loaiLower.Contains("lớp") || loaiLower.Contains("lop"))
                                 loaiNormalized = "Lớp";
                             else
                                 loaiNormalized = loaiLD;
@@ -1299,8 +1405,8 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                                 }
                             }
 
-                            // 6. Parse Số lượng sinh viên
-                            int soLuongSV = 30;
+                            // 6. Parse Số lượng sinh viên (mặc định 20)
+                            int soLuongSV = 20;
                             if (!string.IsNullOrWhiteSpace(soLuongStr))
                             {
                                 if (!int.TryParse(soLuongStr, out soLuongSV) || soLuongSV <= 0)
@@ -1331,8 +1437,8 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                             var userIdStr = Session["UserId"]?.ToString();
                             int.TryParse(userIdStr, out int currentUserId);
 
-                            // Tạo đối tượng đợt mới
-                            string defaultThoiGian = buoiNormalized == "Sáng" ? "07:00 - 10:30" : "13:30 - 16:30";
+                            // Tạo đối tượng đợt mới chuẩn hóa theo database
+                            string defaultThoiGian = buoiNormalized == "Sáng" ? "07:00 - 08:30" : "13:00 - 14:00";
                             string cleanTenDot = tenDot.Length > 255 ? tenDot.Substring(0, 255) : tenDot;
                             string cleanKhuVuc = khuVuc.Length > 100 ? khuVuc.Substring(0, 100) : khuVuc;
                             string cleanThoiGian = string.IsNullOrWhiteSpace(thoiGian) ? defaultThoiGian : (thoiGian.Length > 50 ? thoiGian.Substring(0, 50) : thoiGian);

@@ -140,10 +140,16 @@
     <!-- Top Navigation Header -->
     <nav class="student-navbar">
         <div class="nav-content">
-            <!-- Brand Logo -->
-            <a href="@Url.Action("Index", "MainSinhVien", new { area = "Student" })" class="d-flex align-items-center text-decoration-none">
-                <img src="https://cdn.jsdelivr.net/gh/Huynhtienhieu1234/UploadAnh/sinhvien/LogoTruong.png" alt="Logo DThU" class="logo-brand">
-            </a>
+            <div class="d-flex align-items-center gap-2">
+                <!-- Mobile sidebar toggle button -->
+                <button type="button" id="mobileSidebarToggle" class="btn btn-sm btn-light d-md-none rounded-circle border shadow-2xs me-1" title="Menu" style="width: 38px; height: 38px; display: inline-flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-bars text-dark"></i>
+                </button>
+                <!-- Brand Logo -->
+                <a href="@Url.Action("Index", "MainSinhVien", new { area = "Student" })" class="d-flex align-items-center text-decoration-none">
+                    <img src="https://cdn.jsdelivr.net/gh/Huynhtienhieu1234/UploadAnh/sinhvien/LogoTruong.png" alt="Logo DThU" class="logo-brand">
+                </a>
+            </div>
 
             <!-- User Menu Dropdown -->
             <div class="user-menu-pill" id="userMenu">
@@ -179,6 +185,9 @@
             </div>
         </div>
     </nav>
+
+    <!-- Sidebar Backdrop for Mobile -->
+    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
 
     <!-- Sidebar Navigation -->
     <aside class="sidebar collapsed" id="sidebar">
@@ -266,11 +275,30 @@
         document.addEventListener("DOMContentLoaded", function () {
             const sidebar = document.getElementById("sidebar");
             const toggleBtn = document.getElementById("toggleSidebar");
+            const mobileToggleBtn = document.getElementById("mobileSidebarToggle");
+            const sidebarBackdrop = document.getElementById("sidebarBackdrop");
 
             if (toggleBtn && sidebar) {
                 toggleBtn.addEventListener("click", function (e) {
                     e.preventDefault();
                     sidebar.classList.toggle("collapsed");
+                });
+            }
+
+            if (mobileToggleBtn && sidebar) {
+                mobileToggleBtn.addEventListener("click", function (e) {
+                    e.preventDefault();
+                    sidebar.classList.toggle("mobile-open");
+                    if (sidebarBackdrop) {
+                        sidebarBackdrop.classList.toggle("show", sidebar.classList.contains("mobile-open"));
+                    }
+                });
+            }
+
+            if (sidebarBackdrop && sidebar) {
+                sidebarBackdrop.addEventListener("click", function () {
+                    sidebar.classList.remove("mobile-open");
+                    sidebarBackdrop.classList.remove("show");
                 });
             }
         });

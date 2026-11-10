@@ -1,4 +1,4 @@
-﻿/* Table.css - Enhanced Version */
+/* Table.css - Enhanced Version */
 
 /* Container và Header */
 .container-lg.card-shadow {
@@ -31,7 +31,8 @@
 
 /* Table Styling */
 .table-responsive {
-    overflow: auto;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
     border-radius: 0 0 16px 16px;
 }
 
@@ -40,16 +41,15 @@
     border-collapse: separate;
     border-spacing: 0;
     width: 100%;
+    min-width: 680px;
     table-layout: auto;
 }
 
     .table-custom th,
     .table-custom td {
-        max-width: 207px;
         white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
         text-align: center;
+        padding: 0.75rem 0.5rem;
     }
 
 
@@ -58,12 +58,12 @@
 }
 
     .table-header-gradient th {
-        color: black;
+        color: #ffffff;
         font-weight: 600;
-        font-size: 0.9rem;
+        font-size: 0.88rem;
         text-transform: uppercase;
         letter-spacing: 0.5px;
-        padding: 1rem 0.75rem;
+        padding: 0.9rem 0.75rem;
         border: none;
         white-space: nowrap;
     }
@@ -285,13 +285,9 @@
 
 /* Responsive */
 @media (max-width: 1200px) {
-    .table-responsive {
-        overflow-x: auto;
-    }
-
     .btn-group-action {
         flex-direction: column;
-        min-width: 120px;
+        min-width: 110px;
     }
 
     .btn-register,
@@ -306,18 +302,73 @@
 }
 
 @media (max-width: 768px) {
+    .container-lg.card-shadow {
+        border-radius: 12px;
+    }
+
     .card-header-custom {
-        padding: 1rem 1.25rem;
+        padding: 0.9rem 1rem;
     }
 
     .title-gradient {
-        font-size: 1.25rem;
+        font-size: 1.15rem;
     }
 
     .description-text {
-        max-width: 150px;
+        max-width: 140px;
+    }
+
+    .two-buton {
+        flex-direction: column;
+        gap: 8px;
+        margin: 14px 0;
+    }
+
+    .two-buton button {
+        width: 100%;
+        text-align: center;
+        padding: 8px 14px;
+        font-size: 0.88rem;
+    }
+
+    .pagination-container {
+        gap: 4px;
+        flex-wrap: wrap;
+    }
+
+    .pagination-container #prev,
+    .pagination-container #next {
+        margin-left: 6px;
+        min-width: 36px;
+        height: 36px;
     }
 }
+
+@media (max-width: 575.98px) {
+    .card-header-custom {
+        padding: 0.75rem 0.85rem;
+    }
+
+    .title-gradient {
+        font-size: 1rem;
+    }
+
+    .table-custom {
+        min-width: 620px;
+    }
+
+    .pagination-container .btn {
+        padding: 6px 10px;
+        min-width: 32px;
+        font-size: 0.82rem;
+    }
+
+    .pagination-container span button {
+        min-width: 30px;
+        height: 30px;
+    }
+}
+
 /* Hiển thị đầy đủ cột Ngày lao động */
 .date-full {
     max-width: none !important;
@@ -359,7 +410,7 @@
     background-color: #007bff !important;
     color: white !important;
     border: none !important;
-    margin-left: 20px
+    margin-left: 10px;
 }
 
     .pagination-container #prev:hover,
@@ -403,8 +454,6 @@
     }
 
 /*Hai nút chọn xem cá nhân hoặc lớp */
-
-
 .two-buton {
     display: flex;
     justify-content: center;

@@ -216,13 +216,16 @@
                                         data-id="@item.TaoDotLaoDong_id">
                                     <i class="fas fa-info-circle"></i>
                                 </button>
-                                <button class="btn btn-sm @(item.TrangThaiDot == "Tạm ngưng" ? "btn-secondary" : "btn-warning text-dark") btn-toggle-tamngung" 
-                                        title="@(item.TrangThaiDot == "Tạm ngưng" ? "Mở lại đợt lao động" : "Tạm ngưng đợt lao động")"
-                                        data-id="@item.TaoDotLaoDong_id"
-                                        data-status="@item.TrangThaiDot">
-                                    <i class="fas @(item.TrangThaiDot == "Tạm ngưng" ? "fa-play" : "fa-pause")"></i>
-                                </button>
-                                @if (item.TrangThaiDuyet == false)
+                                @if (item.TrangThaiDot != "Tạm ngưng" && !isPast)
+                                {
+                                    <button class="btn btn-sm btn-warning text-dark btn-toggle-tamngung" 
+                                            title="Tạm ngưng đợt lao động"
+                                            data-id="@item.TaoDotLaoDong_id"
+                                            data-status="@item.TrangThaiDot">
+                                        <i class="fas fa-pause"></i>
+                                    </button>
+                                }
+                                @if (item.TrangThaiDuyet == false && !isPast && item.TrangThaiDot != "Tạm ngưng")
                                 {
                                     <button class="btn btn-sm btn-success btn-approve" title="Duyệt ngay"
                                             data-id="@item.TaoDotLaoDong_id">

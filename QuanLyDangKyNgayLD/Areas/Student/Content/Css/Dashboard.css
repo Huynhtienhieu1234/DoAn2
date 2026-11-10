@@ -279,15 +279,142 @@ body {
     .welcome-hero-banner {
         padding: 22px 20px;
     }
+
+    .avatar-wrapper {
+        width: 96px;
+        height: 96px;
+    }
+
+    .student-profile-card {
+        margin-bottom: 1rem;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .student-header {
+        padding: 4px 0;
+    }
+
+    .header-logo {
+        height: 36px;
+        max-width: 140px;
+    }
+
+    .user-greeting-pill {
+        padding: 4px 10px 4px 8px;
+        font-size: 0.8rem;
+    }
+
+    #navStudentName {
+        max-width: 110px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: inline-block;
+    }
+
+    .header-bell-btn {
+        width: 34px !important;
+        height: 34px !important;
+    }
+
+    .welcome-hero-banner {
+        padding: 18px 16px;
+        border-radius: var(--radius-md);
+    }
+
+    .welcome-hero-banner h3 {
+        font-size: 1.25rem !important;
+    }
+
+    .welcome-hero-banner p {
+        font-size: 0.85rem !important;
+    }
+
+    .feature-bento-card {
+        padding: 18px 16px;
+        border-radius: var(--radius-md);
+    }
+
+    .card-icon-bubble {
+        width: 44px;
+        height: 44px;
+        font-size: 1.15rem;
+        border-radius: 12px;
+        margin-bottom: 12px;
+    }
+
+    .card-title {
+        font-size: 0.98rem;
+    }
+
+    .card-desc {
+        font-size: 0.78rem;
+        margin-bottom: 10px;
+    }
+
+    .student-main-content {
+        padding-top: 0.75rem !important;
+        padding-bottom: 1.5rem !important;
+    }
 }
 
 @media (max-width: 575.98px) {
-    .welcome-hero-banner h3 {
-        font-size: 1.35rem;
+    .header-logo {
+        height: 30px;
+        max-width: 115px;
     }
-    
-    .feature-bento-card {
-        padding: 18px 16px;
+
+    #navStudentName {
+        max-width: 80px;
+    }
+
+    .welcome-hero-banner {
+        padding: 16px 14px;
+    }
+
+    .welcome-hero-banner h3 {
+        font-size: 1.15rem !important;
+    }
+
+    .avatar-wrapper {
+        width: 84px;
+        height: 84px;
+    }
+
+    .student-profile-card .card-body {
+        padding: 14px !important;
+    }
+
+    .info-list li {
+        font-size: 0.84rem;
+    }
+
+    #email {
+        max-width: 130px !important;
+    }
+
+    .modal-dialog {
+        margin: 8px;
+    }
+
+    .modal-header, .modal-footer {
+        padding: 12px 14px !important;
+    }
+
+    .modal-body {
+        padding: 12px !important;
+    }
+
+    .modal-footer {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .modal-footer .btn, .modal-footer a {
+        width: 100%;
+        text-align: center;
+        justify-content: center;
     }
 }
 

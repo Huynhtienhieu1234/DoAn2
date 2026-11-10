@@ -309,16 +309,18 @@ document.addEventListener("DOMContentLoaded", function () {
                             <i class="fas fa-info-circle"></i>
                         </button>
 
-                        <!-- Nút Tạm ngưng / Mở lại đợt lao động -->
-                        <button class="btn btn-sm ${(item.TrangThaiDot === 'Tạm ngưng' || item.TrangThaiDuyet === 'Tạm ngưng') ? 'btn-secondary' : 'btn-warning text-dark'} btn-toggle-tamngung"
-                                data-id="${item.TaoDotLaoDong_id}"
-                                data-dotname="${item.DotLaoDong || ''}"
-                                data-status="${(item.TrangThaiDot === 'Tạm ngưng' || item.TrangThaiDuyet === 'Tạm ngưng') ? 'Tạm ngưng' : 'Hoạt động'}"
-                                title="${(item.TrangThaiDot === 'Tạm ngưng' || item.TrangThaiDuyet === 'Tạm ngưng') ? 'Mở lại đợt lao động' : 'Tạm ngưng đợt lao động'}">
-                            <i class="fas ${(item.TrangThaiDot === 'Tạm ngưng' || item.TrangThaiDuyet === 'Tạm ngưng') ? 'fa-play' : 'fa-pause'}"></i>
-                        </button>
+                        <!-- Nút Tạm ngưng đợt lao động: Chỉ hiển thị khi CHƯA TẠM NGƯNG và CHƯA KẾT THÚC -->
+                        ${(item.TrangThaiDot !== 'Tạm ngưng' && item.TrangThaiDuyet !== 'Tạm ngưng' && item.TrangThaiDuyet !== 'Kết thúc') ? `
+                            <button class="btn btn-sm btn-warning text-dark btn-toggle-tamngung"
+                                    data-id="${item.TaoDotLaoDong_id}"
+                                    data-dotname="${item.DotLaoDong || ''}"
+                                    data-status="Hoạt động"
+                                    title="Tạm ngưng đợt lao động">
+                                <i class="fas fa-pause"></i>
+                            </button>
+                        ` : ''}
 
-                        <!-- 2 nút mới: chỉ hiển thị khi ĐÃ DUYỆT -->
+                        <!-- 2 nút: chỉ hiển thị khi ĐÃ DUYỆT -->
                         ${item.TrangThaiDuyet === 'Đã duyệt' ? `
                             <button class="btn btn-sm btn-primary btn-show-code"
                                     data-id="${item.TaoDotLaoDong_id}"
@@ -345,7 +347,7 @@ document.addEventListener("DOMContentLoaded", function () {
                                     title="Xóa đợt">
                                 <i class="fas fa-trash"></i>
                             </button>` : ''}
-                            ${item.TrangThaiDuyet === 'Chưa duyệt' ? `
+                            ${(item.TrangThaiDuyet === 'Chưa duyệt' && item.TrangThaiDot !== 'Tạm ngưng') ? `
                             <button class="btn btn-sm btn-success btn-approve"
                                     data-id="${item.TaoDotLaoDong_id}"
                                     title="Duyệt đợt">

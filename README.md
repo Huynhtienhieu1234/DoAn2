@@ -45,81 +45,164 @@ DoAn2/
 ├── packages/                               # Thư mục chứa các NuGet packages cài đặt
 ├── QuanLyDangKyNgayLD.sln                  # Visual Studio Solution
 │
-└── QuanLyDangKyNgayLD/                     # Thư mục mã nguồn chính của ứng dụng
+└── QuanLyDangKyNgayLD/                     # Thư mục mã nguồn chính của ứng dụng ASP.NET MVC
     │
-    ├── App_Start/                          # Cấu hình khởi tạo ứng dụng
-    │   ├── BundleConfig.cs                 # Cấu hình nén, gom nhóm file CSS/JS
-    │   ├── FilterConfig.cs                 # Cấu hình bộ lọc toàn cục (Global Filters)
-    │   └── RouteConfig.cs                  # Định tuyến URL cho các Controller mặc định
+    ├── App_Start/                          # Cấu hình khởi tạo toàn cục của ứng dụng
+    │   ├── BundleConfig.cs                 # Cấu hình Bundle nén và gom nhóm tài nguyên tĩnh (CSS/JS)
+    │   ├── FilterConfig.cs                 # Đăng ký bộ lọc toàn cục (Global Action Filters)
+    │   └── RouteConfig.cs                  # Thiết lập quy tắc định tuyến URL (Default Route)
     │
-    ├── Areas/                              # Phân chia phân hệ ứng dụng (Module)
-    │   ├── Admin/                          # Phân hệ Quản trị viên
-    │   │   ├── AdminAreaRegistration.cs    # Cấu hình Route riêng cho Area Admin
-    │   │   ├── Controllers/                # Controllers xử lý nghiệp vụ Admin:
-    │   │   │   ├── AccountController.cs          # Quản lý tài khoản, phân quyền (tích hợp Audit Log)
-    │   │   │   ├── AdminController.cs            # Dashboard điều hướng chính
-    │   │   │   ├── AdminStudentController.cs     # Quản lý hồ sơ sinh viên (tích hợp Audit Log)
-    │   │   │   ├── AdminWordRegisterController.cs# Tạo đợt, duyệt phiếu đăng ký (tích hợp Audit Log)
-    │   │   │   ├── AdminSuscesWordController.cs  # Xác nhận hoàn thành nghĩa vụ (tích hợp Audit Log)
-    │   │   │   ├── AdminAuditLogController.cs    # Tra cứu, lọc, xem chi tiết JSON nhật ký xóa
-    │   │   │   └── AdminTKController.cs          # Thống kê, báo cáo số liệu
-    │   │   ├── ViewModel/                  # DTO/ViewModel truyền dữ liệu riêng cho Admin
-    │   │   └── Views/                      # Giao diện quản trị Razor Views (.cshtml)
-    │   │       └── AdminAuditLog/Index.cshtml    # Trang giao diện Lịch Sử / Nhật Ký Xóa
+    ├── Areas/                              # Phân chia các phân hệ nghiệp vụ độc lập (Module/Area)
     │   │
-    │   ├── Student/                        # Phân hệ Sinh viên
-    │   │   ├── StudentAreaRegistration.cs  # Cấu hình Route riêng cho Area Student
-    │   │   ├── Controllers/                # Controllers xử lý nghiệp vụ Sinh viên:
-    │   │   │   ├── MainSinhVienController.cs     # Trang chủ sinh viên, thông tin cá nhân
-    │   │   │   ├── StudentRegisterWordController.cs # Đăng ký đợt/ngày lao động
-    │   │   │   ├── StudentCheckDayController.cs  # Kiểm tra điểm danh & lịch sử
-    │   │   │   ├── StudentListDayController.cs   # Danh sách ngày đã đăng ký
-    │   │   │   ├── StudentTKController.cs        # Thống kê số buổi đã đạt
-    │   │   │   └── ChatBotController.cs          # Tích hợp bot giải đáp thắc mắc
-    │   │   └── Views/                      # Giao diện sinh viên (.cshtml)
+    │   ├── Admin/                          # PHÂN HỆ QUẢN TRỊ VIÊN (ADMIN AREA)
+    │   │   ├── AdminAreaRegistration.cs    # Đăng ký route riêng cho Area Admin (/Admin/{controller}/{action}/{id})
+    │   │   ├── Content/                    # Tài nguyên giao diện riêng cho Admin
+    │   │   │   ├── css/                    # Stylesheet tùy chỉnh cho Admin
+    │   │   │   │   ├── Adminsuscessword.css    # Style trang xác nhận hoàn thành đợt lao động
+    │   │   │   │   └── AdminTK.css             # Style trang thống kê, báo cáo của Admin
+    │   │   │   └── js/                     # Scripts tương tác trang Admin
+    │   │   │       ├── Adminsuscessword.js     # Xử lý duyệt hoàn thành và cấp xác nhận
+    │   │   │       ├── AdminTK.js              # Khởi tạo biểu đồ và xử lý bộ lọc thống kê
+    │   │   │       └── duyetHandler.js         # Xử lý nghiệp vụ xét duyệt phiếu đăng ký
+    │   │   ├── Controllers/                # Controllers xử lý nghiệp vụ phía Admin
+    │   │   │   ├── AccountController.cs          # Quản lý tài khoản (CRUD, phân quyền, import/export, Audit Log)
+    │   │   │   ├── AdminAuditLogController.cs    # Quản lý, tra cứu, xem chi tiết JSON nhật ký Audit Log
+    │   │   │   ├── AdminController.cs            # Dashboard điều hướng chính của Admin
+    │   │   │   ├── AdminStudentController.cs     # Quản lý danh sách, hồ sơ sinh viên, import/export Excel
+    │   │   │   ├── AdminSuscesWordController.cs  # Xác nhận hoàn thành nghĩa vụ & xuất báo cáo hoàn thành
+    │   │   │   ├── AdminTKController.cs          # Thống kê số liệu, tỷ lệ tham gia và xuất báo cáo
+    │   │   │   ├── AdminWordRegisterController.cs# Quản lý đợt lao động, duyệt sinh viên đăng ký
+    │   │   │   └── WordCreateRegister.cs         # Xử lý logic tạo mới đợt và phân bổ ngày lao động
+    │   │   ├── ViewModel/                  # DTO / ViewModel phục vụ truyền dữ liệu trong Admin
+    │   │   │   └── StudentProgressViewModel.cs   # Model thể hiện tiến độ tham gia lao động của sinh viên
+    │   │   └── Views/                      # Giao diện Razor Views (.cshtml) của Admin
+    │   │       ├── Account/                # Quản lý danh sách tài khoản (Index.cshtml)
+    │   │       ├── Admin/                  # Trang chủ / Dashboard quản trị (Index.cshtml)
+    │   │       ├── AdminAuditLog/          # Tra cứu lịch sử / nhật ký xóa hệ thống (Index.cshtml)
+    │   │       ├── AdminStudent/           # Quản lý danh sách sinh viên (Index.cshtml)
+    │   │       ├── AdminSuscesWord/        # Danh sách hoàn thành & cấp chứng nhận (Index.cshtml)
+    │   │       ├── AdminTK/                # Báo cáo thống kê & Biểu đồ Chart.js (Index.cshtml)
+    │   │       ├── AdminWordRegister/      # Danh sách & tạo đợt lao động, duyệt đăng ký (Index.cshtml)
+    │   │       └── Shared/                 # Layouts và Partial Views dùng chung trong Admin
+    │   │           └── ViewShare.cshtml        # Layout Master chính của phân hệ Admin
     │   │
-    │   └── Content/                        # Tài nguyên tĩnh CSS, JS, Images dùng chung
+    │   ├── Student/                        # PHÂN HỆ SINH VIÊN (STUDENT AREA)
+    │   │   ├── StudentAreaRegistration.cs  # Đăng ký route riêng cho Area Student (/Student/{controller}/{action}/{id})
+    │   │   ├── Content/                    # Tài nguyên giao diện phía Sinh viên
+    │   │   │   ├── Css/                    # Stylesheet cho giao diện sinh viên
+    │   │   │   │   ├── Dashboard.css           # Giao diện trang chủ và thống kê sinh viên
+    │   │   │   │   ├── Siderbarmain.css        # Giao diện menu sidebar điều hướng
+    │   │   │   │   ├── Table.css               # Định dạng bảng biểu hiển thị dữ liệu
+    │   │   │   │   └── Toast.css               # Thông báo Toast notification động
+    │   │   │   └── Js/                     # Javascript xử lý tương tác giao diện sinh viên
+    │   │   │       ├── ChatBot/            # Module Chatbot hỗ trợ tự động (ChatBot.js)
+    │   │   │       ├── Register/           # Xử lý hủy đăng ký ca lao động (DeleteRegister.js)
+    │   │   │       ├── StudentCheckDay/    # Kiểm tra điểm danh & kết quả theo ca (StudentCheckDay.js)
+    │   │   │       ├── StudentListDay/     # Tra cứu lịch sử các ngày đã tham gia (StudentListDay.js)
+    │   │   │       ├── StudentMain/        # Xử lý thông tin cá nhân & dashboard (StudentInfo.js, StudentMain.js)
+    │   │   │       ├── StudentRegister/    # Đăng ký ngày lao động, hiển thị lớp phó (StudentRegister.js, StudentListClass.js, LopPhoTableOverride.js)
+    │   │   │       ├── StudentTK/          # Thống kê số buổi đã đạt của cá nhân (StudentTK.js)
+    │   │   │       └── Viewsider/          # Hiệu ứng thu phóng sidebar & responsive (LayoutUser.js, Viewsider.js)
+    │   │   ├── Controllers/                # Controllers xử lý nghiệp vụ phía Sinh viên
+    │   │   │   ├── ChatBotController.cs          # Chatbot tư vấn, trả lời tự động câu hỏi thường gặp
+    │   │   │   ├── MainSinhVienController.cs     # Trang chủ sinh viên, xem và cập nhật hồ sơ cá nhân
+    │   │   │   ├── StudentCheckDayController.cs  # Kiểm tra kết quả điểm danh, số ngày hợp lệ
+    │   │   │   ├── StudentListDayController.cs   # Danh sách và tiến độ các ngày lao động đã đăng ký
+    │   │   │   ├── StudentRegisterWordController.cs # Xem lịch đợt mở và thực hiện đăng ký tham gia
+    │   │   │   └── StudentTKController.cs        # Thống kê tổng hợp số ngày tích lũy của sinh viên
+    │   │   └── Views/                      # Giao diện Razor Views (.cshtml) của Sinh viên
+    │   │       ├── ChatBot/                # Giao diện hộp thoại Chatbot tương tác
+    │   │       ├── MainSinhVien/           # Trang cá nhân (Index.cshtml, Detail.cshtml)
+    │   │       ├── StudentCheckDay/        # Trang kiểm tra điểm danh (Index.cshtml)
+    │   │       ├── StudentListDay/         # Trang lịch sử đăng ký (Index.cshtml)
+    │   │       ├── StudentRegisterWord/    # Trang đăng ký đợt lao động (Index.cshtml)
+    │   │       ├── StudentTK/              # Trang thống kê cá nhân (Index.cshtml)
+    │   │       └── Shared/                 # Layouts và Partial Views dùng chung của Sinh viên
+    │   │           ├── Viewsiderbar.cshtml     # Sidebar điều hướng của sinh viên
+    │   │           └── ViewSinhvien.cshtml     # Layout Master chính của phân hệ Sinh viên
+    │   │
+    │   ├── Content/                        # Tài nguyên tĩnh tổng hợp dùng chung giữa các Area
+    │   │   ├── admin.css                   # Định kiểu tổng quan trang Admin
+    │   │   ├── adminpage.css               # Định kiểu bổ trợ trang quản trị
+    │   │   ├── css/                        # Stylesheets module
+    │   │   │   ├── AdminCount.css              # Style bộ đếm và chỉ số thống kê
+    │   │   │   ├── AdminStudentRegister.css    # Style bảng quản lý sinh viên đăng ký
+    │   │   │   └── admonWwordRegister.css      # Style giao diện tạo và quản lý đợt
+    │   │   ├── Js/                         # Scripts tiện ích hệ thống
+    │   │   │   ├── adminCommon.js              # Tiện ích chung cho Admin (thông báo, định dạng ngày)
+    │   │   │   ├── adminWordRegistor.js        # Script quản lý form tạo đợt lao động
+    │   │   │   └── CreateCode.js               # Tạo mã định danh tự động
+    │   │   ├── AdminStudentRegister/       # Scripts xử lý import/export và tương tác bảng sinh viên
+    │   │   │   ├── AdminExportStudent.js       # Xuất danh sách sinh viên ra Excel
+    │   │   │   ├── AdminImportStudent.js       # Import danh sách sinh viên từ file Excel
+    │   │   │   └── AdminStudentRegister.js     # Thao tác thêm/xóa/sửa sinh viên
+    │   │   └── jsAccount/                  # Scripts quản lý tài khoản người dùng
+    │   │       ├── Account.js                  # Khởi tạo và xử lý bảng tài khoản
+    │   │       ├── AdminPagesize.js            # Phân trang động danh sách
+    │   │       ├── DeleteAcount.js             # Xử lý xóa mềm / xóa cứng tài khoản kèm ghi log
+    │   │       ├── DetailAcount.js             # Xem modal chi tiết thông tin tài khoản
+    │   │       ├── EditAcount.js               # Cập nhật thông tin và quyền tài khoản
+    │   │       ├── ExportExcel.js              # Xuất danh sách tài khoản sang Excel
+    │   │       ├── FilterSearchAccounts.js     # Tìm kiếm, lọc theo vai trò và trạng thái
+    │   │       └── ResetpasswordAcount.js      # Reset mật khẩu tài khoản về mặc định
+    │   │
+    │   └── Models/                         # ViewModels dùng chung giữa các Areas
+    │       └── AdminThongKeViewModel.cs    # Model tổng hợp dữ liệu báo cáo thống kê
     │
-    ├── Controllers/                        # Controller dùng chung ngoài Area
-    │   ├── LoginController.cs              # Xử lý Đăng nhập / Đăng xuất hệ thống
-    │   ├── ForgotPasswordController.cs     # Quên mật khẩu, gửi mã OTP/link qua email
-    │   └── ResetPasswordController.cs      # Xác thực đặt lại mật khẩu mới
+    ├── Controllers/                        # Controllers xác thực dùng chung (ngoài Area)
+    │   ├── LoginController.cs              # Xử lý Đăng nhập / Đăng xuất, ghi log đăng nhập
+    │   ├── ForgotPasswordController.cs     # Xử lý Quên mật khẩu, gửi mã OTP xác nhận qua Email
+    │   └── ResetPasswordController.cs      # Xác thực mã OTP và cập nhật mật khẩu mới
     │
-    ├── AuditHelper/                        # Xử lý ghi nhận và tra cứu Audit Log
-    │   └── AuditLogHelper.cs               # Ghi nhật ký vào DB QuanLyAuditLog, phân trang & thống kê
+    ├── AuditHelper/                        # Xử lý ghi nhận và tra cứu Audit Log (Nhật ký thao tác)
+    │   └── AuditLogHelper.cs               # Ghi nhật ký vào DB QuanLyAuditLog (Delete/Update/Restore), phân trang & thống kê
     │
-    ├── DbContextFactory/                   # Pattern quản lý vòng đời kết nối CSDL
-    │   └── DbContextFactory.cs             # Khởi tạo đối tượng DBContext tập trung
+    ├── DbContextFactory/                   # Quản lý tập trung vòng đời kết nối CSDL (Factory Pattern)
+    │   └── DbContextFactory.cs             # Khởi tạo và giải phóng DB_QLNLD4ROLEEntities1 an toàn
     │
-    ├── EmailHelper/                        # Xử lý gửi thư tự động
-    │   ├── EmailHelper.cs                  # Gửi email thông báo, OTP xác nhận
-    │   └── EmailHelperCompletion.cs        # Gửi email chứng nhận hoàn thành
+    ├── EmailHelper/                        # Xử lý gửi thư tự động qua giao thức SMTP (System.Net.Mail)
+    │   ├── EmailHelper.cs                  # Gửi email thông báo, OTP xác nhận quên mật khẩu, phản hồi đăng ký
+    │   └── EmailHelperCompletion.cs        # Gửi email chứng nhận hoàn thành đợt lao động kèm file/thông tin
     │
-    ├── PasswordHelper/                     # Xử lý mật khẩu
-    │   └── PasswordHelper.cs               # Mã hóa Hash và Kiểm tra Verify bằng BCrypt
+    ├── Logs/                               # Module ghi nhật ký vận hành và lưu trữ log file
+    │   ├── LoginLogger.cs                  # Service ghi lại lịch sử đăng nhập (IP, thời gian, tài khoản, trạng thái)
+    │   ├── LichSuDangNhap.txt              # File lưu vết lịch sử các phiên đăng nhập vào hệ thống
+    │   └── ErrorLog.txt                    # File lưu vết các ngoại lệ/lỗi runtime
     │
-    ├── Models/                             # Mô hình dữ liệu Entity Framework (.edmx)
-    │   ├── QuanLyDangKyLaoDong.edmx        # Sơ đồ quan hệ thực thể (ERD)
-    │   ├── QuanLyDangKyLaoDong.Context.cs  # DBContext (DB_QLNLD4ROLEEntities1)
-    │   ├── TaiKhoan.cs                     # Thực thể Tài khoản
-    │   ├── VaiTro.cs                       # Thực thể Vai trò (Admin, Quản lý, Sinh viên)
-    │   ├── SinhVien.cs                     # Thực thể Sinh viên
-    │   ├── QuanLy.cs                       # Thực thể Cán bộ quản lý
-    │   ├── Khoa.cs                         # Thực thể Khoa / Ngành
-    │   ├── Lop.cs                          # Thực thể Lớp học
-    │   ├── TaoDotNgayLaoDong.cs            # Thực thể Đợt lao động
-    │   ├── PhieuDangKy.cs                  # Thực thể Phiếu đăng ký của sinh viên
-    │   ├── PhieuDuyet.cs                   # Thực thể Phiếu duyệt tham gia
-    │   ├── DanhSachDiemDanh.cs             # Thực thể Điểm danh ngày lao động
-    │   ├── SoNgayLaoDong.cs                # Thực thể Tổng kết số ngày tích lũy
-    │   ├── PhieuXacNhanHoanThanh.cs        # Thực thể Chứng nhận hoàn thành
-    │   └── Anh.cs                          # Thực thể Lưu trữ hình ảnh/minh chứng
+    ├── PasswordHelper/                     # Xử lý bảo mật mật khẩu
+    │   └── PasswordHelper.cs               # Mã hóa Hash (BCrypt.HashPassword) và Kiểm tra Verify (BCrypt.Verify)
     │
-    ├── Uploads/                            # Thư mục lưu trữ tệp tin upload (ảnh thẻ, tài liệu)
-    ├── Views/                              # Giao diện chung (Shared Layout, Login...)
-    ├── Global.asax / Global.asax.cs        # Vòng đời ứng dụng (Application Lifecycle)
-    ├── packages.config                     # Danh mục thư viện quản lý qua NuGet
-    └── Web.config                          # File cấu hình trung tâm của toàn bộ Web App
+    ├── Models/                             # Mô hình dữ liệu Entity Framework 6 (Database First)
+    │   ├── QuanLyDangKyLaoDong.edmx        # Sơ đồ quan hệ thực thể ánh xạ CSDL (EDMX Model)
+    │   ├── QuanLyDangKyLaoDong.edmx.diagram# Sơ đồ trực quan quan hệ giữa các bảng
+    │   ├── QuanLyDangKyLaoDong.Context.cs  # DbContext quản lý kết nối CSDL (DB_QLNLD4ROLEEntities1)
+    │   ├── TaiKhoan.cs                     # Thực thể Tài khoản (Tên đăng nhập, Mật khẩu đã hash, Vai trò)
+    │   ├── VaiTro.cs                       # Thực thể Vai trò phân quyền (Admin, Quản lý, Sinh viên)
+    │   ├── SinhVien.cs                     # Thực thể Sinh viên (MSSV, Họ tên, Lớp, Khoa, Email, SĐT, Ảnh đại diện)
+    │   ├── QuanLy.cs                       # Thực thể Cán bộ quản lý / Giảng viên phụ trách
+    │   ├── Khoa.cs                         # Thực thể Khoa / Đơn vị đào tạo
+    │   ├── Lop.cs                          # Thực thể Lớp học sinh viên
+    │   ├── TaoDotNgayLaoDong.cs            # Thực thể Đợt lao động (Tên đợt, Ngày bắt đầu, Ngày kết thúc, Địa điểm, Số lượng tối đa)
+    │   ├── PhieuDangKy.cs                  # Thực thể Phiếu đăng ký ngày lao động của sinh viên
+    │   ├── PhieuDuyet.cs                   # Thực thể Phiếu duyệt tham gia từ phía Quản lý/Admin
+    │   ├── DanhSachDiemDanh.cs             # Thực thể Điểm danh ngày lao động (Trạng thái có mặt, Đánh giá)
+    │   ├── SoNgayLaoDong.cs                # Thực thể Tổng kết số ngày lao động tích lũy của sinh viên
+    │   ├── PhieuXacNhanHoanThanh.cs        # Thực thể Giấy chứng nhận hoàn thành nghĩa vụ lao động
+    │   └── Anh.cs                          # Thực thể Lưu trữ đường dẫn hình ảnh / minh chứng
+    │
+    ├── Uploads/                            # Thư mục lưu trữ tệp tin upload từ người dùng
+    │   └── Avatars/                        # Lưu trữ ảnh đại diện (avatar) của sinh viên và cán bộ
+    │
+    ├── Views/                              # Giao diện xác thực chung (ngoài Area)
+    │   ├── Login/                          # Giao diện trang Đăng nhập hệ thống (Login.cshtml)
+    │   ├── ForgotPassword/                 # Giao diện Yêu cầu gửi OTP quên mật khẩu (ForgotPassword.cshtml)
+    │   ├── ResetPassword/                  # Giao diện Nhập OTP & Đổi mật khẩu mới (ResetPassword.cshtml)
+    │   └── web.config                      # Cấu hình Razor View Engine cho thư mục Views gốc
+    │
+    ├── Global.asax / Global.asax.cs        # Xử lý vòng đời ứng dụng (Application_Start, Session_Start...)
+    ├── packages.config                     # Danh mục các thư viện quản lý qua NuGet Packages
+    ├── QuanLyDangKyNgayLD.csproj           # File cấu hình Project C# của Visual Studio
+    └── Web.config                          # File cấu hình trung tâm (ConnectionStrings, AppSettings, Auth, System.web)
 ```
 
 ---
