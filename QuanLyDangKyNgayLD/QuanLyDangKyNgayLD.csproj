@@ -155,6 +155,8 @@
     <Content Include="Areas\Content\jsAccount\FilterSearchAccounts.js" />
     <Content Include="Areas\Content\jsAccount\ResetpasswordAcount.js" />
     <Content Include="Areas\Content\Js\adminCommon.js" />
+    <Content Include="Areas\Content\Js\instantNav.js" />
+    <Content Include="Areas\Content\css\instantNav.css" />
     <Content Include="Areas\Content\Js\adminWordRegistor.js" />
     <Content Include="Areas\Content\AdminStudentRegister\AdminStudentRegister.js" />
     <Content Include="Areas\Content\Js\CreateCode.js" />
@@ -316,6 +318,8 @@
     <Content Include="Views\Login\Login.cshtml" />
     <Content Include="Views\ForgotPassword\ForgotPassword.cshtml" />
     <Content Include="Views\ResetPassword\ResetPassword.cshtml" />
+    <Content Include="Content\images\logo_dhdthap.png" />
+    <Content Include="Content\images\logo_wiki.png" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

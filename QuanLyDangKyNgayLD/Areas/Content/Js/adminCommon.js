@@ -346,3 +346,95 @@ window.renderCatalogSkeleton = function (target, cardCount = 6) {
     container.innerHTML = html;
 };
 
+// ================== 5. Fast Navigation Indicator & Link Prefetch ==================
+(function () {
+    let progressBar = null;
+    let progressTimer = null;
+
+    function getOrCreateProgressBar() {
+        if (!progressBar) {
+            progressBar = document.createElement('div');
+            progressBar.id = 'topPageProgressBar';
+            progressBar.style.cssText = 'position:fixed;top:0;left:0;width:0%;height:3px;background:linear-gradient(90deg,#2563eb,#38bdf8);z-index:999999;transition:width 0.2s ease, opacity 0.3s ease;pointer-events:none;box-shadow:0 0 10px rgba(37,99,235,0.7);';
+            document.body.appendChild(progressBar);
+        }
+        return progressBar;
+    }
+
+    function startTopProgress() {
+        const bar = getOrCreateProgressBar();
+        bar.style.opacity = '1';
+        bar.style.width = '30%';
+        clearInterval(progressTimer);
+        let current = 30;
+        progressTimer = setInterval(() => {
+            if (current < 85) {
+                current += Math.random() * 15;
+                bar.style.width = current + '%';
+            }
+        }, 150);
+    }
+
+    function finishTopProgress() {
+        if (progressBar) {
+            clearInterval(progressTimer);
+            progressBar.style.width = '100%';
+            setTimeout(() => {
+                progressBar.style.opacity = '0';
+                setTimeout(() => {
+                    progressBar.style.width = '0%';
+                }, 300);
+            }, 100);
+        }
+    }
+
+    // Khi người dùng click link chuyển trang: hiện ngay thanh tiến trình mà KHÔNG can thiệp preventDefault
+    document.addEventListener('click', function (e) {
+        const link = e.target.closest('a');
+        if (!link) return;
+        const href = link.getAttribute('href');
+        if (!href || href === '#' || href.startsWith('javascript:') || href.startsWith('mailto:') || href.startsWith('tel:') || link.target === '_blank' || link.hasAttribute('download')) {
+            return;
+        }
+
+        if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+        if (link.origin && link.origin !== window.location.origin) return;
+
+        // Trình duyệt chuyển trang tự nhiên theo chuẩn MVC, hiển thị thanh tiến trình tức thì
+        startTopProgress();
+
+        if (link.closest('#adminSidebar, .sidebar-nav')) {
+            document.querySelectorAll('#adminSidebar .nav-link.active, .sidebar-nav .nav-link.active').forEach(el => el.classList.remove('active'));
+            link.classList.add('active');
+        }
+    });
+
+    // Prefetch link trước khi click khi hover chuột (tiết kiệm 200-300ms thời gian chờ mạng)
+    const prefetchedUrls = new Set();
+    document.addEventListener('mouseover', function (e) {
+        const link = e.target.closest('a');
+        if (!link) return;
+        const href = link.getAttribute('href');
+        if (!href || href === '#' || href.startsWith('javascript:') || link.target === '_blank') return;
+        if (link.origin && link.origin !== window.location.origin) return;
+
+        const fullUrl = link.href;
+        if (prefetchedUrls.has(fullUrl)) return;
+        prefetchedUrls.add(fullUrl);
+
+        try {
+            const prefetchLink = document.createElement('link');
+            prefetchLink.rel = 'prefetch';
+            prefetchLink.href = fullUrl;
+            document.head.appendChild(prefetchLink);
+        } catch (err) { }
+    });
+
+    if (document.readyState === 'complete') {
+        finishTopProgress();
+    } else {
+        window.addEventListener('load', finishTopProgress);
+    }
+})();
+
+

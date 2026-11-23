@@ -169,24 +169,12 @@
             }
             else
             {
-                for (int s = 0; s < 6; s++)
-                {
-                    <tr class="skeleton-table-row">
-                        <td class="text-center align-middle py-3"><span class="skeleton-box skeleton-checkbox"></span></td>
-                        <td class="text-center align-middle py-3"><span class="skeleton-box skeleton-text" style="width: 20px;"></span></td>
-                        <td class="align-middle py-3"><span class="skeleton-box skeleton-text" style="width: 65%;"></span></td>
-                        <td class="align-middle py-3"><span class="skeleton-box skeleton-text" style="width: 80%;"></span></td>
-                        <td class="text-center align-middle py-3"><span class="skeleton-box skeleton-pill" style="width: 75px; height: 22px;"></span></td>
-                        <td class="text-center align-middle py-3">
-                            <div class="d-flex justify-content-center gap-1">
-                                <span class="skeleton-box skeleton-btn" style="width: 28px; height: 28px;"></span>
-                                <span class="skeleton-box skeleton-btn" style="width: 28px; height: 28px;"></span>
-                                <span class="skeleton-box skeleton-btn" style="width: 28px; height: 28px;"></span>
-                                <span class="skeleton-box skeleton-btn" style="width: 28px; height: 28px;"></span>
-                            </div>
-                        </td>
-                    </tr>
-                }
+                <tr class="no-data-row">
+                    <td colspan="6" class="text-center text-muted py-5">
+                        <i class="fas fa-user-slash fa-2x mb-2 text-secondary d-block"></i>
+                        <span class="fw-semibold">Không tìm thấy tài khoản nào</span>
+                    </td>
+                </tr>
             }
         </tbody>
     </table>
@@ -625,14 +613,14 @@
         restoreAccount: '@Url.Action("RestoreAccount", "Account", new { area = "Admin" })'
     };
 </script>
-<script src="~/Areas/Content/jsAccount/FilterSearchAccounts.js?v=@DateTime.Now.Ticks"></script>
-<script src="~/Areas/Content/jsAccount/ResetpasswordAcount.js?v=@DateTime.Now.Ticks"></script>
-<script src="~/Areas/Content/jsAccount/DetailAcount.js?v=@DateTime.Now.Ticks"></script>
-<script src="~/Areas/Content/jsAccount/DeleteAcount.js?v=@DateTime.Now.Ticks"></script>
-<script src="~/Areas/Content/jsAccount/EditAcount.js?v=@DateTime.Now.Ticks"></script>
-<script src="~/Areas/Content/jsAccount/Account.js?v=@DateTime.Now.Ticks"></script>
-<script src="~/Areas/Content/jsAccount/ExportExcel.js?v=@DateTime.Now.Ticks"></script>
-<script src="~/Areas/Content/jsAccount/AdminPagesize.js?v=@DateTime.Now.Ticks"></script>
+<script src="~/Areas/Content/jsAccount/FilterSearchAccounts.js?v=20261124_1"></script>
+<script src="~/Areas/Content/jsAccount/ResetpasswordAcount.js?v=20261124_1"></script>
+<script src="~/Areas/Content/jsAccount/DetailAcount.js?v=20261124_1"></script>
+<script src="~/Areas/Content/jsAccount/DeleteAcount.js?v=20261124_1"></script>
+<script src="~/Areas/Content/jsAccount/EditAcount.js?v=20261124_1"></script>
+<script src="~/Areas/Content/jsAccount/Account.js?v=20261124_1"></script>
+<script src="~/Areas/Content/jsAccount/ExportExcel.js?v=20261124_1"></script>
+<script src="~/Areas/Content/jsAccount/AdminPagesize.js?v=20261124_1"></script>
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {

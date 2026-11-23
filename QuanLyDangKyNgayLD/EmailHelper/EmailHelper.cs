@@ -35,8 +35,21 @@ public static class EmailHelper
                 Credentials = new NetworkCredential(fromEmail, fromPassword)
             };
 
-            // Đường dẫn hình ảnh trực tiếp lưu trữ trên CDN ổn định cao, tương thích 100% với Google Image Proxy
-            string logoSrc = "https://iili.io/oKYfs3X.png";
+            string logoPath = GetLogoPath();
+            bool hasLogo = !string.IsNullOrEmpty(logoPath) && File.Exists(logoPath);
+
+            string logoHtml = hasLogo
+                ? @"<table role='presentation' cellspacing='0' cellpadding='0' border='0' align='center' style='margin: 0 auto 14px auto;'>
+                        <tr>
+                            <td align='center' valign='middle' style='background-color: #ffffff; width: 80px; height: 80px; border-radius: 50%; padding: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.15);'>
+                                <img src=""cid:logo_dhdthap"" 
+                                     alt=""Logo Đại học Đồng Tháp"" 
+                                     width=""64"" 
+                                     style=""display: block; width: 64px; height: auto; border: 0; outline: none; margin: 0 auto;"">
+                            </td>
+                        </tr>
+                    </table>"
+                : "";
 
             string body = $@"
 <!DOCTYPE html>
@@ -54,7 +67,7 @@ public static class EmailHelper
                     <!-- Header Banner -->
                     <tr>
                         <td align='center' style='padding: 32px 30px 24px 30px; background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); text-align: center;'>
-                           
+                            {logoHtml}
                             <h2 style='margin: 0; color: #ffffff; font-size: 18px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase;'>
                                 TRƯỜNG ĐẠI HỌC ĐỒNG THÁP
                             </h2>
@@ -139,12 +152,27 @@ public static class EmailHelper
             {
                 From = new MailAddress(fromEmail, "Đại học Đồng Tháp - Quản Lý Lao Động", System.Text.Encoding.UTF8),
                 Subject = "🔐 [ĐH Đồng Tháp] Yêu cầu đặt lại mật khẩu tài khoản",
-                Body = body,
-                IsBodyHtml = true,
-                BodyEncoding = System.Text.Encoding.UTF8
+                SubjectEncoding = System.Text.Encoding.UTF8
             })
             {
                 message.To.Add(toEmail);
+
+                var avHtml = AlternateView.CreateAlternateViewFromString(body, System.Text.Encoding.UTF8, System.Net.Mime.MediaTypeNames.Text.Html);
+
+                if (hasLogo)
+                {
+                    var logoResource = new LinkedResource(logoPath, "image/png")
+                    {
+                        ContentId = "logo_dhdthap",
+                        TransferEncoding = System.Net.Mime.TransferEncoding.Base64
+                    };
+                    logoResource.ContentType.Name = Path.GetFileName(logoPath);
+                    avHtml.LinkedResources.Add(logoResource);
+                }
+
+                message.AlternateViews.Add(avHtml);
+                message.IsBodyHtml = true;
+
                 smtp.Send(message);
             }
 
@@ -174,7 +202,33 @@ public static class EmailHelper
             Console.WriteLine("Lỗi gửi mail: " + ex.ToString());
             return false;
         }
+    }
 
+    private static string GetLogoPath()
+    {
+        string[] candidateNames = { "logo_dhdthap.png", "logo_wiki.png" };
+        foreach (var name in candidateNames)
+        {
+            try
+            {
+                if (System.Web.Hosting.HostingEnvironment.IsHosted)
+                {
+                    string mapped = System.Web.Hosting.HostingEnvironment.MapPath("~/Content/images/" + name);
+                    if (!string.IsNullOrEmpty(mapped) && File.Exists(mapped))
+                        return mapped;
+                }
+            }
+            catch { }
 
+            string baseDir = AppDomain.CurrentDomain.BaseDirectory;
+            string path = Path.Combine(baseDir, "Content", "images", name);
+            if (File.Exists(path))
+                return path;
+
+            string parentPath = Path.Combine(baseDir, "..", "Content", "images", name);
+            if (File.Exists(parentPath))
+                return Path.GetFullPath(parentPath);
+        }
+        return null;
     }
 }

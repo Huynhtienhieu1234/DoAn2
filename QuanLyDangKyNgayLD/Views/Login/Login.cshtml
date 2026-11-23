@@ -10,120 +10,194 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>@ViewBag.Title - Quản lý lao động sinh viên</title>
+    <title>@ViewBag.Title - Cổng Thông Tin Lao Động Sinh Viên - Đại học Đồng Tháp</title>
     <link rel="icon" type="image/png" href="@Url.Content("~/favicon.png?v=3")" />
     <link rel="shortcut icon" type="image/x-icon" href="@Url.Content("~/favicon.ico?v=3")" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
     <link rel="stylesheet" href="@Url.Content("~/Areas/Content/css/Login.css?v=" + DateTime.Now.Ticks)" />
+    <style>
+        body, button, input, optgroup, select, textarea {
+            font-family: 'Be Vietnam Pro', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+        }
+        :root {
+            --bs-body-font-family: 'Be Vietnam Pro', system-ui, -apple-system, BlinkMacSystemFont, Roboto, sans-serif !important;
+            --bs-font-sans-serif: 'Be Vietnam Pro', system-ui, -apple-system, BlinkMacSystemFont, Roboto, sans-serif !important;
+        }
+        .fa, .fas, .far, .fal, .fab, .fad, .fak, [class*="fa-"], [class^="fa-"] {
+            font-family: "Font Awesome 6 Free" !important;
+        }
+        .fab, .fa-brands {
+            font-family: "Font Awesome 6 Brands" !important;
+        }
+    </style>
 </head>
 
 <body>
-    <div class="login-page">
-        <aside class="login-brand">
-            <div class="login-brand-inner">
-                <img src="https://cdn.jsdelivr.net/gh/Huynhtienhieu1234/UploadAnh/LogoDHDT.png"
-                     alt="Logo Trường Đại học Đồng Tháp"
-                     class="login-brand-logo" />
-
-                <h1>Quản lý ngày lao động sinh viên</h1>
-                <p class="login-brand-desc">
-                    Nền tảng hỗ trợ sinh viên đăng ký, theo dõi lịch và điểm danh
-                    các đợt lao động của Trường Đại học Đồng Tháp.
-                </p>
-
-                <ul class="login-brand-list">
-                    <li>
-                        <i class="fas fa-calendar-check"></i>
-                        <span>Đăng ký đợt lao động phù hợp</span>
-                    </li>
-                    <li>
-                        <i class="fas fa-list-check"></i>
-                        <span>Theo dõi lịch và điểm danh</span>
-                    </li>
-                    <li>
-                        <i class="fas fa-chart-simple"></i>
-                        <span>Thống kê ngày công minh bạch</span>
-                    </li>
-                </ul>
-            </div>
-
-            <div class="login-brand-footer">
-                &copy; @DateTime.Now.Year Trường Đại học Đồng Tháp
-            </div>
-        </aside>
-
-        <main class="login-main">
-            <div class="login-card">
-                <div class="login-mobile-brand">
+    <div class="portal-wrapper">
+        <!-- 1. THANH TIÊU ĐỀ TRƯỜNG (TOPBAR CHÍNH THỐNG) -->
+        <header class="portal-topbar">
+            <div class="portal-topbar-inner">
+                <div class="portal-brand">
                     <img src="https://cdn.jsdelivr.net/gh/Huynhtienhieu1234/UploadAnh/LogoDHDT.png"
-                         alt="Logo Trường Đại học Đồng Tháp" />
+                         alt="Logo Trường Đại học Đồng Tháp"
+                         class="portal-logo" />
+                    <div class="portal-title-group">
+                        <span class="portal-subtext">BỘ GIÁO DỤC VÀ ĐÀO TẠO</span>
+                        <span class="portal-main-name">TRƯỜNG ĐẠI HỌC ĐỒNG THÁP</span>
+                        <span class="portal-system-name">CỔNG THÔNG TIN QUẢN LÝ LAO ĐỘNG SINH VIÊN</span>
+                    </div>
+                </div>
+
+                <div class="portal-topbar-links">
+                    <a href="https://dthu.edu.vn" target="_blank" rel="noopener noreferrer">
+                        <i class="fas fa-globe me-1"></i> Trang chủ Nhà trường
+                    </a>
+                    <span class="hotline-badge">
+                        <i class="fas fa-phone-volume"></i> Hotline: (0277) 3881 518
+                    </span>
+                </div>
+            </div>
+        </header>
+
+        <!-- 2. KHU VỰC NỘI DUNG CHÍNH (PORTAL BOX) -->
+        <main class="portal-content">
+            <div class="portal-box">
+                <!-- CỘT TRÁI: THÔNG BÁO VÀ QUY ĐỊNH NGHĨA VỤ LAO ĐỘNG -->
+                <aside class="portal-info-pane">
                     <div>
-                        <strong>Quản lý lao động sinh viên</strong>
-                        <span>Trường Đại học Đồng Tháp</span>
-                    </div>
-                </div>
-
-                <span class="login-eyebrow">Chào mừng trở lại</span>
-                <h2>Đăng nhập</h2>
-                <p class="login-card-subtitle">
-                    Sử dụng tài khoản sinh viên để tiếp tục sử dụng hệ thống.
-                </p>
-
-                @using (Html.BeginForm("Login", "Login", FormMethod.Post))
-                {
-                    @Html.AntiForgeryToken()
-                    @Html.ValidationSummary(true, "", new { @class = "validation-summary-errors" })
-
-                    <div class="login-field">
-                        @Html.LabelFor(m => m.Username, "Tài khoản")
-                        <div class="login-input-wrap">
-                            <i class="fas fa-user login-input-icon"></i>
-                            @Html.TextBoxFor(m => m.Username, new
-                            {
-                                @class = "form-control login-input",
-                                placeholder = "Nhập tài khoản",
-                                autocomplete = "username"
-                            })
+                        <div class="portal-info-header">
+                            <h2 class="portal-info-title">
+                                <i class="fas fa-bullhorn"></i> Quy Định & Hướng Dẫn
+                            </h2>
+                            <p class="portal-info-desc">
+                                Thông tin quản lý và theo dõi công tác lao động công ích của sinh viên Trường Đại học Đồng Tháp.
+                            </p>
                         </div>
-                        @Html.ValidationMessageFor(m => m.Username, "", new { @class = "text-danger d-block mt-1" })
+
+                        <ul class="portal-notice-list">
+                            <li class="portal-notice-item">
+                                <i class="fas fa-check-circle"></i>
+                                <div class="portal-notice-text">
+                                    <strong>Chỉ tiêu hoàn thành:</strong> Sinh viên chính quy cần hoàn thành đủ <strong>18 ngày lao động</strong> trong toàn khóa học để đủ điều kiện xét tốt nghiệp.
+                                </div>
+                            </li>
+                            <li class="portal-notice-item">
+                                <i class="fas fa-calendar-alt"></i>
+                                <div class="portal-notice-text">
+                                    <strong>Đăng ký lịch lao động:</strong> Sinh viên chủ động lựa chọn các ca lao động (vệ sinh khuôn viên, thư viện, hỗ trợ sự kiện) phù hợp với lịch học.
+                                </div>
+                            </li>
+                            <li class="portal-notice-item">
+                                <i class="fas fa-qrcode"></i>
+                                <div class="portal-notice-text">
+                                    <strong>Điểm danh & Giám sát:</strong> Việc điểm danh được thực hiện trực tiếp tại buổi lao động theo hướng dẫn của Cán bộ / Trưởng nhóm quản lý.
+                                </div>
+                            </li>
+                        </ul>
                     </div>
 
-                    <div class="login-field">
-                        @Html.LabelFor(m => m.Password, "Mật khẩu")
-                        <div class="login-input-wrap">
-                            <i class="fas fa-lock login-input-icon"></i>
-                            @Html.PasswordFor(m => m.Password, new
-                            {
-                                @class = "form-control login-input has-toggle",
-                                placeholder = "Nhập mật khẩu",
-                                id = "password",
-                                autocomplete = "current-password"
-                            })
-                            <button type="button" class="login-toggle-eye" onclick="togglePassword()" aria-label="Hiện hoặc ẩn mật khẩu">
-                                <i id="eyeIcon" class="fa fa-eye"></i>
-                            </button>
+                    <div class="portal-support-box">
+                        <div class="portal-support-title">
+                            <i class="fas fa-headset"></i> Bộ phận hỗ trợ sinh viên:
                         </div>
-                        @Html.ValidationMessageFor(m => m.Password, "", new { @class = "text-danger d-block mt-1" })
+                        <p class="portal-support-info">
+                            <strong>Phòng Công tác Sinh viên</strong> (Tòa nhà A1 - Bàn tiếp sinh viên)<br />
+                            Email: <strong>ctsv@dthu.edu.vn</strong> | Điện thoại: <strong>(0277) 3881 518</strong>
+                        </p>
+                    </div>
+                </aside>
+
+                <!-- CỘT PHẢI: FORM ĐĂNG NHẬP -->
+                <section class="portal-login-pane">
+                    <div class="portal-login-header">
+                        <div class="portal-login-badge">
+                            <i class="fas fa-user-shield"></i>
+                        </div>
+                        <h1 class="portal-login-title">Đăng nhập hệ thống</h1>
+                        <p class="portal-login-subtitle">
+                            Dành cho Sinh viên, Cán bộ quản lý và Phụ trách lao động
+                        </p>
                     </div>
 
-                    <button type="submit" class="login-submit">
-                        Đăng nhập
-                    </button>
+                    @using (Html.BeginForm("Login", "Login", FormMethod.Post, new { @class = "portal-form" }))
+                    {
+                        @Html.AntiForgeryToken()
 
-                    <p class="login-forgot">
-                        <a href="@Url.Action("ForgotPassword", "ForgotPassword")">Quên mật khẩu?</a>
-                    </p>
-                }
+                        if (!ViewData.ModelState.IsValid)
+                        {
+                            <div class="portal-error-box">
+                                @Html.ValidationSummary(true, "")
+                            </div>
+                        }
 
-                <div class="login-support">
-                    Nếu gặp sự cố đăng nhập, vui lòng liên hệ phòng Công tác Sinh viên.
-                </div>
+                        <div class="portal-form-group">
+                            <label for="Username" class="portal-form-label">
+                                Tên đăng nhập / Mã số sinh viên (MSSV)
+                            </label>
+                            <div class="portal-input-container">
+                                <i class="fas fa-id-card portal-input-icon"></i>
+                                @Html.TextBoxFor(m => m.Username, new
+                                {
+                                    @class = "portal-input",
+                                    placeholder = "Nhập MSSV hoặc tên đăng nhập",
+                                    id = "Username",
+                                    autocomplete = "username",
+                                    required = "required"
+                                })
+                            </div>
+                            @Html.ValidationMessageFor(m => m.Username, "", new { @class = "portal-field-error" })
+                        </div>
+
+                        <div class="portal-form-group">
+                            <label for="password" class="portal-form-label">
+                                Mật khẩu
+                            </label>
+                            <div class="portal-input-container">
+                                <i class="fas fa-key portal-input-icon"></i>
+                                @Html.PasswordFor(m => m.Password, new
+                                {
+                                    @class = "portal-input has-toggle",
+                                    placeholder = "Nhập mật khẩu",
+                                    id = "password",
+                                    autocomplete = "current-password",
+                                    required = "required"
+                                })
+                                <button type="button" class="portal-toggle-pwd" onclick="togglePassword()" aria-label="Hiện hoặc ẩn mật khẩu" title="Hiện / Ẩn mật khẩu">
+                                    <i id="eyeIcon" class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            @Html.ValidationMessageFor(m => m.Password, "", new { @class = "portal-field-error" })
+                        </div>
+
+                        <button type="submit" class="portal-btn-submit">
+                            <i class="fas fa-sign-in-alt me-1"></i> Đăng nhập
+                        </button>
+
+                        <div class="portal-extra-links">
+                            <a href="@Url.Action("ForgotPassword", "ForgotPassword")">
+                                <i class="fas fa-unlock-alt me-1"></i> Quên mật khẩu?
+                            </a>
+                        </div>
+                    }
+                </section>
             </div>
         </main>
+
+        <!-- 3. CHÂN TRANG (FOOTER NHÀ TRƯỜNG) -->
+        <footer class="portal-footer">
+            <div>
+                <strong>TRƯỜNG ĐẠI HỌC ĐỒNG THÁP - DONG THAP UNIVERSITY</strong>
+            </div>
+            <div>
+                Địa chỉ: Số 783, Phạm Hữu Lầu, Phường 6, Thành phố Cao Lãnh, Tỉnh Đồng Tháp
+            </div>
+            <div>
+                &copy; @DateTime.Now.Year Hệ Thống Quản Lý Lao Động Sinh Viên. Bản quyền thuộc về Trường Đại học Đồng Tháp.
+            </div>
+        </footer>
     </div>
 
     <script>

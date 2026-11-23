@@ -1,6 +1,17 @@
+@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
 /* =========================================
    🎨 GIAO DIỆN QUẢN TRỊ - STYLE DÙNG CHUNG
    ========================================= */
+
+body, button, input, optgroup, select, textarea {
+    font-family: 'Be Vietnam Pro', system-ui, -apple-system, BlinkMacSystemFont, Roboto, sans-serif !important;
+}
+
+:root {
+    --bs-body-font-family: 'Be Vietnam Pro', system-ui, -apple-system, BlinkMacSystemFont, Roboto, sans-serif !important;
+    --bs-font-sans-serif: 'Be Vietnam Pro', system-ui, -apple-system, BlinkMacSystemFont, Roboto, sans-serif !important;
+}
 
 /* -------- RESET CƠ BẢN -------- */
 * {
@@ -12,7 +23,7 @@
 body {
     background: #f8fafc;
     min-height: 100vh;
-    font-family: "Open Sans", sans-serif !important;
+    font-family: 'Be Vietnam Pro', system-ui, -apple-system, sans-serif !important;
     color: #2c3e50;
     overflow-x: hidden;
 }

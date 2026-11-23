@@ -1,396 +1,518 @@
+@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
 /* =========================================================
-   LOGIN PAGE - GIAO DIỆN PHẲNG DÙNG CHUNG
+   CỔNG THÔNG TIN QUẢN LÝ LAO ĐỘNG - ĐẠI HỌC ĐỒNG THÁP
+   GIAO DIỆN CHUẨN CỔNG ĐÀO TẠO ĐẠI HỌC (PORTAL STYLE)
    ========================================================= */
+
+html, body, button, input, optgroup, select, textarea {
+    font-family: 'Be Vietnam Pro', system-ui, -apple-system, BlinkMacSystemFont, Roboto, sans-serif !important;
+}
+
+:root {
+    --bs-body-font-family: 'Be Vietnam Pro', system-ui, -apple-system, BlinkMacSystemFont, Roboto, sans-serif !important;
+    --bs-font-sans-serif: 'Be Vietnam Pro', system-ui, -apple-system, BlinkMacSystemFont, Roboto, sans-serif !important;
+}
 
 * {
     box-sizing: border-box;
 }
 
-html,
-body {
-    height: 100%;
-}
-
-body {
-    margin: 0;
-    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
-    background: #f4f7fb;
-    color: #0f172a;
-}
-
-.login-page {
-    display: grid;
-    grid-template-columns: 1.05fr 0.95fr;
-    min-height: 100vh;
-}
-
-/* ===== Cột thương hiệu ===== */
-.login-brand {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    overflow: hidden;
-    padding: 56px 64px;
-    background: #1d4ed8;
-    color: #ffffff;
-}
-
-.login-brand::before,
-.login-brand::after {
-    content: '';
-    position: absolute;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.07);
-    pointer-events: none;
-}
-
-.login-brand::before {
-    width: 420px;
-    height: 420px;
-    top: -160px;
-    right: -140px;
-}
-
-.login-brand::after {
-    width: 300px;
-    height: 300px;
-    bottom: -120px;
-    left: -100px;
-}
-
-.login-brand-inner,
-.login-brand-footer {
-    position: relative;
-    z-index: 1;
-}
-
-.login-brand-logo {
-    width: 76px;
-    height: 76px;
-    padding: 9px;
-    object-fit: contain;
-    background: #ffffff;
-    border-radius: 20px;
-    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.18);
-}
-
-.login-brand h1 {
-    max-width: 480px;
-    margin: 34px 0 14px;
-    font-size: 2rem;
-    font-weight: 800;
-    line-height: 1.25;
-    letter-spacing: -0.02em;
-}
-
-.login-brand-desc {
-    max-width: 440px;
-    margin: 0 0 32px;
-    color: rgba(255, 255, 255, 0.82);
-    font-size: 0.95rem;
-    line-height: 1.65;
-}
-
-.login-brand-list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
+html, body {
     margin: 0;
     padding: 0;
-    list-style: none;
+    height: 100%;
+    color: #1e293b;
+    background-color: #f1f5f9;
 }
 
-.login-brand-list li {
+.portal-wrapper {
     display: flex;
-    align-items: center;
-    gap: 13px;
-    padding: 13px 16px;
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    border-radius: 14px;
-    background: rgba(255, 255, 255, 0.08);
-    font-size: 0.9rem;
-    font-weight: 600;
+    flex-direction: column;
+    min-height: 100vh;
+    background: linear-gradient(rgba(15, 34, 64, 0.78), rgba(15, 34, 64, 0.82)),
+                url('https://cdn.jsdelivr.net/gh/Huynhtienhieu1234/UploadAnh/Nen.png') no-repeat center center fixed;
+    background-size: cover;
 }
 
-.login-brand-list i {
-    width: 34px;
-    height: 34px;
-    flex: 0 0 34px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 10px;
-    background: rgba(255, 255, 255, 0.16);
-    font-size: 0.92rem;
-}
-
-.login-brand-footer {
-    margin-top: 40px;
-    color: rgba(255, 255, 255, 0.68);
-    font-size: 0.78rem;
-}
-
-/* ===== Cột form ===== */
-.login-main {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 40px 32px;
-}
-
-.login-card {
-    width: 100%;
-    max-width: 430px;
-    padding: 40px 36px;
+/* =========================================================
+   1. THANH TIÊU ĐỀ TRƯỜNG (TOP HEADER BAR)
+   ========================================================= */
+.portal-topbar {
     background: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 24px;
-    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.08);
+    border-bottom: 3px solid #005baa;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    position: relative;
+    z-index: 10;
 }
 
-.login-mobile-brand {
-    display: none;
+.portal-topbar-inner {
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 10px 24px;
+    display: flex;
     align-items: center;
-    gap: 12px;
-    margin-bottom: 24px;
-    padding-bottom: 20px;
-    border-bottom: 1px solid #eef2f7;
+    justify-content: space-between;
 }
 
-.login-mobile-brand img {
-    width: 46px;
-    height: 46px;
+.portal-brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    text-decoration: none;
+    color: inherit;
+}
+
+.portal-logo {
+    width: 52px;
+    height: 52px;
     object-fit: contain;
 }
 
-.login-mobile-brand strong {
-    display: block;
-    color: #0f172a;
-    font-size: 0.9rem;
-    font-weight: 800;
+.portal-title-group {
+    display: flex;
+    flex-direction: column;
 }
 
-.login-mobile-brand span {
-    display: block;
-    margin-top: 2px;
-    color: #64748b;
-    font-size: 0.76rem;
-}
-
-.login-eyebrow {
-    display: inline-block;
-    margin-bottom: 10px;
-    color: #2563eb;
+.portal-subtext {
     font-size: 0.72rem;
-    font-weight: 800;
-    letter-spacing: 0.8px;
+    font-weight: 700;
+    color: #475569;
+    letter-spacing: 0.5px;
     text-transform: uppercase;
 }
 
-.login-card h2 {
-    margin: 0;
-    color: #0f172a;
-    font-size: 1.7rem;
+.portal-main-name {
+    font-size: 1.15rem;
     font-weight: 800;
-    letter-spacing: -0.02em;
+    color: #003e7e;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    line-height: 1.25;
 }
 
-.login-card-subtitle {
-    margin: 8px 0 26px;
-    color: #64748b;
-    font-size: 0.88rem;
-    line-height: 1.5;
-}
-
-.login-card .form-label {
-    margin-bottom: 7px;
-    color: #334155;
+.portal-system-name {
     font-size: 0.84rem;
-    font-weight: 700;
-}
-
-.login-field {
-    margin-bottom: 18px;
-}
-
-.login-input-wrap {
-    position: relative;
-}
-
-.login-input-icon {
-    position: absolute;
-    top: 50%;
-    left: 15px;
-    z-index: 2;
-    transform: translateY(-50%);
-    color: #94a3b8;
-    font-size: 0.92rem;
-    pointer-events: none;
-}
-
-.login-input {
-    height: 50px;
-    padding: 0.7rem 0.95rem 0.7rem 42px;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    background: #ffffff;
-    color: #0f172a;
-    font-size: 0.9rem;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.login-input::placeholder {
-    color: #94a3b8;
-}
-
-.login-input:focus {
-    border-color: #93c5fd;
-    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
-}
-
-.login-input.has-toggle {
-    padding-right: 46px;
-}
-
-.login-toggle-eye {
-    position: absolute;
-    top: 50%;
-    right: 10px;
-    z-index: 2;
-    width: 34px;
-    height: 34px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    transform: translateY(-50%);
-    border: 0;
-    border-radius: 9px;
-    background: transparent;
-    color: #64748b;
-    cursor: pointer;
-}
-
-.login-toggle-eye:hover {
-    background: #f1f5f9;
-    color: #2563eb;
-}
-
-.login-toggle-eye:focus {
-    outline: none;
-    box-shadow: none;
-}
-
-.login-submit {
-    width: 100%;
-    height: 50px;
-    margin-top: 6px;
-    border: 0;
-    border-radius: 12px;
-    background: #2563eb;
-    color: #ffffff;
-    font-size: 0.94rem;
-    font-weight: 700;
-    transition: background-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.login-submit:hover {
-    background: #1d4ed8;
-    color: #ffffff;
-    box-shadow: 0 10px 22px rgba(37, 99, 235, 0.25);
-}
-
-.login-submit:active {
-    background: #1e40af;
-}
-
-.login-forgot {
-    margin: 16px 0 0;
-    text-align: center;
-}
-
-.login-forgot a {
-    color: #2563eb;
-    font-size: 0.85rem;
     font-weight: 600;
-    text-decoration: none;
+    color: #005baa;
+    margin-top: 1px;
 }
 
-.login-forgot a:hover {
-    text-decoration: underline;
-}
-
-/* ===== Thông báo lỗi ===== */
-.login-card .text-danger {
-    font-size: 0.78rem;
-}
-
-.login-card .validation-summary-errors {
-    margin-bottom: 18px;
-    padding: 12px 14px;
-    border: 1px solid #fecaca;
-    border-radius: 12px;
-    background: #fef2f2;
-    color: #b91c1c;
-}
-
-.login-card .validation-summary-errors ul {
-    margin: 0;
-    padding-left: 18px;
+.portal-topbar-links {
+    display: flex;
+    align-items: center;
+    gap: 20px;
     font-size: 0.82rem;
 }
 
-.login-support {
-    margin-top: 24px;
-    padding-top: 18px;
-    border-top: 1px solid #eef2f7;
-    color: #94a3b8;
-    font-size: 0.76rem;
-    line-height: 1.55;
+.portal-topbar-links a {
+    color: #334155;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.15s ease;
+}
+
+.portal-topbar-links a:hover {
+    color: #005baa;
+}
+
+.portal-topbar-links .hotline-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    background: #eff6ff;
+    color: #005baa;
+    border: 1px solid #bfdbfe;
+    border-radius: 4px;
+    font-weight: 700;
+}
+
+/* =========================================================
+   2. NỘI DUNG CHÍNH (MAIN CONTAINER)
+   ========================================================= */
+.portal-content {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+}
+
+.portal-box {
+    max-width: 1040px;
+    width: 100%;
+    background: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.28);
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: 1.15fr 0.85fr;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Cột thông báo & quy định trường (Bên trái) */
+.portal-info-pane {
+    background: #f8fafc;
+    border-right: 1px solid #e2e8f0;
+    padding: 36px 38px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.portal-info-header {
+    margin-bottom: 20px;
+}
+
+.portal-info-title {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: #003e7e;
+    text-transform: uppercase;
+    margin: 0 0 8px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.portal-info-title i {
+    color: #005baa;
+    font-size: 1.1rem;
+}
+
+.portal-info-desc {
+    font-size: 0.86rem;
+    color: #64748b;
+    margin: 0;
+    line-height: 1.5;
+}
+
+.portal-notice-list {
+    margin: 18px 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.portal-notice-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 14px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-left: 3px solid #005baa;
+    border-radius: 4px;
+}
+
+.portal-notice-item i {
+    color: #005baa;
+    margin-top: 3px;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+}
+
+.portal-notice-text {
+    font-size: 0.84rem;
+    color: #334155;
+    line-height: 1.45;
+}
+
+.portal-notice-text strong {
+    color: #0f172a;
+}
+
+.portal-support-box {
+    margin-top: 20px;
+    padding: 14px 16px;
+    background: #eff6ff;
+    border: 1px solid #dbeafe;
+    border-radius: 6px;
+}
+
+.portal-support-title {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #1e40af;
+    margin: 0 0 6px 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.portal-support-info {
+    font-size: 0.78rem;
+    color: #334155;
+    margin: 0;
+    line-height: 1.5;
+}
+
+/* Cột form đăng nhập (Bên phải) */
+.portal-login-pane {
+    padding: 40px 36px;
+    background: #ffffff;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.portal-login-header {
+    margin-bottom: 24px;
     text-align: center;
 }
 
-input::-ms-reveal,
-input::-ms-clear {
-    display: none !important;
+.portal-login-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    background: #e0f2fe;
+    color: #005baa;
+    border-radius: 50%;
+    margin-bottom: 12px;
+    font-size: 1.2rem;
 }
 
-/* ===== Responsive ===== */
-@media (max-width: 991.98px) {
-    .login-page {
+.portal-login-title {
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0 0 6px 0;
+    letter-spacing: -0.3px;
+    text-transform: uppercase;
+}
+
+.portal-login-subtitle {
+    font-size: 0.82rem;
+    color: #64748b;
+    margin: 0;
+}
+
+/* Các trường nhập liệu form */
+.portal-form-group {
+    margin-bottom: 18px;
+}
+
+.portal-form-label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #334155;
+}
+
+.portal-input-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.portal-input-icon {
+    position: absolute;
+    left: 12px;
+    color: #94a3b8;
+    font-size: 0.95rem;
+    pointer-events: none;
+}
+
+.portal-input {
+    width: 100%;
+    height: 44px;
+    padding: 8px 12px 8px 38px;
+    font-size: 0.88rem;
+    font-family: inherit;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    background: #ffffff;
+    color: #0f172a;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.portal-input::placeholder {
+    color: #94a3b8;
+    font-size: 0.84rem;
+}
+
+.portal-input:focus {
+    outline: none;
+    border-color: #005baa;
+    box-shadow: 0 0 0 3px rgba(0, 91, 170, 0.15);
+}
+
+.portal-input.has-toggle {
+    padding-right: 40px;
+}
+
+.portal-toggle-pwd {
+    position: absolute;
+    right: 8px;
+    background: none;
+    border: none;
+    color: #64748b;
+    cursor: pointer;
+    padding: 6px;
+    font-size: 0.9rem;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.portal-toggle-pwd:hover {
+    color: #005baa;
+    background: #f1f5f9;
+}
+
+/* Nút đăng nhập */
+.portal-btn-submit {
+    width: 100%;
+    height: 44px;
+    background: #005baa;
+    color: #ffffff;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.92rem;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+    cursor: pointer;
+    margin-top: 8px;
+    box-shadow: 0 2px 6px rgba(0, 91, 170, 0.25);
+    transition: background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.portal-btn-submit:hover {
+    background: #004380;
+    box-shadow: 0 4px 10px rgba(0, 91, 170, 0.35);
+}
+
+.portal-btn-submit:active {
+    background: #003366;
+}
+
+/* Liên kết phụ */
+.portal-extra-links {
+    margin-top: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.84rem;
+}
+
+.portal-extra-links a {
+    color: #005baa;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.portal-extra-links a:hover {
+    text-decoration: underline;
+}
+
+/* Báo lỗi hệ thống */
+.portal-error-box {
+    margin-bottom: 16px;
+    padding: 10px 14px;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-left: 4px solid #ef4444;
+    border-radius: 4px;
+    color: #b91c1c;
+    font-size: 0.82rem;
+}
+
+.portal-error-box ul {
+    margin: 0;
+    padding-left: 18px;
+}
+
+.portal-field-error {
+    color: #dc2626;
+    font-size: 0.78rem;
+    margin-top: 4px;
+    display: block;
+}
+
+/* =========================================================
+   3. CHÂN TRANG (FOOTER)
+   ========================================================= */
+.portal-footer {
+    background: rgba(10, 25, 47, 0.92);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    color: #94a3b8;
+    padding: 16px 20px;
+    text-align: center;
+    font-size: 0.78rem;
+    line-height: 1.6;
+}
+
+.portal-footer strong {
+    color: #e2e8f0;
+}
+
+/* =========================================================
+   4. THÍCH ỨNG DI ĐỘNG (RESPONSIVE)
+   ========================================================= */
+@media (max-width: 900px) {
+    .portal-box {
         grid-template-columns: 1fr;
+        max-width: 480px;
     }
 
-    .login-brand {
+    .portal-info-pane {
+        border-right: none;
+        border-bottom: 1px solid #e2e8f0;
+        padding: 24px;
+    }
+
+    .portal-login-pane {
+        padding: 30px 24px;
+    }
+
+    .portal-topbar-links {
         display: none;
     }
-
-    .login-main {
-        padding: 28px 18px;
-    }
-
-    .login-mobile-brand {
-        display: flex;
-    }
 }
 
-@media (max-width: 575.98px) {
-    .login-main {
-        align-items: flex-start;
-        padding: 0;
-        background: #ffffff;
+@media (max-width: 576px) {
+    .portal-topbar-inner {
+        padding: 8px 14px;
     }
 
-    .login-card {
-        max-width: none;
-        min-height: 100vh;
-        padding: 30px 22px;
-        border: 0;
-        border-radius: 0;
-        box-shadow: none;
+    .portal-logo {
+        width: 42px;
+        height: 42px;
     }
 
-    .login-card h2 {
-        font-size: 1.5rem;
+    .portal-main-name {
+        font-size: 0.95rem;
+    }
+
+    .portal-subtext {
+        font-size: 0.65rem;
+    }
+
+    .portal-system-name {
+        font-size: 0.76rem;
+    }
+
+    .portal-content {
+        padding: 20px 12px;
+    }
+
+    .portal-box {
+        border-radius: 6px;
+    }
+
+    .portal-info-pane {
+        display: none; /* Thu gọn bớt thông báo trên mobile để form ưu tiên */
+    }
+
+    .portal-login-pane {
+        padding: 28px 20px;
     }
 }
