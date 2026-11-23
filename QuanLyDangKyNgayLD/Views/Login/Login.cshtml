@@ -1,7 +1,7 @@
-﻿@model QuanLyDangKyNgayLD.Models.TaiKhoan
+@model QuanLyDangKyNgayLD.Models.TaiKhoan
 
 @{
-    ViewBag.Title = "Đăng Nhập";
+    ViewBag.Title = "Đăng nhập";
     Layout = null;
 }
 
@@ -9,114 +9,128 @@
 <html lang="vi">
 <head>
     <meta charset="utf-8" />
-    <title>@ViewBag.Title</title>
-    <link rel="icon" type="image/png" href="https://cdn.jsdelivr.net/gh/Huynhtienhieu1234/UploadAnh/logoxoanen.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewBag.Title - Quản lý lao động sinh viên</title>
+    <link rel="icon" type="image/png" href="@Url.Content("~/favicon.png?v=3")" />
+    <link rel="shortcut icon" type="image/x-icon" href="@Url.Content("~/favicon.ico?v=3")" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-    <style>
-        .password-wrapper {
-            position: relative;
-        }
-
-            .password-wrapper input {
-                padding-right: 40px;
-            }
-
-            .password-wrapper .toggle-eye {
-                position: absolute;
-                top: 72%;
-                right: 6px;
-                transform: translateY(-50%);
-                border: none;
-                background: transparent;
-                cursor: pointer;
-                color: #666;
-            }
-
-                .password-wrapper .toggle-eye:focus {
-                    outline: none;
-                    box-shadow: none;
-                }
-
-        .forgot-link {
-            text-decoration: none;
-            color: #0d6efd;
-        }
-
-            .forgot-link:hover {
-                text-decoration: underline;
-            }
-
-        .logo {
-            width: 120px; /* chỉnh kích thước logo */
-            margin-bottom: 10px;
-        }
-
-        input#Username {
-            margin-top: 6px;
-        }
-
-        input#password {
-            margin-top: 6px;
-        }
-        /* Chặn icon reveal của Edge / Chrome */
-        input::-ms-reveal,
-        input::-ms-clear {
-            display: none !important;
-        }
-
-    </style>
+    <link rel="stylesheet" href="@Url.Content("~/Areas/Content/css/Login.css?v=" + DateTime.Now.Ticks)" />
 </head>
 
+<body>
+    <div class="login-page">
+        <aside class="login-brand">
+            <div class="login-brand-inner">
+                <img src="https://cdn.jsdelivr.net/gh/Huynhtienhieu1234/UploadAnh/LogoDHDT.png"
+                     alt="Logo Trường Đại học Đồng Tháp"
+                     class="login-brand-logo" />
 
-<body style="background: url('https://cdn.jsdelivr.net/gh/Huynhtienhieu1234/UploadAnh/Nen.png') no-repeat center center fixed; background-size: cover;">
-    <div class="container d-flex justify-content-center align-items-center vh-100">
-        <div class="card p-4 shadow" style="min-width: 340px; max-width: 400px; background-color: white;">
+                <h1>Quản lý ngày lao động sinh viên</h1>
+                <p class="login-brand-desc">
+                    Nền tảng hỗ trợ sinh viên đăng ký, theo dõi lịch và điểm danh
+                    các đợt lao động của Trường Đại học Đồng Tháp.
+                </p>
 
-            <!-- Logo -->
-            <div class="text-center">
-
-                <img src="https://cdn.jsdelivr.net/gh/Huynhtienhieu1234/UploadAnh/LogoDHDT.png" alt="Logo" class="logo">
+                <ul class="login-brand-list">
+                    <li>
+                        <i class="fas fa-calendar-check"></i>
+                        <span>Đăng ký đợt lao động phù hợp</span>
+                    </li>
+                    <li>
+                        <i class="fas fa-list-check"></i>
+                        <span>Theo dõi lịch và điểm danh</span>
+                    </li>
+                    <li>
+                        <i class="fas fa-chart-simple"></i>
+                        <span>Thống kê ngày công minh bạch</span>
+                    </li>
+                </ul>
             </div>
 
-            <!-- Tiêu đề -->
-            <div class="text-center mb-3">
-                <h3 class="mt-2 text-primary">Đăng Nhập</h3>
+            <div class="login-brand-footer">
+                &copy; @DateTime.Now.Year Trường Đại học Đồng Tháp
             </div>
+        </aside>
 
-            @using (Html.BeginForm("Login", "Login", FormMethod.Post))
-            {
-                @Html.AntiForgeryToken()
-                @Html.ValidationSummary(true, "", new { @class = "text-danger" })
-
-                <div class="mb-3">
-                    @Html.LabelFor(m => m.Username, "Tài khoản", new { @class = "fw-bold" })
-                    @Html.TextBoxFor(m => m.Username, new { @class = "form-control", placeholder = "Nhập tài khoản" })
-                    @Html.ValidationMessageFor(m => m.Username, "", new { @class = "text-danger" })
+        <main class="login-main">
+            <div class="login-card">
+                <div class="login-mobile-brand">
+                    <img src="https://cdn.jsdelivr.net/gh/Huynhtienhieu1234/UploadAnh/LogoDHDT.png"
+                         alt="Logo Trường Đại học Đồng Tháp" />
+                    <div>
+                        <strong>Quản lý lao động sinh viên</strong>
+                        <span>Trường Đại học Đồng Tháp</span>
+                    </div>
                 </div>
 
-                <div class="mb-3 password-wrapper">
-                    @Html.LabelFor(m => m.Password, "Mật khẩu", new { @class = "fw-bold" })
-                    @Html.PasswordFor(m => m.Password, new { @class = "form-control", placeholder = "Nhập mật khẩu", id = "password" })
-                    <button type="button" class="toggle-eye" onclick="togglePassword()">
-                        <i id="eyeIcon" class="fa fa-eye"></i>
+                <span class="login-eyebrow">Chào mừng trở lại</span>
+                <h2>Đăng nhập</h2>
+                <p class="login-card-subtitle">
+                    Sử dụng tài khoản sinh viên để tiếp tục sử dụng hệ thống.
+                </p>
+
+                @using (Html.BeginForm("Login", "Login", FormMethod.Post))
+                {
+                    @Html.AntiForgeryToken()
+                    @Html.ValidationSummary(true, "", new { @class = "validation-summary-errors" })
+
+                    <div class="login-field">
+                        @Html.LabelFor(m => m.Username, "Tài khoản")
+                        <div class="login-input-wrap">
+                            <i class="fas fa-user login-input-icon"></i>
+                            @Html.TextBoxFor(m => m.Username, new
+                            {
+                                @class = "form-control login-input",
+                                placeholder = "Nhập tài khoản",
+                                autocomplete = "username"
+                            })
+                        </div>
+                        @Html.ValidationMessageFor(m => m.Username, "", new { @class = "text-danger d-block mt-1" })
+                    </div>
+
+                    <div class="login-field">
+                        @Html.LabelFor(m => m.Password, "Mật khẩu")
+                        <div class="login-input-wrap">
+                            <i class="fas fa-lock login-input-icon"></i>
+                            @Html.PasswordFor(m => m.Password, new
+                            {
+                                @class = "form-control login-input has-toggle",
+                                placeholder = "Nhập mật khẩu",
+                                id = "password",
+                                autocomplete = "current-password"
+                            })
+                            <button type="button" class="login-toggle-eye" onclick="togglePassword()" aria-label="Hiện hoặc ẩn mật khẩu">
+                                <i id="eyeIcon" class="fa fa-eye"></i>
+                            </button>
+                        </div>
+                        @Html.ValidationMessageFor(m => m.Password, "", new { @class = "text-danger d-block mt-1" })
+                    </div>
+
+                    <button type="submit" class="login-submit">
+                        Đăng nhập
                     </button>
-                    @Html.ValidationMessageFor(m => m.Password, "", new { @class = "text-danger" })
-                </div>
 
-                <button type="submit" class="btn btn-primary w-100">Đăng Nhập</button>
+                    <p class="login-forgot">
+                        <a href="@Url.Action("ForgotPassword", "ForgotPassword")">Quên mật khẩu?</a>
+                    </p>
+                }
 
-                <div class="text-center mt-2">
-                    <a href="@Url.Action("ForgotPassword", "ForgotPassword")" class="forgot-link">Quên mật khẩu?</a>
+                <div class="login-support">
+                    Nếu gặp sự cố đăng nhập, vui lòng liên hệ phòng Công tác Sinh viên.
                 </div>
-            }
-        </div>
+            </div>
+        </main>
     </div>
 
     <script>
         function togglePassword() {
             var pwd = document.getElementById("password");
             var eye = document.getElementById("eyeIcon");
+
             if (pwd.type === "password") {
                 pwd.type = "text";
                 eye.classList.remove("fa-eye");
@@ -127,24 +141,6 @@
                 eye.classList.add("fa-eye");
             }
         }
-
-        // Xóa biểu tượng "eye" mặc định mà trình duyệt tự thêm
-        document.addEventListener("DOMContentLoaded", function () {
-            const pwd = document.getElementById("password");
-
-            if (pwd) {
-                // Tắt autocomplete để trình duyệt không tự gợi ý + hiện icon
-                pwd.setAttribute("autocomplete", "new-password");
-
-                // Khi focus vào, tạm thời bật readonly -> trình duyệt sẽ không hiện icon
-                pwd.addEventListener("focus", function () {
-                    pwd.removeAttribute("readonly");
-                });
-
-                // Để tránh icon mắt xuất hiện, ban đầu set readonly
-                pwd.setAttribute("readonly", true);
-            }
-        });
     </script>
 </body>
 </html>

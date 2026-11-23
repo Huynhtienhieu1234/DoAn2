@@ -93,17 +93,15 @@ function setupPagination(tableBodyId, perPage, pageInfoId, prevBtnId, nextBtnId)
 
 // ================== 3. Tự Động Xử Lý Checkbox & Nút Xóa Đã Chọn ==================
 function updateBulkDeleteButtonState(table) {
-    if (!table) table = document.querySelector('table');
-    if (!table) return;
-
-    const checkedBoxes = table.querySelectorAll('tbody input[type="checkbox"]:checked');
-    const count = checkedBoxes.length;
+    const checkedBoxes = document.querySelectorAll('.check-item-dot:checked, tbody input[type="checkbox"]:checked');
+    const uniqueIds = [...new Set(Array.from(checkedBoxes).map(cb => parseInt(cb.value, 10)).filter(id => !isNaN(id) && id > 0))];
+    const count = uniqueIds.length;
 
     // Tìm tất cả các nút xóa đã chọn trên trang
     const bulkDeleteBtns = document.querySelectorAll('.btn-delete-selected, #btnDeleteSelected, #btnDeleteSelectedDot, #btnDeleteSelectedStudent, #btnDeleteSelectedAccount, #btnDeleteSelectedDuyet');
     bulkDeleteBtns.forEach(btn => {
         if (count > 0) {
-            btn.style.display = 'inline-block';
+            btn.style.setProperty('display', 'inline-flex', 'important');
             const countSpan = btn.querySelector('.selected-count');
             if (countSpan) {
                 countSpan.textContent = count;
@@ -111,9 +109,13 @@ function updateBulkDeleteButtonState(table) {
                 btn.innerHTML = `<i class="fas fa-trash-alt me-1"></i> Xóa đã chọn (${count})`;
             }
         } else {
-            btn.style.display = 'none';
+            btn.style.setProperty('display', 'none', 'important');
         }
     });
+
+    // Cập nhật nhãn chọn tất cả của Catalog nếu có
+    const catalogCountEl = document.getElementById("catalogSelectedCount");
+    if (catalogCountEl) catalogCountEl.textContent = count;
 }
 
 document.addEventListener('change', function (e) {
@@ -139,25 +141,22 @@ document.addEventListener('change', function (e) {
 });
 
 // ================== 4. Xử Lý Khi Bấm Nút Xóa Hàng Loạt ==================
-let currentSelectedBulkIds = [];
-let currentBulkDeleteEndpoint = '';
-let currentBulkReloadFn = null;
+var currentSelectedBulkIds = window.currentSelectedBulkIds || [];
+var currentBulkDeleteEndpoint = window.currentBulkDeleteEndpoint || '';
+var currentBulkReloadFn = window.currentBulkReloadFn || null;
 
 document.addEventListener('click', function (e) {
     const btn = e.target.closest('.btn-delete-selected, #btnDeleteSelected, #btnDeleteSelectedDot, #btnDeleteSelectedStudent, #btnDeleteSelectedAccount, #btnDeleteSelectedDuyet');
     if (!btn) return;
 
-    // Lấy danh sách ID đã tick chọn
-    const table = document.querySelector('table');
-    if (!table) return;
-
-    const checkedBoxes = table.querySelectorAll('tbody input[type="checkbox"]:checked');
+    // Lấy danh sách ID đã tick chọn (hỗ trợ cả dạng bảng và dạng catalog thẻ)
+    const checkedBoxes = document.querySelectorAll('.check-item-dot:checked, tbody input[type="checkbox"]:checked');
     if (checkedBoxes.length === 0) {
         showToast('Vui lòng chọn ít nhất một mục để xóa!', 'warning');
         return;
     }
 
-    currentSelectedBulkIds = Array.from(checkedBoxes).map(cb => parseInt(cb.value)).filter(id => !isNaN(id) && id > 0);
+    currentSelectedBulkIds = [...new Set(Array.from(checkedBoxes).map(cb => parseInt(cb.value)).filter(id => !isNaN(id) && id > 0))];
     const count = currentSelectedBulkIds.length;
 
     // Xác định endpoint API theo trang hiện tại
@@ -273,3 +272,77 @@ document.addEventListener('DOMContentLoaded', function () {
         confirmActionBtn.addEventListener('click', executeBulkDelete);
     }
 });
+
+// ================== 5. HỆ THỐNG SKELETON LOADING (DÙNG CHUNG) ==================
+window.renderTableSkeleton = function (target, rowCount = 6, colCount = 8, hasCheckbox = true) {
+    let tbody = typeof target === 'string' ? document.querySelector(target) : target;
+    if (!tbody) return;
+
+    let html = '';
+    const textWidths = ['45%', '65%', '80%', '55%', '70%', '60%', '75%'];
+
+    for (let r = 0; r < rowCount; r++) {
+        html += '<tr class="skeleton-table-row">';
+        for (let c = 0; c < colCount; c++) {
+            if (hasCheckbox && c === 0) {
+                // Checkbox
+                html += '<td class="text-center align-middle py-3"><span class="skeleton-box skeleton-checkbox"></span></td>';
+            } else if ((hasCheckbox && c === 1) || (!hasCheckbox && c === 0)) {
+                // STT
+                html += '<td class="text-center align-middle py-3"><span class="skeleton-box skeleton-text" style="width: 20px;"></span></td>';
+            } else if (c === colCount - 1) {
+                // Tác vụ (Action buttons)
+                html += '<td class="text-center align-middle py-3"><div class="d-flex justify-content-center gap-1"><span class="skeleton-box skeleton-btn" style="width: 28px; height: 28px;"></span><span class="skeleton-box skeleton-btn" style="width: 28px; height: 28px;"></span><span class="skeleton-box skeleton-btn" style="width: 28px; height: 28px;"></span></div></td>';
+            } else if (c === colCount - 2) {
+                // Trạng thái / Badge
+                html += '<td class="text-center align-middle py-3"><span class="skeleton-box skeleton-pill" style="width: 75px; height: 22px;"></span></td>';
+            } else {
+                // Cột văn bản thông thường
+                const w = textWidths[(r + c) % textWidths.length];
+                html += `<td class="align-middle py-3"><span class="skeleton-box skeleton-text" style="width: ${w};"></span></td>`;
+            }
+        }
+        html += '</tr>';
+    }
+    tbody.innerHTML = html;
+};
+
+window.renderCatalogSkeleton = function (target, cardCount = 6) {
+    let container = typeof target === 'string' ? document.querySelector(target) : target;
+    if (!container) return;
+
+    let html = '';
+    for (let i = 0; i < cardCount; i++) {
+        html += `
+        <div class="col-12 col-md-6 col-lg-4 skeleton-catalog-item">
+            <div class="card h-100 border rounded-4 p-3 shadow-sm bg-white skeleton-catalog-card">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="skeleton-box skeleton-checkbox"></span>
+                        <span class="skeleton-box skeleton-text" style="width: 80px; height: 16px;"></span>
+                    </div>
+                    <span class="skeleton-box skeleton-pill" style="width: 80px; height: 22px;"></span>
+                </div>
+                <div class="mb-3">
+                    <span class="skeleton-box skeleton-text mb-2 d-block" style="width: 85%; height: 18px;"></span>
+                    <span class="skeleton-box skeleton-text d-block" style="width: 60%; height: 13px;"></span>
+                </div>
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <span class="skeleton-box skeleton-pill" style="width: 75px; height: 24px;"></span>
+                    <span class="skeleton-box skeleton-pill" style="width: 65px; height: 24px;"></span>
+                    <span class="skeleton-box skeleton-pill ms-auto" style="width: 55px; height: 24px;"></span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center pt-2 border-top mt-auto" style="border-color: #f1f5f9;">
+                    <span class="skeleton-box skeleton-text" style="width: 75px; height: 14px;"></span>
+                    <div class="d-flex gap-1">
+                        <span class="skeleton-box skeleton-btn" style="width: 28px; height: 28px;"></span>
+                        <span class="skeleton-box skeleton-btn" style="width: 28px; height: 28px;"></span>
+                        <span class="skeleton-box skeleton-btn" style="width: 28px; height: 28px;"></span>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+    }
+    container.innerHTML = html;
+};
+

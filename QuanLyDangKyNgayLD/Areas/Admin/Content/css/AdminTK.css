@@ -9,26 +9,19 @@
 
 /* --- Page Header Banner --- */
 .tk-header-card {
-    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0d47a1 100%);
+    background: #0f172a;
+    border: 1px solid #1e293b;
     border-radius: 16px;
     padding: 24px 28px;
     color: #ffffff;
-    box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.25), 0 8px 10px -6px rgba(15, 23, 42, 0.2);
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.15);
     position: relative;
     overflow: hidden;
     margin-bottom: 24px;
 }
 
 .tk-header-card::before {
-    content: "";
-    position: absolute;
-    top: -50%;
-    right: -10%;
-    width: 350px;
-    height: 350px;
-    background: radial-gradient(circle, rgba(59, 130, 246, 0.25) 0%, rgba(255, 255, 255, 0) 70%);
-    border-radius: 50%;
-    pointer-events: none;
+    display: none;
 }
 
 .tk-header-title {
@@ -49,43 +42,43 @@
 
 /* --- Action Buttons --- */
 .btn-tk-export {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    background: #16a34a;
     color: #ffffff !important;
     border: none;
     font-weight: 600;
     padding: 9px 18px;
     border-radius: 10px;
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-    transition: all 0.25s ease;
+    box-shadow: 0 2px 6px rgba(22, 163, 74, 0.25);
+    transition: all 0.2s ease;
     display: inline-flex;
     align-items: center;
     gap: 8px;
 }
 
 .btn-tk-export:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 18px rgba(16, 185, 129, 0.45);
-    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(22, 163, 74, 0.35);
+    background: #15803d;
 }
 
 .btn-tk-email {
-    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    background: #2563eb;
     color: #ffffff !important;
     border: none;
     font-weight: 600;
     padding: 9px 18px;
     border-radius: 10px;
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-    transition: all 0.25s ease;
+    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
+    transition: all 0.2s ease;
     display: inline-flex;
     align-items: center;
     gap: 8px;
 }
 
 .btn-tk-email:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 18px rgba(59, 130, 246, 0.45);
-    background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+    background: #1d4ed8;
 }
 
 /* --- Smart Filter Bar --- */
@@ -149,15 +142,18 @@
 }
 
 .tk-kpi-total {
-    background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+    background: #1e3a8a;
+    border: 1px solid #172554;
 }
 
 .tk-kpi-completed {
-    background: linear-gradient(135deg, #065f46 0%, #10b981 100%);
+    background: #065f46;
+    border: 1px solid #064e3b;
 }
 
 .tk-kpi-incomplete {
-    background: linear-gradient(135deg, #991b1b 0%, #ef4444 100%);
+    background: #991b1b;
+    border: 1px solid #7f1d1d;
 }
 
 .tk-kpi-header {
@@ -363,8 +359,9 @@
     width: 36px;
     height: 36px;
     border-radius: 10px;
-    background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
-    color: #4338ca;
+    background: #eff6ff;
+    color: #1d4ed8;
+    border: 1px solid #bfdbfe;
     font-weight: 700;
     font-size: 0.88rem;
     display: inline-flex;
@@ -376,7 +373,7 @@
 
 /* Status Badges in Table */
 .badge-status-completed {
-    background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+    background: #dcfce7;
     color: #166534;
     border: 1px solid #86efac;
     padding: 6px 14px;
@@ -386,11 +383,10 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    box-shadow: 0 2px 5px rgba(22, 101, 52, 0.08);
 }
 
 .badge-status-progress {
-    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    background: #fef3c7;
     color: #92400e;
     border: 1px solid #fcd34d;
     padding: 6px 14px;
@@ -400,48 +396,60 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    box-shadow: 0 2px 5px rgba(146, 64, 14, 0.08);
 }
 
 /* --- Pagination & Page Size --- */
 .tk-pagination-bar {
-    padding: 16px 24px;
+    padding: 14px 20px;
     background: #ffffff;
     display: flex;
     align-items: center;
     justify-content: space-between;
     flex-wrap: wrap;
-    gap: 16px;
+    gap: 12px;
     border-top: 1px solid #f1f5f9;
 }
 
 .tk-page-btn {
-    border: 1.5px solid #e2e8f0;
+    border: 1px solid #e2e8f0;
     background: #ffffff;
     color: #475569;
-    font-weight: 600;
-    padding: 6px 14px;
-    border-radius: 8px;
-    font-size: 0.86rem;
-    transition: all 0.2s ease;
+    font-weight: 500;
+    min-width: 32px;
+    height: 32px;
+    line-height: 30px;
+    padding: 0 8px;
+    border-radius: 6px;
+    font-size: 0.8125rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
 }
 
 .tk-page-btn:hover:not(:disabled) {
-    background: #f1f5f9;
+    background: #f8fafc;
     border-color: #cbd5e1;
-    color: #1e293b;
+    color: #0f172a;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
 }
 
 .tk-page-btn.active {
-    background: #0029c8d9 !important;
-    border-color: #0029c8d9 !important;
+    background: #2563eb !important;
+    border-color: #2563eb !important;
     color: #ffffff !important;
-    box-shadow: 0 4px 10px rgba(0, 41, 200, 0.25);
+    font-weight: 600 !important;
+    box-shadow: 0 1px 4px rgba(37, 99, 235, 0.28);
 }
 
 .tk-page-btn:disabled {
-    opacity: 0.45;
+    background: #f8fafc !important;
+    border-color: #e2e8f0 !important;
+    color: #94a3b8 !important;
+    opacity: 0.55;
     cursor: not-allowed;
+    box-shadow: none !important;
 }
 
 /* --- Loading Spinner --- */

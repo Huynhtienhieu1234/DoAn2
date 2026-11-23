@@ -1,78 +1,316 @@
-﻿@{
+@{
     ViewBag.Title = "Thống Kê Lao Động";
     Layout = "~/Areas/Student/Views/Shared/Viewsiderbar.cshtml";
+    bool isLeader = ViewBag.IsClassLeader == true;
+    string tenLop = ViewBag.TenLop as string ?? "";
 }
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<div class="container mt-4">
-    <div class="card shadow mb-4">
-        <div class="card-header bg-info text-white text-center py-3">
-            <h4 class="mb-0"><i class="fas fa-chart-pie me-2"></i> Thống Kê Lao Động Của Sinh Viên</h4>
+<link rel="stylesheet" href="@Url.Content("~/Areas/Student/Content/Css/Table.css?v=" + DateTime.Now.Ticks)">
+
+<div class="student-page">
+    <div class="student-page-head">
+        <div class="student-page-head-icon">
+            <i class="fas fa-chart-pie"></i>
         </div>
-        <div class="card-body">
-            <div class="row text-center mb-4">
-                <div class="col-md-3">
-                    <h5 class="text-muted">Tổng số đợt</h5>
-                    <h3 id="tongDot" class="fw-bold text-primary">0</h3>
-                </div>
-                <div class="col-md-3">
-                    <h5 class="text-muted">Đã duyệt</h5>
-                    <h3 id="daDuyet" class="fw-bold text-success">0</h3>
-                </div>
-                <div class="col-md-3">
-                    <h5 class="text-muted">Đã điểm danh</h5>
-                    <h3 id="daDiemDanh" class="fw-bold text-warning">0</h3>
-                </div>
-                <div class="col-md-3">
-                    <h5 class="text-muted">Hoàn thành</h5>
-                    <h3 id="hoanThanh" class="fw-bold text-primary">0</h3>
-                </div>
-            </div>
+        <div class="student-page-head-main">
+            <nav class="student-breadcrumb" aria-label="Điều hướng">
+                <a href="@Url.Action("Index", "MainSinhVien", new { area = "Student" })">Trang chủ</a>
+                <i class="fas fa-chevron-right"></i>
+                <span aria-current="page">Thống kê lao động</span>
+            </nav>
+            <h1 class="student-page-title">Thống kê lao động</h1>
+            <p class="student-page-subtitle">Theo dõi tiến độ tích lũy ngày công của bản thân và các thành viên trong lớp.</p>
+        </div>
+    </div>
 
-            <!-- Thanh tiến trình -->
-            <div class="mb-4">
-                <h5 class="text-muted">Tiến độ hoàn thành (Mục tiêu: 18 ngày)</h5>
-                <div class="progress" style="height: 30px;">
-                    <div id="progressBar" class="progress-bar bg-success fw-bold" role="progressbar"
-                         style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="18">
-                        0 / 18 ngày
+    @if (isLeader)
+    {
+        <!-- Banner chế độ lớp trưởng -->
+        <div class="leader-register-banner mb-3 shadow-sm border">
+            <div class="leader-banner-icon bg-primary text-white">
+                <i class="fas fa-user-shield"></i>
+            </div>
+            <div class="leader-banner-content">
+                <div class="d-flex align-items-center gap-2">
+                    <h5 class="mb-0 fw-bold text-primary">Chế độ Lớp Trưởng / Cán Sự Lớp</h5>
+                    @if (!string.IsNullOrEmpty(tenLop))
+                    {
+                        <span class="badge bg-primary px-3 py-1 fs-6">Lớp: @tenLop</span>
+                    }
+                </div>
+                <p class="mb-0 text-muted small mt-1">
+                    Bạn có đặc quyền xem tiến độ tích lũy ngày công của toàn bộ thành viên trong lớp để đôn đốc hoàn thành nghĩa vụ tốt nghiệp (chuẩn: 18 ngày).
+                </p>
+            </div>
+        </div>
+
+        <!-- Tabs chuyển đổi Cá nhân / Cả lớp -->
+        <div class="leader-tabs mb-4" role="tablist" aria-label="Chế độ thống kê">
+            <button type="button" id="tabCaNhan" class="leader-tab active" data-target="sectionCaNhan" role="tab" aria-selected="true">
+                <i class="fas fa-user me-2"></i>
+                <span>Tiến độ cá nhân</span>
+            </button>
+            <button type="button" id="tabLop" class="leader-tab" data-target="sectionLop" role="tab" aria-selected="false">
+                <i class="fas fa-users me-2"></i>
+                <span>Tiến độ thành viên lớp @(string.IsNullOrEmpty(tenLop) ? "" : $"[{tenLop}]")</span>
+                <span class="leader-tab-count ms-2" id="badgeTongSiSo">...</span>
+            </button>
+        </div>
+    }
+
+    <!-- ==================== TAB 1: TIẾN ĐỘ CÁ NHÂN ==================== -->
+    <div id="sectionCaNhan">
+        <div class="student-card mb-4 shadow-sm border">
+            <div class="student-card-header">
+                <h2 class="student-card-title">
+                    <span class="student-card-icon blue"><i class="fas fa-chart-simple"></i></span>
+                    Tổng quan tiến độ cá nhân
+                </h2>
+            </div>
+            <div class="student-card-body">
+                <div class="student-stat-grid mb-4">
+                    <div class="student-stat-card blue">
+                        <div class="student-stat-label">Tổng số đợt</div>
+                        <div id="tongDot" class="student-stat-value">0</div>
+                    </div>
+                    <div class="student-stat-card green">
+                        <div class="student-stat-label">Đã duyệt</div>
+                        <div id="daDuyet" class="student-stat-value">0</div>
+                    </div>
+                    <div class="student-stat-card amber">
+                        <div class="student-stat-label">Đã điểm danh</div>
+                        <div id="daDiemDanh" class="student-stat-value">0</div>
+                    </div>
+                    <div class="student-stat-card indigo">
+                        <div class="student-stat-label">Hoàn thành</div>
+                        <div id="hoanThanh" class="student-stat-value">0</div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
+                        <span class="fw-semibold text-secondary small"><i class="fas fa-bullseye text-primary me-1"></i> Tiến độ hoàn thành chuẩn đầu ra</span>
+                        <span class="text-muted small">Mục tiêu: 18 ngày</span>
+                    </div>
+                    <div class="progress student-progress" style="height: 20px; border-radius: 10px;">
+                        <div id="progressBar" class="progress-bar bg-primary fw-bold" role="progressbar"
+                             style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="18">
+                            0 / 18 ngày
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- BẢNG CHI TIẾT NGÀY LAO ĐỘNG -->
-    <div class="card shadow mt-5">
-        <div class="card-header bg-secondary text-white text-center py-3">
-            <h4 class="mb-0"><i class="fas fa-list me-2"></i> Danh Sách Ngày Lao Động Đã Tham Gia</h4>
-        </div>
-        <div class="card-body p-4">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle text-center mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th style="width:8%;">STT</th>
-                            <th>Buổi</th>
-                            <th>Ngày</th>
-                            <th>Loại lao động</th>
-                            <th>Địa điểm</th>
-                        </tr>
-                    </thead>
-                    <tbody id="chiTietBody">
-                        <tr id="loadingChiTiet">
-                            <td colspan="5" class="py-5">
-                                <div class="spinner-border text-secondary" role="status">
-                                    <span class="visually-hidden">Đang tải...</span>
-                                </div>
-                                <p class="mt-3 text-muted">Đang tải danh sách ngày lao động...</p>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+        <div class="student-card shadow-sm border">
+            <div class="student-card-header">
+                <h2 class="student-card-title">
+                    <span class="student-card-icon indigo"><i class="fas fa-list-check"></i></span>
+                    Danh sách ngày lao động bạn đã tham gia
+                </h2>
+            </div>
+            <div class="student-card-body p-0">
+                <div class="table-responsive">
+                    <table class="student-table text-center table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th style="width:8%;">STT</th>
+                                <th>Buổi</th>
+                                <th>Ngày</th>
+                                <th>Loại lao động</th>
+                                <th>Địa điểm</th>
+                            </tr>
+                        </thead>
+                        <tbody id="chiTietBody">
+                            <tr id="loadingChiTiet">
+                                <td colspan="5" class="student-empty py-5">
+                                    <div class="spinner-border text-primary spinner-border-sm" role="status">
+                                        <span class="visually-hidden">Đang tải...</span>
+                                    </div>
+                                    <p class="mt-3 mb-0 text-muted">Đang tải danh sách ngày lao động...</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
+
+    @if (isLeader)
+    {
+        <!-- ==================== TAB 2: TIẾN ĐỘ THÀNH VIÊN TRONG LỚP ==================== -->
+        <div id="sectionLop" style="display: none;">
+            <!-- Thống kê tổng quan lớp -->
+            <div class="student-card mb-4 shadow-sm border">
+                <div class="student-card-header d-flex justify-content-between align-items-center">
+                    <h2 class="student-card-title">
+                        <span class="student-card-icon green"><i class="fas fa-users-rectangle"></i></span>
+                        Tổng quan tiến độ lớp @tenLop
+                    </h2>
+                    <span class="badge bg-light text-primary border fw-bold px-3 py-2">
+                        <i class="fas fa-graduation-cap me-1"></i> Chuẩn tốt nghiệp: 18 ngày công
+                    </span>
+                </div>
+                <div class="student-card-body">
+                    <div class="student-stat-grid mb-4">
+                        <div class="student-stat-card blue">
+                            <div class="student-stat-label">Sĩ số lớp</div>
+                            <div id="tongSiSoLop" class="student-stat-value">0</div>
+                        </div>
+                        <div class="student-stat-card green">
+                            <div class="student-stat-label">Đạt chuẩn (≥ 18 ngày)</div>
+                            <div id="soHoanThanhLop" class="student-stat-value text-success">0</div>
+                        </div>
+                        <div class="student-stat-card amber">
+                            <div class="student-stat-label">Đang tích lũy (&lt; 18 ngày)</div>
+                            <div id="soChuaHoanThanhLop" class="student-stat-value text-warning">0</div>
+                        </div>
+                        <div class="student-stat-card indigo">
+                            <div class="student-stat-label">Tỷ lệ hoàn thành</div>
+                            <div id="tyLeHoanThanhLop" class="student-stat-value text-primary">0%</div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
+                            <span class="fw-semibold text-secondary small">
+                                <i class="fas fa-chart-line text-success me-1"></i> Tỷ lệ thành viên lớp đã hoàn thành nghĩa vụ tốt nghiệp
+                            </span>
+                            <span class="text-muted small fw-bold" id="tyLeTextLop">0%</span>
+                        </div>
+                        <div class="progress student-progress" style="height: 22px; border-radius: 11px;">
+                            <div id="progressBarLop" class="progress-bar bg-success fw-bold" role="progressbar" style="width: 0%;">
+                                0%
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bảng danh sách sinh viên lớp -->
+            <div class="student-card shadow-sm border">
+                <div class="student-card-header d-flex flex-wrap align-items-center justify-content-between gap-3">
+                    <h2 class="student-card-title mb-0">
+                        <span class="student-card-icon blue"><i class="fas fa-address-book"></i></span>
+                        Danh sách thành viên & Tiến độ từng sinh viên
+                    </h2>
+                    
+                    <!-- Nút xuất Excel -->
+                    <a id="btnExportExcelLop" href="@Url.Action("ExportExcelLop", "StudentTK", new { area = "Student" })" class="btn btn-sm btn-success fw-bold px-3 py-2 shadow-sm rounded-3">
+                        <i class="fas fa-file-excel me-1"></i> Xuất Excel báo cáo lớp
+                    </a>
+                </div>
+
+                <!-- Toolbar Tìm kiếm & Lọc -->
+                <div class="p-3 bg-light border-bottom d-flex flex-wrap align-items-center justify-content-between gap-3">
+                    <div class="d-flex align-items-center gap-2 flex-grow-1" style="max-width: 450px;">
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text bg-white border-end-0 text-muted"><i class="fas fa-search"></i></span>
+                            <input type="text" id="searchSVLop" class="form-control border-start-0 shadow-none" placeholder="Tìm theo MSSV hoặc họ tên sinh viên..." />
+                        </div>
+                    </div>
+
+                    <div class="d-flex align-items-center gap-2">
+                        <label class="form-label mb-0 small text-muted fw-bold text-nowrap"><i class="fas fa-filter me-1"></i>Trạng thái:</label>
+                        <select id="filterTrangThaiLop" class="form-select form-select-sm shadow-none" style="min-width: 170px;">
+                            <option value="">Tất cả thành viên</option>
+                            <option value="completed">Đã đạt chuẩn (≥ 18 ngày)</option>
+                            <option value="in_progress">Chưa đạt chuẩn (&lt; 18 ngày)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="student-card-body p-0">
+                    <div class="table-responsive">
+                        <table class="student-table text-center table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th style="width: 5%;">STT</th>
+                                    <th style="width: 13%;">MSSV</th>
+                                    <th style="width: 22%; text-align: left;">Họ và tên</th>
+                                    <th style="width: 10%;">Giới tính</th>
+                                    <th style="width: 25%;">Tiến độ ngày công (Mục tiêu 18)</th>
+                                    <th style="width: 13%;">Trạng thái</th>
+                                    <th style="width: 12%;">Chi tiết</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableBodyLop">
+                                <tr id="loadingSVLop">
+                                    <td colspan="7" class="student-empty py-5">
+                                        <div class="spinner-border text-primary spinner-border-sm" role="status">
+                                            <span class="visually-hidden">Đang tải...</span>
+                                        </div>
+                                        <p class="mt-3 mb-0 text-muted">Đang tải danh sách thành viên lớp...</p>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== MODAL CHI TIẾT CA LAO ĐỘNG CỦA THÀNH VIÊN ==================== -->
+        <div class="modal fade" id="modalChiTietSVLop" tabindex="-1" aria-labelledby="modalChiTietSVLopLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                <div class="modal-content shadow-lg border-0 rounded-4 overflow-hidden">
+                    <div class="modal-header bg-primary text-white py-3 px-4">
+                        <h5 class="modal-title fw-bold" id="modalChiTietSVLopLabel">
+                            <i class="fas fa-id-card-clip me-2"></i> Lịch sử ca lao động thành viên
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                    </div>
+                    <div class="modal-body p-4">
+                        <!-- Thông tin tóm tắt sinh viên -->
+                        <div class="d-flex align-items-center justify-content-between p-3 rounded-3 bg-light border mb-4">
+                            <div>
+                                <h6 class="fw-bold mb-1 text-primary fs-6" id="modalSVHoTen">--</h6>
+                                <span class="text-muted small">MSSV: <strong id="modalSVMSSV" class="text-dark">--</strong> | Lớp: <span id="modalSVLop" class="fw-bold text-dark">--</span></span>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge bg-primary px-3 py-2 fs-6" id="modalSVTongNgay">0 / 18 ngày</span>
+                            </div>
+                        </div>
+
+                        <!-- Bảng lịch sử các ca đã điểm danh -->
+                        <h6 class="fw-bold text-secondary mb-2 small text-uppercase"><i class="fas fa-calendar-check text-success me-1"></i> Các ca lao động đã điểm danh</h6>
+                        <div class="table-responsive border rounded-3 overflow-hidden">
+                            <table class="table table-sm table-striped text-center mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th style="width: 8%;">STT</th>
+                                        <th>Tên đợt</th>
+                                        <th>Buổi</th>
+                                        <th>Ngày</th>
+                                        <th>Khu vực</th>
+                                        <th>Thời gian điểm danh</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="modalSVTableBody">
+                                    <tr>
+                                        <td colspan="6" class="text-center py-4 text-muted">Đang tải dữ liệu...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-white border-top py-2 px-4">
+                        <button type="button" class="btn btn-secondary px-4 rounded-3" data-bs-dismiss="modal">Đóng</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
 </div>
 
-<script src="~/Areas/Student/Content/Js/StudentTK/StudentTK.js"></script>
+<style>
+    .progress-mini {
+        height: 8px;
+        border-radius: 4px;
+        background: #e2e8f0;
+        overflow: hidden;
+    }
+</style>
+
+<script src="~/Areas/Student/Content/Js/StudentTK/StudentTK.js?v=@DateTime.Now.Ticks"></script>

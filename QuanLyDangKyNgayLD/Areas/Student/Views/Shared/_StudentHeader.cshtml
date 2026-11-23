@@ -1,0 +1,137 @@
+<nav class="student-navbar" id="studentNavbar">
+    <div class="nav-content">
+        <div class="d-flex align-items-center gap-2">
+            <button type="button" id="studentHeaderNavToggle" class="header-nav-toggle" aria-controls="studentHeaderNav" aria-expanded="false" title="Menu">
+                <i class="fas fa-bars"></i>
+            </button>
+            <a href="@Url.Action("Index", "MainSinhVien", new { area = "Student" })" class="d-flex align-items-center text-decoration-none">
+                <img src="https://cdn.jsdelivr.net/gh/Huynhtienhieu1234/UploadAnh/sinhvien/LogoTruong.png" alt="Logo DThU" class="logo-brand">
+            </a>
+        </div>
+
+        @Html.Partial("_StudentHeaderNav")
+
+        <div class="student-header-actions">
+            <button type="button"
+                    class="header-bell-btn"
+                    id="headerBellBtn"
+                    data-bs-toggle="modal"
+                    data-bs-target="#modalThongBao"
+                    title="Xem thông báo đợt lao động mới">
+                <i class="fas fa-bell"></i>
+                <span id="headerBellBadge" class="header-bell-badge" style="display: none;">0</span>
+            </button>
+
+            <div class="user-menu-pill"
+                 id="userMenu"
+                 role="button"
+                 tabindex="0"
+                 aria-haspopup="true"
+                 aria-expanded="false"
+                 aria-controls="dropdownMenu">
+                <div class="user-avatar-wrapper">
+                    <img id="layoutAvatar"
+                         src="https://ui-avatars.com/api/?name=@Url.Encode(ViewBag.HoTen as string ?? "SV")&background=2563eb&color=fff&size=100&bold=true"
+                         alt="Avatar"
+                         class="user-avatar"
+                         onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=SV&background=2563eb&color=fff&size=100&bold=true';" />
+                    <span class="user-status-dot"></span>
+                </div>
+
+                <span id="layoutUserName" class="user-name-text">@(ViewBag.HoTen ?? "Sinh viên")</span>
+
+                <i class="fas fa-chevron-down user-dropdown-arrow ms-1"></i>
+
+                <ul class="user-dropdown-menu" id="dropdownMenu">
+                    <li>
+                        <a href="@Url.Action("Detail", "MainSinhVien", new { area = "Student" })">
+                            <i class="fas fa-user-circle text-primary"></i>
+                            <span>Thông tin cá nhân</span>
+                        </a>
+                    </li>
+                    <li class="user-dropdown-divider"></li>
+                    <li>
+                        <a href="javascript:void(0);" id="logoutDropdownItem" class="text-danger">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Đăng xuất</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- Modal Thông Báo Lao Động Mới -->
+<div class="modal fade student-modal" id="modalThongBao" tabindex="-1" aria-labelledby="modalThongBaoLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="student-card-icon blue"><i class="fas fa-bell"></i></span>
+                    <h5 class="modal-title mb-0" id="modalThongBaoLabel">Thông báo đợt lao động mới</h5>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+            <div class="modal-body">
+                <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th class="text-center" style="width: 50px;">STT</th>
+                                    <th style="min-width: 180px;">Tiêu đề</th>
+                                    <th>Nội dung</th>
+                                    <th class="text-center" style="min-width: 130px;">Thời gian</th>
+                                    <th class="text-center" style="min-width: 130px;">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody id="thongBaoTableBody">
+                                <tr>
+                                    <td colspan="5" class="student-empty">
+                                        <div class="spinner-border text-primary spinner-border-sm" role="status">
+                                            <span class="visually-hidden">Đang tải...</span>
+                                        </div>
+                                        <p class="student-empty-text mt-2">Đang tải thông báo...</p>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer d-flex justify-content-between">
+                <a href="@Url.Action("Index", "StudentRegisterWord", new { area = "Student" })" class="student-btn student-btn-primary">
+                    <i class="fas fa-clipboard-list"></i> Đến trang Đăng ký lao động
+                </a>
+                <button type="button" class="student-btn student-btn-outline" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal xác nhận thoát -->
+<div class="modal fade student-modal student-modal-danger" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 class="modal-title" id="logoutModalLabel">
+                    <i class="fas fa-sign-out-alt"></i> Xác nhận đăng xuất
+                </h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+            <div class="modal-body text-center">
+                <div class="text-danger mb-3">
+                    <i class="fas fa-power-off fa-2x"></i>
+                </div>
+                <p class="mb-0 text-secondary">Bạn có chắc chắn muốn rời khỏi phiên làm việc hiện tại không?</p>
+            </div>
+            <div class="modal-footer justify-content-center">
+                <button type="button" class="student-btn student-btn-outline" data-bs-dismiss="modal">Hủy</button>
+                <a href="@Url.Action("Logout", "Login", new { area = "" })" class="student-btn student-btn-danger">Đồng ý</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastContainer" style="z-index: 1090;"></div>

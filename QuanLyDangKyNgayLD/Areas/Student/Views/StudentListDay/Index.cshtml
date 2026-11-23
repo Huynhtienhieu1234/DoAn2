@@ -3,86 +3,124 @@
     Layout = "~/Areas/Student/Views/Shared/Viewsiderbar.cshtml";
 }
 
-<div class="container mt-4">
-    <div class="card shadow">
-        <div class="card-header bg-primary text-white text-center py-3">
-            <h4 class="mb-0">
-                <i class="fas fa-calendar-alt me-2"></i> Lịch Lao Động Của Sinh Viên
-            </h4>
+<div class="student-page">
+    <div class="student-page-head">
+        <div class="student-page-head-icon">
+            <i class="fas fa-calendar-alt"></i>
         </div>
-        <div class="card-body">
+        <div class="student-page-head-main">
+            <nav class="student-breadcrumb" aria-label="Điều hướng">
+                <a href="@Url.Action("Index", "MainSinhVien", new { area = "Student" })">Trang chủ</a>
+                <i class="fas fa-chevron-right"></i>
+                <span aria-current="page">Lịch lao động</span>
+            </nav>
+            <h1 class="student-page-title">Lịch lao động</h1>
+            <p class="student-page-subtitle">Xem các đợt lao động bạn đã đăng ký theo từng tuần.</p>
+        </div>
+    </div>
+
+    <div class="student-card">
+        <div class="student-card-header">
+            <h2 class="student-card-title">
+                <span class="student-card-icon blue"><i class="fas fa-calendar-week"></i></span>
+                Lịch lao động trong tuần
+            </h2>
+            <div class="student-week-nav">
+                <button type="button" class="btn btn-outline-primary" onclick="changeWeek(-1)" aria-label="Xem tuần trước">
+                    <i class="fas fa-chevron-left"></i> Tuần trước
+                </button>
+                <span id="weekRangeText" class="student-week-range">Tuần hiện tại</span>
+                <button type="button" class="btn btn-outline-primary" onclick="changeWeek(1)" aria-label="Xem tuần sau">
+                    Tuần sau <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+        <div class="student-card-body p-0">
             <div class="table-responsive">
-                <table class="table table-bordered text-center align-middle">
-                    <thead class="table-light">
+                <table class="student-schedule-table text-center">
+                    <thead>
                         <tr>
                             <th>Buổi / Ngày</th>
-                            <th>Thứ 2<br><span id="ngay2"></span></th>
-                            <th>Thứ 3<br><span id="ngay3"></span></th>
-                            <th>Thứ 4<br><span id="ngay4"></span></th>
-                            <th>Thứ 5<br><span id="ngay5"></span></th>
-                            <th>Thứ 6<br><span id="ngay6"></span></th>
-                            <th>Thứ 7<br><span id="ngay7"></span></th>
-                            <th>Chủ nhật<br><span id="ngayCN"></span></th>
+                            <th>Thứ 2<span id="ngay2"></span></th>
+                            <th>Thứ 3<span id="ngay3"></span></th>
+                            <th>Thứ 4<span id="ngay4"></span></th>
+                            <th>Thứ 5<span id="ngay5"></span></th>
+                            <th>Thứ 6<span id="ngay6"></span></th>
+                            <th>Thứ 7<span id="ngay7"></span></th>
+                            <th>Chủ nhật<span id="ngayCN"></span></th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <th class="table-light">Sáng</th>
-                            <td id="sang2"></td>
-                            <td id="sang3"></td>
-                            <td id="sang4"></td>
-                            <td id="sang5"></td>
-                            <td id="sang6"></td>
-                            <td id="sang7"></td>
-                            <td id="sangCN"></td>
+                            <th>Sáng</th>
+                            <td id="sang2" class="student-schedule-cell"></td>
+                            <td id="sang3" class="student-schedule-cell"></td>
+                            <td id="sang4" class="student-schedule-cell"></td>
+                            <td id="sang5" class="student-schedule-cell"></td>
+                            <td id="sang6" class="student-schedule-cell"></td>
+                            <td id="sang7" class="student-schedule-cell"></td>
+                            <td id="sangCN" class="student-schedule-cell"></td>
                         </tr>
                         <tr>
-                            <th class="table-light">Chiều</th>
-                            <td id="chieu2"></td>
-                            <td id="chieu3"></td>
-                            <td id="chieu4"></td>
-                            <td id="chieu5"></td>
-                            <td id="chieu6"></td>
-                            <td id="chieu7"></td>
-                            <td id="chieuCN"></td>
+                            <th>Chiều</th>
+                            <td id="chieu2" class="student-schedule-cell"></td>
+                            <td id="chieu3" class="student-schedule-cell"></td>
+                            <td id="chieu4" class="student-schedule-cell"></td>
+                            <td id="chieu5" class="student-schedule-cell"></td>
+                            <td id="chieu6" class="student-schedule-cell"></td>
+                            <td id="chieu7" class="student-schedule-cell"></td>
+                            <td id="chieuCN" class="student-schedule-cell"></td>
                         </tr>
                     </tbody>
                 </table>
-            </div>
-
-            <!-- Phân trang tuần -->
-            <div class="d-flex justify-content-between mt-3">
-                <button class="btn btn-outline-primary" onclick="changeWeek(-1)">Tuần trước</button>
-                <button class="btn btn-outline-primary" onclick="changeWeek(1)">Tuần sau</button>
             </div>
         </div>
     </div>
 </div>
 
 <!-- Modal chi tiết -->
-<div class="modal fade" id="modalChiTiet" tabindex="-1" aria-labelledby="modalChiTietLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
+<div class="modal fade student-modal" id="modalChiTiet" tabindex="-1" aria-labelledby="modalChiTietLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
-            <div class="modal-header bg-info text-white">
-                <h5 class="modal-title" id="modalChiTietLabel">Chi Tiết Đợt Lao Động</h5>
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalChiTietLabel">
+                    <i class="fas fa-circle-info"></i> Chi tiết đợt lao động
+                </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
             </div>
             <div class="modal-body">
-                <div class="row">
+                <div class="row g-4 align-items-start">
                     <div class="col-md-6">
-                        <p><strong>Ngày:</strong> <span id="ctNgay"></span></p>
-                        <p><strong>Buổi:</strong> <span id="ctBuoi"></span></p>
-                        <p><strong>Loại lao động:</strong> <span id="ctLoai"></span></p>
-                        <p><strong>Địa điểm:</strong> <span id="ctDiaDiem"></span></p>
-                        <p><strong>Trạng thái:</strong> <span id="ctTrangThai"></span></p>
+                        <div class="student-detail-list">
+                            <div class="student-detail-item">
+                                <span class="student-detail-label">Ngày</span>
+                                <span id="ctNgay" class="student-detail-value"></span>
+                            </div>
+                            <div class="student-detail-item">
+                                <span class="student-detail-label">Buổi</span>
+                                <span id="ctBuoi" class="student-detail-value"></span>
+                            </div>
+                            <div class="student-detail-item">
+                                <span class="student-detail-label">Loại lao động</span>
+                                <span id="ctLoai" class="student-detail-value"></span>
+                            </div>
+                            <div class="student-detail-item">
+                                <span class="student-detail-label">Địa điểm</span>
+                                <span id="ctDiaDiem" class="student-detail-value"></span>
+                            </div>
+                            <div class="student-detail-item">
+                                <span class="student-detail-label">Trạng thái</span>
+                                <span id="ctTrangThai" class="student-detail-value"></span>
+                            </div>
+                        </div>
                     </div>
-                    <div class="col-md-6 text-center">
-                        <img id="ctHinh" src="" alt="Hình địa điểm" class="img-fluid rounded shadow" />
+                    <div class="col-md-6">
+                        <img id="ctHinh" src="" alt="Hình địa điểm" class="student-detail-image" />
                     </div>
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                <button type="button" class="student-btn student-btn-outline" data-bs-dismiss="modal">Đóng</button>
             </div>
         </div>
     </div>

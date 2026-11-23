@@ -1,0 +1,66 @@
+@{
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+    var currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+
+    bool IsActive(string controller, string action = null)
+    {
+        if (!string.Equals(currentController, controller, StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        return string.IsNullOrEmpty(action) ||
+               string.Equals(currentAction, action, StringComparison.OrdinalIgnoreCase);
+    }
+
+    bool isHome = IsActive("MainSinhVien", "Index");
+    bool isRegister = IsActive("StudentRegisterWord");
+    bool isStatistic = IsActive("StudentTK");
+    bool isSchedule = IsActive("StudentListDay");
+    bool isCheckDay = IsActive("StudentCheckDay");
+    bool isProfile = IsActive("MainSinhVien", "Detail");
+}
+
+<nav class="student-header-nav" id="studentHeaderNav" aria-label="Menu sinh viên">
+    <a href="@Url.Action("Index", "MainSinhVien", new { area = "Student" })"
+       class="student-header-nav-link @(isHome ? "active" : "")"
+       aria-current="@(isHome ? "page" : null)">
+        <i class="fas fa-home"></i>
+        <span>Trang chủ</span>
+    </a>
+
+    <a href="@Url.Action("Index", "StudentRegisterWord", new { area = "Student" })"
+       class="student-header-nav-link @(isRegister ? "active" : "")"
+       aria-current="@(isRegister ? "page" : null)">
+        <i class="fas fa-clipboard-list"></i>
+        <span>Đăng ký</span>
+    </a>
+
+    <a href="@Url.Action("Index", "StudentTK", new { area = "Student" })"
+       class="student-header-nav-link @(isStatistic ? "active" : "")"
+       aria-current="@(isStatistic ? "page" : null)">
+        <i class="fas fa-chart-line"></i>
+        <span>Thống kê</span>
+    </a>
+
+    <a href="@Url.Action("Index", "StudentListDay", new { area = "Student" })"
+       class="student-header-nav-link @(isSchedule ? "active" : "")"
+       aria-current="@(isSchedule ? "page" : null)">
+        <i class="fas fa-calendar-alt"></i>
+        <span>Lịch lao động</span>
+    </a>
+
+    <a href="@Url.Action("Index", "StudentCheckDay", new { area = "Student" })"
+       class="student-header-nav-link @(isCheckDay ? "active" : "")"
+       aria-current="@(isCheckDay ? "page" : null)">
+        <i class="fas fa-clipboard-check"></i>
+        <span>Điểm danh</span>
+    </a>
+
+    <a href="@Url.Action("Detail", "MainSinhVien", new { area = "Student" })"
+       class="student-header-nav-link @(isProfile ? "active" : "")"
+       aria-current="@(isProfile ? "page" : null)">
+        <i class="fas fa-id-card"></i>
+        <span>Hồ sơ</span>
+    </a>
+</nav>

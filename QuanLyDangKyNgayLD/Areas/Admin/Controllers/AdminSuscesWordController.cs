@@ -23,32 +23,35 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
 
         // Lấy danh sách phiếu xác nhận hoàn thành (liên kết MSSV với SinhVien)
         [HttpGet]
-        public ActionResult GetList(int page = 1, int pageSize = 10, string khoa = "", string keyword = "")
+        public ActionResult GetList(int page = 1, int pageSize = 10, string khoa = "", string keyword = "", string status = "pending")
         {
             using (var db = DbContextFactory.Create())
             {
-                var query = from phieu in db.PhieuXacNhanHoanThanhs
-                            join sv in db.SinhViens on phieu.MSSV equals sv.MSSV
-                            join lop in db.Lops on sv.Lop_id equals lop.Lop_id
-                            join k in db.Khoas on lop.Khoa_id equals k.Khoa_id
-                            join snld in db.SoNgayLaoDongs on sv.MSSV equals snld.MSSV into snldGroup
-                            from snld in snldGroup.DefaultIfEmpty()
-                            where (phieu.TrangThai == "Chờ Xác Nhận" || phieu.TrangThai == null)
-                                  && (snld != null && snld.TongSoNgay == 18)
-                            select new
-                            {
-                                id = phieu.id,
-                                MSSV = (sv.TaiKhoan1 != null && sv.TaiKhoan1.Username != null) ? sv.TaiKhoan1.Username : sv.MSSV.ToString(),
-                                HoTen = sv.HoTen,
-                                Lop = lop.TenLop,
-                                Khoa = k.TenKhoa,
-                                SoNgay = snld != null ? snld.TongSoNgay : 0
-                            };
+                var baseQuery = from phieu in db.PhieuXacNhanHoanThanhs
+                                join sv in db.SinhViens on phieu.MSSV equals sv.MSSV
+                                join lop in db.Lops on sv.Lop_id equals lop.Lop_id
+                                join k in db.Khoas on lop.Khoa_id equals k.Khoa_id
+                                join snld in db.SoNgayLaoDongs on sv.MSSV equals snld.MSSV into snldGroup
+                                from snld in snldGroup.DefaultIfEmpty()
+                                join ql in db.QuanLies on phieu.NguoiXacNhan equals (int?)ql.Quanly_id into qlGroup
+                                from ql in qlGroup.DefaultIfEmpty()
+                                select new
+                                {
+                                    id = phieu.id,
+                                    MSSV = (sv.TaiKhoan1 != null && sv.TaiKhoan1.Username != null) ? sv.TaiKhoan1.Username : sv.MSSV.ToString(),
+                                    HoTen = sv.HoTen,
+                                    Lop = lop.TenLop,
+                                    Khoa = k.TenKhoa,
+                                    SoNgay = snld != null ? snld.TongSoNgay : 0,
+                                    TrangThai = phieu.TrangThai,
+                                    NgayXacNhan = phieu.NgayXacNhan,
+                                    TenNguoiXacNhan = ql != null ? ql.Hoten : null
+                                };
 
                 // ✅ Lọc theo khoa nếu có truyền vào
                 if (!string.IsNullOrEmpty(khoa))
                 {
-                    query = query.Where(x => x.Khoa.Equals(khoa, StringComparison.OrdinalIgnoreCase));
+                    baseQuery = baseQuery.Where(x => x.Khoa.Equals(khoa, StringComparison.OrdinalIgnoreCase));
                 }
 
                 // ✅ Lọc theo từ khóa nếu có truyền vào
@@ -56,7 +59,7 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                 {
                     keyword = keyword.Trim();
                     string trimmedZero = keyword.TrimStart('0');
-                    query = query.Where(x =>
+                    baseQuery = baseQuery.Where(x =>
                         x.MSSV == keyword ||
                         (trimmedZero.Length > 0 && x.MSSV.Contains(trimmedZero)) ||
                         x.HoTen.Contains(keyword) ||
@@ -64,7 +67,17 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                         x.Khoa.Contains(keyword));
                 }
 
-                query = query.OrderBy(x => x.id);
+                var pendingQuery = baseQuery.Where(x => (x.TrangThai == "Chờ Xác Nhận" || x.TrangThai == null) && x.SoNgay == 18);
+                var completedQuery = baseQuery.Where(x => x.TrangThai == "Hoàn Thành");
+
+                bool isCompleted = string.Equals(status, "completed", StringComparison.OrdinalIgnoreCase);
+
+                int pendingCount = pendingQuery.Count();
+                int completedCount = completedQuery.Count();
+
+                var query = isCompleted
+                    ? completedQuery.OrderByDescending(x => x.NgayXacNhan).ThenBy(x => x.id)
+                    : pendingQuery.OrderBy(x => x.id);
 
                 int totalItems = query.Count();
                 if (pageSize <= 0) pageSize = 10;
@@ -73,16 +86,30 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                 if (page < 1) page = 1;
                 if (page > totalPages) page = totalPages;
 
-                var data = query.Skip((page - 1) * pageSize)
+                var rows = query.Skip((page - 1) * pageSize)
                                 .Take(pageSize)
                                 .ToList();
+
+                var data = rows.Select(x => new
+                {
+                    x.id,
+                    x.MSSV,
+                    x.HoTen,
+                    x.Lop,
+                    x.Khoa,
+                    x.SoNgay,
+                    NgayXacNhan = x.NgayXacNhan.HasValue ? x.NgayXacNhan.Value.ToString("dd/MM/yyyy HH:mm") : null,
+                    x.TenNguoiXacNhan
+                }).ToList();
 
                 return Json(new
                 {
                     data,
                     currentPage = page,
                     totalPages,
-                    totalItems
+                    totalItems,
+                    status = isCompleted ? "completed" : "pending",
+                    counts = new { pending = pendingCount, completed = completedCount }
                 }, JsonRequestBehavior.AllowGet);
             }
         }
@@ -99,14 +126,29 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
 
                 phieu.TrangThai = "Hoàn Thành";
                 phieu.NgayXacNhan = DateTime.Now;
-                phieu.NguoiXacNhan = 1;
+
+                int approverId = 1;
+                if (Session["Quanly_id"] is int qlId && qlId > 0)
+                {
+                    approverId = qlId;
+                }
+                else if (Session["TaiKhoan_id"] is int tkId)
+                {
+                    var ql = db.QuanLies.FirstOrDefault(q => q.TaiKhoan == tkId);
+                    if (ql != null) approverId = ql.Quanly_id;
+                }
+                phieu.NguoiXacNhan = approverId;
 
                 var sv = db.SinhViens.FirstOrDefault(s => s.MSSV == phieu.MSSV);
                 if (sv == null)
                     return Json(new { success = false, message = "Không tìm thấy sinh viên." });
 
-                // ✅ Ép MSSV (long) sang string để so sánh với Username (string)
-                var tk = db.TaiKhoans.FirstOrDefault(t => t.Username == sv.MSSV.ToString());
+                // ✅ Ép MSSV (long) sang string và kiểm tra cả TaiKhoan ID để khóa tài khoản chính xác
+                string mssvStr = sv.MSSV.ToString();
+                string mssvPadded = mssvStr.PadLeft(10, '0');
+                var tk = db.TaiKhoans.FirstOrDefault(t => (sv.TaiKhoan != null && t.TaiKhoan_id == sv.TaiKhoan)
+                                                       || t.Username == mssvStr
+                                                       || t.Username == mssvPadded);
                 if (tk != null)
                 {
                     tk.IsLocked = true;
@@ -114,26 +156,40 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
 
                 db.SaveChanges();
 
+                bool emailSent = false;
+                string emailError = null;
+
                 if (!string.IsNullOrEmpty(sv.Email))
                 {
                     try
                     {
-                        EmailHelperCompletion.SendCompletionEmail(sv.Email, sv.HoTen);
+                        emailSent = EmailHelperCompletion.SendCompletionEmail(sv.Email, sv.HoTen, out emailError);
                     }
                     catch (Exception ex)
                     {
-                        return Json(new
-                        {
-                            success = true,
-                            message = $"Đã duyệt và khóa tài khoản MSSV {sv.MSSV}, nhưng gửi email thất bại: {ex.Message}"
-                        });
+                        emailError = ex.Message;
                     }
+                }
+                else
+                {
+                    emailError = "Sinh viên chưa cập nhật Email trong hồ sơ.";
+                }
+
+                if (!emailSent)
+                {
+                    return Json(new
+                    {
+                        success = true,
+                        isEmailSent = false,
+                        message = $"Đã duyệt và khóa tài khoản MSSV {sv.MSSV} thành công! Lưu ý: Chưa thể gửi email thông báo: {emailError}"
+                    });
                 }
 
                 return Json(new
                 {
                     success = true,
-                    message = $"Đã duyệt, khóa tài khoản MSSV {sv.MSSV} và gửi email thành công!"
+                    isEmailSent = true,
+                    message = $"Đã duyệt, khóa tài khoản MSSV {sv.MSSV} và gửi email thông báo thành công đến {sv.Email}!"
                 });
             }
         }
@@ -458,7 +514,7 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
         // 📊 XUẤT DỮ LIỆU XÁC NHẬN HOÀN THÀNH RA EXCEL
         // ==============================================================
         [HttpGet]
-        public ActionResult ExportExcel(string khoa = "", string keyword = "")
+        public ActionResult ExportExcel(string khoa = "", string keyword = "", string status = "pending")
         {
             using (var db = DbContextFactory.Create())
             {
@@ -468,8 +524,6 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                             join k in db.Khoas on lop.Khoa_id equals k.Khoa_id
                             join snld in db.SoNgayLaoDongs on sv.MSSV equals snld.MSSV into snldGroup
                             from snld in snldGroup.DefaultIfEmpty()
-                            where (phieu.TrangThai == "Chờ Xác Nhận" || phieu.TrangThai == null)
-                                  && (snld != null && snld.TongSoNgay == 18)
                             select new
                             {
                                 phieu.id,
@@ -477,7 +531,9 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                                 sv.HoTen,
                                 Lop = lop.TenLop,
                                 Khoa = k.TenKhoa,
-                                SoNgay = snld != null ? snld.TongSoNgay : 0
+                                SoNgay = snld != null ? snld.TongSoNgay : 0,
+                                phieu.TrangThai,
+                                phieu.NgayXacNhan
                             };
 
                 if (!string.IsNullOrEmpty(khoa))
@@ -495,15 +551,31 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                         x.Khoa.Contains(keyword));
                 }
 
-                var list = query.OrderBy(x => x.id).ToList();
+                bool isCompleted = string.Equals(status, "completed", StringComparison.OrdinalIgnoreCase);
+
+                if (isCompleted)
+                {
+                    query = query.Where(x => x.TrangThai == "Hoàn Thành")
+                                 .OrderByDescending(x => x.NgayXacNhan)
+                                 .ThenBy(x => x.id);
+                }
+                else
+                {
+                    query = query.Where(x => (x.TrangThai == "Chờ Xác Nhận" || x.TrangThai == null) && x.SoNgay == 18)
+                                 .OrderBy(x => x.id);
+                }
+
+                var list = query.ToList();
 
                 using (var package = new ExcelPackage())
                 {
                     var ws = package.Workbook.Worksheets.Add("XacNhanHoanThanh");
 
                     // Tiêu đề
-                    ws.Cells["A1:F1"].Merge = true;
-                    ws.Cells["A1"].Value = "DANH SÁCH SINH VIÊN ĐỦ ĐIỀU KIỆN XÁC NHẬN HOÀN THÀNH LAO ĐỘNG";
+                    ws.Cells[isCompleted ? "A1:G1" : "A1:F1"].Merge = true;
+                    ws.Cells["A1"].Value = isCompleted
+                        ? "DANH SÁCH SINH VIÊN ĐÃ ĐƯỢC XÁC NHẬN HOÀN THÀNH LAO ĐỘNG"
+                        : "DANH SÁCH SINH VIÊN ĐỦ ĐIỀU KIỆN XÁC NHẬN HOÀN THÀNH LAO ĐỘNG";
                     ws.Cells["A1"].Style.Font.Bold = true;
                     ws.Cells["A1"].Style.Font.Size = 14;
                     ws.Cells["A1"].Style.Font.Color.SetColor(Color.White);
@@ -513,7 +585,9 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                     ws.Cells["A1"].Style.VerticalAlignment = ExcelVerticalAlignment.Center;
                     ws.Row(1).Height = 32;
 
-                    string[] headers = new string[] { "STT", "MSSV", "Họ và Tên", "Lớp", "Khoa", "Số Ngày Hoàn Thành" };
+                    string[] headers = isCompleted
+                        ? new string[] { "STT", "MSSV", "Họ và Tên", "Lớp", "Khoa", "Số Ngày Hoàn Thành", "Ngày Xác Nhận" }
+                        : new string[] { "STT", "MSSV", "Họ và Tên", "Lớp", "Khoa", "Số Ngày Hoàn Thành" };
 
                     for (int i = 0; i < headers.Length; i++)
                     {
@@ -538,6 +612,10 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                         ws.Cells[row, 4].Value = item.Lop;
                         ws.Cells[row, 5].Value = item.Khoa;
                         ws.Cells[row, 6].Value = item.SoNgay;
+                        if (isCompleted)
+                        {
+                            ws.Cells[row, 7].Value = item.NgayXacNhan.HasValue ? item.NgayXacNhan.Value.ToString("dd/MM/yyyy HH:mm") : "";
+                        }
 
                         for (int c = 1; c <= headers.Length; c++)
                         {
@@ -547,6 +625,10 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                         ws.Cells[row, 1].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
                         ws.Cells[row, 2].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
                         ws.Cells[row, 6].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                        if (isCompleted)
+                        {
+                            ws.Cells[row, 7].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                        }
 
                         row++;
                         stt++;
@@ -558,9 +640,15 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                     ws.Column(4).Width = 20;
                     ws.Column(5).Width = 30;
                     ws.Column(6).Width = 24;
+                    if (isCompleted)
+                    {
+                        ws.Column(7).Width = 20;
+                    }
 
                     var fileBytes = package.GetAsByteArray();
-                    string fileName = $"DanhSachXacNhanHoanThanh_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
+                    string fileName = isCompleted
+                        ? $"DanhSachDaXacNhanHoanThanh_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx"
+                        : $"DanhSachXacNhanHoanThanh_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
                     return File(fileBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
                 }
             }

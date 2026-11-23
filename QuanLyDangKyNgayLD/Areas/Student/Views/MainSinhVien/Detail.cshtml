@@ -5,158 +5,181 @@
     Layout = "~/Areas/Student/Views/Shared/Viewsiderbar.cshtml";
 }
 
-<div class="container mt-4">
-    <div class="card shadow-sm">
-        <div class="card-header bg-primary text-white">
-            <h4 class="mb-0">Thông tin sinh viên</h4>
+<div class="student-page">
+    <div class="student-page-head">
+        <div class="student-page-head-icon">
+            <i class="fas fa-user-circle"></i>
         </div>
-        <div class="card-body">
-            @using (Html.BeginForm("UpdateInfo", "MainSinhVien", FormMethod.Post, new { area = "Student", enctype = "multipart/form-data" }))
-            {
-                @Html.AntiForgeryToken()
+        <div class="student-page-head-main">
+            <nav class="student-breadcrumb" aria-label="Điều hướng">
+                <a href="@Url.Action("Index", "MainSinhVien", new { area = "Student" })">Trang chủ</a>
+                <i class="fas fa-chevron-right"></i>
+                <span aria-current="page">Hồ sơ cá nhân</span>
+            </nav>
+            <h1 class="student-page-title">Hồ sơ cá nhân</h1>
+            <p class="student-page-subtitle">Cập nhật thông tin liên hệ và ảnh đại diện của bạn.</p>
+        </div>
+    </div>
 
-                <!-- Hiển thị avatar hiện tại -->
-                <div class="text-center mb-4">
-                    <img id="avatarPreview"
-                         src="@(Model.Anh != null ? Url.Content(Model.Anh.DuongDan) : Url.Content("~/image/Avarta.png"))"
-                         class="rounded-circle"
-                         alt="Avatar"
-                         style="width:120px;height:120px;object-fit:cover;" />
-                </div>
+    @using (Html.BeginForm("UpdateInfo", "MainSinhVien", FormMethod.Post, new { area = "Student", enctype = "multipart/form-data", @class = "student-profile-layout", id = "profileForm" }))
+    {
+        @Html.AntiForgeryToken()
 
-                <!-- Upload ảnh mới -->
-                <div class="mb-3">
-                    <label class="form-label">Ảnh đại diện</label>
-                    <input type="file" name="AvatarFile" id="avatarFile" class="form-control" accept="image/*" />
-                </div>
+        <aside class="student-card student-profile-summary">
+            <img id="avatarPreview"
+                 src="@(Model.Anh != null ? Url.Content(Model.Anh.DuongDan) : "https://ui-avatars.com/api/?name=" + Url.Encode(Model.HoTen ?? "SV") + "&background=2563eb&color=fff&size=150&bold=true")"
+                 onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=@Url.Encode(Model.HoTen ?? "SV")&background=2563eb&color=fff&size=150&bold=true';"
+                 class="student-avatar-preview"
+                 alt="Ảnh đại diện" />
 
-                <!-- Thông tin cá nhân -->
-                <h5 class="text-primary mb-3">Thông tin cá nhân</h5>
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <label class="form-label">MSSV</label>
-                        @Html.TextBoxFor(m => m.MSSV, new { @class = "form-control", placeholder = "Nhập MSSV", @readonly = "readonly" })
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Họ và Tên</label>
-                        @Html.TextBoxFor(m => m.HoTen, new { @class = "form-control", placeholder = "Nhập họ tên", @readonly = "readonly" })
-                    </div>
-                </div>
+            <h2 class="student-profile-summary-name">@Model.HoTen</h2>
+            <p class="student-profile-summary-meta">@Model.MSSV</p>
 
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <label class="form-label">Email*</label>
-                        @Html.TextBoxFor(m => m.Email, new { @class = "form-control", placeholder = "Nhập email" })
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Số điện thoại*</label>
-                        @Html.TextBoxFor(m => m.SoDienThoaiSinhVien, new { @class = "form-control", placeholder = "Nhập số điện thoại" })
-                    </div>
-                </div>
+            <div class="student-profile-badges">
+                <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill">
+                    <i class="fas fa-users me-1"></i>@(Model.Lop != null ? Model.Lop.TenLop : "Chưa có lớp")
+                </span>
+                <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill">
+                    <i class="fas fa-user-tag me-1"></i>@(Model.TaiKhoan1 != null && Model.TaiKhoan1.VaiTro != null ? Model.TaiKhoan1.VaiTro.TenVaiTro : "Sinh viên")
+                </span>
+            </div>
 
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <label class="form-label">Ngày sinh*</label>
-                        @Html.TextBoxFor(m => m.NgaySinh, "{0:yyyy-MM-dd}", new { @class = "form-control", type = "date" })
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Giới tính</label>
-                        @Html.TextBoxFor(m => m.GioiTinh, new { @class = "form-control", @readonly = "readonly" })
-                    </div>
+            <label for="avatarFile" class="form-label">Ảnh đại diện</label>
+            <input type="file" name="AvatarFile" id="avatarFile" class="form-control" accept="image/*" />
+            <p class="form-text mt-2 mb-0">Chọn ảnh JPG hoặc PNG. Ảnh mới sẽ hiển thị ngay sau khi lưu.</p>
 
-                </div>
+            <div class="student-profile-note">
+                <i class="fas fa-lock"></i>
+                <span>MSSV, họ tên, khoa và lớp được quản lý bởi nhà trường và không thể chỉnh sửa tại đây.</span>
+            </div>
+        </aside>
 
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <label class="form-label">Quê quán*</label>
-                        @Html.TextBoxFor(m => m.QueQuan, new { @class = "form-control", placeholder = "Nhập quê quán" })
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Khoa</label>
-                        @Html.TextBoxFor(m => m.Lop.Khoa.TenKhoa, new
-                        {
-                            @class = "form-control",
-                            placeholder = "Khoa",
-                            @readonly = "readonly"
-                        })
-                    </div>
-                </div>
+        <section class="student-card">
+            <div class="student-card-header">
+                <h2 class="student-card-title">
+                    <span class="student-card-icon indigo"><i class="fas fa-id-card"></i></span>
+                    Thông tin sinh viên
+                </h2>
+            </div>
 
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <label class="form-label">Lớp</label>
-                        @Html.TextBoxFor(m => m.Lop.TenLop, new
-                        {
-                            @class = "form-control",
-                            placeholder = "Lớp",
-                            @readonly = "readonly"
-                        })
-                    </div>
+            <div class="student-card-body student-form">
+                <div class="student-form-section">
+                    <h3 class="student-section-title">
+                        <i class="fas fa-address-book"></i> Thông tin liên hệ
+                    </h3>
 
-                </div>
-
-
-                <!-- Thông tin tài khoản -->
-                <h5 class="text-primary mt-4 mb-3">Thông tin tài khoản</h5>
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <label class="form-label">Tên tài khoản</label>
-                        @Html.TextBoxFor(m => m.TaiKhoan1.Username, new { @class = "form-control", placeholder = "Tên đăng nhập", @readonly = "readonly" })
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Vai trò</label>
-                        @Html.TextBoxFor(m => m.TaiKhoan1.VaiTro.TenVaiTro, new { @class = "form-control", placeholder = "Vai trò", @readonly = "readonly" })
-                    </div>
-                </div>
-
-
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <label class="form-label">Mật khẩu mới*</label>
-                        <div class="input-group">
-                            <input type="password" name="MatKhauMoi" id="matkhau" class="form-control" placeholder="Nhập mật khẩu mới" />
-                            <span class="input-group-text" id="togglePassword" style="cursor: pointer;">
-                                <i class="fa fa-eye" id="eyeIcon"></i>
-                            </span>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label student-label-required" for="Email">Email</label>
+                            @Html.TextBoxFor(m => m.Email, new { @class = "form-control", placeholder = "Nhập email" })
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label student-label-required" for="SoDienThoaiSinhVien">Số điện thoại</label>
+                            @Html.TextBoxFor(m => m.SoDienThoaiSinhVien, new { @class = "form-control", placeholder = "Nhập số điện thoại" })
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label student-label-required" for="NgaySinh">Ngày sinh</label>
+                            @Html.TextBoxFor(m => m.NgaySinh, "{0:yyyy-MM-dd}", new { @class = "form-control", type = "date" })
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label student-label-required" for="QueQuan">Quê quán</label>
+                            @Html.TextBoxFor(m => m.QueQuan, new { @class = "form-control", placeholder = "Nhập quê quán" })
                         </div>
                     </div>
                 </div>
-                <script>
-                    document.getElementById("togglePassword").addEventListener("click", function () {
-                        const input = document.getElementById("matkhau");
-                        const icon = document.getElementById("eyeIcon");
 
-                        if (input.type === "password") {
-                            input.type = "text";
-                            icon.classList.remove("fa-eye");
-                            icon.classList.add("fa-eye-slash");
-                        } else {
-                            input.type = "password";
-                            icon.classList.remove("fa-eye-slash");
-                            icon.classList.add("fa-eye");
-                        }
-                    });
-                </script>
+                <div class="student-form-section">
+                    <h3 class="student-section-title">
+                        <i class="fas fa-graduation-cap"></i> Thông tin học vụ
+                    </h3>
 
-
-
-
-
-                <!-- Nút hành động -->
-                <div class="d-flex justify-content-between">
-                    <a href="@Url.Action("Index","MainSinhVien", new { area="Student" })" class="btn btn-secondary">
-                        Quay lại
-                    </a>
-                    <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label" for="MSSV">MSSV</label>
+                            @Html.TextBoxFor(m => m.MSSV, new { @class = "form-control", placeholder = "MSSV", @readonly = "readonly" })
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="HoTen">Họ và tên</label>
+                            @Html.TextBoxFor(m => m.HoTen, new { @class = "form-control", placeholder = "Họ tên", @readonly = "readonly" })
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="GioiTinh">Giới tính</label>
+                            @Html.TextBoxFor(m => m.GioiTinh, new { @class = "form-control", @readonly = "readonly" })
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="Lop_Khoa_TenKhoa">Khoa</label>
+                            @Html.TextBoxFor(m => m.Lop.Khoa.TenKhoa, new { @class = "form-control", placeholder = "Khoa", @readonly = "readonly" })
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="Lop_TenLop">Lớp</label>
+                            @Html.TextBoxFor(m => m.Lop.TenLop, new { @class = "form-control", placeholder = "Lớp", @readonly = "readonly" })
+                        </div>
+                    </div>
                 </div>
-            }
-        </div>
-    </div>
+
+                <div class="student-form-section">
+                    <h3 class="student-section-title">
+                        <i class="fas fa-shield-halved"></i> Thông tin tài khoản
+                    </h3>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label" for="TaiKhoan1_Username">Tên tài khoản</label>
+                            @Html.TextBoxFor(m => m.TaiKhoan1.Username, new { @class = "form-control", placeholder = "Tên đăng nhập", @readonly = "readonly" })
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="TaiKhoan1_VaiTro_TenVaiTro">Vai trò</label>
+                            @Html.TextBoxFor(m => m.TaiKhoan1.VaiTro.TenVaiTro, new { @class = "form-control", placeholder = "Vai trò", @readonly = "readonly" })
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label student-label-required" for="matkhau">Mật khẩu mới</label>
+                            <div class="input-group">
+                                <input type="password" name="MatKhauMoi" id="matkhau" class="form-control" placeholder="Nhập mật khẩu mới" />
+                                <span class="input-group-text" id="togglePassword" role="button" tabindex="0" aria-label="Hiện hoặc ẩn mật khẩu" style="cursor: pointer;">
+                                    <i class="fa fa-eye" id="eyeIcon"></i>
+                                </span>
+                            </div>
+                            <p class="form-text">Để trống nếu bạn không muốn thay đổi mật khẩu.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="student-form-actions">
+                    <a href="@Url.Action("Index", "MainSinhVien", new { area = "Student" })" class="btn student-btn student-btn-outline">
+                        <i class="fas fa-arrow-left"></i> Quay lại
+                    </a>
+                    <button type="submit" class="btn student-btn student-btn-primary">
+                        <i class="fas fa-floppy-disk"></i> Lưu thay đổi
+                    </button>
+                </div>
+            </div>
+        </section>
+    }
 </div>
 
-
 <script>
-    // Preview ảnh khi chọn file
+    document.getElementById("togglePassword").addEventListener("click", function () {
+        const input = document.getElementById("matkhau");
+        const icon = document.getElementById("eyeIcon");
+
+        if (input.type === "password") {
+            input.type = "text";
+            icon.classList.remove("fa-eye");
+            icon.classList.add("fa-eye-slash");
+        } else {
+            input.type = "password";
+            icon.classList.remove("fa-eye-slash");
+            icon.classList.add("fa-eye");
+        }
+    });
+
+    document.getElementById("togglePassword").addEventListener("keydown", function (event) {
+        if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            this.click();
+        }
+    });
+
     document.getElementById("avatarFile").addEventListener("change", function (event) {
         const file = event.target.files[0];
         if (file) {
@@ -168,4 +191,3 @@
         }
     });
 </script>
-<script src="~/Areas/Student/Content/Js/StudentMain/StudentInfo.js"></script>

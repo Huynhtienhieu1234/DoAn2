@@ -14,7 +14,7 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
             // Kiểm tra đăng nhập
             if (Session["User"] == null)
             {
-                return RedirectToAction("Login", "Account", new { area = "" });
+                return RedirectToAction("Login", "Login", new { area = "" });
             }
 
             return View();

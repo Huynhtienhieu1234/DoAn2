@@ -25,7 +25,7 @@
 
 /* ====================== CƠ BẢN ====================== */
 body {
-    background: linear-gradient(to bottom, #f0f9ff, #e0f7fa);
+    background: #f8fafc;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     color: var(--text);
     margin: 0;
@@ -189,15 +189,17 @@ body {
 }
 
     .table thead th {
-        background: #0029c8d9 !important;
-        background-color: #0029c8d9 !important;
-        color: #ffffff !important;
-        font-weight: 600;
+        background: #f8fafc !important;
+        background-color: #f8fafc !important;
+        background-image: none !important;
+        color: #475569 !important;
+        font-weight: 700;
         text-transform: uppercase;
-        font-size: 0.78rem;
-        letter-spacing: 0.8px;
+        font-size: 0.76rem;
+        letter-spacing: 0.05em;
         border: none;
-        padding: 16px 14px;
+        border-bottom: 2px solid #e2e8f0 !important;
+        padding: 12px 10px;
         text-align: center;
     }
 
@@ -313,7 +315,8 @@ btn-reset {
 }
 
 /* ====================== PHÂN TRANG ====================== */
-.d-flex.justify-content-between {
+.pagination-wrapper .d-flex.justify-content-between,
+#paginationGroup.d-flex.justify-content-between {
     justify-content: center !important;
     gap: 1rem;
     flex-wrap: wrap;
@@ -835,25 +838,28 @@ btn-reset {
 
 /*khung ảnh */
 .khuvuc-frame {
-    width: 61%;
-    max-width: 472px;
-    height: 221px;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 100% !important;
+    min-height: 280px;
     margin: 0px auto;
     border-radius: 14px;
     overflow: hidden;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.1);
-    background: #f0f9ff;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+    background: #0f172a;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
     .khuvuc-frame img {
-        max-width: 100%;
-        max-height: 100%;
-        object-fit: cover;
-        display: none;
-        border-radius: 0;
+        width: 100% !important;
+        height: 100% !important;
+        max-width: 100% !important;
+        max-height: 100% !important;
+        object-fit: cover !important;
+        display: block !important;
+        border-radius: 12px;
     }
 
 /*cuôi file */
@@ -897,20 +903,22 @@ body {
 }
 
 aside {
-    width: 290px;
-    min-height: 95vh;
-    margin: 20px;
+    width: 250px;
+    min-height: calc(100vh - 30px);
+    margin: 15px 0 15px 15px;
     background-color: #ffffff;
-    border-radius: 20px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-    transition: all 0.3s ease;
+    border-radius: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    transition: width 0.22s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
+    box-sizing: border-box;
 }
 
 main.main-content {
-    width: calc(100% - 300px);
-    margin-top: 10px;
-    margin-right: 20px;
+    width: calc(100% - 280px);
+    margin-top: 15px;
+    margin-right: 15px;
+    margin-left: 12px;
 }
 
 /* -------- THANH NGANG (NAVBAR) -------- */
@@ -933,12 +941,13 @@ main.main-content {
 .nav-link {
     display: flex !important;
     align-items: center;
-    padding: 12px 20px;
+    padding: 10px 14px;
     color: #5e6d85 !important;
     font-weight: 600;
-    transition: all 0.3s ease-in-out;
-    border-radius: 12px;
+    transition: all 0.2s ease-in-out;
+    border-radius: 10px;
     width: 100%;
+    box-sizing: border-box;
 }
 
     .nav-link i {
@@ -947,17 +956,17 @@ main.main-content {
     }
 
     .nav-link:hover {
-        background-color: #e7efff;
+        background-color: #f1f5f9;
         color: #1a2b5f !important;
-        padding-left: 25px;
+        padding-left: 14px;
     }
 
     .nav-link.active {
-        background-color: #dce5ff !important;
-        color: #1a2b5f !important;
+        background-color: #eff6ff !important;
+        color: #1d4ed8 !important;
         font-weight: 700;
-        box-shadow: inset 3px 0 0 #4b6cb7;
-        transform: translateX(4px);
+        box-shadow: none;
+        transform: none;
     }
 
 /* -------- CHÀO ADMIN -------- */
@@ -996,65 +1005,7 @@ button,
         transform: scale(1.03);
     }
 
-/* -------- TOOLBAR -------- */
-.toolbar {
-    background: #f8f9fa !important;
-    border-radius: 12px;
-    padding: 10px 15px;
-    margin-bottom: 10px;
-    border: 1px solid #e9ecef;
-}
 
-    .toolbar .container-fluid {
-        display: flex !important;
-        flex-wrap: wrap;
-        gap: 10px;
-        align-items: center;
-        padding: 0 !important;
-    }
-
-    .toolbar .collapse {
-        width: 100%;
-        display: flex !important;
-        flex-wrap: wrap;
-        gap: 10px;
-        align-items: center;
-    }
-
-    .toolbar .navbar-nav {
-        flex-wrap: wrap;
-        gap: 6px;
-        margin-bottom: 0;
-        display: flex;
-        align-items: center;
-    }
-
-    .toolbar .nav-item {
-        display: flex;
-        align-items: center;
-        flex-shrink: 0;
-    }
-
-    .toolbar .d-flex {
-        flex-wrap: wrap;
-        gap: 8px;
-        align-items: center;
-        flex-shrink: 0;
-    }
-
-    .toolbar .form-select {
-        flex-shrink: 0;
-        white-space: nowrap;
-        padding: 6px 10px;
-        font-size: 0.875rem;
-    }
-
-    .toolbar .btn {
-        flex-shrink: 0;
-        white-space: nowrap;
-        padding: 6px 12px;
-        font-size: 0.875rem;
-    }
 
 /* -------- SEARCH WRAPPER -------- */
 .search-wrapper {
@@ -1208,22 +1159,25 @@ table {
 
 /* -------- PHÂN TRANG -------- */
 .pagination-container {
-    margin-top: 8px;
-    display: flex;
+    display: inline-flex;
     justify-content: center;
     align-items: center;
-    gap: 6px;
+    gap: 4px;
 }
 
-    .pagination-container .btn {
+    .pagination-container .btn,
+    .pagination-container button {
         border-radius: 6px;
-        padding: 8px 12px;
-        min-width: 40px;
-        font-size: 0.9rem;
-        font-weight: 600;
+        padding: 0 8px;
+        min-width: 32px;
+        height: 32px;
+        font-size: 0.8125rem;
+        font-weight: 500;
         cursor: pointer;
-        transition: all 0.2s ease;
-        border: 1px solid #dee2e6 !important;
+        transition: all 0.15s ease;
+        border: 1px solid #e2e8f0;
+        background: #ffffff;
+        color: #475569;
     }
 
     .pagination-container #prev,
@@ -1231,52 +1185,53 @@ table {
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        min-width: 40px;
-        height: 40px;
-        padding: 0;
-        background-color: #007bff !important;
-        color: white !important;
-        border: none !important;
+        min-width: 32px;
+        height: 32px;
+        padding: 0 8px;
+        background-color: #ffffff;
+        color: #475569;
+        border: 1px solid #e2e8f0;
     }
 
-        .pagination-container #prev:hover,
-        .pagination-container #next:hover {
-            background-color: #0056b3 !important;
-            transform: scale(1.05);
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+        .pagination-container #prev:hover:not(:disabled),
+        .pagination-container #next:hover:not(:disabled) {
+            background-color: #f8fafc;
+            border-color: #cbd5e1;
+            color: #0f172a;
         }
 
         .pagination-container #prev:disabled,
         .pagination-container #next:disabled {
-            background-color: #e9ecef !important;
-            color: #999 !important;
+            background-color: #f8fafc;
+            border-color: #e2e8f0;
+            color: #94a3b8;
             cursor: not-allowed;
-            opacity: 0.5;
-        }
-
-        .pagination-container #prev:active,
-        .pagination-container #next:active {
-            transform: scale(0.95);
+            opacity: 0.55;
         }
 
     .pagination-container span button {
-        background-color: #f8f9fa !important;
-        color: #333 !important;
-        border: 1px solid #dee2e6 !important;
-        min-width: 35px;
-        height: 35px;
-        padding: 0;
+        background-color: #ffffff;
+        color: #475569;
+        border: 1px solid #e2e8f0;
+        min-width: 32px;
+        height: 32px;
+        padding: 0 8px;
+        border-radius: 6px;
+        font-size: 0.8125rem;
+        font-weight: 500;
     }
 
-        .pagination-container span button:hover {
-            background-color: #e9ecef !important;
-            border-color: #007bff !important;
+        .pagination-container span button:hover:not(:disabled):not(.active) {
+            background-color: #f8fafc;
+            border-color: #cbd5e1;
+            color: #0f172a;
         }
 
         .pagination-container span button.active {
-            background-color: #007bff !important;
-            color: white !important;
-            border-color: #007bff !important;
+            background-color: #2563eb;
+            color: #ffffff;
+            border-color: #2563eb;
+            font-weight: 600;
         }
 
 /* -------- MODAL (Bootstrap compatible) -------- */
@@ -2092,4 +2047,178 @@ table {
     white-space: nowrap !important;
     text-align: center !important;
     padding: 6px 2px !important;
-}
+}
+/* ============================================================= */
+/* TIẾN TRÌNH LAO ĐỘNG SINH VIÊN                                 */
+/* ============================================================= */
+.student-progress-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    width: 100%;
+    padding: 3px 4px;
+    border: 0;
+    background: transparent;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.student-progress-cell:hover {
+    background: #f1f5f9;
+}
+
+.student-progress-value {
+    font-size: 0.78rem;
+    font-weight: 700;
+    line-height: 1;
+    color: #2563eb;
+}
+
+.student-progress-track {
+    display: block;
+    width: 100%;
+    max-width: 58px;
+    height: 5px;
+    border-radius: 999px;
+    background: #e2e8f0;
+    overflow: hidden;
+}
+
+.student-progress-fill {
+    display: block;
+    height: 100%;
+    border-radius: 999px;
+    background: #2563eb;
+}
+
+.student-progress-cell.is-waiting .student-progress-value {
+    color: #b45309;
+}
+
+.student-progress-cell.is-waiting .student-progress-fill {
+    background: #d97706;
+}
+
+.student-progress-cell.is-done .student-progress-value {
+    color: #059669;
+}
+
+.student-progress-cell.is-done .student-progress-fill {
+    background: #059669;
+}
+
+.student-progress-panel {
+    border: 1px solid #e2e8f0;
+    border-left: 4px solid #2563eb;
+    border-radius: 10px;
+    background: #f8fafc;
+    padding: 14px 16px;
+    margin-bottom: 18px;
+}
+
+.student-progress-panel.is-waiting {
+    border-left-color: #d97706;
+}
+
+.student-progress-panel.is-done {
+    border-left-color: #059669;
+}
+
+.student-progress-panel-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+
+.student-progress-panel-title {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.student-progress-panel-sub {
+    display: block;
+    margin-top: 2px;
+    font-size: 0.78rem;
+    color: #64748b;
+}
+
+.student-progress-status {
+    flex: none;
+    padding: 3px 8px;
+    border-radius: 999px;
+    background: #e0e7ff;
+    color: #2563eb;
+    font-size: 0.72rem;
+    font-weight: 700;
+}
+
+.student-progress-panel.is-waiting .student-progress-status {
+    background: #fef3c7;
+    color: #b45309;
+}
+
+.student-progress-panel.is-done .student-progress-status {
+    background: #d1fae5;
+    color: #047857;
+}
+
+.student-progress-panel-track {
+    height: 7px;
+    border-radius: 999px;
+    background: #e2e8f0;
+    overflow: hidden;
+}
+
+.student-progress-panel-track > span {
+    display: block;
+    height: 100%;
+    border-radius: 999px;
+    background: #2563eb;
+}
+
+.student-progress-panel.is-waiting .student-progress-panel-track > span {
+    background: #d97706;
+}
+
+.student-progress-panel.is-done .student-progress-panel-track > span {
+    background: #059669;
+}
+
+.student-progress-panel-foot {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 8px;
+    font-size: 0.78rem;
+    color: #64748b;
+}
+
+.student-progress-panel-foot strong {
+    color: #0f172a;
+}
+
+@media (max-width: 767.98px) {
+    .student-progress-panel {
+        padding: 12px;
+    }
+
+    .student-progress-panel-head {
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .student-progress-panel-foot {
+        flex-direction: column;
+        gap: 4px;
+    }
+}
+
+/* Bảng 9 cột cần đủ rộng để cột tiến trình không bị bóp trên mobile */
+.student-data-table {
+    min-width: 900px !important;
+}

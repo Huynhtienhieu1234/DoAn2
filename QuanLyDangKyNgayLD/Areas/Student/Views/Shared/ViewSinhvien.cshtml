@@ -14,179 +14,25 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <!-- CSS riêng -->
     <link rel="stylesheet" href="@Url.Content("~/Areas/Student/Content/Css/Dashboard.css?v=" + DateTime.Now.Ticks)">
+    <link rel="stylesheet" href="@Url.Content("~/Areas/Student/Content/Css/StudentHeaderNav.css?v=" + DateTime.Now.Ticks)">
+    <link rel="stylesheet" href="@Url.Content("~/Areas/Student/Content/Css/StudentPages.css?v=" + DateTime.Now.Ticks)">
     <!-- Favicon -->
-    <link rel="icon" type="image/png" href="https://cdn.jsdelivr.net/gh/Huynhtienhieu1234/UploadAnh/logoxoanen.png" />
+    <link rel="icon" type="image/png" href="@Url.Content("~/favicon.png?v=3")" />
+    <link rel="shortcut icon" type="image/x-icon" href="@Url.Content("~/favicon.ico?v=3")" />
 </head>
 
 <body>
-    <!-- Modern Header -->
-    <header class="student-header sticky-top">
-        <div class="container-xl d-flex align-items-center justify-content-between py-2">
-            <!-- Brand / Logo -->
-            <a href="@Url.Action("Index", "MainSinhVien", new { area = "Student" })" class="d-flex align-items-center text-decoration-none brand-link">
-                <img src="https://cdn.jsdelivr.net/gh/Huynhtienhieu1234/UploadAnh/sinhvien/LogoTruong.png" alt="Logo DThU" class="header-logo me-2">
-            </a>
+    <a class="student-skip-link" href="#studentMainContent">Bỏ qua điều hướng</a>
 
-            <!-- Right Actions -->
-            <div class="d-flex align-items-center gap-2">
-                <!-- Chuông thông báo (bên trái tên sinh viên) -->
-                <button type="button" 
-                        class="btn btn-light position-relative rounded-circle shadow-sm border p-0 d-flex align-items-center justify-content-center header-bell-btn me-1"
-                        id="headerBellBtn"
-                        data-bs-toggle="modal" 
-                        data-bs-target="#modalThongBao"
-                        title="Xem thông báo đợt lao động mới"
-                        style="width: 38px; height: 38px; color: #334155; background-color: #ffffff; transition: all .2s ease; cursor: pointer;">
-                    <i class="fas fa-bell fs-5 text-primary"></i>
-                    <span id="headerBellBadge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-white" style="display: none; font-size: 0.65rem; padding: 3px 6px;">
-                        0
-                    </span>
-                </button>
-
-                <!-- User Dropdown (Gồm Hồ sơ cá nhân và Đăng xuất) -->
-                <div class="dropdown">
-                    <button class="btn user-greeting-pill d-flex align-items-center gap-2 py-1 px-3 rounded-pill bg-white shadow-sm border dropdown-toggle" 
-                            type="button" 
-                            id="userDropdownBtn" 
-                            data-bs-toggle="dropdown" 
-                            aria-expanded="false"
-                            style="cursor: pointer; transition: all .2s ease;">
-                        <span class="status-indicator online"></span>
-                        <span class="fw-semibold text-dark small" id="navStudentName">Sinh viên</span>
-                        <i class="fas fa-chevron-down text-muted ms-1" style="font-size: 0.72rem;"></i>
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-4 mt-2 py-2" aria-labelledby="userDropdownBtn" style="min-width: 210px;">
-                        <li>
-                            <a class="dropdown-item d-flex align-items-center gap-2 py-2 px-3 text-dark" href="@Url.Action("Detail", "MainSinhVien", new { area = "Student" })">
-                                <i class="fas fa-id-card text-primary fs-6"></i>
-                                <span class="fw-medium">Hồ sơ cá nhân</span>
-                            </a>
-                        </li>
-                        <li><hr class="dropdown-divider my-1"></li>
-                        <li>
-                            <a class="dropdown-item d-flex align-items-center gap-2 py-2 px-3 text-danger" href="javascript:void(0);" id="logoutDropdownItem">
-                                <i class="fas fa-sign-out-alt fs-6"></i>
-                                <span class="fw-medium">Đăng xuất</span>
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </header>
+    @Html.Partial("_StudentHeader")
 
     <!-- Main Content Area -->
-    <main class="student-main-content py-4">
+    <main class="student-main-content py-4" id="studentMainContent">
         @RenderBody()
     </main>
 
-    <!-- Modal Thông Báo Lao Động Mới -->
-    <div class="modal fade" id="modalThongBao" tabindex="-1" aria-labelledby="modalThongBaoLabel" aria-hidden="true">
-        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
-            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
-                <div class="modal-header bg-primary text-white py-3 px-4">
-                    <div class="d-flex align-items-center gap-2">
-                        <div class="rounded-circle bg-white text-primary p-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
-                            <i class="fas fa-bell"></i>
-                        </div>
-                        <h5 class="modal-title fw-bold mb-0" id="modalThongBaoLabel">Thông Báo Đợt Lao Động Mới</h5>
-                    </div>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Đóng"></button>
-                </div>
-                <div class="modal-body p-4 bg-light">
-                    <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
-                        <div class="table-responsive">
-                            <table class="table table-hover align-middle mb-0">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th class="text-center" style="width: 50px;">STT</th>
-                                        <th style="min-width: 180px;">Tiêu đề</th>
-                                        <th>Nội dung</th>
-                                        <th class="text-center" style="min-width: 130px;">Thời gian</th>
-                                        <th class="text-center" style="min-width: 130px;">Thao tác</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="thongBaoTableBody">
-                                    <tr>
-                                        <td colspan="5" class="text-center text-muted py-5">
-                                            <div class="spinner-border text-primary spinner-border-sm me-2" role="status"></div>
-                                            <span class="fw-medium">Đang tải thông báo...</span>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer bg-white border-top py-2 px-4 d-flex justify-content-between">
-                    <a href="@Url.Action("Index", "StudentRegisterWord", new { area = "Student" })" class="btn btn-primary rounded-pill px-4 fw-bold">
-                        <i class="fas fa-clipboard-list me-1"></i> Đến trang Đăng ký lao động
-                    </a>
-                    <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Đóng</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Toast container -->
-    <div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastContainer" style="z-index: 1090;"></div>
-
-    <!-- Modal xác nhận thoát -->
-    <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-sm">
-            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
-                <div class="modal-header bg-danger text-white border-0 py-3">
-                    <h6 class="modal-title fw-bold d-flex align-items-center gap-2" id="logoutModalLabel">
-                        <i class="fas fa-sign-out-alt"></i> Xác nhận đăng xuất
-                    </h6>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body text-center py-4">
-                    <div class="text-danger mb-3">
-                        <i class="fas fa-power-off fa-3x"></i>
-                    </div>
-                    <p class="mb-0 fw-medium text-secondary">Bạn có chắc chắn muốn rời khỏi phiên làm việc hiện tại không?</p>
-                </div>
-                <div class="modal-footer border-0 justify-content-center bg-light py-2">
-                    <button type="button" class="btn btn-light rounded-pill px-3" data-bs-dismiss="modal">Hủy</button>
-                    <a href="@Url.Action("Logout", "Login", new { area = "" })" class="btn btn-danger rounded-pill px-4 shadow-sm">Đồng ý</a>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
-    <script>
-        // Mở modal khi click icon thoát
-        document.querySelectorAll("#logoutIcon, #logoutDropdownItem").forEach(el => {
-            el.addEventListener("click", function () {
-                var modal = new bootstrap.Modal(document.getElementById("logoutModal"));
-                modal.show();
-            });
-        });
-
-        // Hàm show toast
-        function showToast(message, type = "info") {
-            const toastContainer = document.getElementById("toastContainer");
-            if (!toastContainer) return;
-            const toastEl = document.createElement("div");
-            toastEl.className = `toast align-items-center text-bg-${type} border-0 rounded-3 shadow`;
-            toastEl.role = "alert";
-            toastEl.ariaLive = "assertive";
-            toastEl.ariaAtomic = "true";
-            toastEl.innerHTML = `
-                <div class="d-flex">
-                    <div class="toast-body fw-medium">${message}</div>
-                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-                </div>
-            `;
-            toastContainer.appendChild(toastEl);
-            const bsToast = new bootstrap.Toast(toastEl, { delay: 3500 });
-            bsToast.show();
-            toastEl.addEventListener('hidden.bs.toast', () => toastEl.remove());
-        }
-    </script>
+    <script src="@Url.Content("~/Areas/Student/Content/Js/StudentHeaderNav.js?v=" + DateTime.Now.Ticks)"></script>
 </body>
 </html>

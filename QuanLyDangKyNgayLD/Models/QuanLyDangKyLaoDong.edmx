@@ -55,7 +55,7 @@
           <Key>
             <PropertyRef Name="PhieuDuyet_id" />
           </Key>
-          <Property Name="PhieuDuyet_id" Type="int" Nullable="false" />
+          <Property Name="PhieuDuyet_id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="Nguoiduyet" Type="int" />
           <Property Name="ThoiGian" Type="datetime" />
           <Property Name="PhieuDangKy" Type="int" />
@@ -65,7 +65,7 @@
           <Key>
             <PropertyRef Name="id" />
           </Key>
-          <Property Name="id" Type="int" Nullable="false" />
+          <Property Name="id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="MSSV" Type="bigint" Nullable="false" />
           <Property Name="phieuduyet" Type="int" />
           <Property Name="NguoiXacNhan" Type="int" />
@@ -152,6 +152,7 @@
           <Property Name="NguoiTao" Type="int" />
           <Property Name="MaDiemDanh" Type="nvarchar" MaxLength="10" />
           <Property Name="TrangThaiDot" Type="nvarchar" MaxLength="50" />
+          <Property Name="SoLuongLop" Type="int" />
         </EntityType>
         <EntityType Name="VaiTro">
           <Key>
@@ -461,7 +462,7 @@
           <Key>
             <PropertyRef Name="PhieuDuyet_id" />
           </Key>
-          <Property Name="PhieuDuyet_id" Type="Int32" Nullable="false" />
+          <Property Name="PhieuDuyet_id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
           <Property Name="Nguoiduyet" Type="Int32" />
           <Property Name="ThoiGian" Type="DateTime" Precision="3" />
           <Property Name="PhieuDangKy" Type="Int32" />
@@ -474,7 +475,7 @@
           <Key>
             <PropertyRef Name="id" />
           </Key>
-          <Property Name="id" Type="Int32" Nullable="false" />
+          <Property Name="id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
           <Property Name="MSSV" Type="Int64" Nullable="false" />
           <Property Name="phieuduyet" Type="Int32" />
           <Property Name="NguoiXacNhan" Type="Int32" />
@@ -576,6 +577,7 @@
           <NavigationProperty Name="PhieuDangKies" Relationship="Self.FK_PhieuDangKy_TaoDot" FromRole="TaoDotNgayLaoDong" ToRole="PhieuDangKy" />
           <Property Name="MaDiemDanh" Type="String" MaxLength="10" FixedLength="false" Unicode="true" />
           <Property Name="TrangThaiDot" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="SoLuongLop" Type="Int32" />
         </EntityType>
         <EntityType Name="VaiTro">
           <Key>
@@ -973,6 +975,7 @@
                 <ScalarProperty Name="TrangThaiDuyet" ColumnName="TrangThaiDuyet" />
                 <ScalarProperty Name="MoTa" ColumnName="MoTa" />
                 <ScalarProperty Name="NguoiTao" ColumnName="NguoiTao" />
+                <ScalarProperty Name="SoLuongLop" ColumnName="SoLuongLop" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>

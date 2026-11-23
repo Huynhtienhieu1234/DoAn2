@@ -1,0 +1,535 @@
+/* =========================================================
+   STUDENT HEADER - DÙNG CHUNG CHO MỌI TRANG SINH VIÊN
+   ========================================================= */
+
+:root {
+    --student-header-height: 80px;
+}
+
+/* ===== Thanh header cố định ===== */
+nav.student-navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: var(--student-header-height);
+    padding: 0 28px;
+    display: flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.97);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid #e2e8f0;
+    box-shadow: 0 2px 12px rgba(15, 23, 42, 0.05);
+    z-index: 1030;
+}
+
+.nav-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    height: 100%;
+}
+
+.logo-brand {
+    height: 44px;
+    width: auto;
+    max-width: 185px;
+    object-fit: contain;
+    transition: transform 0.2s ease;
+}
+
+.logo-brand:hover {
+    transform: scale(1.02);
+}
+
+.header-nav-toggle {
+    display: none;
+    width: 42px;
+    height: 42px;
+    flex: 0 0 42px;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #e2e8f0;
+    border-radius: 50%;
+    background: #ffffff;
+    color: #334155;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.header-nav-toggle:hover {
+    background: #eff6ff;
+    border-color: #bfdbfe;
+    color: #2563eb;
+}
+
+.header-nav-toggle:focus-visible {
+    outline: 2px solid #2563eb;
+    outline-offset: 2px;
+}
+
+/* ===== Menu điều hướng trên header ===== */
+.student-header-nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1 1 auto;
+    gap: 4px;
+    min-width: 0;
+    height: 100%;
+    margin: 0 20px;
+    padding: 0;
+    list-style: none;
+}
+
+.student-header-nav-link {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 100%;
+    padding: 0 14px;
+    border-radius: 0;
+    color: #475569;
+    font-size: 0.86rem;
+    font-weight: 600;
+    line-height: 1.2;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: color 0.2s ease;
+}
+
+.student-header-nav-link::before {
+    content: "";
+    position: absolute;
+    left: 6px;
+    right: 6px;
+    top: 50%;
+    height: 42px;
+    border-radius: 12px;
+    background: transparent;
+    transform: translateY(-50%);
+    transition: background-color 0.2s ease, box-shadow 0.2s ease;
+    z-index: 0;
+}
+
+.student-header-nav-link::after {
+    content: "";
+    position: absolute;
+    left: 10px;
+    right: 10px;
+    bottom: 0;
+    height: 3px;
+    border-radius: 3px 3px 0 0;
+    background: #2563eb;
+    opacity: 0;
+    transform: scaleX(0.35);
+    transform-origin: center;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    z-index: 2;
+}
+
+.student-header-nav-link i,
+.student-header-nav-link span {
+    position: relative;
+    z-index: 1;
+}
+
+.student-header-nav-link i {
+    font-size: 0.95rem;
+}
+
+.student-header-nav-link:hover {
+    color: #2563eb;
+}
+
+.student-header-nav-link:hover::before {
+    background: #eff6ff;
+}
+
+.student-header-nav-link:hover::after,
+.student-header-nav-link:focus-visible::after {
+    opacity: 1;
+    transform: scaleX(1);
+}
+
+.student-header-nav-link.active {
+    color: #ffffff;
+}
+
+.student-header-nav-link.active::before {
+    background: #2563eb;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.28);
+}
+
+.student-header-nav-link.active::after {
+    background: #2563eb;
+    opacity: 1;
+    transform: scaleX(1);
+}
+
+.student-header-nav-link.active:hover {
+    color: #ffffff;
+}
+
+/* ===== Cụm hành động bên phải ===== */
+.student-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 0 0 auto;
+}
+
+.header-bell-btn {
+    position: relative;
+    width: 42px;
+    height: 42px;
+    flex: 0 0 42px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #e2e8f0;
+    border-radius: 50%;
+    background: #ffffff;
+    color: #2563eb;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.header-bell-btn:hover {
+    background: #eff6ff;
+    border-color: #bfdbfe;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.12);
+}
+
+.header-bell-btn i {
+    font-size: 1rem;
+}
+
+.header-bell-badge {
+    position: absolute;
+    top: -3px;
+    right: -3px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #ffffff;
+    border-radius: 9999px;
+    background: #ef4444;
+    color: #ffffff;
+    font-size: 0.65rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+/* ===== Người dùng trên header ===== */
+.user-menu-pill {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    position: relative;
+    padding: 5px 16px 5px 6px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 9999px;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.user-menu-pill:hover {
+    background: #ffffff;
+    border-color: #cbd5e1;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.user-menu-pill:focus-visible {
+    outline: none;
+    border-color: #93c5fd;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
+}
+
+.user-avatar-wrapper {
+    position: relative;
+    width: 38px;
+    height: 38px;
+    flex: 0 0 38px;
+}
+
+.user-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #ffffff;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.user-status-dot {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 10px;
+    height: 10px;
+    background-color: #10b981;
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+}
+
+.user-name-text {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #0f172a;
+    max-width: 160px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.user-dropdown-arrow {
+    font-size: 0.72rem;
+    color: #64748b;
+    transition: transform 0.2s ease;
+}
+
+.user-menu-pill.open .user-dropdown-arrow {
+    transform: rotate(180deg);
+}
+
+.user-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    min-width: 200px;
+    margin: 0;
+    padding: 8px 0;
+    display: none;
+    list-style: none;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.1);
+    z-index: 1040;
+    animation: fadeInSlide 0.2s ease;
+}
+
+@keyframes fadeInSlide {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.user-dropdown-menu.show {
+    display: block;
+}
+
+.user-dropdown-menu li a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    font-size: 0.88rem;
+    font-weight: 500;
+    color: #334155;
+    text-decoration: none;
+    transition: all 0.15s ease;
+}
+
+.user-dropdown-menu li a:hover {
+    background-color: #f1f5f9;
+    color: #2563eb;
+}
+
+.user-dropdown-menu li a.text-danger:hover {
+    background-color: #fef2f2;
+    color: #dc2626 !important;
+}
+
+.user-dropdown-divider {
+    height: 1px;
+    margin: 6px 0;
+    background-color: #e2e8f0;
+}
+
+/* Trang dùng layout dashboard: bù khoảng trống cho header cố định */
+.student-main-content {
+    padding: calc(var(--student-header-height) + 1.5rem) 24px 32px !important;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 1199.98px) {
+    .header-nav-toggle {
+        display: inline-flex;
+    }
+
+    .student-header-nav {
+        position: absolute;
+        top: calc(100% + 8px);
+        left: 12px;
+        right: 12px;
+        display: none;
+        flex-direction: column;
+        align-items: stretch;
+        justify-content: flex-start;
+        gap: 2px;
+        height: auto;
+        margin: 0;
+        padding: 8px;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        box-shadow: 0 16px 40px rgba(15, 23, 42, 0.16);
+        z-index: 1045;
+    }
+
+    .student-header-nav.show {
+        display: flex;
+        animation: headerNavDrop 0.18s ease-out;
+    }
+
+    .student-header-nav-link {
+        height: auto;
+        padding: 10px 12px;
+        border-radius: 10px;
+        font-size: 0.88rem;
+        transition: background-color 0.2s ease, color 0.2s ease;
+    }
+
+    .student-header-nav-link::before,
+    .student-header-nav-link::after {
+        display: none;
+    }
+
+    .student-header-nav-link:hover {
+        background: #eff6ff;
+        color: #2563eb;
+    }
+
+    .student-header-nav-link.active {
+        background: #2563eb;
+        color: #ffffff;
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.28);
+    }
+
+    .student-header-nav-link i {
+        width: 20px;
+        text-align: center;
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 767.98px) {
+    :root {
+        --student-header-height: 72px;
+    }
+
+    nav.student-navbar {
+        padding: 0 12px;
+    }
+
+    .logo-brand {
+        height: 36px;
+        max-width: 145px;
+    }
+
+    .header-nav-toggle {
+        width: 40px;
+        height: 40px;
+        flex-basis: 40px;
+    }
+
+    .header-bell-btn {
+        width: 38px;
+        height: 38px;
+        flex-basis: 38px;
+    }
+
+    .user-avatar,
+    .user-avatar-wrapper {
+        width: 34px;
+        height: 34px;
+        flex-basis: 34px;
+    }
+
+    .user-menu-pill {
+        padding: 4px 10px 4px 4px;
+        gap: 6px;
+    }
+
+    .user-name-text {
+        max-width: 100px;
+        font-size: 0.82rem;
+    }
+
+    .student-main-content {
+        padding: calc(var(--student-header-height) + 1rem) 10px 24px !important;
+    }
+}
+
+@media (max-width: 575.98px) {
+    :root {
+        --student-header-height: 64px;
+    }
+
+    nav.student-navbar {
+        padding: 0 10px;
+    }
+
+    .logo-brand {
+        height: 30px;
+        max-width: 115px;
+    }
+
+    .header-nav-toggle {
+        width: 36px;
+        height: 36px;
+        flex-basis: 36px;
+    }
+
+    .user-name-text {
+        max-width: 70px;
+        font-size: 0.78rem;
+    }
+
+    .user-avatar,
+    .user-avatar-wrapper {
+        width: 30px;
+        height: 30px;
+        flex-basis: 30px;
+    }
+
+    .header-bell-btn {
+        width: 34px;
+        height: 34px;
+        flex-basis: 34px;
+    }
+
+    .student-main-content {
+        padding: calc(var(--student-header-height) + 10px) 8px 20px !important;
+    }
+}
+
+@keyframes headerNavDrop {
+    from {
+        opacity: 0;
+        transform: translateY(-6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

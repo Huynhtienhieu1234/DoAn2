@@ -28,8 +28,12 @@ document.addEventListener("DOMContentLoaded", function () {
         const role = activeRole;
         const search = searchBox ? searchBox.value.trim() : "";
 
-        if (loading) loading.style.display = "block";
-        animateTable();
+        if (typeof window.renderTableSkeleton === "function" && tableBody) {
+            window.renderTableSkeleton(tableBody, pageSize > 8 ? 8 : pageSize, 6);
+        } else if (loading) {
+            loading.style.display = "block";
+            animateTable();
+        }
 
         fetch(`/Admin/Account/FilterSearchAccounts?page=${page}&pageSize=${pageSize}&search=${encodeURIComponent(search)}&role=${encodeURIComponent(role)}`)
             .then(r => r.json())
@@ -51,6 +55,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 data.forEach((acc, index) => {
                     const row = document.createElement("tr");
+                    row.className = "fade-in-data";
                     row.innerHTML = `
                         <td class="text-center"><input type="checkbox" class="form-check-input check-item-account" value="${acc.TaiKhoan_id}"></td>
                         <td class="stt-cell">${(currentPage - 1) * pageSize + index + 1}</td>

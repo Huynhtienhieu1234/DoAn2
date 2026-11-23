@@ -22,7 +22,7 @@ document.addEventListener("DOMContentLoaded", function () {
             const pastB = dateB < todayStart;
             if (!pastA && pastB) return -1;
             if (pastA && !pastB) return 1;
-            return dateA - dateB;
+            return (dateB || 0) - (dateA || 0);
         });
 
         const totalPages = Math.ceil(sorted.length / pageSize) || 1;
@@ -49,9 +49,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 ? `<span class="badge status-approved"><i class="fas fa-check-circle me-1"></i>Đã duyệt</span>`
                 : `<span class="badge status-pending"><i class="fas fa-clock me-1"></i>Chưa duyệt</span>`;
 
-            const daDangKy = item.SoLuongDaDangKy || 0;
-            const can = item.SoLuongSinhVien || 0;
-            const mauSoLuong = daDangKy >= can ? "text-success fw-bold" : "text-danger fw-bold";
+            const soLopDaDangKy = item.SoLopDaDangKy !== undefined ? item.SoLopDaDangKy : (item.SoLuongDaDangKy > 0 ? 1 : 0);
+            const tongLop = item.SoLuongLop || 1;
+            const gioiHanSV = item.SoLuongSinhVien || 20;
+            const mauSoLuong = soLopDaDangKy >= tongLop ? "text-success fw-bold" : "text-danger fw-bold";
 
             const isPast = parseDate(item.NgayLaoDong) < todayStart;
 
@@ -75,7 +76,12 @@ document.addEventListener("DOMContentLoaded", function () {
                     <td><span class="badge badge-type">${item.LoaiLaoDong || ''}</span></td>
                     <td class="fw-bold text-success-emphasis">${item.GiaTri || 0}</td>
                     <td><span class="badge badge-location"><i class="fas fa-map-marker-alt me-1"></i>${item.KhuVuc || ''}</span></td>
-                    <td><div class="d-flex align-items-center justify-content-center"><i class="fas fa-users me-2 text-info"></i><span class="${mauSoLuong}">${daDangKy}/${can}</span></div></td>
+                    <td>
+                        <div class="d-flex flex-column align-items-center justify-content-center">
+                            <span class="${mauSoLuong}"><i class="fas fa-users me-1 text-primary"></i>${soLopDaDangKy}/${tongLop} lớp</span>
+                            <small class="text-muted" style="font-size: 0.72rem;">(Tối đa ${gioiHanSV} SV/lớp)</small>
+                        </div>
+                    </td>
                     <td>${trangThaiHTML}</td>
                     <td class="text-center pe-4">${thaoTacHTML}</td>
                 </tr>`;

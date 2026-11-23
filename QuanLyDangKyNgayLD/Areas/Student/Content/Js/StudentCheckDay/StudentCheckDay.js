@@ -20,10 +20,6 @@ document.addEventListener("DOMContentLoaded", function () {
         loadingDaDuyet.style.display = "table-row";
         loadingHoanThanh.style.display = "table-row";
 
-        choDuyetBody.innerHTML = "";
-        daDuyetBody.innerHTML = "";
-        hoanThanhBody.innerHTML = "";
-
         fetch("/Student/StudentCheckDay/GetDotDaDangKy")
             .then(res => {
                 if (!res.ok) throw new Error("Server error");
@@ -34,11 +30,19 @@ document.addEventListener("DOMContentLoaded", function () {
                 loadingDaDuyet.style.display = "none";
                 loadingHoanThanh.style.display = "none";
 
+                const setTabCount = function (id, value) {
+                    const el = document.getElementById(id);
+                    if (el) el.textContent = value;
+                };
+                setTabCount("countDaDuyet", (data.daDuyet || []).length);
+                setTabCount("countChoDuyet", (data.choDuyet || []).length);
+                setTabCount("countHoanThanh", (data.hoanThanh || []).length);
+
                 if (!data.success) {
                     const errorMsg = data.message || "Lỗi tải dữ liệu";
-                    choDuyetBody.innerHTML = `<tr><td colspan="7" class="text-center text-danger py-4">${errorMsg}</td></tr>`;
-                    daDuyetBody.innerHTML = `<tr><td colspan="7" class="text-center text-danger py-4">${errorMsg}</td></tr>`;
-                    hoanThanhBody.innerHTML = `<tr><td colspan="7" class="text-center text-danger py-4">${errorMsg}</td></tr>`;
+                    choDuyetBody.innerHTML = `<tr><td colspan="7" class="student-empty is-error"><i class="fas fa-triangle-exclamation"></i><p class="student-empty-title">${errorMsg}</p></td></tr>`;
+                    daDuyetBody.innerHTML = `<tr><td colspan="7" class="student-empty is-error"><i class="fas fa-triangle-exclamation"></i><p class="student-empty-title">${errorMsg}</p></td></tr>`;
+                    hoanThanhBody.innerHTML = `<tr><td colspan="7" class="student-empty is-error"><i class="fas fa-triangle-exclamation"></i><p class="student-empty-title">${errorMsg}</p></td></tr>`;
                     return;
                 }
 
@@ -46,9 +50,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 if (!data.choDuyet || data.choDuyet.length === 0) {
                     choDuyetBody.innerHTML = `
                     <tr>
-                        <td colspan="7" class="text-center text-muted py-5">
-                            <i class="fas fa-clock fa-3x mb-3 text-warning"></i><br>
-                            Không có đợt nào đang chờ duyệt
+                        <td colspan="7" class="student-empty">
+                            <i class="fas fa-clock"></i>
+                            <p class="student-empty-title">Không có đợt nào đang chờ duyệt</p>
+                            <p class="student-empty-text">Các đợt đã đăng ký và đang chờ xử lý sẽ xuất hiện tại đây.</p>
                         </td>
                     </tr>`;
                 } else {
@@ -73,9 +78,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 if (!data.daDuyet || data.daDuyet.length === 0) {
                     daDuyetBody.innerHTML = `
                     <tr>
-                        <td colspan="7" class="text-center text-muted py-5">
-                            <i class="fas fa-info-circle fa-3x mb-3"></i><br>
-                            Chưa có đợt nào được duyệt để điểm danh
+                        <td colspan="7" class="student-empty">
+                            <i class="fas fa-circle-check"></i>
+                            <p class="student-empty-title">Chưa có đợt nào được duyệt để điểm danh</p>
+                            <p class="student-empty-text">Khi đợt lao động được duyệt, bạn có thể điểm danh tại đây.</p>
                         </td>
                     </tr>`;
                 } else {
@@ -116,9 +122,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 if (!data.hoanThanh || data.hoanThanh.length === 0) {
                     hoanThanhBody.innerHTML = `
                     <tr>
-                        <td colspan="7" class="text-center text-muted py-5">
-                            <i class="fas fa-check-double fa-3x mb-3 text-primary"></i><br>
-                            Chưa có đợt nào hoàn thành điểm danh
+                        <td colspan="7" class="student-empty">
+                            <i class="fas fa-check-double"></i>
+                            <p class="student-empty-title">Chưa có đợt nào hoàn thành điểm danh</p>
+                            <p class="student-empty-text">Các đợt đã điểm danh đầy đủ sẽ được tổng hợp tại đây.</p>
                         </td>
                     </tr>`;
                 } else {
@@ -144,10 +151,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 loadingChoDuyet.style.display = "none";
                 loadingDaDuyet.style.display = "none";
                 loadingHoanThanh.style.display = "none";
-                const errorMsg = "Lỗi kết nối hoặc server. Vui lòng thử lại!";
-                choDuyetBody.innerHTML = `<tr><td colspan="7" class="text-center text-danger py-4">${errorMsg}</td></tr>`;
-                daDuyetBody.innerHTML = `<tr><td colspan="7" class="text-center text-danger py-4">${errorMsg}</td></tr>`;
-                hoanThanhBody.innerHTML = `<tr><td colspan="7" class="text-center text-danger py-4">${errorMsg}</td></tr>`;
+                const errorMsg = "Không thể kết nối máy chủ. Vui lòng thử lại.";
+                const errorRow = `<tr><td colspan="7" class="student-empty is-error"><i class="fas fa-triangle-exclamation"></i><p class="student-empty-title">${errorMsg}</p></td></tr>`;
+                choDuyetBody.innerHTML = errorRow;
+                daDuyetBody.innerHTML = errorRow;
+                hoanThanhBody.innerHTML = errorRow;
             });
     }
 

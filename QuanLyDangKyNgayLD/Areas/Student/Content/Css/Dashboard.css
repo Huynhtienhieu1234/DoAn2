@@ -1,383 +1,444 @@
 /* =========================================================
-   CỔNG THÔNG TIN LAO ĐỘNG SINH VIÊN - DESIGN SYSTEM
+   STUDENT DASHBOARD
    ========================================================= */
 
-:root {
-    --primary: #2563eb;
-    --primary-hover: #1d4ed8;
-    --primary-light: #eff6ff;
-    --secondary: #64748b;
-    --success: #10b981;
-    --warning: #f59e0b;
-    --danger: #ef4444;
-    --info: #06b6d4;
-    --dark: #0f172a;
-    --light-bg: #f8fafc;
-    --card-bg: #ffffff;
-    --border-color: #e2e8f0;
-    --radius-sm: 8px;
-    --radius-md: 14px;
-    --radius-lg: 20px;
-    --radius-full: 9999px;
-    --shadow-subtle: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
-    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
-    --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+.student-page.student-dashboard {
+    padding: 0 12px 32px;
 }
 
-/* ===== Reset & Base ===== */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-}
-
-body {
-    background-color: var(--light-bg);
-    color: var(--dark);
-    min-height: 100vh;
+.student-dashboard-head {
     display: flex;
-    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    padding: 20px 22px;
+    margin-bottom: 20px;
+    background: var(--student-surface);
+    border: 1px solid var(--student-border);
+    border-radius: var(--student-radius-lg);
+    box-shadow: var(--student-shadow-xs);
 }
 
-/* ===== Header Navigation ===== */
-.student-header {
-    background: rgba(255, 255, 255, 0.92);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border-bottom: 1px solid var(--border-color);
-    z-index: 1020;
-    transition: var(--transition);
+.student-dashboard-eyebrow {
+    display: block;
+    margin-bottom: 4px;
+    color: var(--student-primary);
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
 }
 
-.header-logo {
-    height: 44px;
-    object-fit: contain;
-    transition: transform 0.2s ease;
+.student-dashboard-title {
+    margin: 0;
+    color: var(--student-text);
+    font-size: 1.4rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
 }
 
-.header-logo:hover {
-    transform: scale(1.02);
+.student-dashboard-subtitle {
+    margin: 5px 0 0;
+    color: var(--student-text-secondary);
+    font-size: 0.86rem;
 }
 
-.status-indicator {
-    width: 8px;
-    height: 8px;
-    border-radius: var(--radius-full);
-    display: inline-block;
+.student-dashboard-date {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border: 1px solid var(--student-border);
+    border-radius: var(--student-radius-sm);
+    background: var(--student-surface-soft);
+    color: var(--student-text-secondary);
+    font-size: 0.8rem;
+    font-weight: 600;
+    white-space: nowrap;
 }
 
-.status-indicator.online {
-    background-color: var(--success);
-    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.25);
+.student-dashboard-date i {
+    color: var(--student-primary);
 }
 
-.header-logout-btn {
-    font-size: 0.82rem;
-    transition: var(--transition);
-}
-
-.header-logout-btn:hover {
-    background-color: var(--danger);
-    border-color: var(--danger);
-    color: #fff;
-    transform: translateY(-1px);
-}
-
-/* ===== Welcome Hero Banner ===== */
-.welcome-hero-banner {
-    background: linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #60a5fa 100%);
-    border-radius: var(--radius-lg);
-    padding: 28px 32px;
-    position: relative;
-    overflow: hidden;
-    box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.25);
-}
-
-.welcome-hero-banner::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    right: -20%;
-    width: 350px;
-    height: 350px;
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0) 70%);
-    border-radius: 50%;
-    pointer-events: none;
-}
-
-/* ===== Profile Card (Cột Trái) ===== */
+/* ===== Profile card ===== */
 .student-profile-card {
-    background: var(--card-bg);
-    transition: var(--transition);
+    height: 100%;
+    overflow: hidden;
+    background: var(--student-surface);
+    border: 1px solid var(--student-border);
+    border-radius: var(--student-radius-lg);
+    box-shadow: var(--student-shadow-xs);
 }
 
 .profile-card-header {
-    background: linear-gradient(180deg, #f1f5f9 0%, #ffffff 100%);
+    padding: 24px 20px 14px;
+    background: var(--student-surface-soft);
+    border-bottom: 1px solid var(--student-border-soft);
 }
 
 .avatar-wrapper {
-    width: 110px;
-    height: 110px;
     position: relative;
+    width: 104px;
+    height: 104px;
+    margin: 0 auto 14px;
 }
 
 .profile-avatar {
-    width: 100%;
-    height: 100%;
+    display: block;
+    width: 104px;
+    height: 104px;
     object-fit: cover;
-    border: 4px solid #ffffff;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+    border: 3px solid #ffffff;
+    border-radius: 50%;
+    box-shadow: 0 0 0 1px var(--student-border);
 }
 
 .avatar-status-badge {
     position: absolute;
+    right: 5px;
     bottom: 4px;
-    right: 6px;
-    width: 16px;
-    height: 16px;
-    background-color: var(--success);
+    width: 15px;
+    height: 15px;
+    background: var(--student-success);
     border: 2px solid #ffffff;
     border-radius: 50%;
 }
 
+.profile-card-header h5 {
+    margin-bottom: 8px;
+    color: var(--student-text);
+    font-size: 1rem;
+    font-weight: 800;
+}
+
+.profile-card-header .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 9px;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    font-weight: 700;
+}
+
 .labor-progress-box {
-    background: linear-gradient(135deg, #f8fafc 0%, #edf2f7 100%);
-    border-color: var(--border-color) !important;
+    padding: 14px;
+    margin-bottom: 18px;
+    background: var(--student-surface-soft);
+    border: 1px solid var(--student-border);
+    border-radius: var(--student-radius-md);
+}
+
+.labor-progress-box h4 {
+    margin: 0;
+    color: var(--student-primary);
+    font-size: 1.3rem;
+    font-weight: 800;
+}
+
+.labor-progress-box h4 span {
+    color: var(--student-text-secondary);
+    font-size: 0.78rem;
+    font-weight: 600;
 }
 
 .progress-modern {
-    background-color: #e2e8f0;
+    height: 8px;
     overflow: hidden;
+    background: #e2e8f0;
+    border-radius: 999px;
 }
 
 .bg-gradient-primary {
-    background: linear-gradient(90deg, #3b82f6 0%, #10b981 100%) !important;
+    background: var(--student-primary);
+}
+
+.progress-modern .progress-bar {
+    transition: width 0.35s ease;
+}
+
+.info-list {
+    margin-bottom: 18px;
+}
+
+.info-list li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--student-border-soft);
+    font-size: 0.82rem;
+}
+
+.info-list li:last-child {
+    border-bottom: 0;
+}
+
+.info-list .text-muted {
+    color: var(--student-text-secondary) !important;
 }
 
 .width-icon {
-    width: 18px;
+    width: 17px;
     text-align: center;
 }
 
 .edit-profile-btn {
-    font-size: 0.88rem;
-    transition: var(--transition);
+    min-height: 40px;
+    border-radius: var(--student-radius-sm);
+    font-size: 0.83rem;
+    font-weight: 700;
 }
 
 .edit-profile-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+    background: var(--student-primary-soft);
+    border-color: #bfdbfe;
+    color: var(--student-primary);
 }
 
-/* ===== Bento Grid Feature Cards (Cột Phải) ===== */
+/* ===== Feature cards ===== */
+.student-feature-section-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 0 0 12px;
+}
+
+.student-feature-section-title h2 {
+    margin: 0;
+    color: var(--student-text);
+    font-size: 1rem;
+    font-weight: 800;
+}
+
+.student-feature-section-title p {
+    margin: 2px 0 0;
+    color: var(--student-text-secondary);
+    font-size: 0.8rem;
+}
+
 .feature-bento-card {
-    background: #ffffff;
-    border-radius: var(--radius-lg);
-    padding: 24px 22px;
-    border: 1px solid var(--border-color);
-    box-shadow: var(--shadow-sm);
-    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     position: relative;
-    overflow: hidden;
-    height: 100%;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-}
-
-.feature-bento-card::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 4px;
-    opacity: 0;
-    transition: opacity 0.3s ease;
+    height: 100%;
+    min-height: 176px;
+    padding: 18px;
+    overflow: hidden;
+    background: var(--student-surface);
+    border: 1px solid var(--student-border);
+    border-radius: var(--student-radius-md);
+    box-shadow: var(--student-shadow-xs);
+    transition: border-color 0.16s ease, box-shadow 0.16s ease;
 }
 
 .feature-bento-card:hover {
-    transform: translateY(-6px);
-    box-shadow: var(--shadow-xl);
-    border-color: rgba(37, 99, 235, 0.2);
+    border-color: #bfdbfe;
+    box-shadow: var(--student-shadow-sm);
 }
 
-.feature-bento-card:hover::after {
-    opacity: 1;
+.feature-bento-card:focus-visible {
+    outline: none;
+    box-shadow: var(--student-focus);
 }
 
-/* Card Icon Bubbles */
 .card-icon-bubble {
-    width: 52px;
-    height: 52px;
-    border-radius: 16px;
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.35rem;
-    color: #ffffff;
-    margin-bottom: 16px;
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
-    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    width: 42px;
+    height: 42px;
+    margin-bottom: 14px;
+    border-radius: 11px;
+    font-size: 1.08rem;
 }
 
-.feature-bento-card:hover .card-icon-bubble {
-    transform: scale(1.1) rotate(5deg);
+.bg-blue-grad {
+    background: var(--student-primary-soft);
+    color: var(--student-primary);
 }
 
-/* Gradients for Card Types */
-.bg-blue-grad   { background: linear-gradient(135deg, #2563eb, #60a5fa); }
-.bg-green-grad  { background: linear-gradient(135deg, #059669, #34d399); }
-.bg-amber-grad  { background: linear-gradient(135deg, #d97706, #fbbf24); }
-.bg-purple-grad { background: linear-gradient(135deg, #7c3aed, #a78bfa); }
-.bg-rose-grad   { background: linear-gradient(135deg, #e11d48, #fb7185); }
-.bg-cyan-grad   { background: linear-gradient(135deg, #0284c7, #38bdf8); }
+.bg-green-grad {
+    background: var(--student-success-soft);
+    color: var(--student-success);
+}
 
-.card-blue::after   { background: linear-gradient(90deg, #2563eb, #60a5fa); }
-.card-green::after  { background: linear-gradient(90deg, #059669, #34d399); }
-.card-amber::after  { background: linear-gradient(90deg, #d97706, #fbbf24); }
-.card-purple::after { background: linear-gradient(90deg, #7c3aed, #a78bfa); }
-.card-rose::after   { background: linear-gradient(90deg, #e11d48, #fb7185); }
-.card-cyan::after   { background: linear-gradient(90deg, #0284c7, #38bdf8); }
+.bg-amber-grad {
+    background: var(--student-warning-soft);
+    color: var(--student-warning);
+}
+
+.bg-purple-grad {
+    background: var(--student-indigo-soft);
+    color: var(--student-indigo);
+}
+
+.bg-rose-grad {
+    background: var(--student-danger-soft);
+    color: var(--student-danger);
+}
+
+.bg-cyan-grad {
+    background: #ecfeff;
+    color: #0e7490;
+}
 
 .card-title {
-    color: var(--dark);
-    font-size: 1.08rem;
-    margin-bottom: 6px;
-    transition: color 0.2s ease;
+    margin-bottom: 5px;
+    color: var(--student-text);
+    font-size: 0.96rem;
+    font-weight: 800;
+    transition: color 0.16s ease;
 }
 
 .feature-bento-card:hover .card-title {
-    color: var(--primary);
+    color: var(--student-primary);
 }
 
 .card-desc {
-    color: var(--secondary);
-    font-size: 0.82rem;
+    margin-bottom: 12px;
+    color: var(--student-text-secondary);
+    font-size: 0.8rem;
     line-height: 1.45;
-    margin-bottom: 14px;
 }
 
 .card-action-link {
-    font-size: 0.82rem;
-    font-weight: 600;
-    color: var(--primary);
     display: inline-flex;
     align-items: center;
-    transition: transform 0.2s ease;
+    gap: 4px;
+    color: var(--student-primary);
+    font-size: 0.78rem;
+    font-weight: 700;
 }
 
-.feature-bento-card:hover .card-action-link {
-    transform: translateX(4px);
+/* ===== Class leader panel ===== */
+.class-leader-panel {
+    position: relative;
+    overflow: hidden;
+    padding: 20px;
+    border-radius: var(--student-radius-md);
+    background: var(--student-primary);
+    color: #ffffff;
 }
 
-/* =================== Responsive Adjustments =================== */
+.class-leader-panel h5 {
+    margin-bottom: 4px;
+    color: #ffffff;
+    font-size: 1rem;
+    font-weight: 800;
+}
+
+.class-leader-panel p {
+    margin-bottom: 14px;
+    color: rgba(255, 255, 255, 0.82);
+    font-size: 0.82rem;
+    line-height: 1.5;
+}
+
+.class-leader-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 44px;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.16);
+    color: #ffffff;
+    font-size: 1.1rem;
+}
+
+.class-leader-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 9px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.14);
+    color: #ffffff;
+    font-size: 0.66rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.class-leader-panel .btn {
+    min-height: 38px;
+    border-radius: var(--student-radius-sm);
+    font-size: 0.82rem;
+}
+
 @media (max-width: 991.98px) {
-    .welcome-hero-banner {
-        padding: 22px 20px;
+    .student-profile-card {
+        margin-bottom: 4px;
     }
 
     .avatar-wrapper {
-        width: 96px;
-        height: 96px;
+        width: 92px;
+        height: 92px;
     }
 
-    .student-profile-card {
-        margin-bottom: 1rem;
+    .profile-avatar {
+        width: 92px;
+        height: 92px;
     }
 }
 
 @media (max-width: 767.98px) {
-    .student-header {
-        padding: 4px 0;
+    .student-dashboard-head {
+        padding: 16px;
     }
 
-    .header-logo {
-        height: 36px;
-        max-width: 140px;
+    .student-dashboard-title {
+        font-size: 1.18rem;
     }
 
-    .user-greeting-pill {
-        padding: 4px 10px 4px 8px;
+    .student-dashboard-subtitle {
         font-size: 0.8rem;
     }
 
-    #navStudentName {
-        max-width: 110px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        display: inline-block;
-    }
-
-    .header-bell-btn {
-        width: 34px !important;
-        height: 34px !important;
-    }
-
-    .welcome-hero-banner {
-        padding: 18px 16px;
-        border-radius: var(--radius-md);
-    }
-
-    .welcome-hero-banner h3 {
-        font-size: 1.25rem !important;
-    }
-
-    .welcome-hero-banner p {
-        font-size: 0.85rem !important;
+    .student-dashboard-date {
+        width: 100%;
+        justify-content: center;
     }
 
     .feature-bento-card {
-        padding: 18px 16px;
-        border-radius: var(--radius-md);
+        min-height: 0;
+        padding: 16px;
     }
 
     .card-icon-bubble {
-        width: 44px;
-        height: 44px;
-        font-size: 1.15rem;
-        border-radius: 12px;
-        margin-bottom: 12px;
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        font-size: 1rem;
     }
 
     .card-title {
-        font-size: 0.98rem;
+        font-size: 0.92rem;
     }
 
     .card-desc {
         font-size: 0.78rem;
-        margin-bottom: 10px;
     }
 
-    .student-main-content {
-        padding-top: 0.75rem !important;
-        padding-bottom: 1.5rem !important;
+    .class-leader-panel {
+        padding: 16px;
     }
 }
 
 @media (max-width: 575.98px) {
-    .header-logo {
-        height: 30px;
-        max-width: 115px;
+    .class-leader-panel .btn {
+        width: 100%;
     }
 
-    #navStudentName {
-        max-width: 80px;
-    }
-
-    .welcome-hero-banner {
-        padding: 16px 14px;
-    }
-
-    .welcome-hero-banner h3 {
-        font-size: 1.15rem !important;
-    }
-
-    .avatar-wrapper {
+    .avatar-wrapper,
+    .profile-avatar {
         width: 84px;
         height: 84px;
     }
@@ -385,38 +446,4 @@ body {
     .student-profile-card .card-body {
         padding: 14px !important;
     }
-
-    .info-list li {
-        font-size: 0.84rem;
-    }
-
-    #email {
-        max-width: 130px !important;
-    }
-
-    .modal-dialog {
-        margin: 8px;
-    }
-
-    .modal-header, .modal-footer {
-        padding: 12px 14px !important;
-    }
-
-    .modal-body {
-        padding: 12px !important;
-    }
-
-    .modal-footer {
-        flex-direction: column;
-        gap: 8px;
-    }
-
-    .modal-footer .btn, .modal-footer a {
-        width: 100%;
-        text-align: center;
-        justify-content: center;
-    }
 }
-
-
-

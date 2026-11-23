@@ -2,7 +2,9 @@ using QuanLyDangKyNgayLD.Factories;
 using QuanLyDangKyNgayLD.Models;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
+using System.Text;
 using System.Web;
 using System.Web.Mvc;
 
@@ -12,23 +14,65 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
     {
         private const int ITEMS_PER_PAGE = 5;
 
-        // Hàm helper lấy vai trò thực tế từ Session
+        private const string ROLE_SINH_VIEN = "SinhVien";
+        private const string ROLE_LOP_TRUONG = "LopTruong";
+
+        // Bỏ dấu tiếng Việt để so sánh tên vai trò được linh hoạt
+        private static string NormalizeRoleName(string roleName)
+        {
+            if (string.IsNullOrWhiteSpace(roleName)) return string.Empty;
+
+            string lower = roleName.Trim().ToLowerInvariant().Replace('đ', 'd');
+            string normalized = lower.Normalize(NormalizationForm.FormD);
+            var sb = new StringBuilder();
+
+            foreach (char c in normalized)
+            {
+                if (CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark)
+                    sb.Append(c);
+            }
+
+            return sb.ToString().Replace("đ", "d").Replace("  ", " ").Trim();
+        }
+
+        // Lớp trưởng / Lớp phó lao động đều có quyền đăng ký theo lớp
+        private bool IsClassLeader()
+        {
+            var vaiTroId = Session["VaiTroId"] as int?;
+            if (vaiTroId == 4) return true;
+
+            var user = Session["User"] as TaiKhoan;
+            if (user != null)
+            {
+                if (user.VaiTro_id == 4) return true;
+
+                string normalized = NormalizeRoleName(user.VaiTro?.TenVaiTro);
+                if (normalized.Contains("lop truong") ||
+                    normalized.Contains("lop pho") ||
+                    normalized == "loppholaodong" ||
+                    normalized == "lopphilaodong")
+                {
+                    return true;
+                }
+            }
+
+            string sessionRole = NormalizeRoleName(Session["Role"]?.ToString());
+            return sessionRole.Contains("lop truong") || sessionRole.Contains("lop pho");
+        }
+
+        // Hàm helper lấy vai trò thực tế từ Session (đã chuẩn hóa)
         private string GetUserRoleFromSession()
         {
+            if (IsClassLeader()) return ROLE_LOP_TRUONG;
+
+            var vaiTroId = Session["VaiTroId"] as int?;
+            if (vaiTroId == 3) return ROLE_SINH_VIEN;
+
             var user = Session["User"] as TaiKhoan;
-            if (user == null) return null;
+            if (user != null && user.VaiTro_id == 3) return ROLE_SINH_VIEN;
 
-            // Ưu tiên lấy từ VaiTro.TenVaiTro
-            if (user.VaiTro != null && !string.IsNullOrEmpty(user.VaiTro.TenVaiTro))
-            {
-                return user.VaiTro.TenVaiTro.Trim();
-            }
-
-            // Nếu không có thì try lấy từ VaiTro_id
-            if (user.VaiTro_id == 3)
-            {
-                return "SinhVien";
-            }
+            string normalized = NormalizeRoleName(Session["Role"]?.ToString());
+            if (normalized.Contains("sinh vien")) return ROLE_SINH_VIEN;
 
             return null;
         }
@@ -40,6 +84,7 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
             {
                 var user = Session["User"] as TaiKhoan;
                 var userRole = GetUserRoleFromSession();
+                bool isClassLeader = IsClassLeader();
 
                 IQueryable<TaoDotNgayLaoDong> query = db.TaoDotNgayLaoDongs
                                                         .Where(d => d.Ngayxoa == null);
@@ -47,11 +92,11 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
                 // Lọc theo vai trò
                 if (!string.IsNullOrEmpty(userRole))
                 {
-                    if (userRole == "SinhVien") // Sinh viên: chỉ lấy Cá Nhân
+                    if (userRole == ROLE_SINH_VIEN) // Sinh viên: chỉ lấy Cá Nhân
                     {
                         query = query.Where(d => d.LoaiLaoDong.Trim().Length != 3);
                     }
-                    else if (userRole == "LopPhoLaoDong") // Lớp phó: lấy cả Lớp và Cá Nhân
+                    else if (userRole == ROLE_LOP_TRUONG) // Lớp trưởng: lấy cả Lớp và Cá Nhân
                     {
                         query = query.Where(d => d.LoaiLaoDong.Trim().Length == 3 || d.LoaiLaoDong.Trim().Length != 3);
                     }
@@ -88,6 +133,7 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
                 ViewBag.Buoi = buoi;
                 ViewBag.TrangThai = trangthai;
                 ViewBag.Role = userRole;
+                ViewBag.IsClassLeader = isClassLeader;
 
                 return View(items);
             }
@@ -142,6 +188,7 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
                 using (var db = DbContextFactory.Create())
                 {
                     var userRole = GetUserRoleFromSession();
+                    bool isClassLeader = IsClassLeader();
                     var today = DateTime.Today;
                     var currentMonth = today.Month;
                     var currentYear = today.Year;
@@ -157,11 +204,11 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
                     // Lọc theo vai trò
                     if (!string.IsNullOrEmpty(userRole))
                     {
-                        if (userRole == "SinhVien")
+                        if (userRole == ROLE_SINH_VIEN)
                         {
                             query = query.Where(d => d.LoaiLaoDong.Trim().Length != 3);
                         }
-                        else if (userRole == "LopPhoLaoDong")
+                        else if (userRole == ROLE_LOP_TRUONG)
                         {
                             query = query.Where(d => d.LoaiLaoDong.Trim().Length == 3 || d.LoaiLaoDong.Trim().Length != 3);
                         }
@@ -175,9 +222,10 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
                     else if (trangThai == "0")
                         query = query.Where(x => x.TrangThaiDuyet == false);
 
-                    // Sắp xếp: chưa kết thúc lên trước, đã kết thúc xuống sau
+                    // Sắp xếp: chưa kết thúc lên trước, đã kết thúc xuống sau; thời gian từ mới nhất tới cũ
                     var orderedQuery = query.OrderBy(x => x.NgayLaoDong.Value < today ? 1 : 0)
-                                            .ThenBy(x => x.NgayLaoDong.Value);
+                                            .ThenByDescending(x => x.NgayLaoDong.Value)
+                                            .ThenByDescending(x => x.TaoDotLaoDong_id);
 
                     int totalItems = orderedQuery.Count();
                     int totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
@@ -192,6 +240,13 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
                         .Where(p => dotIds.Contains(p.TaoDotLaoDong_id ?? 0) && p.TrangThai == "DangKy")
                         .GroupBy(p => p.TaoDotLaoDong_id)
                         .ToDictionary(g => g.Key ?? 0, g => g.Count());
+
+                    var lopDangKyCount = (from pd in db.PhieuDangKies
+                                          join sv in db.SinhViens on pd.MSSV equals sv.MSSV
+                                          where dotIds.Contains(pd.TaoDotLaoDong_id ?? 0) && pd.LaoDongTheoLop == true && pd.TrangThai == "DangKy"
+                                          group sv.Lop_id by pd.TaoDotLaoDong_id.Value into g
+                                          select new { DotId = g.Key, Count = g.Distinct().Count() })
+                                         .ToDictionary(x => x.DotId, x => x.Count);
 
                     // LẤY MSSV SINH VIÊN HIỆN TẠI ĐỂ KIỂM TRA ĐÃ ĐĂNG KÝ CHƯA
                     var currentSv = GetCurrentSinhVien(db);
@@ -228,19 +283,25 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
                             }
                         }
 
+                        bool isLoaiLop = x.LoaiLaoDong.Trim().Length == 3;
+                        int soLopDaDangKy = lopDangKyCount.ContainsKey(x.TaoDotLaoDong_id) ? lopDangKyCount[x.TaoDotLaoDong_id] : 0;
+                        int soLuongLop = x.SoLuongLop.GetValueOrDefault(1);
+
                         return new
                         {
                             x.TaoDotLaoDong_id,
                             x.DotLaoDong,
                             x.Buoi,
-                            LoaiLaoDong = x.LoaiLaoDong.Trim().Length == 3 ? "Lớp" : "Cá Nhân",
+                            LoaiLaoDong = isLoaiLop ? "Lớp" : "Cá Nhân",
                             GiaTri = x.GiaTri ?? 0,
                             NgayLaoDong = x.NgayLaoDong.HasValue ? x.NgayLaoDong.Value.ToString("dd/MM/yyyy") : "",
                             x.KhuVuc,
                             x.SoLuongSinhVien,
+                            SoLuongLop = soLuongLop,
+                            SoLopDaDangKy = soLopDaDangKy,
                             TrangThaiDuyet = x.TrangThaiDuyet == true,
                             TrangThaiText = x.TrangThaiDuyet == true ? "Đã duyệt" : "Chưa duyệt",
-                            SoLuongDaDangKy = dangKyCount.ContainsKey(x.TaoDotLaoDong_id) ? dangKyCount[x.TaoDotLaoDong_id] : 0,
+                            SoLuongDaDangKy = isLoaiLop ? soLopDaDangKy : (dangKyCount.ContainsKey(x.TaoDotLaoDong_id) ? dangKyCount[x.TaoDotLaoDong_id] : 0),
                             DaDangKy = registeredDotIds.Contains(x.TaoDotLaoDong_id),
                             DaDuyet = x.TrangThaiDuyet == true,
                             IsPast = isPast
@@ -254,6 +315,7 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
                         page,
                         totalPages,
                         role = userRole,
+                        isClassLeader,
                         debugRole = userRole ?? "NULL"
                     }, JsonRequestBehavior.AllowGet);
                 }
@@ -511,7 +573,16 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
                     })
                     .ToList();
 
-                return Json(new { success = true, sinhViens = danhSach }, JsonRequestBehavior.AllowGet);
+                var dot = db.TaoDotNgayLaoDongs.FirstOrDefault(x => x.TaoDotLaoDong_id == dotId && x.Ngayxoa == null);
+                int gioiHanSV = dot?.SoLuongSinhVien ?? 20;
+                int soLuongLop = dot?.SoLuongLop ?? 1;
+
+                return Json(new { 
+                    success = true, 
+                    sinhViens = danhSach,
+                    gioiHanSV = gioiHanSV,
+                    soLuongLop = soLuongLop
+                }, JsonRequestBehavior.AllowGet);
             }
         }
 
@@ -538,6 +609,43 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
                     var dot = db.TaoDotNgayLaoDongs.FirstOrDefault(x => x.TaoDotLaoDong_id == dotId && x.Ngayxoa == null);
                     if (dot == null)
                         return Json(new { success = false, message = "Đợt lao động không tồn tại!" });
+
+                    int soLuongLopToiDa = dot.SoLuongLop.GetValueOrDefault(1);
+                    int gioiHanSVMoiLop = dot.SoLuongSinhVien.GetValueOrDefault(20);
+
+                    // Lấy thông tin lớp của sinh viên đang thao tác
+                    var currentSv = GetCurrentSinhVien(db);
+                    if (currentSv == null || !currentSv.Lop_id.HasValue)
+                    {
+                        return Json(new { success = false, message = "Không xác định được lớp của bạn!" });
+                    }
+                    int myLopId = currentSv.Lop_id.Value;
+
+                    // Kiểm tra lớp đã từng đăng ký đợt này chưa
+                    bool lopDaDangKy = (from pd in db.PhieuDangKies
+                                        join sv in db.SinhViens on pd.MSSV equals sv.MSSV
+                                        where pd.TaoDotLaoDong_id == dotId && pd.LaoDongTheoLop == true && sv.Lop_id == myLopId && pd.TrangThai == "DangKy"
+                                        select pd).Any();
+
+                    if (!lopDaDangKy)
+                    {
+                        // Kiểm tra tổng số lớp đã đăng ký
+                        int soLopDaDangKy = (from pd in db.PhieuDangKies
+                                             join sv in db.SinhViens on pd.MSSV equals sv.MSSV
+                                             where pd.TaoDotLaoDong_id == dotId && pd.LaoDongTheoLop == true && pd.TrangThai == "DangKy"
+                                             select sv.Lop_id).Distinct().Count();
+
+                        if (soLopDaDangKy >= soLuongLopToiDa)
+                        {
+                            return Json(new { success = false, message = $"Đợt lao động này đã đủ số lượng lớp đăng ký (tối đa {soLuongLopToiDa} lớp)!" });
+                        }
+                    }
+
+                    // Kiểm tra giới hạn số sinh viên tham gia của mỗi lớp
+                    if (mssvList.Count > gioiHanSVMoiLop)
+                    {
+                        return Json(new { success = false, message = $"Số lượng sinh viên đăng ký ({mssvList.Count}) vượt quá giới hạn quy định của đợt này (tối đa {gioiHanSVMoiLop} sinh viên/lớp)!" });
+                    }
 
                     // Kiểm tra thời gian đợt lao động cho lớp
                     if (dot.NgayLaoDong.HasValue)
@@ -626,6 +734,16 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
                     if (mssvList == null)
                         mssvList = new List<long>();
 
+                    var dot = db.TaoDotNgayLaoDongs.FirstOrDefault(x => x.TaoDotLaoDong_id == dotId && x.Ngayxoa == null);
+                    if (dot == null)
+                        return Json(new { success = false, message = "Đợt lao động không tồn tại!" });
+
+                    int gioiHanSVMoiLop = dot.SoLuongSinhVien.GetValueOrDefault(20);
+                    if (mssvList.Count > gioiHanSVMoiLop)
+                    {
+                        return Json(new { success = false, message = $"Số lượng sinh viên đăng ký ({mssvList.Count}) vượt quá giới hạn quy định của đợt này (tối đa {gioiHanSVMoiLop} sinh viên/lớp)!" });
+                    }
+
                     // Lấy toàn bộ phiếu đăng ký hiện tại của lớp trong đợt này
                     var danhSachCu = db.PhieuDangKies
                                        .Where(p => p.TaoDotLaoDong_id == dotId && p.LaoDongTheoLop == true)
@@ -695,16 +813,16 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
                 // Chỉ xử lý nếu loại lao động là "Lớp"
                 if (dot.LoaiLaoDong == "Lớp")
                 {
-                    // Kiểm tra có sinh viên nào đăng ký theo lớp không
-                    bool coDangKy = db.PhieuDangKies.Any(p => p.TaoDotLaoDong_id == dotId && p.LaoDongTheoLop == true);
-
-                    // Nếu có đăng ký thì quy về 1 lớp, nếu chưa thì 0 lớp
-                    int soLopDaDangKy = coDangKy ? 1 : 0;
+                    int soLuongLopToiDa = dot.SoLuongLop.GetValueOrDefault(1);
+                    int soLopDaDangKy = (from pd in db.PhieuDangKies
+                                         join sv in db.SinhViens on pd.MSSV equals sv.MSSV
+                                         where pd.TaoDotLaoDong_id == dotId && pd.LaoDongTheoLop == true && pd.TrangThai == "DangKy"
+                                         select sv.Lop_id).Distinct().Count();
 
                     return Json(new
                     {
                         success = true,
-                        hienThi = $"{soLopDaDangKy}/{tongSo} lớp"
+                        hienThi = $"{soLopDaDangKy}/{soLuongLopToiDa} lớp"
                     }, JsonRequestBehavior.AllowGet);
                 }
                 else

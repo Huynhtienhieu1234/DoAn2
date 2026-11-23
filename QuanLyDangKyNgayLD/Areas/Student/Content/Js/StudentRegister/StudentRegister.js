@@ -16,6 +16,17 @@ function parseDate(dateStr) {
     return new Date(year, month - 1, day);
 }
 
+function normalizeRoleText(role) {
+    return (role || "")
+        .toString()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/đ/g, "d")
+        .replace(/Đ/g, "D")
+        .toLowerCase()
+        .trim();
+}
+
 function isShiftExpired(ngayStr, buoi) {
     const d = parseDate(ngayStr);
     if (!d) return false;
@@ -48,14 +59,20 @@ function renderPagination(containerId, pageNumbersId, prevId, nextId, currentPag
     const pageNumbers = document.getElementById(pageNumbersId);
     const prevBtn = document.getElementById(prevId);
     const nextBtn = document.getElementById(nextId);
+    const wrapper = container.closest(".pagination-wrap");
 
     pageNumbers.innerHTML = "";
 
     if (totalPages <= 1) {
         prevBtn.disabled = true;
         nextBtn.disabled = true;
+        container.style.display = "none";
+        if (wrapper) wrapper.style.display = "none";
         return;
     }
+
+    container.style.display = "";
+    if (wrapper) wrapper.style.display = "";
 
     prevBtn.disabled = currentPage <= 1;
     nextBtn.disabled = currentPage >= totalPages;
@@ -106,11 +123,11 @@ function loadAndRenderData(showSpinner = true) {
             if (tbody) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="9" class="text-center py-4">
-                            <div class="spinner-border text-primary" role="status">
+                        <td colspan="9" class="student-empty">
+                            <div class="spinner-border text-primary spinner-border-sm" role="status">
                                 <span class="visually-hidden">Đang tải...</span>
                             </div>
-                            <p class="mt-2 text-muted">Đang tải dữ liệu...</p>
+                            <p class="student-empty-text mt-2">Đang tải dữ liệu...</p>
                         </td>
                     </tr>`;
             }
@@ -129,8 +146,14 @@ function loadAndRenderData(showSpinner = true) {
             return;
         }
 
-        const isLopPho = res.role && res.role.trim() === "LopPhoLaoDong";
-        const isSinhVien = res.role && res.role.trim() === "SinhVien";
+        const normalizedRole = normalizeRoleText(res.role);
+        const isLopPho = res.isClassLeader === true
+            || normalizedRole === "lop truong"
+            || normalizedRole === "loptruong"
+            || normalizedRole === "lop pho lao dong"
+            || normalizedRole === "loppholaodong"
+            || normalizedRole === "lopphilaodong";
+        const isSinhVien = !isLopPho && (normalizedRole === "sinh vien" || normalizedRole === "sinhvien");
 
         let allItems = res.items || [];
         globalAllItems = allItems;
@@ -158,7 +181,7 @@ function loadAndRenderData(showSpinner = true) {
                 const pastB = b.IsPast !== undefined ? b.IsPast : isShiftExpired(b.NgayLaoDong, b.Buoi);
                 if (!pastA && pastB) return -1;
                 if (pastA && !pastB) return 1;
-                return (dateA || 0) - (dateB || 0);
+                return (dateB || 0) - (dateA || 0);
             });
 
             const totalPages = Math.ceil(sorted.length / pageSize) || 1;
@@ -170,12 +193,10 @@ function loadAndRenderData(showSpinner = true) {
             if (pageItems.length === 0) {
                 tbody.innerHTML = `
         <tr>
-            <td colspan="9" class="text-center py-5">
-                <div class="empty-state">
-                    <i class="far fa-clipboard fa-3x text-muted mb-3"></i>
-                    <h5 class="text-muted">Không có đợt lao động nào</h5>
-                    <p class="text-muted small">Hiện chỉ hiển thị các đợt trong tháng ${currentMonth}/${currentYear}</p>
-                </div>
+            <td colspan="9" class="student-empty">
+                <i class="far fa-clipboard"></i>
+                <p class="student-empty-title">Không có đợt lao động nào</p>
+                <p class="student-empty-text">Hiện chỉ hiển thị các đợt trong tháng ${currentMonth}/${currentYear}</p>
             </td>
         </tr>`;
             } else {
@@ -191,14 +212,21 @@ function loadAndRenderData(showSpinner = true) {
                     const can = item.SoLuongSinhVien || 0;
 
                     let hienThiSoLuong;
+                    let mauSoLuong;
                     if (isLoaiLop) {
-                        const soLopDaDangKy = daDangKy > 0 ? 1 : 0;
-                        hienThiSoLuong = `${soLopDaDangKy}/${can} lớp`;
+                        const soLopDaDangKy = item.SoLopDaDangKy !== undefined ? item.SoLopDaDangKy : (daDangKy > 0 ? 1 : 0);
+                        const tongLop = item.SoLuongLop || 1;
+                        mauSoLuong = soLopDaDangKy >= tongLop ? "text-success fw-bold" : "text-danger fw-bold";
+                        hienThiSoLuong = `
+                            <div class="d-flex flex-column align-items-center">
+                                <span>${soLopDaDangKy}/${tongLop} lớp</span>
+                                <small class="text-muted" style="font-size: 0.72rem;">(Tối đa ${can || 20} SV/lớp)</small>
+                            </div>
+                        `;
                     } else {
+                        mauSoLuong = daDangKy >= can ? "text-success fw-bold" : "text-danger fw-bold";
                         hienThiSoLuong = `${daDangKy}/${can}`;
                     }
-
-                    const mauSoLuong = daDangKy >= can ? "text-success fw-bold" : "text-danger fw-bold";
                     const isPast = item.IsPast !== undefined ? item.IsPast : isShiftExpired(item.NgayLaoDong, item.Buoi);
 
                     let thaoTacHTML = "";
@@ -302,8 +330,12 @@ function loadAndRenderData(showSpinner = true) {
                 pageVarName: "currentPageLop"
             });
 
-            document.getElementById("sectionCaNhan").style.display = "block";
-            document.getElementById("sectionLop").style.display = "block";
+            // Việc hiển thị từng bảng do tab trong view đảm nhiệm
+            const secCaNhan = document.getElementById("sectionCaNhan");
+            const secLop = document.getElementById("sectionLop");
+            if (secCaNhan && secCaNhan.style.display === "none" && secLop && secLop.style.display === "none") {
+                secCaNhan.style.display = "block";
+            }
         } else {
             renderTable("tableBody", allItems, currentPageCaNhan, {
                 container: "pagination",
@@ -369,13 +401,16 @@ function updateRowUI(id, isRegistered, newCount, totalCount) {
             if (countSpan) {
                 const isLoaiLop = item && (item.LoaiLaoDong || "").toLowerCase().trim() === "lớp";
                 let hienThi;
+                let mauSoLuong;
                 if (isLoaiLop) {
-                    const soLop = newCount > 0 ? 1 : 0;
-                    hienThi = `${soLop}/${totalCount} lớp`;
+                    const soLop = item.SoLopDaDangKy !== undefined ? item.SoLopDaDangKy : (newCount > 0 ? 1 : 0);
+                    const tongLop = item.SoLuongLop || 1;
+                    mauSoLuong = soLop >= tongLop ? "text-success fw-bold" : "text-danger fw-bold";
+                    hienThi = `${soLop}/${tongLop} lớp`;
                 } else {
+                    mauSoLuong = newCount >= totalCount ? "text-success fw-bold" : "text-danger fw-bold";
                     hienThi = `${newCount}/${totalCount}`;
                 }
-                const mauSoLuong = newCount >= totalCount ? "text-success fw-bold" : "text-danger fw-bold";
                 countSpan.className = mauSoLuong;
                 countSpan.textContent = hienThi;
             }

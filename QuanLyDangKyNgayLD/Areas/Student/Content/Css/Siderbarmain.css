@@ -5,14 +5,14 @@
 :root {
     --sidebar-width-expanded: 240px;
     --sidebar-width-collapsed: 68px;
-    --header-height: 64px;
+    --header-height: 80px;
     --sidebar-bg: #0f172a;
     --sidebar-surface: #1e293b;
     --sidebar-hover: rgba(255, 255, 255, 0.08);
     --sidebar-text: #94a3b8;
     --sidebar-text-hover: #f8fafc;
     --primary-color: #2563eb;
-    --primary-grad: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+    --primary-grad: #2563eb;
     --active-glow: 0 4px 14px rgba(37, 99, 235, 0.38);
     --transition-speed: 0.3s;
     --transition-curve: cubic-bezier(0.2, 0, 0, 1);
@@ -198,7 +198,7 @@ nav.student-navbar {
     left: 0;
     width: var(--sidebar-width-expanded);
     height: calc(100vh - var(--header-height));
-    background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+    background: #0f172a;
     padding: 16px 0 24px;
     transition: width var(--transition-speed) var(--transition-curve);
     z-index: 1020;
@@ -407,14 +407,9 @@ nav.student-navbar {
 
 /* ===== MAIN CONTENT AREA ===== */
 .content-wrapper {
-    margin-left: var(--sidebar-width-expanded);
+    margin-left: 0;
     padding: calc(var(--header-height) + 20px) 24px 32px;
     min-height: 100vh;
-    transition: margin-left var(--transition-speed) var(--transition-curve);
-}
-
-.sidebar.collapsed~.content-wrapper {
-    margin-left: var(--sidebar-width-collapsed);
 }
 
 /* Sidebar Backdrop for Mobile */
@@ -439,6 +434,10 @@ nav.student-navbar {
 
 /* Mobile Responsiveness */
 @media (max-width: 767.98px) {
+    :root {
+        --header-height: 72px;
+    }
+
     nav.student-navbar {
         padding: 0 12px;
     }
@@ -494,6 +493,10 @@ nav.student-navbar {
 }
 
 @media (max-width: 575.98px) {
+    :root {
+        --header-height: 64px;
+    }
+
     .logo-brand {
         height: 30px;
         max-width: 120px;

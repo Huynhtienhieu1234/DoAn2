@@ -66,30 +66,30 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                         (x.HoTen ?? "").Contains(keyword));
                 }
 
-                var allData = query.ToList(); // thực thi sớm để tính thống kê
-
-                int tongSV = allData.Count;
-                int daHoanThanh = allData.Count(x => x.SoNgay >= 18);
+                // Tính toán thống kê trực tiếp trên database, không nạp toàn bộ danh sách vào RAM
+                int tongSV = query.Count();
+                int daHoanThanh = query.Count(x => x.SoNgay >= 18);
                 int chuaHoanThanh = tongSV - daHoanThanh;
                 double tienDo = tongSV > 0 ? Math.Round((double)daHoanThanh / tongSV * 100, 1) : 0;
 
                 // Lọc theo trạng thái hoàn thành nếu có
-                var filteredData = allData;
+                var filteredQuery = query;
                 if (status == "completed")
                 {
-                    filteredData = allData.Where(x => x.SoNgay >= 18).ToList();
+                    filteredQuery = query.Where(x => x.SoNgay >= 18);
                 }
                 else if (status == "incomplete")
                 {
-                    filteredData = allData.Where(x => x.SoNgay < 18).ToList();
+                    filteredQuery = query.Where(x => x.SoNgay < 18);
                 }
 
-                int totalItems = filteredData.Count;
+                int totalItems = filteredQuery.Count();
                 int totalPages = totalItems > 0 ? (int)Math.Ceiling((double)totalItems / pageSize) : 1;
                 page = page < 1 ? 1 : page;
                 if (page > totalPages) page = totalPages;
 
-                var listSV = filteredData
+                // Phân trang trực tiếp tại database (SELECT ... OFFSET ... FETCH NEXT / Skip ... Take)
+                var listSV = filteredQuery
                     .OrderBy(x => x.MSSV)
                     .Skip((page - 1) * pageSize)
                     .Take(pageSize)
@@ -169,17 +169,16 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                         (x.HoTen ?? "").Contains(keyword));
                 }
 
-                var list = query.ToList();
                 if (status == "completed")
                 {
-                    list = list.Where(x => x.SoNgay >= 18).ToList();
+                    query = query.Where(x => x.SoNgay >= 18);
                 }
                 else if (status == "incomplete")
                 {
-                    list = list.Where(x => x.SoNgay < 18).ToList();
+                    query = query.Where(x => x.SoNgay < 18);
                 }
 
-                list = list.OrderBy(x => x.MSSV).ToList();
+                var list = query.OrderBy(x => x.MSSV).ToList();
 
                 using (var package = new ExcelPackage())
                 {

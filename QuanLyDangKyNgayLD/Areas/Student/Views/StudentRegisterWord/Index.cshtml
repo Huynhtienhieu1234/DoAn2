@@ -7,37 +7,140 @@
 <link href="@Url.Content("~/Areas/Student/Content/Css/Table.css?v=" + DateTime.Now.Ticks)" rel="stylesheet" type="text/css" />
 <script src="@Url.Content("~/Areas/Student/Content/Js/StudentRegister/StudentRegister.js?v=" + DateTime.Now.Ticks)"></script>
 <script src="@Url.Content("~/Areas/Student/Content/Js/StudentRegister/StudentListClass.js?v=" + DateTime.Now.Ticks)"></script>
-@*<script src="~/Areas/Student/Content/Js/StudentRegister/LopPhoTableOverride.js"></script>*@
-<div id="student-toast" style="position: fixed; top: 20px; right: 20px; padding: 12px 18px; background: #333; color: #fff; border-radius: 6px; z-index: 9999; display: none; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.2); transition: all .3s ease;"></div>
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<div id="student-toast" class="student-toast" role="status" aria-live="polite"></div>
 
-<!-- ================== NẾU LÀ LỚP PHÓ LAO ĐỘNG: HIỂN THỊ 2 BẢNG RIÊNG ================== -->
-@if (ViewBag.Role?.ToString().Trim().Equals("LopPhoLaoDong", StringComparison.OrdinalIgnoreCase) == true)
-{
-    <div class="two-buton mb-3">
-        <button class="btn btn-primary active rounded-pill px-4 shadow-sm">
-            <i class="fas fa-user me-1"></i> Đăng ký cá nhân
-        </button>
-        <button class="btn btn-outline-primary ms-2 rounded-pill px-4" disabled>
-            <i class="fas fa-users me-1"></i> Đăng ký lớp (xem bên dưới)
-        </button>
+<div class="student-page">
+    <div class="student-page-head">
+        <div class="student-page-head-icon">
+            <i class="fas fa-clipboard-list"></i>
+        </div>
+        <div class="student-page-head-main">
+            <nav class="student-breadcrumb" aria-label="Điều hướng">
+                <a href="@Url.Action("Index", "MainSinhVien", new { area = "Student" })">Trang chủ</a>
+                <i class="fas fa-chevron-right"></i>
+                <span aria-current="page">Đăng ký lao động</span>
+            </nav>
+            <h1 class="student-page-title">Đăng ký lao động</h1>
+            <p class="student-page-subtitle">Chọn đợt lao động phù hợp và theo dõi trạng thái đăng ký của bạn.</p>
+        </div>
     </div>
 
-    <!-- BẢNG 1: LAO ĐỘNG CÁ NHÂN -->
-    <div id="sectionCaNhan" class="mb-4">
-        <div class="card card-shadow border-0 rounded-4 overflow-hidden shadow-sm">
-            <div class="card-header-custom py-3 px-4">
-                <h4 class="title-gradient mb-0 fs-5">
-                    <i class="fas fa-user me-2"></i>Danh Sách Đợt Lao Động Cá Nhân
-                </h4>
+    @if (ViewBag.IsClassLeader == true)
+    {
+        <div class="leader-register-banner mb-3">
+            <div class="leader-banner-icon">
+                <i class="fas fa-user-shield"></i>
             </div>
-            <div class="card-body p-0">
+            <div class="leader-banner-content">
+                <h5>Chế độ lớp trưởng</h5>
+                <p>Bạn có thể đăng ký lao động cho bản thân hoặc đăng ký cho cả lớp theo từng đợt.</p>
+            </div>
+        </div>
+
+        <div class="leader-tabs mb-3" role="tablist" aria-label="Hình thức đăng ký">
+            <button type="button" id="tabCaNhan" class="leader-tab active" data-target="sectionCaNhan" role="tab" aria-selected="true">
+                <i class="fas fa-user"></i>
+                <span>Đăng ký cá nhân</span>
+            </button>
+            <button type="button" id="tabLop" class="leader-tab" data-target="sectionLop" role="tab" aria-selected="false">
+                <i class="fas fa-users"></i>
+                <span>Đăng ký theo lớp</span>
+            </button>
+        </div>
+
+        <div id="sectionCaNhan" class="mb-4">
+            <div class="student-card">
+                <div class="student-card-header">
+                    <h2 class="student-card-title">
+                        <span class="student-card-icon blue"><i class="fas fa-user"></i></span>
+                        Danh sách đợt lao động cá nhân
+                    </h2>
+                </div>
+                <div class="student-card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle table-custom mb-0">
+                            <thead class="table-header-gradient">
+                                <tr>
+                                    <th class="text-center">STT</th>
+                                    <th>Ngày lao động</th>
+                                    <th>Buổi</th>
+                                    <th>Loại lao động</th>
+                                    <th>Giá trị</th>
+                                    <th>Khu vực</th>
+                                    <th>Số lượng SV</th>
+                                    <th>Trạng thái</th>
+                                    <th class="text-center">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableBodyCaNhan"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="pagination-wrap">
+                <div id="paginationCaNhan" class="pagination-container">
+                    <button type="button" id="prevCaNhan" aria-label="Trang trước"><i class="fas fa-chevron-left"></i></button>
+                    <span id="pageNumbersCaNhan"></span>
+                    <button type="button" id="nextCaNhan" aria-label="Trang sau"><i class="fas fa-chevron-right"></i></button>
+                </div>
+            </div>
+        </div>
+
+        <div id="sectionLop" style="display: none;">
+            <div class="student-card">
+                <div class="student-card-header">
+                    <h2 class="student-card-title">
+                        <span class="student-card-icon indigo"><i class="fas fa-users"></i></span>
+                        Danh sách đợt lao động theo lớp
+                    </h2>
+                </div>
+                <div class="student-card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle table-custom mb-0">
+                            <thead class="table-header-gradient">
+                                <tr>
+                                    <th class="text-center">STT</th>
+                                    <th>Ngày lao động</th>
+                                    <th>Buổi</th>
+                                    <th>Loại lao động</th>
+                                    <th>Giá trị</th>
+                                    <th>Khu vực</th>
+                                    <th>Số lượng lớp</th>
+                                    <th>Trạng thái</th>
+                                    <th class="text-center">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableBodyLop"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pagination-wrap">
+                <div id="paginationLop" class="pagination-container">
+                    <button type="button" id="prevLop" aria-label="Trang trước"><i class="fas fa-chevron-left"></i></button>
+                    <span id="pageNumbersLop"></span>
+                    <button type="button" id="nextLop" aria-label="Trang sau"><i class="fas fa-chevron-right"></i></button>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="student-card mb-4">
+            <div class="student-card-header">
+                <h2 class="student-card-title">
+                    <span class="student-card-icon blue"><i class="fas fa-clipboard-list"></i></span>
+                    Danh sách đợt lao động
+                </h2>
+            </div>
+            <div class="student-card-body p-0">
                 <div class="table-responsive">
                     <table class="table table-hover align-middle table-custom mb-0">
                         <thead class="table-header-gradient">
                             <tr>
-                                <th class="text-center ps-4">STT</th>
+                                <th class="text-center">STT</th>
                                 <th>Ngày lao động</th>
                                 <th>Buổi</th>
                                 <th>Loại lao động</th>
@@ -45,144 +148,45 @@
                                 <th>Khu vực</th>
                                 <th>Số lượng SV</th>
                                 <th>Trạng thái</th>
-                                <th class="text-center pe-4">Thao tác</th>
+                                <th class="text-center">Thao tác</th>
                             </tr>
                         </thead>
-                        <tbody id="tableBodyCaNhan">
-                            <!-- JS sẽ fill dữ liệu ở đây -->
-                        </tbody>
+                        <tbody id="tableBody"></tbody>
                     </table>
                 </div>
             </div>
         </div>
-    </div>
-    <!-- PHÂN TRANG CHO BẢNG CÁ NHÂN -->
-    <div class="d-flex justify-content-center align-items-center mt-3 mb-5">
-        <div id="paginationCaNhan" class="pagination-container">
-            <button class="btn btn-secondary btn-sm me-1" id="prevCaNhan">&lt;</button>
-            <span id="pageNumbersCaNhan"></span>
-            <button class="btn btn-secondary btn-sm ms-1" id="nextCaNhan">&gt;</button>
-        </div>
-    </div>
 
-    <!-- BẢNG 2: LAO ĐỘNG LỚP -->
-    <div id="sectionLop">
-        <div class="card card-shadow border-0 rounded-4 overflow-hidden shadow-sm">
-            <div class="card-header-custom py-3 px-4">
-                <h4 class="title-gradient mb-0 fs-5">
-                    <i class="fas fa-users me-2"></i>Danh Sách Đợt Lao Động Theo Lớp
-                </h4>
-            </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle table-custom mb-0">
-                        <thead class="table-header-gradient">
-                            <tr>
-                                <th class="text-center ps-4">STT</th>
-                                <th>Ngày lao động</th>
-                                <th>Buổi</th>
-                                <th>Loại lao động</th>
-                                <th>Giá trị</th>
-                                <th>Khu vực</th>
-                                <th>Số lượng lớp</th>
-                                <th>Trạng thái</th>
-                                <th class="text-center pe-4">Thao tác</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tableBodyLop">
-                            <!-- JS sẽ fill dữ liệu ở đây -->
-                        </tbody>
-                    </table>
-                </div>
+        <div class="pagination-wrap">
+            <div id="pagination" class="pagination-container">
+                <button type="button" id="prev" aria-label="Trang trước"><i class="fas fa-chevron-left"></i></button>
+                <span id="pageNumbers"></span>
+                <button type="button" id="next" aria-label="Trang sau"><i class="fas fa-chevron-right"></i></button>
             </div>
         </div>
-    </div>
-    <!-- PHÂN TRANG CHO BẢNG LỚP -->
-    <div class="d-flex justify-content-center align-items-center mt-3 mb-4">
-        <div id="paginationLop" class="pagination-container">
-            <button class="btn btn-secondary btn-sm me-1" id="prevLop">&lt;</button>
-            <span id="pageNumbersLop"></span>
-            <button class="btn btn-secondary btn-sm ms-1" id="nextLop">&gt;</button>
-        </div>
-    </div>
-}
-else
-{
-    <!-- BẢNG DUY NHẤT CHO SINH VIÊN THƯỜNG -->
-    <div class="card card-shadow border-0 rounded-4 overflow-hidden shadow-sm mb-4">
-        <div class="card-header-custom py-3 px-4">
-            <h4 class="title-gradient mb-0 fs-5">
-                <i class="fas fa-clipboard-list me-2"></i>Danh Sách Đợt Lao Động
-            </h4>
-        </div>
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle table-custom mb-0">
-                    <thead class="table-header-gradient">
-                        <tr>
-                            <th class="text-center ps-4">STT</th>
-                            <th>Ngày lao động</th>
-                            <th>Buổi</th>
-                            <th>Loại lao động</th>
-                            <th>Giá trị</th>
-                            <th>Khu vực</th>
-                            <th>Số lượng SV</th>
-                            <th>Trạng thái</th>
-                            <th class="text-center pe-4">Thao tác</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tableBody">
-                        <!-- Loading spinner sẽ hiện khi JS chạy -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <!-- PHÂN TRANG CHO SINH VIÊN THƯỜNG -->
-    <div class="d-flex justify-content-center align-items-center mt-3 mb-4">
-        <div id="pagination" class="pagination-container">
-            <button class="btn btn-secondary btn-sm me-1" id="prev">&lt;</button>
-            <span id="pageNumbers"></span>
-            <button class="btn btn-secondary btn-sm ms-1" id="next">&gt;</button>
-        </div>
-    </div>
-}
-
-<!-- PHÂN TRANG (chung cho tất cả) -->
-<!--<div class="d-flex justify-content-between align-items-center mt-3">
-    <div id="pagination" class="pagination-container">
-        <button class="btn btn-secondary btn-sm me-1" id="prev">&lt;</button>
-        <span id="pageNumbers"></span>
-        <button class="btn btn-secondary btn-sm ms-1" id="next">&gt;</button>
-    </div>
-</div>-->
+    }
+</div>
 
 <!-- Modal đăng ký theo lớp -->
-<div class="modal fade" id="modalDangKyLop" tabindex="-1" aria-labelledby="modalDangKyLopLabel" aria-hidden="true">
-    <div class="modal-dialog modal-xl">
+<div class="modal fade student-modal" id="modalDangKyLop" tabindex="-1" aria-labelledby="modalDangKyLopLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
+            <div class="modal-header">
                 <h5 class="modal-title" id="modalDangKyLopLabel">
-                    <i class="fas fa-users me-2"></i>Danh sách lớp để đăng ký
+                    <i class="fas fa-users"></i> Danh sách lớp để đăng ký
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
             </div>
             <div class="modal-body">
-                <div id="modalContentLop">
-                    <!-- JS sẽ load danh sách lớp ở đây -->
-                </div>
+                <div id="modalContentLop"></div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-                <button type="button" class="btn btn-success" id="btnXacNhanDangKyLop">Xác nhận đăng ký</button>
+                <button type="button" class="student-btn student-btn-outline" data-bs-dismiss="modal">Đóng</button>
+                <button type="button" class="student-btn student-btn-primary" id="btnXacNhanDangKyLop">Xác nhận đăng ký</button>
             </div>
         </div>
     </div>
 </div>
-
-
-
 
 <script>
     let toastTimeout = null;
@@ -194,22 +198,43 @@ else
             clearTimeout(toastTimeout);
         }
 
-        if (type === "success") toast.style.background = "#28a745";
-        else if (type === "error") toast.style.background = "#dc3545";
-        else if (type === "warning") toast.style.background = "#ffc107";
-        else toast.style.background = "#007bff";
-
-        toast.innerText = message;
-        toast.style.display = "block";
-        toast.style.opacity = "1";
-        toast.style.transform = "translateY(0)";
+        const toastType = type === "success" || type === "error" || type === "warning" ? type : "info";
+        toast.classList.remove("is-visible");
+        toast.className = "student-toast is-" + toastType;
+        toast.textContent = message;
+        void toast.offsetWidth;
+        toast.classList.add("is-visible");
 
         toastTimeout = setTimeout(() => {
-            toast.style.opacity = "0";
-            toast.style.transform = "translateY(-20px)";
-            setTimeout(() => {
-                toast.style.display = "none";
-            }, 300);
-        }, 5000); // Hiển thị 5 giây
+            toast.classList.remove("is-visible");
+        }, 5000);
     };
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const tabs = document.querySelectorAll(".leader-tab");
+        if (!tabs.length) return;
+
+        function activateTab(targetId) {
+            tabs.forEach(tab => {
+                const isActive = tab.dataset.target === targetId;
+                tab.classList.toggle("active", isActive);
+                tab.setAttribute("aria-selected", isActive ? "true" : "false");
+            });
+
+            document.querySelectorAll("#sectionCaNhan, #sectionLop").forEach(section => {
+                section.style.display = section.id === targetId ? "block" : "none";
+            });
+        }
+
+        tabs.forEach(tab => {
+            tab.addEventListener("click", function () {
+                activateTab(this.dataset.target);
+            });
+        });
+
+        const params = new URLSearchParams(window.location.search);
+        if ((params.get("tab") || "").toLowerCase() === "lop") {
+            activateTab("sectionLop");
+        }
+    });
 </script>

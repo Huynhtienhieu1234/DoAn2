@@ -3,108 +3,185 @@
     Layout = "~/Areas/Student/Views/Shared/Viewsiderbar.cshtml";
 }
 
-<div class="container mt-4">
-    <!-- BẢNG 1: ĐÃ DUYỆT (ƯU TIÊN HIỂN THỊ TRÊN) -->
-    <div class="card shadow mb-5">
-        <div class="card-header bg-success text-white text-center py-3">
-            <h4 class="mb-0"><i class="fas fa-check-circle me-3"></i> Các Đợt Đã Duyệt - Có Thể Điểm Danh</h4>
+<div class="student-page">
+    <div class="student-page-head">
+        <div class="student-page-head-icon">
+            <i class="fas fa-clipboard-check"></i>
         </div>
-        <div class="card-body p-4">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle text-center mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th style="width:8%;">STT</th>
-                            <th>Đợt lao động</th>
-                            <th>Buổi</th>
-                            <th>Ngày</th>
-                            <th>Khu vực</th>
-                            <th>Loại</th>
-                            <th>Điểm danh</th>
-                        </tr>
-                    </thead>
-                    <tbody id="daDuyetBody">
-                        <tr id="loadingDaDuyet">
-                            <td colspan="6" class="py-5">
-                                <div class="spinner-border text-success" role="status">
-                                    <span class="visually-hidden">Đang tải...</span>
-                                </div>
-                                <p class="mt-3 text-muted">Đang tải các đợt đã duyệt...</p>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+        <div class="student-page-head-main">
+            <nav class="student-breadcrumb" aria-label="Điều hướng">
+                <a href="@Url.Action("Index", "MainSinhVien", new { area = "Student" })">Trang chủ</a>
+                <i class="fas fa-chevron-right"></i>
+                <span aria-current="page">Điểm danh lao động</span>
+            </nav>
+            <h1 class="student-page-title">Điểm danh lao động</h1>
+            <p class="student-page-subtitle">Theo dõi các đợt đã duyệt, đang chờ duyệt và đã hoàn thành điểm danh.</p>
         </div>
     </div>
 
-    <!-- BẢNG 2: ĐANG CHỜ DUYỆT (HIỂN THỊ DƯỚI) -->
-    <div class="card shadow">
-        <div class="card-header bg-warning text-dark text-center py-3">
-            <h4 class="mb-0"><i class="fas fa-clock me-3"></i> Các Đợt Đang Chờ Duyệt</h4>
-        </div>
-        <div class="card-body p-4">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle text-center mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th style="width:8%;">STT</th>
-                            <th>Đợt lao động</th>
-                            <th>Buổi</th>
-                            <th>Ngày</th>
-                            <th>Khu vực</th>
-                            <th>Loại</th>
-                            <th>Trạng thái</th>
-                        </tr>
-                    </thead>
-                    <tbody id="choDuyetBody">
-                        <tr id="loadingChoDuyet">
-                            <td colspan="6" class="py-5">
-                                <div class="spinner-border text-warning" role="status">
-                                    <span class="visually-hidden">Đang tải...</span>
-                                </div>
-                                <p class="mt-3 text-muted">Đang tải các đợt chờ duyệt...</p>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+    <div class="student-tabs" role="tablist" aria-label="Trạng thái điểm danh">
+        <button type="button" id="tabDaDuyet" class="student-tab active" data-tab="panelDaDuyet"
+                role="tab" aria-selected="true" aria-controls="panelDaDuyet">
+            <i class="fas fa-circle-check"></i>
+            <span>Đã duyệt</span>
+            <span class="student-tab-count" id="countDaDuyet">0</span>
+        </button>
+        <button type="button" id="tabChoDuyet" class="student-tab" data-tab="panelChoDuyet"
+                role="tab" aria-selected="false" aria-controls="panelChoDuyet">
+            <i class="fas fa-clock"></i>
+            <span>Chờ duyệt</span>
+            <span class="student-tab-count" id="countChoDuyet">0</span>
+        </button>
+        <button type="button" id="tabHoanThanh" class="student-tab" data-tab="panelHoanThanh"
+                role="tab" aria-selected="false" aria-controls="panelHoanThanh">
+            <i class="fas fa-check-double"></i>
+            <span>Hoàn thành</span>
+            <span class="student-tab-count" id="countHoanThanh">0</span>
+        </button>
+    </div>
+
+    <section id="panelDaDuyet" class="student-tab-panel active" role="tabpanel" aria-labelledby="tabDaDuyet">
+        <div class="student-card">
+            <div class="student-card-header">
+                <h2 class="student-card-title">
+                    <span class="student-card-icon green"><i class="fas fa-circle-check"></i></span>
+                    Các đợt đã duyệt - Có thể điểm danh
+                </h2>
+            </div>
+            <div class="student-card-body p-0">
+                <div class="table-responsive">
+                    <table class="student-table text-center">
+                        <thead>
+                            <tr>
+                                <th style="width:8%;">STT</th>
+                                <th>Đợt lao động</th>
+                                <th>Buổi</th>
+                                <th>Ngày</th>
+                                <th>Khu vực</th>
+                                <th>Loại</th>
+                                <th>Điểm danh</th>
+                            </tr>
+                        </thead>
+                        <tbody id="daDuyetBody">
+                            <tr id="loadingDaDuyet">
+                                <td colspan="7" class="student-empty">
+                                    <div class="spinner-border text-success spinner-border-sm" role="status">
+                                        <span class="visually-hidden">Đang tải...</span>
+                                    </div>
+                                    <p class="mt-3 mb-0">Đang tải các đợt đã duyệt...</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
-    </div>
-    <!-- BẢNG 3: ĐÃ HOÀN THÀNH ĐIỂM DANH -->
-    <div class="card shadow  " style="margin-top:5%">
-        <div class="card-header bg-primary text-white text-center py-3">
-            <h4 class="mb-0"><i class="fas fa-check-double me-3"></i> Các Đợt Đã Hoàn Thành Điểm Danh</h4>
-        </div>
-        <div class="card-body p-4">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle text-center mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th style="width:8%;">STT</th>
-                            <th>Đợt lao động</th>
-                            <th>Buổi</th>
-                            <th>Ngày</th>
-                            <th>Khu vực</th>
-                            <th>Loại</th>
-                            <th>Trạng thái</th>
-                        </tr>
-                    </thead>
-                    <tbody id="hoanThanhBody">
-                        <tr id="loadingHoanThanh">
-                            <td colspan="7" class="py-5">
-                                <div class="spinner-border text-primary" role="status">
-                                    <span class="visually-hidden">Đang tải...</span>
-                                </div>
-                                <p class="mt-3 text-muted">Đang tải các đợt đã hoàn thành...</p>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+    </section>
+
+    <section id="panelChoDuyet" class="student-tab-panel" role="tabpanel" aria-labelledby="tabChoDuyet">
+        <div class="student-card">
+            <div class="student-card-header">
+                <h2 class="student-card-title">
+                    <span class="student-card-icon amber"><i class="fas fa-clock"></i></span>
+                    Các đợt đang chờ duyệt
+                </h2>
+            </div>
+            <div class="student-card-body p-0">
+                <div class="table-responsive">
+                    <table class="student-table text-center">
+                        <thead>
+                            <tr>
+                                <th style="width:8%;">STT</th>
+                                <th>Đợt lao động</th>
+                                <th>Buổi</th>
+                                <th>Ngày</th>
+                                <th>Khu vực</th>
+                                <th>Loại</th>
+                                <th>Trạng thái</th>
+                            </tr>
+                        </thead>
+                        <tbody id="choDuyetBody">
+                            <tr id="loadingChoDuyet">
+                                <td colspan="7" class="student-empty">
+                                    <div class="spinner-border text-warning spinner-border-sm" role="status">
+                                        <span class="visually-hidden">Đang tải...</span>
+                                    </div>
+                                    <p class="mt-3 mb-0">Đang tải các đợt chờ duyệt...</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
-    </div>
+    </section>
+
+    <section id="panelHoanThanh" class="student-tab-panel" role="tabpanel" aria-labelledby="tabHoanThanh">
+        <div class="student-card">
+            <div class="student-card-header">
+                <h2 class="student-card-title">
+                    <span class="student-card-icon blue"><i class="fas fa-check-double"></i></span>
+                    Các đợt đã hoàn thành điểm danh
+                </h2>
+            </div>
+            <div class="student-card-body p-0">
+                <div class="table-responsive">
+                    <table class="student-table text-center">
+                        <thead>
+                            <tr>
+                                <th style="width:8%;">STT</th>
+                                <th>Đợt lao động</th>
+                                <th>Buổi</th>
+                                <th>Ngày</th>
+                                <th>Khu vực</th>
+                                <th>Loại</th>
+                                <th>Trạng thái</th>
+                            </tr>
+                        </thead>
+                        <tbody id="hoanThanhBody">
+                            <tr id="loadingHoanThanh">
+                                <td colspan="7" class="student-empty">
+                                    <div class="spinner-border text-primary spinner-border-sm" role="status">
+                                        <span class="visually-hidden">Đang tải...</span>
+                                    </div>
+                                    <p class="mt-3 mb-0">Đang tải các đợt đã hoàn thành...</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
 </div>
 
-
 <script src="~/Areas/Student/Content/Js/StudentCheckDay/StudentCheckDay.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const tabs = document.querySelectorAll(".student-tab");
+        const panels = document.querySelectorAll(".student-tab-panel");
+
+        function activateTab(targetId) {
+            tabs.forEach(function (tab) {
+                const isActive = tab.dataset.tab === targetId;
+                tab.classList.toggle("active", isActive);
+                tab.setAttribute("aria-selected", isActive ? "true" : "false");
+            });
+
+            panels.forEach(function (panel) {
+                panel.classList.toggle("active", panel.id === targetId);
+            });
+        }
+
+        tabs.forEach(function (tab) {
+            tab.addEventListener("click", function () {
+                activateTab(this.dataset.tab);
+            });
+        });
+
+        const hash = (window.location.hash || "").replace("#", "");
+        if (hash && document.getElementById(hash)) {
+            activateTab(hash);
+        }
+    });
+</script>

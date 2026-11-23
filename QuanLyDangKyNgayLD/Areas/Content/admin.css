@@ -10,7 +10,7 @@
 }
 
 body {
-    background: linear-gradient(to bottom right, #f8faff, #dee6f2);
+    background: #f8fafc;
     min-height: 100vh;
     font-family: "Open Sans", sans-serif !important;
     color: #2c3e50;
@@ -23,20 +23,22 @@ body {
 }
 
 aside {
-    width: 290px;
-    min-height: 95vh;
-    margin: 20px;
+    width: 250px;
+    min-height: calc(100vh - 30px);
+    margin: 15px 0 15px 15px;
     background-color: #ffffff;
-    border-radius: 20px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-    transition: all 0.3s ease;
+    border-radius: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    transition: width 0.22s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
+    box-sizing: border-box;
 }
 
 main.main-content {
-    width: calc(100% - 300px);
-    margin-top: 10px;
-    margin-right: 20px;
+    width: calc(100% - 280px);
+    margin-top: 15px;
+    margin-right: 15px;
+    margin-left: 12px;
 }
 
 /* -------- THANH NGANG (NAVBAR) -------- */
@@ -59,12 +61,13 @@ main.main-content {
 .nav-link {
     display: flex !important;
     align-items: center;
-    padding: 12px 20px;
+    padding: 10px 14px;
     color: #5e6d85 !important;
     font-weight: 600;
-    transition: all 0.3s ease-in-out;
-    border-radius: 12px;
+    transition: all 0.2s ease-in-out;
+    border-radius: 10px;
     width: 100%;
+    box-sizing: border-box;
 }
 
 .nav-link i {
@@ -73,17 +76,17 @@ main.main-content {
 }
 
 .nav-link:hover {
-    background-color: #e7efff;
+    background-color: #f1f5f9;
     color: #1a2b5f !important;
-    padding-left: 25px;
+    padding-left: 14px;
 }
 
 .nav-link.active {
-    background-color: #dce5ff !important;
-    color: #1a2b5f !important;
+    background-color: #eff6ff !important;
+    color: #1d4ed8 !important;
     font-weight: 700;
-    box-shadow: inset 3px 0 0 #4b6cb7;
-    transform: translateX(4px);
+    box-shadow: none;
+    transform: none;
 }
 
 /* -------- CHÀO ADMIN -------- */
@@ -95,7 +98,7 @@ main.main-content {
     width: 100%;
     height: 1px;
     border: none;
-    background: linear-gradient(to right, transparent, #a0a7b4, transparent);
+    background: #e2e8f0;
     margin: 10px 0;
 }
 
@@ -109,17 +112,20 @@ button,
 }
 
 .timkiem {
-    padding: 8px 20px;
-    border-radius: 20px;
-    background-image: linear-gradient(315deg, #4b6cb7 0%, #182848 74%);
-    color: white;
+    padding: 7px 16px;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #dc2626;
+    border: 1.5px solid #fecaca;
     font-weight: 600;
-    box-shadow: 0px 3px 6px rgba(0,0,0,0.15);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
 }
 
 .timkiem:hover {
-    background-image: linear-gradient(315deg, #5f80d2 0%, #233464 74%);
-    transform: scale(1.03);
+    background: #dc2626;
+    color: #ffffff;
+    border-color: #dc2626;
+    transform: translateY(-1px);
 }
 
 /* -------- TOOLBAR -------- */
@@ -340,22 +346,25 @@ table .btn-action i {
 
 /* -------- PHÂN TRANG -------- */
 .pagination-container {
-    margin-top: 8px;
-    display: flex;
+    display: inline-flex;
     justify-content: center;
     align-items: center;
-    gap: 6px;
+    gap: 4px;
 }
 
-.pagination-container .btn {
+.pagination-container .btn,
+.pagination-container button {
     border-radius: 6px;
-    padding: 8px 12px;
-    min-width: 40px;
-    font-size: 0.9rem;
-    font-weight: 600;
+    padding: 0 8px;
+    min-width: 32px;
+    height: 32px;
+    font-size: 0.8125rem;
+    font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s ease;
-    border: 1px solid #dee2e6 !important;
+    transition: all 0.15s ease;
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+    color: #475569;
 }
 
 .pagination-container #prev,
@@ -363,52 +372,53 @@ table .btn-action i {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-width: 40px;
-    height: 40px;
-    padding: 0;
-    background-color: #007bff !important;
-    color: white !important;
-    border: none !important;
+    min-width: 32px;
+    height: 32px;
+    padding: 0 8px;
+    background-color: #ffffff;
+    color: #475569;
+    border: 1px solid #e2e8f0;
 }
 
-.pagination-container #prev:hover,
-.pagination-container #next:hover {
-    background-color: #0056b3 !important;
-    transform: scale(1.05);
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+.pagination-container #prev:hover:not(:disabled),
+.pagination-container #next:hover:not(:disabled) {
+    background-color: #f8fafc;
+    border-color: #cbd5e1;
+    color: #0f172a;
 }
 
 .pagination-container #prev:disabled,
 .pagination-container #next:disabled {
-    background-color: #e9ecef !important;
-    color: #999 !important;
+    background-color: #f8fafc;
+    border-color: #e2e8f0;
+    color: #94a3b8;
     cursor: not-allowed;
-    opacity: 0.5;
-}
-
-.pagination-container #prev:active,
-.pagination-container #next:active {
-    transform: scale(0.95);
+    opacity: 0.55;
 }
 
 .pagination-container span button {
-    background-color: #f8f9fa !important;
-    color: #333 !important;
-    border: 1px solid #dee2e6 !important;
-    min-width: 35px;
-    height: 35px;
-    padding: 0;
+    background-color: #ffffff;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+    min-width: 32px;
+    height: 32px;
+    padding: 0 8px;
+    border-radius: 6px;
+    font-size: 0.8125rem;
+    font-weight: 500;
 }
 
-.pagination-container span button:hover {
-    background-color: #e9ecef !important;
-    border-color: #007bff !important;
+.pagination-container span button:hover:not(:disabled):not(.active) {
+    background-color: #f8fafc;
+    border-color: #cbd5e1;
+    color: #0f172a;
 }
 
 .pagination-container span button.active {
-    background-color: #007bff !important;
-    color: white !important;
-    border-color: #007bff !important;
+    background-color: #2563eb;
+    color: #ffffff;
+    border-color: #2563eb;
+    font-weight: 600;
 }
 
 /* -------- MODAL (Bootstrap compatible) -------- */

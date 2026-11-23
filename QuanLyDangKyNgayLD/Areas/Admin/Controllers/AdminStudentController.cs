@@ -130,7 +130,45 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                         })
                         .ToList();
 
-                    return Json(new { success = true, items = students, page, totalPages, totalItems }, JsonRequestBehavior.AllowGet);
+                    // ✅ Bổ sung tiến trình lao động cho các sinh viên trong trang hiện tại
+                    var mssvList = students.Select(s => s.MSSV).ToList();
+
+                    var soNgayDict = db.SoNgayLaoDongs
+                        .Where(x => mssvList.Contains(x.MSSV))
+                        .Select(x => new { x.MSSV, x.TongSoNgay })
+                        .ToList()
+                        .GroupBy(x => x.MSSV)
+                        .ToDictionary(g => g.Key, g => g.Sum(x => x.TongSoNgay ?? 0));
+
+                    var phieuDict = db.PhieuXacNhanHoanThanhs
+                        .Where(p => mssvList.Contains(p.MSSV))
+                        .Select(p => new { p.MSSV, p.id, p.TrangThai, p.NgayXacNhan })
+                        .ToList()
+                        .GroupBy(p => p.MSSV)
+                        .ToDictionary(g => g.Key, g => g.OrderByDescending(p => p.id).First());
+
+                    var items = students.Select(s => new
+                    {
+                        s.MSSV,
+                        s.MSSVDisplay,
+                        s.HoTen,
+                        s.GioiTinh,
+                        s.NgaySinh,
+                        s.QueQuan,
+                        s.Email,
+                        s.SoDienThoaiSinhVien,
+                        s.Lop_id,
+                        s.TenLop,
+                        s.TenKhoa,
+                        s.Khoa_id,
+                        SoNgay = soNgayDict.ContainsKey(s.MSSV) ? soNgayDict[s.MSSV] : 0,
+                        TrangThaiHoanThanh = phieuDict.ContainsKey(s.MSSV) ? phieuDict[s.MSSV].TrangThai : null,
+                        NgayXacNhan = phieuDict.ContainsKey(s.MSSV) && phieuDict[s.MSSV].NgayXacNhan.HasValue
+                            ? phieuDict[s.MSSV].NgayXacNhan.Value.ToString("dd/MM/yyyy")
+                            : null
+                    }).ToList();
+
+                    return Json(new { success = true, items, page, totalPages, totalItems }, JsonRequestBehavior.AllowGet);
                 }
             }
             catch (Exception ex)
@@ -355,7 +393,7 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                 }
             }
 
-            return true;
+            return false;
         }
 
         // POST: Xóa mềm sinh viên (đánh dấu Deleted_at trong tài khoản)
@@ -519,6 +557,15 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                     if (svRaw == null)
                         return Json(new { success = false, message = "Không tìm thấy sinh viên." }, JsonRequestBehavior.AllowGet);
 
+                    int tongSoNgay = db.SoNgayLaoDongs
+                        .Where(x => x.MSSV == id)
+                        .Sum(x => (int?)x.TongSoNgay) ?? 0;
+
+                    var phieu = db.PhieuXacNhanHoanThanhs
+                        .Where(p => p.MSSV == id)
+                        .OrderByDescending(p => p.id)
+                        .FirstOrDefault();
+
                     var sv = new
                     {
                         svRaw.MSSV,
@@ -529,7 +576,13 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                         svRaw.QueQuan,
                         svRaw.Email,
                         svRaw.SoDienThoaiSinhVien,
-                        Lop = svRaw.Lop != null ? svRaw.Lop.TenLop : "Chưa có"
+                        Lop = svRaw.Lop != null ? svRaw.Lop.TenLop : "Chưa có",
+                        SoNgay = tongSoNgay,
+                        ChiTieu = 18,
+                        TrangThai = phieu != null ? phieu.TrangThai : null,
+                        NgayXacNhan = phieu != null && phieu.NgayXacNhan.HasValue
+                            ? phieu.NgayXacNhan.Value.ToString("dd/MM/yyyy HH:mm")
+                            : null
                     };
 
                     return Json(new { success = true, data = sv }, JsonRequestBehavior.AllowGet);

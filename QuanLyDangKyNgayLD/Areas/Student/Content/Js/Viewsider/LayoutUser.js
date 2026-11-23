@@ -15,7 +15,9 @@ function loadLayoutUser() {
                     ? res.data.Avatar 
                     : 'https://ui-avatars.com/api/?name=' + encodeURIComponent(res.data.HoTen || 'SV') + '&background=2563eb&color=fff&size=150&bold=true';
                 
-                $('#layoutAvatar').attr('src', avatarUrl);
+                $('#layoutAvatar').off('error').on('error', function () {
+                    $(this).off('error').attr('src', 'https://ui-avatars.com/api/?name=' + encodeURIComponent(res.data.HoTen || 'SV') + '&background=2563eb&color=fff&size=150&bold=true');
+                }).attr('src', avatarUrl);
             }
         },
         error: function () {

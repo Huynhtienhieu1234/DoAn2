@@ -25,7 +25,7 @@
 
 /* ====================== CƠ BẢN ====================== */
 body {
-    background: linear-gradient(to bottom, #f0f9ff, #e0f7fa);
+    background: #f8fafc;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     color: var(--text);
     margin: 0;
@@ -118,35 +118,37 @@ body {
 }
 
 #btnAdd {
-    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    background: #2563eb;
     color: white;
 }
 
     #btnAdd:hover {
+        background: #1d4ed8;
         transform: translateY(-2px);
-        box-shadow: 0 10px 25px rgba(0, 210, 255, 0.3);
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
     }
 
 #btnViewDeleted {
-    background: #e0f7fa;
-    color: #006064;
-    border: 1.5px solid #80deea;
+    background: #ffffff;
+    color: #475569;
+    border: 1px solid #cbd5e1;
 }
 
     #btnViewDeleted:hover {
-        background: #b2ebf2;
-        border-color: #4dd0e1;
+        background: #f1f5f9;
+        border-color: #94a3b8;
         transform: translateY(-1px);
     }
 
 #btnExportExcel {
-    background: linear-gradient(135deg, #4fc3f7, #29b6f6);
+    background: #16a34a;
     color: white;
 }
 
     #btnExportExcel:hover {
+        background: #15803d;
         transform: translateY(-2px);
-        box-shadow: 0 10px 25px rgba(79, 195, 247, 0.3);
+        box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3);
     }
 
 /* Input & Select */
@@ -291,32 +293,36 @@ body {
         transform: scale(0.88);
     }
 
-/* Gradient giữ nguyên */
+/* Nút thao tác màu Solid hiện đại */
 .btn-edit {
-    background: linear-gradient(135deg, #4facfe, #00f2fe);
+    background: #f59e0b;
 }
 
 .btn-delete {
-    background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+    background: #ef4444;
 }
 
 .btn-detail {
-    background: linear-gradient(135deg, #f093fb, #f5576c);
+    background: #0284c7;
 }
-btn-reset {
-    background: linear-gradient(314deg, #edcfa8, #fed6e3);
+
+.btn-reset {
+    background: #64748b;
 }
 
 .btn-edit:hover {
-    box-shadow: 0 8px 20px rgba(79, 172, 254, 0.4);
+    background: #d97706;
+    box-shadow: 0 4px 10px rgba(245, 158, 11, 0.4);
 }
 
 .btn-delete:hover {
-    box-shadow: 0 8px 20px rgba(255, 107, 107, 0.4);
+    background: #dc2626;
+    box-shadow: 0 4px 10px rgba(239, 68, 68, 0.4);
 }
 
 .btn-detail:hover {
-    box-shadow: 0 8px 20px rgba(245, 87, 108, 0.4);
+    background: #0369a1;
+    box-shadow: 0 4px 10px rgba(2, 132, 199, 0.4);
 }
 
 .btn-reset:hover {
@@ -324,7 +330,8 @@ btn-reset {
 }
 
 /* ====================== PHÂN TRANG ====================== */
-.d-flex.justify-content-between {
+.pagination-wrapper .d-flex.justify-content-between,
+#paginationGroup.d-flex.justify-content-between {
     justify-content: center !important;
     gap: 1rem;
     flex-wrap: wrap;
@@ -336,52 +343,70 @@ btn-reset {
 }
 
 .pagination-container {
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: 8px;
+    gap: 4px;
     flex-wrap: wrap;
 }
 
 #prev, #next {
-    width: 44px;
-    height: 44px;
-    border-radius: var(--radius-md);
-    background: var(--card-bg);
-    border: 1.5px solid var(--border-light);
-    color: #00acc1;
-    font-weight: 700;
-    font-size: 1.1rem;
-    transition: all 0.2s ease;
+    min-width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    color: #475569;
+    font-weight: 500;
+    font-size: 0.8125rem;
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 8px;
 }
 
-    #prev:hover, #next:hover {
-        background: #e0f7fa;
-        border-color: #4dd0e1;
-        transform: scale(1.05);
+    #prev:hover:not(:disabled), #next:hover:not(:disabled) {
+        background: #f8fafc;
+        border-color: #cbd5e1;
+        color: #0f172a;
+    }
+
+    #prev:disabled, #next:disabled {
+        background: #f8fafc;
+        border-color: #e2e8f0;
+        color: #94a3b8;
+        cursor: not-allowed;
+        opacity: 0.55;
     }
 
 #pageNumbers button {
-    width: 44px;
-    height: 44px;
-    border-radius: var(--radius-md);
-    background: var(--card-bg);
-    border: 1.5px solid var(--border-light);
-    color: #00acc1;
-    font-weight: 600;
-    transition: all 0.2s ease;
+    min-width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    color: #475569;
+    font-weight: 500;
+    font-size: 0.8125rem;
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 8px;
 }
 
     #pageNumbers button.active {
-        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-        color: white;
-        border: none;
-        font-weight: 700;
+        background: #2563eb;
+        color: #ffffff;
+        border-color: #2563eb;
+        font-weight: 600;
+        box-shadow: 0 1px 4px rgba(37, 99, 235, 0.28);
     }
 
     #pageNumbers button:hover:not(.active) {
-        background: #e0f7fa;
-        border-color: #4dd0e1;
-        transform: scale(1.03);
+        background: #f8fafc;
+        border-color: #cbd5e1;
+        color: #0f172a;
     }
 
 /* ====================== MODAL ====================== */
@@ -435,19 +460,19 @@ btn-reset {
 }
 
     .modal-header.bg-primary {
-        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        background: #1e3a8a;
     }
 
     .modal-header.bg-warning {
-        background: linear-gradient(135deg, #4fc3f7, #29b6f6);
+        background: #d97706;
     }
 
     .modal-header.bg-danger {
-        background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+        background: #dc2626;
     }
 
     .modal-header.bg-secondary {
-        background: linear-gradient(135deg, #b2ebf2, #80deea);
+        background: #475569;
     }
 
 .modal-title {
@@ -568,30 +593,32 @@ btn-reset {
         transform: scale(1.3) rotate(8deg);
     }
 
-/* Gradient siêu nét cho từng nút */
+/* Màu Solid hiện đại cho từng nút */
 .admin-account-page .btn-edit {
-    background: linear-gradient(135deg, #4facfe, #00f2fe);
+    background: #f59e0b;
 }
 
 .admin-account-page .btn-delete {
-    background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+    background: #ef4444;
 }
 
 .admin-account-page .btn-detail {
-    background: linear-gradient(135deg, #f093fb, #f5576c);
+    background: #0284c7;
 }
 
 .admin-account-page .btn-reset {
-    background: linear-gradient(135deg, #a8edea, #80deea);
+    background: #64748b;
 }
 
 /* Shadow hover riêng */
 .admin-account-page .btn-edit:hover {
-    box-shadow: 0 14px 30px rgba(79, 172, 254, 0.5);
+    background: #d97706;
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
 }
 
 .admin-account-page .btn-delete:hover {
-    box-shadow: 0 14px 30px rgba(255, 107, 107, 0.5);
+    background: #dc2626;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
 }
 
 .admin-account-page .btn-detail:hover {
@@ -845,25 +872,28 @@ btn-reset {
 
 /*khung ảnh */
 .khuvuc-frame {
-    width: 61%;
-    max-width: 472px;
-    height: 221px;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 100% !important;
+    min-height: 280px;
     margin: 0px auto;
     border-radius: 14px;
     overflow: hidden;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.1);
-    background: #f0f9ff;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+    background: #0f172a;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
     .khuvuc-frame img {
-        max-width: 100%;
-        max-height: 100%;
-        object-fit: cover;
-        display: none;
-        border-radius: 0;
+        width: 100% !important;
+        height: 100% !important;
+        max-width: 100% !important;
+        max-height: 100% !important;
+        object-fit: cover !important;
+        display: block !important;
+        border-radius: 12px;
     }
 
 /*cuôi file */

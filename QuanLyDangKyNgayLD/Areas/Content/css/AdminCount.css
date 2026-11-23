@@ -25,7 +25,7 @@
 
 /* ====================== CƠ BẢN ====================== */
 body {
-    background: linear-gradient(to bottom, #f0f9ff, #e0f7fa);
+    background: #f8fafc;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     color: var(--text);
     margin: 0;
@@ -306,15 +306,17 @@ body {
 }
 
     .table thead th {
-        background: linear-gradient(135deg, #1e40af, #1d4ed8) !important;
-        background-color: #1e40af !important;
-        color: #ffffff !important;
+        background: #f8fafc !important;
+        background-color: #f8fafc !important;
+        background-image: none !important;
+        color: #475569 !important;
         font-weight: 700;
         text-transform: uppercase;
-        font-size: 0.82rem;
-        letter-spacing: 0.8px;
+        font-size: 0.76rem;
+        letter-spacing: 0.05em;
         border: none;
-        padding: 15px 12px;
+        border-bottom: 2px solid #e2e8f0 !important;
+        padding: 12px 10px;
         text-align: center;
         vertical-align: middle;
     }
@@ -392,39 +394,64 @@ body {
         box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2) !important;
     }
 
-/* Màu Gradient đẹp cho 4 nút */
+/* Màu tối giản hiện đại cho 4 nút tác vụ */
 .btn-edit {
-    background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+    background: #fefce8 !important;
+    border: 1px solid #fef08a !important;
+    color: #b45309 !important;
+    box-shadow: none !important;
 }
 .btn-edit:hover {
-    box-shadow: 0 6px 16px rgba(245, 158, 11, 0.45) !important;
+    background: #d97706 !important;
+    border-color: #d97706 !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 10px rgba(217, 119, 6, 0.28) !important;
 }
 
 .btn-delete {
-    background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+    background: #fef2f2 !important;
+    border: 1px solid #fecaca !important;
+    color: #dc2626 !important;
+    box-shadow: none !important;
 }
 .btn-delete:hover {
-    box-shadow: 0 6px 16px rgba(239, 68, 68, 0.45) !important;
+    background: #dc2626 !important;
+    border-color: #dc2626 !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 10px rgba(220, 38, 38, 0.28) !important;
 }
 
 .btn-detail {
-    background: linear-gradient(135deg, #0ea5e9, #0284c7) !important;
+    background: #eff6ff !important;
+    border: 1px solid #bfdbfe !important;
+    color: #2563eb !important;
+    box-shadow: none !important;
 }
 .btn-detail:hover {
-    box-shadow: 0 6px 16px rgba(14, 165, 233, 0.45) !important;
+    background: #2563eb !important;
+    border-color: #2563eb !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.28) !important;
 }
 
 .btn-reset {
-    background: linear-gradient(135deg, #475569, #334155) !important;
+    background: #f1f5f9 !important;
+    border: 1px solid #e2e8f0 !important;
+    color: #475569 !important;
+    box-shadow: none !important;
 }
 .btn-reset:hover {
-    box-shadow: 0 6px 16px rgba(71, 85, 105, 0.45) !important;
+    background: #334155 !important;
+    border-color: #334155 !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 10px rgba(51, 65, 85, 0.28) !important;
 }
 
 
 
 /* ====================== PHÂN TRANG ====================== */
-.d-flex.justify-content-between {
+.pagination-wrapper .d-flex.justify-content-between,
+#paginationGroup.d-flex.justify-content-between {
     justify-content: center !important;
     gap: 1rem;
     flex-wrap: wrap;
@@ -1037,25 +1064,28 @@ body {
 
 /*khung ảnh */
 .khuvuc-frame {
-    width: 61%;
-    max-width: 472px;
-    height: 221px;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 100% !important;
+    min-height: 280px;
     margin: 0px auto;
     border-radius: 14px;
     overflow: hidden;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.1);
-    background: #f0f9ff;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+    background: #0f172a;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
     .khuvuc-frame img {
-        max-width: 100%;
-        max-height: 100%;
-        object-fit: cover;
-        display: none;
-        border-radius: 0;
+        width: 100% !important;
+        height: 100% !important;
+        max-width: 100% !important;
+        max-height: 100% !important;
+        object-fit: cover !important;
+        display: block !important;
+        border-radius: 12px;
     }
 
 /*cuôi file */
@@ -1099,20 +1129,22 @@ body {
 }
 
 aside {
-    width: 290px;
-    min-height: 95vh;
-    margin: 20px;
+    width: 250px;
+    min-height: calc(100vh - 30px);
+    margin: 15px 0 15px 15px;
     background-color: #ffffff;
-    border-radius: 20px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-    transition: all 0.3s ease;
+    border-radius: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    transition: width 0.22s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
+    box-sizing: border-box;
 }
 
 main.main-content {
-    width: calc(100% - 300px);
-    margin-top: 10px;
-    margin-right: 20px;
+    width: calc(100% - 280px);
+    margin-top: 15px;
+    margin-right: 15px;
+    margin-left: 12px;
 }
 
 /* -------- THANH NGANG (NAVBAR) -------- */
@@ -1135,12 +1167,13 @@ main.main-content {
 .nav-link {
     display: flex !important;
     align-items: center;
-    padding: 12px 20px;
+    padding: 10px 14px;
     color: #5e6d85 !important;
     font-weight: 600;
-    transition: all 0.3s ease-in-out;
-    border-radius: 12px;
+    transition: all 0.2s ease-in-out;
+    border-radius: 10px;
     width: 100%;
+    box-sizing: border-box;
 }
 
     .nav-link i {
@@ -1149,17 +1182,17 @@ main.main-content {
     }
 
     .nav-link:hover {
-        background-color: #e7efff;
+        background-color: #f1f5f9;
         color: #1a2b5f !important;
-        padding-left: 25px;
+        padding-left: 14px;
     }
 
     .nav-link.active {
-        background-color: #dce5ff !important;
-        color: #1a2b5f !important;
+        background-color: #eff6ff !important;
+        color: #1d4ed8 !important;
         font-weight: 700;
-        box-shadow: inset 3px 0 0 #4b6cb7;
-        transform: translateX(4px);
+        box-shadow: none;
+        transform: none;
     }
 
 /* -------- CHÀO ADMIN -------- */
@@ -1198,65 +1231,7 @@ button,
         transform: scale(1.03);
     }
 
-/* -------- TOOLBAR -------- */
-.toolbar {
-    background: #f8f9fa !important;
-    border-radius: 12px;
-    padding: 10px 15px;
-    margin-bottom: 10px;
-    border: 1px solid #e9ecef;
-}
 
-    .toolbar .container-fluid {
-        display: flex !important;
-        flex-wrap: wrap;
-        gap: 10px;
-        align-items: center;
-        padding: 0 !important;
-    }
-
-    .toolbar .collapse {
-        width: 100%;
-        display: flex !important;
-        flex-wrap: wrap;
-        gap: 10px;
-        align-items: center;
-    }
-
-    .toolbar .navbar-nav {
-        flex-wrap: wrap;
-        gap: 6px;
-        margin-bottom: 0;
-        display: flex;
-        align-items: center;
-    }
-
-    .toolbar .nav-item {
-        display: flex;
-        align-items: center;
-        flex-shrink: 0;
-    }
-
-    .toolbar .d-flex {
-        flex-wrap: wrap;
-        gap: 8px;
-        align-items: center;
-        flex-shrink: 0;
-    }
-
-    .toolbar .form-select {
-        flex-shrink: 0;
-        white-space: nowrap;
-        padding: 6px 10px;
-        font-size: 0.875rem;
-    }
-
-    .toolbar .btn {
-        flex-shrink: 0;
-        white-space: nowrap;
-        padding: 6px 12px;
-        font-size: 0.875rem;
-    }
 
 /* -------- SEARCH WRAPPER -------- */
 .search-wrapper {
@@ -2565,93 +2540,66 @@ table {
 
 
 */
-/* Container optional (để canh vị trí đẹp hơn) */
+/* Page size wrapper & select - Clean SaaS styling */
 .page-size-wrapper {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+    margin: 0;
 }
 
-/* Nhãn (nếu dùng) */
 .page-size-label {
-    font-weight: 600;
-    color: #344054;
-    font-size: 14px;
+    font-weight: 500;
+    color: #64748b;
+    font-size: 0.8125rem;
+    margin: 0;
+    white-space: nowrap;
 }
 
-/* Select chính */
 .page-size-select {
-    appearance: none; /* Ẩn style mặc định */
+    appearance: none;
     -webkit-appearance: none;
     -moz-appearance: none;
-    position: relative;
-    padding: 8px 36px 8px 12px; /* chừa chỗ cho icon mũi tên bên phải */
-    min-width: 140px;
-    font-size: 14px;
-    line-height: 1.4;
-    color: #1f2937; /* text */
+    display: inline-block;
+    height: 32px;
+    line-height: 30px;
+    padding: 0 22px 0 10px;
+    min-width: 82px;
+    max-width: 105px;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: #0f172a;
     background: #ffffff;
-    border: 1px solid #d0d5dd; /* viền */
-    border-radius: 8px; /* bo góc */
-    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.1); /* nhẹ */
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
     cursor: pointer;
-    transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
-}
-
-/* Mũi tên tùy biến bằng background image SVG */
-.page-size-select {
-    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2358656d' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
-    background-position: right 12px center;
-    background-size: 16px;
+    background-position: right 7px center;
+    background-size: 11px;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
 }
 
-    /* Hover */
-    .page-size-select:hover {
-        border-color: #98a2b3;
-    }
-
-    /* Focus */
-    .page-size-select:focus {
-        outline: none;
-        border-color: #3b82f6; /* xanh */
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
-    }
-
-    /* Disabled */
-    .page-size-select:disabled {
-        color: #98a2b3;
-        background: #f9fafb;
-        cursor: not-allowed;
-    }
-
-/* Dark mode (nếu có class .dark trên body) */
-.dark .page-size-select {
-    color: #e5e7eb;
-    background: #0b1220;
-    border-color: #334155;
-    box-shadow: none;
+.page-size-select:hover {
+    border-color: #94a3b8;
+    background-color: #f8fafc;
 }
 
-    .dark .page-size-select:hover {
-        border-color: #475569;
-    }
-
-    .dark .page-size-select:focus {
-        border-color: #60a5fa;
-        box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.25);
-    }
-
-/* Kích thước nhỏ gọn (nếu muốn) */
-.page-size-select.sm {
-    padding: 6px 32px 6px 10px;
-    font-size: 13px;
-    min-width: 120px;
+.page-size-select:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    background-color: #ffffff;
 }
 
-/* Kích thước lớn (nếu muốn) */
-.page-size-select.lg {
-    padding: 10px 40px 10px 14px;
-    font-size: 15px;
-    min-width: 160px;
+.page-size-select:disabled {
+    color: #94a3b8;
+    background: #f8fafc;
+    cursor: not-allowed;
+    opacity: 0.6;
 }

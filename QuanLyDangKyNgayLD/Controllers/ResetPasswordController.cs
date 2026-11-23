@@ -17,7 +17,7 @@ namespace QuanLyDangKyNgayLD.Controllers
                 TempData["ErrorMessage"] = "Token không hợp lệ.";
                 return View();
             }
-
+    
             using (var db = DbContextFactory.Create())
             {
                 var user = db.TaiKhoans.FirstOrDefault(u => u.Reset_token == token && u.Deleted_at == null);

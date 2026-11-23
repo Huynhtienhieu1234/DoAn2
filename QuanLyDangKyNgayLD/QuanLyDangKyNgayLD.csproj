@@ -141,6 +141,7 @@
     <Content Include="Areas\Content\AdminStudentRegister\AdminExportStudent.js" />
     <Content Include="Areas\Content\AdminStudentRegister\AdminImportStudent.js" />
     <Content Include="Areas\Content\css\AdminCount.css" />
+    <Content Include="Areas\Content\css\Login.css" />
     <Content Include="Areas\Content\css\AdminStudentRegister.css" />
     <Content Include="Areas\Content\css\admonWwordRegister.css" />
     <Content Include="Areas\Content\jsAccount\Account.js" />
@@ -158,6 +159,8 @@
     <Content Include="Areas\Content\AdminStudentRegister\AdminStudentRegister.js" />
     <Content Include="Areas\Content\Js\CreateCode.js" />
     <Content Include="Areas\Student\Content\Css\Dashboard.css" />
+    <Content Include="Areas\Student\Content\Css\StudentHeaderNav.css" />
+    <Content Include="Areas\Student\Content\Css\StudentPages.css" />
     <Content Include="Areas\Student\Content\Css\Toast.css" />
     <Content Include="Areas\Student\Content\Js\ChatBot\ChatBot.js" />
     <Content Include="Areas\Student\Content\Js\Register\DeleteRegister.js" />
@@ -165,6 +168,7 @@
     <Content Include="Areas\Student\Content\Js\StudentListDay\StudentListDay.js" />
     <Content Include="Areas\Student\Content\Js\StudentMain\StudentInfo.js" />
     <Content Include="Areas\Student\Content\Js\StudentMain\StudentMain.js" />
+    <Content Include="Areas\Student\Content\Js\StudentHeaderNav.js" />
     <Content Include="Areas\Student\Content\Js\StudentRegister\LopPhoTableOverride.js" />
     <Content Include="Areas\Student\Content\Js\StudentRegister\StudentListClass.js" />
     <Content Include="Areas\Student\Content\Js\StudentTK\StudentTK.js" />
@@ -217,6 +221,7 @@
     <Compile Include="Controllers\ForgotPasswordController.cs" />
     <Compile Include="Controllers\LoginController.cs" />
     <Compile Include="Controllers\ResetPasswordController.cs" />
+    <Compile Include="Controllers\SwaggerController.cs" />
     <Compile Include="DbContextFactory\DbContextFactory.cs" />
     <Compile Include="EmailHelper\EmailHelper.cs" />
     <Compile Include="EmailHelper\EmailHelperCompletion.cs" />
@@ -293,6 +298,8 @@
     <Content Include="Areas\Admin\Views\AdminWordRegister\Index.cshtml" />
     <Content Include="Areas\Admin\Views\AdminStudent\Index.cshtml" />
     <Content Include="Areas\Student\Views\Shared\ViewSinhvien.cshtml" />
+    <Content Include="Areas\Student\Views\Shared\_StudentHeader.cshtml" />
+    <Content Include="Areas\Student\Views\Shared\_StudentHeaderNav.cshtml" />
     <Content Include="Areas\Student\Views\web.config" />
     <Content Include="Areas\Student\Views\StudentRegisterWord\Index.cshtml" />
     <EntityDeploy Include="Models\QuanLyDangKyLaoDong.edmx">

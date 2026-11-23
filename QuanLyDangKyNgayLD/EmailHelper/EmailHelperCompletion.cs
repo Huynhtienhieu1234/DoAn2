@@ -1,4 +1,6 @@
 using System;
+using System.Configuration;
+using System.IO;
 using System.Net;
 using System.Net.Mail;
 
@@ -6,10 +8,22 @@ public static class EmailHelperCompletion
 {
     public static bool SendCompletionEmail(string toEmail, string studentName)
     {
+        string error;
+        return SendCompletionEmail(toEmail, studentName, out error);
+    }
+
+    public static bool SendCompletionEmail(string toEmail, string studentName, out string errorMessage)
+    {
+        errorMessage = string.Empty;
         try
         {
-            var fromEmail = "huynhtienhieu11@gmail.com";
-            var fromPassword = "ocvs pcto zbca kfgy"; // App password Gmail
+            var fromEmail = ConfigurationManager.AppSettings["SmtpSenderEmail"];
+            if (string.IsNullOrWhiteSpace(fromEmail))
+                fromEmail = "huynhtienhieu11@gmail.com";
+
+            var fromPassword = ConfigurationManager.AppSettings["SmtpAppPassword"];
+            if (string.IsNullOrWhiteSpace(fromPassword))
+                fromPassword = "ocvs pcto zbca kfgy"; // App password Gmail
 
             var smtp = new SmtpClient
             {
@@ -20,6 +34,9 @@ public static class EmailHelperCompletion
                 UseDefaultCredentials = false,
                 Credentials = new NetworkCredential(fromEmail, fromPassword)
             };
+
+            // Đường dẫn hình ảnh trực tiếp lưu trữ trên CDN ổn định cao, tương thích 100% với Google Image Proxy
+            string logoSrc = "https://iili.io/oKYfs3X.png";
 
             string body = $@"
 <!DOCTYPE html>
@@ -37,10 +54,11 @@ public static class EmailHelperCompletion
                     <!-- Header Banner -->
                     <tr>
                         <td align='center' style='padding: 32px 30px 24px 30px; background: linear-gradient(135deg, #059669 0%, #10b981 100%); text-align: center;'>
-                            <img src='https://raw.githubusercontent.com/Huynhtienhieu1234/UploadAnh/main/logoxoanen.png' 
-                                 alt='Logo Đại học Đồng Tháp' 
-                                 width='110' 
-                                 style='display: block; margin: 0 auto 12px auto; max-width: 110px; height: auto; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.15));'>
+                            <img src=""{logoSrc}"" 
+                                 alt=""Logo Đại học Đồng Tháp"" 
+                                 width=""110"" 
+                                 height=""110"" 
+                                 style=""display: block; margin: 0 auto 12px auto; max-width: 110px; height: auto; border: 0; outline: none; text-decoration: none;"">
                             <h2 style='margin: 0; color: #ffffff; font-size: 18px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase;'>
                                 TRƯỜNG ĐẠI HỌC ĐỒNG THÁP
                             </h2>
@@ -115,7 +133,8 @@ public static class EmailHelperCompletion
                 From = new MailAddress(fromEmail, "Đại học Đồng Tháp - Quản Lý Lao Động", System.Text.Encoding.UTF8),
                 Subject = "🎉 [ĐH Đồng Tháp] Xác nhận hoàn thành nghĩa vụ lao động",
                 Body = body,
-                IsBodyHtml = true
+                IsBodyHtml = true,
+                BodyEncoding = System.Text.Encoding.UTF8
             })
             {
                 message.To.Add(toEmail);
@@ -126,6 +145,25 @@ public static class EmailHelperCompletion
         }
         catch (Exception ex)
         {
+            string fullErr = ex.ToString();
+            string innerErr = ex.InnerException != null ? ex.InnerException.Message : string.Empty;
+
+            if (fullErr.Contains("Daily user sending limit exceeded") || fullErr.Contains("5.4.5"))
+            {
+                errorMessage = "Hòm thư Gmail (" + (ConfigurationManager.AppSettings["SmtpSenderEmail"] ?? "người gửi") + ") đã vượt quá hạn mức gửi trong ngày của Google (Daily sending limit exceeded).";
+            }
+            else if (fullErr.Contains("5.5.1") || fullErr.Contains("5.7.8") || fullErr.Contains("Username and Password not accepted") || fullErr.Contains("Authentication Required") || fullErr.Contains("BadCredentials"))
+            {
+                errorMessage = "Sai Mật khẩu ứng dụng Gmail (App Password) cho tài khoản " + (ConfigurationManager.AppSettings["SmtpSenderEmail"]) + ". Lưu ý: Mật khẩu ứng dụng 16 ký tự phải được tạo từ chính tài khoản Gmail này (tại myaccount.google.com -> Bảo mật -> Xác minh 2 bước -> Mật khẩu ứng dụng).";
+            }
+            else if (!string.IsNullOrEmpty(innerErr))
+            {
+                errorMessage = $"{ex.Message} ({innerErr})";
+            }
+            else
+            {
+                errorMessage = ex.Message;
+            }
             Console.WriteLine("Lỗi gửi mail: " + ex.ToString());
             return false;
         }

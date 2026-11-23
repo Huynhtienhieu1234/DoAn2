@@ -1,11 +1,29 @@
 @model IEnumerable<QuanLyDangKyNgayLD.Models.TaiKhoan>
 @{
-    ViewBag.Title = "Trang Tài Khoản";
+    ViewBag.Title = "Quản lý tài khoản";
     Layout = "~/Areas/Admin/Views/Shared/ViewShare.cshtml";
 }
 @section Styles {
     <link rel="stylesheet" href="~/Areas/Content/css/AdminCount.css?v=@DateTime.Now.Ticks" />
 }
+
+<div class="admin-page-head">
+    <div class="admin-page-heading">
+        <nav class="admin-breadcrumb" aria-label="breadcrumb">
+            <a href="@Url.Action("Index", "Admin", new { area = "Admin" })">Quản trị</a>
+            <i class="fas fa-chevron-right"></i>
+            <span>Tài khoản</span>
+        </nav>
+        <h1>Quản lý tài khoản</h1>
+        <p>Quản lý thông tin đăng nhập, vai trò và trạng thái hoạt động của tài khoản trong hệ thống.</p>
+    </div>
+    <div class="admin-page-actions">
+        <span class="admin-date-chip">
+            <i class="fas fa-user-shield"></i> Phân quyền tập trung
+        </span>
+    </div>
+</div>
+
 <!-- THANH CÔNG CỤ -->
 <nav class="navbar navbar-expand-lg toolbar shadow-sm mb-3">
     <div class="container-fluid p-0">
@@ -31,7 +49,7 @@
 
             <!-- Bên phải -->
             <form class="toolbar-flex align-items-center" role="search">
-                <select id="roleFilter" class="form-select form-select-sm me-2 shadow-sm" style="min-width: 140px;">
+                <select id="roleFilter" class="form-select me-2" style="min-width: 150px;">
                     <option value="">-- Lọc theo vai trò --</option>
                     <option value="Tất Cả">Tất cả</option>
                     <option value="Admin">Admin</option>
@@ -40,11 +58,11 @@
                     <option value="Lớp phó lao động">Lớp phó lao động</option>
                 </select>
 
-                <div class="input-group input-group-sm shadow-sm me-2" style="min-width: 180px;">
-                    <span class="input-group-text bg-white border-end-0">
+                <div class="input-group me-2" style="min-width: 200px;">
+                    <span class="input-group-text">
                         <i class="fa fa-search text-muted"></i>
                     </span>
-                    <input type="text" id="searchBox" class="form-control border-start-0" placeholder="Tìm kiếm...">
+                    <input type="text" id="searchBox" class="form-control" placeholder="Tìm kiếm tài khoản, email...">
                 </div>
 
 
@@ -95,11 +113,6 @@
 <!-- BẢNG DỮ LIỆU -->
 
 <div class="table-responsive shadow-sm rounded-3 bg-white p-2">
-    <div id="loadingIndicator" style="display:none; text-align:center; margin:10px 0;">
-        <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Đang tải...</span>
-        </div>
-    </div>
     <table class="table table-bordered table-hover align-middle text-center mb-0">
         <thead class="table-light">
             <tr>
@@ -156,9 +169,24 @@
             }
             else
             {
-                <tr class="no-data-row">
-                    <td colspan="7" class="text-muted py-4">Không có dữ liệu</td>
-                </tr>
+                for (int s = 0; s < 6; s++)
+                {
+                    <tr class="skeleton-table-row">
+                        <td class="text-center align-middle py-3"><span class="skeleton-box skeleton-checkbox"></span></td>
+                        <td class="text-center align-middle py-3"><span class="skeleton-box skeleton-text" style="width: 20px;"></span></td>
+                        <td class="align-middle py-3"><span class="skeleton-box skeleton-text" style="width: 65%;"></span></td>
+                        <td class="align-middle py-3"><span class="skeleton-box skeleton-text" style="width: 80%;"></span></td>
+                        <td class="text-center align-middle py-3"><span class="skeleton-box skeleton-pill" style="width: 75px; height: 22px;"></span></td>
+                        <td class="text-center align-middle py-3">
+                            <div class="d-flex justify-content-center gap-1">
+                                <span class="skeleton-box skeleton-btn" style="width: 28px; height: 28px;"></span>
+                                <span class="skeleton-box skeleton-btn" style="width: 28px; height: 28px;"></span>
+                                <span class="skeleton-box skeleton-btn" style="width: 28px; height: 28px;"></span>
+                                <span class="skeleton-box skeleton-btn" style="width: 28px; height: 28px;"></span>
+                            </div>
+                        </td>
+                    </tr>
+                }
             }
         </tbody>
     </table>
@@ -167,19 +195,19 @@
 <!-- PHÂN TRANG -->
 <div class="d-flex justify-content-center align-items-center flex-wrap gap-3 mt-3 mb-4">
     <div id="pagination" class="pagination-container my-0">
-        <button class="btn btn-secondary btn-sm me-1" id="prev">&lt;</button>
+        <button class="btn btn-secondary btn-sm me-1" id="prev"><i class="fas fa-chevron-left"></i></button>
         <span id="pageNumbers"></span>
-        <button class="btn btn-secondary btn-sm ms-1" id="next">&gt;</button>
+        <button class="btn btn-secondary btn-sm ms-1" id="next"><i class="fas fa-chevron-right"></i></button>
     </div>
 
     <div class="page-size-wrapper">
         <span class="page-size-label"><i class="fas fa-list-ul me-1"></i> Hiển thị:</span>
-        <select id="pageSizeSelector" class="form-select form-select-sm page-size-select" title="Số dòng mỗi trang">
-            <option value="5">5 dòng / trang</option>
-            <option value="10" selected>10 dòng / trang</option>
-            <option value="20">20 dòng / trang</option>
-            <option value="50">50 dòng / trang</option>
-            <option value="100">100 dòng / trang</option>
+        <select id="pageSizeSelector" class="page-size-select" title="Số dòng mỗi trang">
+            <option value="5">5 / trang</option>
+            <option value="10" selected>10 / trang</option>
+            <option value="20">20 / trang</option>
+            <option value="50">50 / trang</option>
+            <option value="100">100 / trang</option>
             <option value="1000000">Tất cả</option>
         </select>
     </div>
@@ -356,25 +384,27 @@
 <!-- Modal Chi tiết -->
 <div class="modal fade" id="detailModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content shadow-lg">
-            <div class="modal-header bg-info text-white">
+        <div class="modal-content shadow-lg border-0 rounded-4 overflow-hidden">
+            <div class="modal-header bg-info text-white py-3">
                 <h5 class="modal-title"><i class="fa fa-info-circle me-2"></i>Thông tin tài khoản</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body">
-                <dl class="row mb-0">
-                    <dt class="col-sm-4">ID</dt>
-                    <dd class="col-sm-8" id="detailId"></dd>
-                    <dt class="col-sm-4">Tên tài khoản</dt>
-                    <dd class="col-sm-8" id="detailUsername"></dd>
-                    <dt class="col-sm-4">Email</dt>
-                    <dd class="col-sm-8" id="detailEmail"></dd>
-                    <dt class="col-sm-4">Vai trò</dt>
-                    <dd class="col-sm-8" id="detailRole"></dd>
-                </dl>
+            <div class="modal-body p-4">
+                <div class="p-3 bg-white rounded-3 border shadow-sm">
+                    <dl class="row mb-0 g-2">
+                        <dt class="col-sm-4 text-muted"><i class="fas fa-hashtag text-primary me-2"></i>ID:</dt>
+                        <dd class="col-sm-8 fw-semibold" id="detailId"></dd>
+                        <dt class="col-sm-4 text-muted"><i class="fas fa-user text-primary me-2"></i>Tên TK:</dt>
+                        <dd class="col-sm-8 fw-bold text-dark" id="detailUsername"></dd>
+                        <dt class="col-sm-4 text-muted"><i class="fas fa-envelope text-primary me-2"></i>Email:</dt>
+                        <dd class="col-sm-8" id="detailEmail"></dd>
+                        <dt class="col-sm-4 text-muted"><i class="fas fa-user-tag text-primary me-2"></i>Vai trò:</dt>
+                        <dd class="col-sm-8" id="detailRole"></dd>
+                    </dl>
+                </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            <div class="modal-footer justify-content-end py-3 px-4 bg-white border-top">
+                <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Đóng</button>
             </div>
         </div>
     </div>
@@ -383,23 +413,33 @@
 <!-- Modal Xóa -->
 <div class="modal fade" id="deleteModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" style="z-index: 1055;">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content shadow-lg">
-            <div class="modal-header bg-danger text-white">
-                <h5 class="modal-title"><i class="fas fa-trash me-2"></i>Xác nhận xóa</h5>
+        <div class="modal-content shadow-lg border-0 rounded-4 overflow-hidden">
+            <div class="modal-header bg-danger text-white py-3">
+                <h5 class="modal-title"><i class="fas fa-trash-alt me-2"></i> Xác nhận xóa tài khoản</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body text-center">
-                <i class="fas fa-exclamation-triangle text-danger mb-3" style="font-size: 3.5rem;"></i>
-                <h6 class="fw-bold" id="deleteConfirmText"></h6>
-                <p class="text-muted" id="deleteAccountInfo"></p>
-                <div class="alert alert-warning small">
-                    <i class="fas fa-info-circle me-1"></i> Hành động này không thể hoàn tác!
+            <div class="modal-body text-center p-4">
+                <div class="delete-icon-wrapper mb-3">
+                    <div class="delete-icon-circle mx-auto">
+                        <i class="fas fa-user-times"></i>
+                    </div>
+                </div>
+                <h5 class="fw-bold text-dark mb-2" id="deleteConfirmText">Bạn có chắc chắn muốn xóa tài khoản này?</h5>
+                <div class="p-3 bg-white rounded-3 border mb-3 text-start shadow-sm" id="deleteAccountInfoContainer">
+                    <div class="d-flex align-items-center text-muted small mb-1">
+                        <i class="fas fa-user text-primary me-2"></i>Thông tin tài khoản:
+                    </div>
+                    <div class="fw-bold text-primary fs-6" id="deleteAccountInfo"></div>
+                </div>
+                <div class="alert alert-warning small d-flex align-items-center mb-0 text-start py-2 px-3 border-0 rounded-3">
+                    <i class="fas fa-exclamation-triangle fs-5 text-warning me-2"></i>
+                    <div>Tài khoản sau khi xóa sẽ được chuyển vào <strong>Danh sách đã xóa</strong> và có thể khôi phục khi cần.</div>
                 </div>
             </div>
-            <div class="modal-footer justify-content-center">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy bỏ</button>
-                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">
-                    <i class="fas fa-trash me-1"></i> Xác nhận xóa
+            <div class="modal-footer justify-content-end py-3 px-4 bg-white border-top">
+                <button type="button" class="btn btn-secondary px-3 py-2" data-bs-dismiss="modal">Hủy bỏ</button>
+                <button type="button" class="btn btn-danger px-4 py-2 fw-bold" id="confirmDeleteBtn">
+                    <i class="fas fa-trash-alt me-1"></i> Xác nhận xóa
                 </button>
             </div>
         </div>
@@ -409,10 +449,10 @@
 <!-- Modal Đặt lại mật khẩu -->
 <div class="modal fade" id="resetPasswordModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content shadow-lg">
-            <div class="modal-header bg-warning text-dark">
+        <div class="modal-content shadow-lg border-0 rounded-4 overflow-hidden">
+            <div class="modal-header bg-warning text-white py-3">
                 <h5 class="modal-title"><i class="fas fa-key me-2"></i>Đặt lại mật khẩu</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body text-center">
                 <div class="alert alert-info mb-4">
@@ -443,11 +483,11 @@
 <div class="modal fade" id="deletedAccountsModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content shadow-lg border-0 rounded-4 dsxoa">
-            <div class="modal-header text-white py-3" style="background: linear-gradient(135deg, #4dd0e1, #00acc1);">
+            <div class="modal-header py-3">
                 <h5 class="modal-title fw-bold d-flex align-items-center mb-0">
                     <i class="fas fa-trash-restore me-2"></i> Danh sách tài khoản đã xóa
                 </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body p-3">
                 <!-- Thanh công cụ tác vụ trong modal đã xóa -->
@@ -591,7 +631,6 @@
 <script src="~/Areas/Content/jsAccount/DeleteAcount.js?v=@DateTime.Now.Ticks"></script>
 <script src="~/Areas/Content/jsAccount/EditAcount.js?v=@DateTime.Now.Ticks"></script>
 <script src="~/Areas/Content/jsAccount/Account.js?v=@DateTime.Now.Ticks"></script>
-<script src="~/Areas/Content/Js/adminCommon.js?v=@DateTime.Now.Ticks"></script>
 <script src="~/Areas/Content/jsAccount/ExportExcel.js?v=@DateTime.Now.Ticks"></script>
 <script src="~/Areas/Content/jsAccount/AdminPagesize.js?v=@DateTime.Now.Ticks"></script>
 

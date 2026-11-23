@@ -36,6 +36,7 @@ namespace QuanLyDangKyNgayLD.Models
         public Nullable<int> NguoiTao { get; set; }
         public string MaDiemDanh { get; set; }
         public string TrangThaiDot { get; set; }
+        public Nullable<int> SoLuongLop { get; set; }
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<DanhSachDiemDanh> DanhSachDiemDanhs { get; set; }

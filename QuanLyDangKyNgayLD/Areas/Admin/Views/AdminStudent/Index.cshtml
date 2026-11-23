@@ -1,6 +1,6 @@
 @model IEnumerable<QuanLyDangKyNgayLD.Models.SinhVien>
 @{
-    ViewBag.Title = "Quản lý Sinh viên";
+    ViewBag.Title = "Quản lý sinh viên";
     Layout = "~/Areas/Admin/Views/Shared/ViewShare.cshtml";
 }
 
@@ -8,6 +8,23 @@
 @{
     var vaiTroId = Session["VaiTroId"] as int?;
 }
+
+<div class="admin-page-head">
+    <div class="admin-page-heading">
+        <nav class="admin-breadcrumb" aria-label="breadcrumb">
+            <a href="@Url.Action("Index", "Admin", new { area = "Admin" })">Quản trị</a>
+            <i class="fas fa-chevron-right"></i>
+            <span>Sinh viên</span>
+        </nav>
+        <h1>Quản lý sinh viên</h1>
+        <p>Tra cứu hồ sơ, cập nhật thông tin và quản lý danh sách sinh viên theo khoa, lớp.</p>
+    </div>
+    <div class="admin-page-actions">
+        <span class="admin-date-chip">
+            <i class="fas fa-users"></i> Hồ sơ sinh viên
+        </span>
+    </div>
+</div>
 
 <!-- THANH CÔNG CỤ -->
 <nav class="navbar navbar-expand-lg toolbar shadow-sm mb-3">
@@ -37,7 +54,7 @@
 
             <!-- Bên phải -->
             <form class="toolbar-flex align-items-center" role="search">
-                <select id="roleFilter" class="form-select form-select-sm me-2 shadow-sm" style="min-width: 140px; cursor:pointer">
+                <select id="roleFilter" class="form-select me-2" style="min-width: 170px; cursor:pointer">
                     <option value="">-- Lọc theo Khoa --</option>
                     <option value="0">Tất cả</option>
                     <option value="1">Công nghệ và kỹ thuật</option>
@@ -52,13 +69,11 @@
                     <option value="10">Giáo dục Thể chất - Sư phạm Nghệ thuật</option>
                 </select>
 
-
-
-                <div class="input-group input-group-sm shadow-sm me-2" style="min-width: 180px;">
-                    <span class="input-group-text bg-white border-end-0">
+                <div class="input-group me-2" style="min-width: 200px;">
+                    <span class="input-group-text">
                         <i class="fa fa-search text-muted"></i>
                     </span>
-                    <input type="text" id="searchBox" class="form-control border-start-0" placeholder="Tìm kiếm...">
+                    <input type="text" id="searchBox" class="form-control" placeholder="Tìm MSSV, họ tên, lớp...">
                 </div>
 
                 <div class="dropdown d-inline-block">
@@ -97,13 +112,14 @@
     <table class="table table-bordered table-hover align-middle mb-0 student-data-table">
         <colgroup>
             <col style="width: 45px;">
-            <col style="width: 55px;">
-            <col style="width: 13%;">
-            <col style="width: 20%;">
+            <col style="width: 50px;">
+            <col style="width: 12%;">
+            <col style="width: 19%;">
+            <col style="width: 8%;">
+            <col style="width: 19%;">
+            <col style="width: 14%;">
             <col style="width: 9%;">
-            <col style="width: 22%;">
-            <col style="width: 16%;">
-            <col style="width: 15%;">
+            <col style="width: 14%;">
         </colgroup>
         <thead class="table-light">
             <tr>
@@ -114,16 +130,31 @@
                 <th class="text-center">GIỚI TÍNH</th>
                 <th class="text-center">KHOA</th>
                 <th class="text-center">LỚP</th>
+                <th class="text-center">TIẾN TRÌNH</th>
                 <th class="text-center action-header">TÁC VỤ</th>
             </tr>
         </thead>
         <tbody id="studentTableBody">
-            <tr>
-                <td colspan="8" class="text-center py-5">
-                    <i class="fa fa-spinner fa-spin fa-2x"></i><br>
-                    <small class="text-muted">Đang tải dữ liệu...</small>
-                </td>
-            </tr>
+            @for (int s = 0; s < 7; s++)
+            {
+                <tr class="skeleton-table-row">
+                    <td class="text-center align-middle py-3"><span class="skeleton-box skeleton-checkbox"></span></td>
+                    <td class="text-center align-middle py-3"><span class="skeleton-box skeleton-text" style="width: 20px;"></span></td>
+                    <td class="text-center align-middle py-3"><span class="skeleton-box skeleton-text" style="width: 90px;"></span></td>
+                    <td class="align-middle py-3"><span class="skeleton-box skeleton-text" style="width: 75%;"></span></td>
+                    <td class="text-center align-middle py-3"><span class="skeleton-box skeleton-text" style="width: 35px;"></span></td>
+                    <td class="align-middle py-3"><span class="skeleton-box skeleton-text" style="width: 80%;"></span></td>
+                    <td class="align-middle py-3"><span class="skeleton-box skeleton-text" style="width: 70%;"></span></td>
+                    <td class="text-center align-middle py-3"><span class="skeleton-box skeleton-pill" style="width: 56px; height: 20px;"></span></td>
+                    <td class="text-center align-middle py-3">
+                        <div class="d-flex justify-content-center gap-1">
+                            <span class="skeleton-box skeleton-btn" style="width: 28px; height: 28px;"></span>
+                            <span class="skeleton-box skeleton-btn" style="width: 28px; height: 28px;"></span>
+                            <span class="skeleton-box skeleton-btn" style="width: 28px; height: 28px;"></span>
+                        </div>
+                    </td>
+                </tr>
+            }
         </tbody>
     </table>
 </div>
@@ -131,19 +162,19 @@
 <!-- PHÂN TRANG -->
 <div class="d-flex justify-content-center align-items-center flex-wrap gap-3 mt-3 mb-4">
     <div id="paginationStudent" class="pagination-container my-0">
-        <button class="btn btn-secondary btn-sm me-1" id="prevStudent">&lt;</button>
+        <button class="btn btn-secondary btn-sm me-1" id="prevStudent"><i class="fas fa-chevron-left"></i></button>
         <span id="pageNumbersStudent"></span>
-        <button class="btn btn-secondary btn-sm ms-1" id="nextStudent">&gt;</button>
+        <button class="btn btn-secondary btn-sm ms-1" id="nextStudent"><i class="fas fa-chevron-right"></i></button>
     </div>
 
     <div class="page-size-wrapper">
         <span class="page-size-label"><i class="fas fa-list-ul me-1"></i> Hiển thị:</span>
-        <select id="pageSizeStudent" class="form-select form-select-sm page-size-select" title="Số dòng mỗi trang">
-            <option value="5">5 dòng / trang</option>
-            <option value="10" selected>10 dòng / trang</option>
-            <option value="20">20 dòng / trang</option>
-            <option value="50">50 dòng / trang</option>
-            <option value="100">100 dòng / trang</option>
+        <select id="pageSizeStudent" class="page-size-select" title="Số dòng mỗi trang">
+            <option value="5">5 / trang</option>
+            <option value="10" selected>10 / trang</option>
+            <option value="20">20 / trang</option>
+            <option value="50">50 / trang</option>
+            <option value="100">100 / trang</option>
             <option value="1000000">Tất cả</option>
         </select>
     </div>
@@ -333,45 +364,48 @@
 <!-- ====================== MODAL CHI TIẾT ====================== -->
 <div class="modal fade" id="detailStudentModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered modal-lg">
-        <!-- thêm modal-lg để rộng hơn -->
-        <div class="modal-content shadow-lg detail">
-            <div class="modal-header bg-info text-white">
+        <div class="modal-content shadow-lg border-0 rounded-4 overflow-hidden">
+            <div class="modal-header bg-info text-white py-3">
                 <h5 class="modal-title">
-                    <i class="fa fa-info-circle me-2"></i> Thông tin sinh viên
+                    <i class="fa fa-info-circle me-2"></i> Thông tin chi tiết sinh viên
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body">
-                <dl class="row mb-0">
-                    <dt class="col-sm-4">MSSV</dt>
-                    <dd class="col-sm-8" id="detailMSSV"></dd>
+            <div class="modal-body p-4">
+                <div class="p-4 bg-white rounded-4 border shadow-sm">
+                    <dl class="row mb-0 g-3">
+                        <dt class="col-sm-4 text-muted"><i class="fas fa-id-card text-primary me-2"></i>MSSV:</dt>
+                        <dd class="col-sm-8 fw-bold text-dark fs-6" id="detailMSSV"></dd>
 
-                    <dt class="col-sm-4">Họ tên</dt>
-                    <dd class="col-sm-8" id="detailHoTen"></dd>
+                        <dt class="col-sm-4 text-muted"><i class="fas fa-user text-primary me-2"></i>Họ tên:</dt>
+                        <dd class="col-sm-8 fw-bold text-primary fs-6" id="detailHoTen"></dd>
 
-                    <dt class="col-sm-4">Ngày sinh</dt>
-                    <dd class="col-sm-8" id="detailNgaySinh"></dd>
+                        <dt class="col-sm-4 text-muted"><i class="far fa-calendar-alt text-primary me-2"></i>Ngày sinh:</dt>
+                        <dd class="col-sm-8" id="detailNgaySinh"></dd>
 
-                    <dt class="col-sm-4">Giới tính</dt>
-                    <dd class="col-sm-8" id="detailGioiTinh"></dd>
+                        <dt class="col-sm-4 text-muted"><i class="fas fa-venus-mars text-primary me-2"></i>Giới tính:</dt>
+                        <dd class="col-sm-8" id="detailGioiTinh"></dd>
 
-                    <dt class="col-sm-4">Quê quán</dt>
-                    <dd class="col-sm-8" id="detailQueQuan"></dd>
+                        <dt class="col-sm-4 text-muted"><i class="fas fa-map-marker-alt text-danger me-2"></i>Quê quán:</dt>
+                        <dd class="col-sm-8" id="detailQueQuan"></dd>
 
-                    <dt class="col-sm-4">Email</dt>
-                    <dd class="col-sm-8" id="detailEmail"></dd>
+                        <dt class="col-sm-4 text-muted"><i class="fas fa-envelope text-primary me-2"></i>Email:</dt>
+                        <dd class="col-sm-8" id="detailEmail"></dd>
 
-                    <dt class="col-sm-4">SĐT</dt>
-                    <dd class="col-sm-8" id="detailSDT"></dd>
+                        <dt class="col-sm-4 text-muted"><i class="fas fa-phone text-success me-2"></i>SĐT:</dt>
+                        <dd class="col-sm-8" id="detailSDT"></dd>
 
-                    <dt class="col-sm-4">Khoa</dt>
-                    <dd class="col-sm-8" id="detailKhoa"></dd>
+                        <dt class="col-sm-4 text-muted"><i class="fas fa-university text-primary me-2"></i>Khoa:</dt>
+                        <dd class="col-sm-8 fw-semibold" id="detailKhoa"></dd>
 
-                    <dt class="col-sm-4">Lớp</dt>
-                    <dd class="col-sm-8" id="detailLop"></dd>
-                </dl>
+                        <dt class="col-sm-4 text-muted"><i class="fas fa-graduation-cap text-primary me-2"></i>Lớp:</dt>
+                        <dd class="col-sm-8 fw-semibold text-primary" id="detailLop"></dd>
+                    </dl>
+                </div>
             </div>
-
+            <div class="modal-footer justify-content-end py-3 px-4 bg-white border-top">
+                <button type="button" class="btn btn-secondary px-4 py-2" data-bs-dismiss="modal">Đóng</button>
+            </div>
         </div>
     </div>
 </div>
@@ -379,22 +413,29 @@
 
 <!-- ====================== MODAL XÓA ====================== -->
 <div class="modal fade" id="deleteStudentModal" tabindex="-1" data-bs-backdrop="static">
-    <div class="modal-dialog modal-dialog-centered modal-xl">
-
-
-        <div class="modal-content shadow-lg">
-            <div class="modal-header bg-danger text-white">
-                <h5 class="modal-title"><i class="fas fa-trash me-2"></i> Xác nhận xóa sinh viên</h5>
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow-lg border-0 rounded-4 overflow-hidden">
+            <div class="modal-header bg-danger text-white py-3">
+                <h5 class="modal-title"><i class="fas fa-trash-alt me-2"></i> Xác nhận xóa sinh viên</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body text-center">
-                <i class="fas fa-exclamation-triangle text-danger mb-3" style="font-size: 3.5rem;"></i>
-                <h6 class="fw-bold" id="deleteStudentText"></h6>
-                <p class="text-muted">Hành động này không thể hoàn tác!</p>
+            <div class="modal-body text-center p-4">
+                <div class="delete-icon-wrapper mb-3">
+                    <div class="delete-icon-circle mx-auto">
+                        <i class="fas fa-user-times"></i>
+                    </div>
+                </div>
+                <h5 class="fw-bold text-dark mb-2" id="deleteStudentText">Bạn có chắc chắn muốn xóa sinh viên này?</h5>
+                <div class="alert alert-warning small d-flex align-items-center mb-0 text-start py-2 px-3 border-0 rounded-3">
+                    <i class="fas fa-exclamation-triangle fs-5 text-warning me-2"></i>
+                    <div>Sinh viên sau khi xóa sẽ được chuyển vào <strong>Danh sách đã xóa</strong> và có thể khôi phục khi cần.</div>
+                </div>
             </div>
-            <div class="modal-footer justify-content-center">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy bỏ</button>
-                <button type="button" class="btn btn-danger" id="confirmDeleteStudentBtn">Xác nhận xóa</button>
+            <div class="modal-footer justify-content-end py-3 px-4 bg-white border-top">
+                <button type="button" class="btn btn-secondary px-3 py-2" data-bs-dismiss="modal">Hủy bỏ</button>
+                <button type="button" class="btn btn-danger px-4 py-2 fw-bold" id="confirmDeleteStudentBtn">
+                    <i class="fas fa-trash-alt me-1"></i> Xác nhận xóa
+                </button>
             </div>
         </div>
     </div>
@@ -570,4 +611,3 @@
 <script src="~/Areas/Content/AdminStudentRegister/AdminExportStudent.js?v=@DateTime.Now.Ticks"></script>
 <script src="~/Areas/Content/AdminStudentRegister/AdminImportStudent.js?v=@DateTime.Now.Ticks"></script>
 <script src="~/Areas/Content/AdminStudentRegister/AdminStudentRegister.js?v=@DateTime.Now.Ticks"></script>
-<script src="~/Areas/Content/Js/adminCommon.js?v=@DateTime.Now.Ticks"></script>

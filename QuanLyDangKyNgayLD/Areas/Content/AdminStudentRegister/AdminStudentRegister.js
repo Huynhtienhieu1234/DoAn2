@@ -463,6 +463,7 @@ document.addEventListener("DOMContentLoaded", function () {
             if (btn.classList.contains("btn-edit-student")) handleEdit.call(btn);
             else if (btn.classList.contains("btn-delete-student")) handleDelete.call(btn);
             else if (btn.classList.contains("btn-detail-student")) handleDetail.call(btn);
+            else if (btn.classList.contains("student-progress-cell")) handleDetail.call(btn);
         });
     }
 
@@ -474,16 +475,10 @@ document.addEventListener("DOMContentLoaded", function () {
         const tbody = document.getElementById("studentTableBody");
         const loadingOverlay = document.getElementById("loadingOverlay");
 
-        tbody.classList.add('loading');
-
+        if (tbody) tbody.classList.add('loading');
         if (loadingOverlay) {
             loadingOverlay.classList.add('active');
         }
-
-        setTimeout(() => {
-            tbody.style.opacity = '0.3';
-            tbody.style.filter = 'blur(2px)';
-        }, 50);
     }
 
     function hideTableLoading() {
@@ -496,9 +491,11 @@ document.addEventListener("DOMContentLoaded", function () {
             loadingOverlay.classList.remove('active');
         }
 
-        tbody.style.opacity = '1';
-        tbody.style.filter = 'none';
-        tbody.classList.remove('loading');
+        if (tbody) {
+            tbody.style.opacity = '1';
+            tbody.style.filter = 'none';
+            tbody.classList.remove('loading');
+        }
     }
 
     // ============= THÊM MỚI =============
@@ -996,8 +993,37 @@ document.addEventListener("DOMContentLoaded", function () {
                 const sv = data.data;
                 const formattedNgaySinh = sv.NgaySinh || "-";
 
+                const chiTieu = Number(sv.ChiTieu) || 18;
+                const soNgay = Number(sv.SoNgay) || 0;
+                const progressPct = Math.min(100, Math.round((soNgay / chiTieu) * 100));
+                const conLai = Math.max(0, chiTieu - soNgay);
+
+                let progressKey = "is-active";
+                let progressLabel = "Đang thực hiện";
+                if (sv.TrangThai === "Hoàn Thành") {
+                    progressKey = "is-done";
+                    progressLabel = "Đã hoàn thành";
+                } else if (soNgay >= chiTieu) {
+                    progressKey = "is-waiting";
+                    progressLabel = "Chờ xác nhận";
+                }
+
                 // Hiển thị thông tin chi tiết + nút chỉnh sửa
                 modalBody.innerHTML = `
+                <div class="student-progress-panel ${progressKey}">
+                    <div class="student-progress-panel-head">
+                        <div>
+                            <span class="student-progress-panel-title">Tiến trình lao động</span>
+                            <span class="student-progress-panel-sub">${conLai > 0 ? `Còn ${conLai} ngày để đạt chỉ tiêu ${chiTieu} ngày` : `Đã đạt chỉ tiêu ${chiTieu} ngày`}</span>
+                        </div>
+                        <span class="student-progress-status">${progressLabel}</span>
+                    </div>
+                    <div class="student-progress-panel-track"><span style="width:${progressPct}%"></span></div>
+                    <div class="student-progress-panel-foot">
+                        <span><strong>${soNgay}</strong> / ${chiTieu} ngày</span>
+                        ${sv.NgayXacNhan ? `<span>Xác nhận: ${sv.NgayXacNhan}</span>` : ""}
+                    </div>
+                </div>
                 <div class="row">
                     <div class="col-md-6">
                         <div class="mb-3">
@@ -1255,12 +1281,11 @@ document.addEventListener("DOMContentLoaded", function () {
         const khoaFilter = currentFilterState.khoa || "0";
         const tbody = document.getElementById("studentTableBody");
 
-        tbody.innerHTML = `<tr><td colspan="8" class="text-center py-5">
-            <div class="spinner-wave mx-auto mb-2">
-                <div></div><div></div><div></div>
-            </div>
-            <div class="text-muted">Đang tải dữ liệu...</div>
-        </td></tr>`;
+        if (typeof window.renderTableSkeleton === "function" && tbody) {
+            window.renderTableSkeleton(tbody, pageSize > 10 ? 10 : pageSize, 9);
+        } else if (tbody) {
+            tbody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-muted"><div class="spinner-border spinner-border-sm text-primary me-2"></div> Đang tải dữ liệu...</td></tr>`;
+        }
 
         // Xây dựng URL
         let url = `/Admin/AdminStudent/LoadStudents?page=${page}&pageSize=${pageSize}`;
@@ -1291,7 +1316,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 })
                 .catch(err => {
                     console.error("Load error:", err);
-                    tbody.innerHTML = `<tr><td colspan="8" class="text-danger text-center py-4">Lỗi tải dữ liệu: ${err.message}</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="9" class="text-danger text-center py-4">Lỗi tải dữ liệu: ${err.message}</td></tr>`;
                     hideTableLoading();
                 });
         }, 150);
@@ -1319,7 +1344,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             tbody.innerHTML = `
             <tr class="no-data-row">
-                <td colspan="8" class="text-muted py-4 text-center">
+                <td colspan="9" class="text-muted py-4 text-center">
                     <div class="py-3">
                         <i class="fas fa-inbox fa-2x text-muted mb-2"></i>
                         <div class="fw-medium">Không có dữ liệu</div>
@@ -1335,8 +1360,15 @@ document.addEventListener("DOMContentLoaded", function () {
             let mssvText = (s.MSSVDisplay || (s.MSSV !== undefined && s.MSSV !== null ? s.MSSV.toString() : "")).trim();
             if (mssvText.length === 9 && !mssvText.startsWith("0")) mssvText = "0" + mssvText;
 
+            const chiTieu = 18;
+            const soNgay = Number(s.SoNgay) || 0;
+            const progressPct = Math.min(100, Math.round((soNgay / chiTieu) * 100));
+            let progressClass = "is-active";
+            if (s.TrangThaiHoanThanh === "Hoàn Thành") progressClass = "is-done";
+            else if (soNgay >= chiTieu) progressClass = "is-waiting";
+
             return `
-            <tr>
+            <tr class="fade-in-data">
                 <td class="text-center">
                     <input type="checkbox" class="form-check-input check-item-student" value="${s.MSSV}">
                 </td>
@@ -1351,6 +1383,15 @@ document.addEventListener("DOMContentLoaded", function () {
                 </td>
                 <td class="text-start ps-2" title="${s.TenLop || "Chưa có"}">
                     <span class="truncate">${s.TenLop || "Chưa có"}</span>
+                </td>
+
+                <td class="text-center">
+                    <button type="button" class="student-progress-cell ${progressClass}"
+                        data-id="${s.MSSV}"
+                        title="Xem tiến trình lao động: ${soNgay}/${chiTieu} ngày">
+                        <span class="student-progress-value">${soNgay}/${chiTieu}</span>
+                        <span class="student-progress-track"><span class="student-progress-fill" style="width:${progressPct}%"></span></span>
+                    </button>
                 </td>
 
                 <td class="action-cell text-center">

@@ -26,13 +26,38 @@ function loadData(page = 1) {
 
     const tableContainer = document.getElementById("studentTable");
     if (tableContainer) {
-        tableContainer.innerHTML = `
-            <div class="tk-loading-overlay">
-                <div class="spinner-border text-primary mb-2" role="status">
-                    <span class="visually-hidden">Đang tải...</span>
-                </div>
-                <div class="fw-semibold">Đang tổng hợp dữ liệu thống kê...</div>
-            </div>`;
+        let tbody = tableContainer.querySelector("tbody");
+        if (tbody) {
+            if (typeof window.renderTableSkeleton === "function") {
+                window.renderTableSkeleton(tbody, pageSize > 8 ? 8 : pageSize, 6, false);
+            }
+        } else {
+            let skRows = '';
+            for (let s = 0; s < 6; s++) {
+                skRows += `<tr class="skeleton-table-row">
+                    <td class="text-center align-middle py-3"><span class="skeleton-box skeleton-text" style="width: 20px;"></span></td>
+                    <td class="text-center align-middle py-3"><span class="skeleton-box skeleton-text" style="width: 85px;"></span></td>
+                    <td class="align-middle py-3"><span class="skeleton-box skeleton-text" style="width: 75%;"></span></td>
+                    <td class="text-center align-middle py-3"><span class="skeleton-box skeleton-pill" style="width: 70px; height: 22px;"></span></td>
+                    <td class="align-middle py-3"><span class="skeleton-box skeleton-text" style="width: 80%;"></span></td>
+                    <td class="text-center align-middle py-3"><span class="skeleton-box skeleton-pill" style="width: 120px; height: 24px;"></span></td>
+                </tr>`;
+            }
+            tableContainer.innerHTML = `
+                <table class="tk-table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th style="width: 6%;">STT</th>
+                            <th style="width: 14%;">MSSV</th>
+                            <th style="width: 28%;">Họ và tên</th>
+                            <th style="width: 18%;">Lớp</th>
+                            <th style="width: 20%;">Khoa</th>
+                            <th style="width: 14%;">Tiến độ hoàn thành</th>
+                        </tr>
+                    </thead>
+                    <tbody>${skRows}</tbody>
+                </table>`;
+        }
     }
 
     const url = `/Admin/AdminTK/LoadData?khoa=${encodeURIComponent(khoa)}&lop=${encodeURIComponent(lop)}&keyword=${encodeURIComponent(keyword)}&status=${encodeURIComponent(status)}&page=${page}&pageSize=${pageSize}&_t=${Date.now()}`;
@@ -97,7 +122,7 @@ function loadData(page = 1) {
                            </span>`;
 
                     rowsHtml += `
-                        <tr>
+                        <tr class="fade-in-data">
                             <td class="text-center fw-bold text-muted" style="width: 60px;">${stt}</td>
                             <td class="text-center font-monospace fw-bold" style="width: 130px;">
                                 <span class="badge bg-light text-dark border px-2 py-1">${mssvText || "N/A"}</span>

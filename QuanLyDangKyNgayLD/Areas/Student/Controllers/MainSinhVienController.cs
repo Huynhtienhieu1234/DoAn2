@@ -16,14 +16,14 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
             // Lấy username từ session
             string username = Session["Username"]?.ToString();
             if (string.IsNullOrEmpty(username))
-                return RedirectToAction("Login", "Login");
+                return RedirectToAction("Login", "Login", new { area = "" });
 
             using (var db = DbContextFactory.Create())
             {
                 // Tìm tài khoản theo username
                 var user = db.TaiKhoans.FirstOrDefault(t => t.Username == username);
                 if (user == null)
-                    return RedirectToAction("Login", "Login");
+                    return RedirectToAction("Login", "Login", new { area = "" });
 
                 // Tìm sinh viên theo tài khoản
                 var sv = db.SinhViens
@@ -32,12 +32,13 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
                            .FirstOrDefault(s => s.TaiKhoan == user.TaiKhoan_id);
 
                 if (sv == null)
-                    return RedirectToAction("Login", "Login");
+                    return RedirectToAction("Login", "Login", new { area = "" });
 
                 // ✅ Truyền avatar và tên lên ViewBag (Fallback UI-Avatars an toàn)
                 string fallbackAvatar = "https://ui-avatars.com/api/?name=" + HttpUtility.UrlEncode(sv.HoTen ?? "Sinh Vien") + "&background=2563eb&color=fff&size=150&bold=true";
                 ViewBag.AvatarUrl = (sv.Anh != null && !string.IsNullOrEmpty(sv.Anh.DuongDan)) ? sv.Anh.DuongDan : fallbackAvatar;
                 ViewBag.HoTen = sv.HoTen ?? "Sinh viên";
+                ViewBag.IsClassLeader = user.VaiTro_id == 4;
 
                 return View("Index", sv);
             }
@@ -50,7 +51,7 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
         {
             var userId = Session["UserID"] as int?;
             if (userId == null)
-                return RedirectToAction("Login", "Login");
+                return RedirectToAction("Login", "Login", new { area = "" });
 
             using (var db = DbContextFactory.Create())
             {
@@ -62,6 +63,8 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
 
                 if (sv == null)
                     sv = new SinhVien { TaiKhoan = userId };
+
+                ViewBag.IsClassLeader = sv.TaiKhoan1?.VaiTro_id == 4;
 
                 return View("Detail", sv);
             }
@@ -109,6 +112,8 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
                         Lop = sv.Lop != null ? sv.Lop.TenLop : "Chưa có dữ liệu",
                         Khoa = sv.Lop?.Khoa != null ? sv.Lop.Khoa.TenKhoa : "Chưa có dữ liệu",
                         VaiTro = sv.TaiKhoan1?.VaiTro?.TenVaiTro ?? "Sinh viên",
+                        VaiTroId = sv.TaiKhoan1?.VaiTro_id ?? 3,
+                        IsClassLeader = sv.TaiKhoan1?.VaiTro_id == 4,
                         Avatar = avatarUrl,
                         SoNgay = soNgay,
                         MucTieu = mucTieu,
@@ -128,7 +133,7 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
         {
             var userId = Session["UserID"] as int?;
             if (userId == null)
-                return RedirectToAction("Login", "Login");
+                return RedirectToAction("Login", "Login", new { area = "" });
 
             try
             {
@@ -147,18 +152,46 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
                         sv.GioiTinh = model.GioiTinh;
                         sv.SoDienThoaiSinhVien = model.SoDienThoaiSinhVien;
 
-                        // xử lý upload ảnh
+                        // xử lý upload ảnh an toàn (chống RCE, Path Traversal)
                         if (AvatarFile != null && AvatarFile.ContentLength > 0)
                         {
+                            // 1. Kiểm tra kích thước tối đa 2MB
+                            if (AvatarFile.ContentLength > 2 * 1024 * 1024)
+                            {
+                                TempData["Message"] = "Kích thước ảnh đại diện không được vượt quá 2MB.";
+                                TempData["MessageType"] = "error";
+                                return RedirectToAction("Index");
+                            }
+
+                            // 2. Whitelist phần mở rộng ảnh (.jpg, .jpeg, .png, .webp)
+                            var ext = Path.GetExtension(AvatarFile.FileName)?.ToLowerInvariant();
+                            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp" };
+                            if (string.IsNullOrEmpty(ext) || !allowedExtensions.Contains(ext))
+                            {
+                                TempData["Message"] = "Định dạng ảnh không hợp lệ! Hệ thống chỉ hỗ trợ .jpg, .jpeg, .png, .webp.";
+                                TempData["MessageType"] = "error";
+                                return RedirectToAction("Index");
+                            }
+
+                            // 3. Whitelist MIME Content-Type
+                            var allowedMimeTypes = new[] { "image/jpeg", "image/png", "image/webp", "image/pjpeg", "image/x-png" };
+                            if (string.IsNullOrEmpty(AvatarFile.ContentType) || !allowedMimeTypes.Contains(AvatarFile.ContentType.ToLowerInvariant()))
+                            {
+                                TempData["Message"] = "Loại tệp không hợp lệ! Vui lòng chọn tệp hình ảnh.";
+                                TempData["MessageType"] = "error";
+                                return RedirectToAction("Index");
+                            }
+
                             var uploadDir = Server.MapPath("~/Uploads/Avatars");
                             if (!System.IO.Directory.Exists(uploadDir))
                                 System.IO.Directory.CreateDirectory(uploadDir);
 
-                            var fileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(AvatarFile.FileName);
-                            var path = System.IO.Path.Combine(uploadDir, fileName);
+                            // Đặt tên ngẫu nhiên hoàn toàn (Guid) + đuôi hợp lệ, tránh Path Traversal & Double Extension
+                            var safeFileName = Guid.NewGuid().ToString("N") + ext;
+                            var path = System.IO.Path.Combine(uploadDir, safeFileName);
                             AvatarFile.SaveAs(path);
 
-                            var anh = new Anh { DuongDan = "/Uploads/Avatars/" + fileName };
+                            var anh = new Anh { DuongDan = "/Uploads/Avatars/" + safeFileName };
                             db.Anhs.Add(anh);
                             db.SaveChanges();
 

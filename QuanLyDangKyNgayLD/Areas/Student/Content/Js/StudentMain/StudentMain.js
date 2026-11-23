@@ -4,9 +4,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // 2. Tải thông tin sinh viên từ API
     loadStudentData();
-
-    // 3. Tải danh sách thông báo đợt lao động mới
-    loadThongBaoLaoDong();
 });
 
 function renderCurrentDate() {

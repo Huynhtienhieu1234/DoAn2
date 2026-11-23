@@ -1,52 +1,140 @@
-﻿@model QuanLyDangKyNgayLD.Areas.Admin.Models.AdminThongKeViewModel
+@model QuanLyDangKyNgayLD.Areas.Admin.Models.AdminThongKeViewModel
 
 @{
-    ViewBag.Title = "Trang Chủ Admin";
+    ViewBag.Title = "Trang Chủ Quản Trị";
     Layout = "~/Areas/Admin/Views/Shared/ViewShare.cshtml";
 }
+
 <div class="dashboard-container">
-    <!-- Các ô vuông thống kê -->
-    <div class="row mb-4">
-        <div class="col-md-3 mb-3">
-            <div class="card shadow h-100 text-center p-3 animate-card">
-                <h6 class="text-muted">Tài khoản</h6>
-                <h2 class="display-4 text-primary" data-target="@Model.TongTaiKhoan">0</h2>
-                <a  href="@Url.Action("Index","Account",new{area="Admin"})" class="btn btn-sm btn-outline-primary mt-2">Xem chi tiết</a>
-            </div>
+    <div class="admin-page-head">
+        <div class="admin-page-heading">
+            <nav class="admin-breadcrumb" aria-label="breadcrumb">
+                <span>Quản trị</span>
+                <i class="fas fa-chevron-right"></i>
+                <span>Tổng quan</span>
+            </nav>
+            <h1>Tổng quan hệ thống</h1>
+            <p>Theo dõi số liệu tài khoản, sinh viên và tiến độ lao động trong một màn hình duy nhất.</p>
         </div>
-        <div class="col-md-3 mb-3">
-            <div class="card shadow h-100 text-center p-3 animate-card">
-                <h6 class="text-muted">Sinh viên</h6>
-                <h2 class="display-4 text-success" data-target="@Model.TongSinhVien">0</h2>
-                <a href="@Url.Action("Index","AdminStudent",new{area="Admin"})" class="btn btn-sm btn-outline-success mt-2">Xem chi tiết</a>
-            </div>
-        </div>
-        <div class="col-md-3 mb-3">
-            <div class="card shadow h-100 text-center p-3 animate-card">
-                <h6 class="text-muted">Đợt lao động</h6>
-                <h2 class="display-4 text-warning" data-target="@Model.TongDotLaoDong">0</h2>
-                <a href="@Url.Action("Index","AdminWordRegister",new{area="Admin"})" class="btn btn-sm btn-outline-warning mt-2">Xem chi tiết</a>
-            </div>
-        </div>
-        <div class="col-md-3 mb-3">
-            <div class="card shadow h-100 text-center p-3 animate-card">
-                <h6 class="text-muted">Hoàn thành</h6>
-                <h2 class="display-4 text-info" data-target="@Model.TongHoanThanh">0</h2>
-                <a href="/Admin/HoanThanh/ChiTiet" class="btn btn-sm btn-outline-info mt-2">Xem chi tiết</a>
-            </div>
+        <div class="admin-page-actions">
+            <span class="admin-date-chip">
+                <i class="far fa-calendar"></i> @DateTime.Now.ToString("dd/MM/yyyy")
+            </span>
         </div>
     </div>
 
-    <!-- Biểu đồ cột (làm nhỏ lại bằng cách thêm class CSS) -->
-    <div class="row">
-        <div class="col-md-8 mx-auto">
-            <!-- Giới hạn chiều rộng để nhỏ lại -->
-            <div class="card shadow p-3">
-                <h5 class="text-center mb-3">Biểu đồ cột thống kê</h5>
-                <div class="chart-container">
-                    <!-- Wrapper để kiểm soát chiều cao -->
-                    <canvas id="barChart" height="200"></canvas> <!-- Đặt chiều cao nhỏ hơn -->
+    <div class="admin-kpi-grid">
+        <article class="admin-kpi">
+            <div class="admin-kpi-top">
+                <span class="admin-kpi-label">Tài khoản</span>
+                <span class="admin-kpi-icon kpi-blue"><i class="fas fa-id-card"></i></span>
+            </div>
+            <div class="admin-kpi-value" data-target="@Model.TongTaiKhoan">0</div>
+            <div class="admin-kpi-foot">
+                <span>Tổng tài khoản hệ thống</span>
+                <a href="@Url.Action("Index","Account",new{area="Admin"})" class="admin-kpi-link">
+                    Quản lý <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+        </article>
+
+        <article class="admin-kpi">
+            <div class="admin-kpi-top">
+                <span class="admin-kpi-label">Sinh viên</span>
+                <span class="admin-kpi-icon kpi-green"><i class="fas fa-user-graduate"></i></span>
+            </div>
+            <div class="admin-kpi-value" data-target="@Model.TongSinhVien">0</div>
+            <div class="admin-kpi-foot">
+                <span>Hồ sơ sinh viên</span>
+                <a href="@Url.Action("Index","AdminStudent",new{area="Admin"})" class="admin-kpi-link">
+                    Xem danh sách <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+        </article>
+
+        <article class="admin-kpi">
+            <div class="admin-kpi-top">
+                <span class="admin-kpi-label">Đợt lao động</span>
+                <span class="admin-kpi-icon kpi-amber"><i class="fas fa-calendar-check"></i></span>
+            </div>
+            <div class="admin-kpi-value" data-target="@Model.TongDotLaoDong">0</div>
+            <div class="admin-kpi-foot">
+                <span>Đợt đã tạo</span>
+                <a href="@Url.Action("Index","AdminWordRegister",new{area="Admin"})" class="admin-kpi-link">
+                    Quản lý đợt <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+        </article>
+
+        <article class="admin-kpi">
+            <div class="admin-kpi-top">
+                <span class="admin-kpi-label">Hoàn thành</span>
+                <span class="admin-kpi-icon kpi-cyan"><i class="fas fa-clipboard-check"></i></span>
+            </div>
+            <div class="admin-kpi-value" data-target="@Model.TongHoanThanh">0</div>
+            <div class="admin-kpi-foot">
+                <span>Phiếu đã xác nhận</span>
+                <a href="@Url.Action("Index","AdminSuscesWord",new{area="Admin"})" class="admin-kpi-link">
+                    Xét duyệt <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+        </article>
+    </div>
+
+    <div class="admin-dashboard-grid">
+        <section class="admin-panel">
+            <div class="admin-panel-head">
+                <div>
+                    <h2 class="admin-panel-title">So sánh dữ liệu giữa các phân hệ</h2>
+                    <p class="admin-panel-sub">Số lượng bản ghi hiện có theo từng nhóm nghiệp vụ.</p>
                 </div>
+                <span class="badge bg-light text-secondary border">Tổng hợp</span>
+            </div>
+            <div class="admin-chart-body">
+                <canvas id="barChart"></canvas>
+            </div>
+        </section>
+
+        <div class="admin-panel">
+            <div class="admin-panel-head">
+                <div>
+                    <h2 class="admin-panel-title">Thao tác nhanh</h2>
+                    <p class="admin-panel-sub">Truy cập các nghiệp vụ thường dùng.</p>
+                </div>
+            </div>
+            <div class="admin-quick-list">
+                <a href="@Url.Action("Index","AdminWordRegister",new{area="Admin"})" class="admin-quick-link">
+                    <span class="admin-quick-icon"><i class="fas fa-calendar-plus"></i></span>
+                    <span class="admin-quick-text">
+                        <strong>Tạo đợt lao động</strong>
+                        <small>Thiết lập lịch và khu vực</small>
+                    </span>
+                    <i class="fas fa-chevron-right admin-quick-arrow"></i>
+                </a>
+                <a href="@Url.Action("Index","AdminSuscesWord",new{area="Admin"})" class="admin-quick-link">
+                    <span class="admin-quick-icon"><i class="fas fa-clipboard-check"></i></span>
+                    <span class="admin-quick-text">
+                        <strong>Xác nhận hoàn thành</strong>
+                        <small>Duyệt kết quả lao động</small>
+                    </span>
+                    <i class="fas fa-chevron-right admin-quick-arrow"></i>
+                </a>
+                <a href="@Url.Action("Index","AdminStudent",new{area="Admin"})" class="admin-quick-link">
+                    <span class="admin-quick-icon"><i class="fas fa-users"></i></span>
+                    <span class="admin-quick-text">
+                        <strong>Danh sách sinh viên</strong>
+                        <small>Tra cứu hồ sơ sinh viên</small>
+                    </span>
+                    <i class="fas fa-chevron-right admin-quick-arrow"></i>
+                </a>
+                <a href="@Url.Action("Index","AdminTK",new{area="Admin"})" class="admin-quick-link">
+                    <span class="admin-quick-icon"><i class="fas fa-chart-column"></i></span>
+                    <span class="admin-quick-text">
+                        <strong>Thống kê tiến độ</strong>
+                        <small>Theo dõi chỉ tiêu 18 ngày</small>
+                    </span>
+                    <i class="fas fa-chevron-right admin-quick-arrow"></i>
+                </a>
             </div>
         </div>
     </div>
@@ -55,22 +143,16 @@
 <!-- Gọi Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    const data = {
-        labels: ['Tài khoản', 'Sinh viên', 'Đợt lao động', 'Hoàn thành'],
-        values: [
-            @Model.TongTaiKhoan,
-            @Model.TongSinhVien,
-            @Model.TongDotLaoDong,
-            @Model.TongHoanThanh
-        ]
-    };
-
-    // Animation đếm số cho các ô vuông
+    // Animation đếm số
     function animateNumbers() {
         const elements = document.querySelectorAll('[data-target]');
         elements.forEach(el => {
-            const target = parseInt(el.getAttribute('data-target'));
-            const increment = target / 100; // Tốc độ animation (càng nhỏ càng chậm)
+            const target = parseInt(el.getAttribute('data-target')) || 0;
+            if (target === 0) {
+                el.textContent = '0';
+                return;
+            }
+            const increment = Math.max(1, Math.ceil(target / 40));
             let current = 0;
             const timer = setInterval(() => {
                 current += increment;
@@ -78,91 +160,65 @@
                     current = target;
                     clearInterval(timer);
                 }
-                el.textContent = Math.floor(current).toLocaleString();
-            }, 20); // Tốc độ update (ms)
+                el.textContent = current.toLocaleString();
+            }, 25);
         });
     }
 
-    // Chạy animation khi trang load
     window.addEventListener('load', animateNumbers);
 
-    // Biểu đồ cột với animation mặc định của Chart.js
-new Chart(document.getElementById('barChart'), {
-    type: 'bar',
-    data: {
-        labels: ['Tài khoản', 'Sinh viên', 'Đợt lao động', 'Hoàn thành'],
-        datasets: [{
-            label: 'Số lượng',
-            data: [
-                @Model.TongTaiKhoan,
-                @Model.TongSinhVien,
-                @Model.TongDotLaoDong,
-                @Model.TongHoanThanh
-            ],
-            backgroundColor: [
-                '#007bff', // Tài khoản - xanh dương
-                '#28a745', // Sinh viên - xanh lá
-                '#ffc107', // Đợt lao động - vàng
-                '#17a2b8'  // Hoàn thành - xanh ngọc
-            ],
-            borderColor: [
-                '#0056b3',
-                '#1e7e34',
-                '#d39e00',
-                '#117a8b'
-            ],
-            borderWidth: 1
-        }]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        animation: {
-            duration: 2000,
-            easing: 'easeInOutQuart'
-        },
-        scales: {
-            y: {
-                beginAtZero: true,
-                ticks: {
-                    callback: function(value) {
-                        return value.toLocaleString();
+    // Biểu đồ Chart.js
+    const ctx = document.getElementById('barChart');
+    if (ctx) {
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Tài khoản', 'Sinh viên', 'Đợt lao động', 'Hoàn thành'],
+                datasets: [{
+                    label: 'Số lượng',
+                    data: [
+                        @Model.TongTaiKhoan,
+                        @Model.TongSinhVien,
+                        @Model.TongDotLaoDong,
+                        @Model.TongHoanThanh
+                    ],
+                    backgroundColor: [
+                        '#2563eb',
+                        '#059669',
+                        '#d97706',
+                        '#0284c7'
+                    ],
+                    borderRadius: 6,
+                    borderSkipped: false,
+                    maxBarThickness: 56
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#0f172a',
+                        padding: 10,
+                        cornerRadius: 8
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        ticks: { font: { weight: '600' }, color: '#475569' }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: '#f1f5f9' },
+                        ticks: {
+                            precision: 0,
+                            callback: function(value) { return value.toLocaleString(); }
+                        }
                     }
                 }
             }
-        },
-        plugins: {
-            legend: { display: false } // Ẩn chú thích nếu không cần
-        }
-    }
-});
-
-
-    // CSS animation cho card (fade in và scale nhẹ) và chart container
-    const style = document.createElement('style');
-    style.textContent = `
-        .animate-card {
-            opacity: 0;
-            transform: translateY(20px);
-            transition: all 0.6s ease-out;
-        }
-        .animate-card.animate {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        .chart-container {
-            position: relative;
-            height: 200px; /* Chiều cao nhỏ hơn để biểu đồ nhỏ lại */
-            margin: 0 auto;
-            width: 100%;
-        }
-    `;
-    document.head.appendChild(style);
-
-    // Trigger animation cho card khi load
-    setTimeout(() => {
-        document.querySelectorAll('.animate-card').forEach(card => {
-            card.classList.add('animate');
         });
-    }, 500);
+    }
 </script>

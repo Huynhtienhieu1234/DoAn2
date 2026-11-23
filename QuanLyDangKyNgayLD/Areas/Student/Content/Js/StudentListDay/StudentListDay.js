@@ -45,6 +45,16 @@ function setNgayThucTe() {
         const id = (i === 6) ? "ngayCN" : "ngay" + (i + 2);
         document.getElementById(id).innerText = `${dd}/${mm}/${yyyy}`;
     }
+
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+
+    const rangeEl = document.getElementById("weekRangeText");
+    if (rangeEl) {
+        const start = `${String(monday.getDate()).padStart(2, "0")}/${String(monday.getMonth() + 1).padStart(2, "0")}`;
+        const end = `${String(sunday.getDate()).padStart(2, "0")}/${String(sunday.getMonth() + 1).padStart(2, "0")}/${sunday.getFullYear()}`;
+        rangeEl.textContent = `${start} - ${end}`;
+    }
 }
 
 // ==============================
@@ -86,43 +96,39 @@ function loadLich() {
 
             // ===== MÀU THEO TRẠNG THÁI (ĐỒNG BỘ VỚI TRANG TẠO ĐỢT LAO ĐỘNG) =====
             let badgeHtml = "";
-            let cardBorder = "border-secondary";
+            let cardState = "is-finished";
             switch (item.TrangThaiText?.trim()) {
                 case "Đã duyệt":
-                    cardBorder = "border-success";
+                    cardState = "is-approved";
                     badgeHtml = `<span class="badge bg-success"><i class="fas fa-check-circle me-1"></i>Đã duyệt</span>`;
                     break;
                 case "Chưa duyệt":
-                    cardBorder = "border-warning";
+                    cardState = "is-pending";
                     badgeHtml = `<span class="badge bg-warning text-dark"><i class="fas fa-clock me-1"></i>Chưa duyệt</span>`;
                     break;
                 case "Kết thúc":
-                    cardBorder = "border-secondary";
+                    cardState = "is-finished";
                     badgeHtml = `<span class="badge bg-secondary"><i class="fas fa-ban me-1"></i>Kết thúc</span>`;
                     break;
                 case "Tạm ngưng":
-                    cardBorder = "border-danger";
+                    cardState = "is-paused";
                     badgeHtml = `<span class="badge bg-danger"><i class="fas fa-pause-circle me-1"></i>Tạm ngưng</span>`;
                     break;
                 case "Đã điểm danh":
-                    cardBorder = "border-info";
+                    cardState = "is-attended";
                     badgeHtml = `<span class="badge bg-info text-white"><i class="fas fa-user-check me-1"></i>Đã điểm danh</span>`;
                     break;
                 default:
-                    cardBorder = "border-secondary";
+                    cardState = "is-finished";
                     badgeHtml = `<span class="badge bg-light text-dark">${item.TrangThaiText || ''}</span>`;
                     break;
             }
 
             // ===== TẠO Ô HIỂN THỊ =====
             const div = document.createElement("div");
-            div.className = `p-2 mb-1 rounded-3 bg-white border ${cardBorder} shadow-sm text-start`;
-            div.style.cursor = "pointer";
-            div.style.transition = "all .2s ease";
-            div.onmouseover = () => { div.style.transform = "translateY(-2px)"; div.style.boxShadow = "0 4px 10px rgba(0,0,0,0.12)"; };
-            div.onmouseout = () => { div.style.transform = "none"; div.style.boxShadow = ""; };
+            div.className = `student-schedule-event ${cardState}`;
             div.innerHTML = `
-                <div class="fw-bold text-dark mb-1" style="font-size: 13px;">
+                <div class="student-schedule-event-title">
                     <i class="fas fa-map-marker-alt text-danger me-1"></i>${item.LoaiLaoDong || ''} - ${item.DiaDiem || ''}
                 </div>
                 <div>${badgeHtml}</div>

@@ -1,4 +1,6 @@
 using System;
+using System.Configuration;
+using System.IO;
 using System.Net;
 using System.Net.Mail;
 
@@ -6,10 +8,22 @@ public static class EmailHelper
 {
     public static bool SendPasswordResetEmail(string toEmail, string resetLink)
     {
+        string error;
+        return SendPasswordResetEmail(toEmail, resetLink, out error);
+    }
+
+    public static bool SendPasswordResetEmail(string toEmail, string resetLink, out string errorMessage)
+    {
+        errorMessage = string.Empty;
         try
         {
-            var fromEmail = "huynhtienhieu11@gmail.com";
-            var fromPassword = "ocvs pcto zbca kfgy"; // App password
+            var fromEmail = ConfigurationManager.AppSettings["SmtpSenderEmail"];
+            if (string.IsNullOrWhiteSpace(fromEmail))
+                fromEmail = "huynhtienhieu11@gmail.com";
+
+            var fromPassword = ConfigurationManager.AppSettings["SmtpAppPassword"];
+            if (string.IsNullOrWhiteSpace(fromPassword))
+                fromPassword = "ocvs pcto zbca kfgy"; // App password
 
             var smtp = new SmtpClient
             {
@@ -20,6 +34,9 @@ public static class EmailHelper
                 UseDefaultCredentials = false,
                 Credentials = new NetworkCredential(fromEmail, fromPassword)
             };
+
+            // Đường dẫn hình ảnh trực tiếp lưu trữ trên CDN ổn định cao, tương thích 100% với Google Image Proxy
+            string logoSrc = "https://iili.io/oKYfs3X.png";
 
             string body = $@"
 <!DOCTYPE html>
@@ -37,10 +54,7 @@ public static class EmailHelper
                     <!-- Header Banner -->
                     <tr>
                         <td align='center' style='padding: 32px 30px 24px 30px; background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); text-align: center;'>
-                            <img src='https://raw.githubusercontent.com/Huynhtienhieu1234/UploadAnh/main/logoxoanen.png' 
-                                 alt='Logo Đại học Đồng Tháp' 
-                                 width='110' 
-                                 style='display: block; margin: 0 auto 12px auto; max-width: 110px; height: auto; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.15));'>
+                           
                             <h2 style='margin: 0; color: #ffffff; font-size: 18px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase;'>
                                 TRƯỜNG ĐẠI HỌC ĐỒNG THÁP
                             </h2>
@@ -126,7 +140,8 @@ public static class EmailHelper
                 From = new MailAddress(fromEmail, "Đại học Đồng Tháp - Quản Lý Lao Động", System.Text.Encoding.UTF8),
                 Subject = "🔐 [ĐH Đồng Tháp] Yêu cầu đặt lại mật khẩu tài khoản",
                 Body = body,
-                IsBodyHtml = true
+                IsBodyHtml = true,
+                BodyEncoding = System.Text.Encoding.UTF8
             })
             {
                 message.To.Add(toEmail);
@@ -137,8 +152,26 @@ public static class EmailHelper
         }
         catch (Exception ex)
         {
-            Console.WriteLine("Lỗi gửi mail: " + ex.ToString());
+            string fullErr = ex.ToString();
+            string innerErr = ex.InnerException != null ? ex.InnerException.Message : string.Empty;
 
+            if (fullErr.Contains("Daily user sending limit exceeded") || fullErr.Contains("5.4.5"))
+            {
+                errorMessage = "Hòm thư Gmail (" + (ConfigurationManager.AppSettings["SmtpSenderEmail"] ?? "người gửi") + ") đã vượt quá hạn mức gửi trong ngày của Google (Daily sending limit exceeded).";
+            }
+            else if (fullErr.Contains("5.5.1") || fullErr.Contains("5.7.8") || fullErr.Contains("Username and Password not accepted") || fullErr.Contains("Authentication Required") || fullErr.Contains("BadCredentials"))
+            {
+                errorMessage = "Sai Mật khẩu ứng dụng Gmail (App Password). Lưu ý: Mật khẩu ứng dụng 16 ký tự phải được tạo từ chính tài khoản Gmail người gửi (" + (ConfigurationManager.AppSettings["SmtpSenderEmail"]) + ") trong Google Account > Bảo mật.";
+            }
+            else if (!string.IsNullOrEmpty(innerErr))
+            {
+                errorMessage = $"{ex.Message} ({innerErr})";
+            }
+            else
+            {
+                errorMessage = ex.Message;
+            }
+            Console.WriteLine("Lỗi gửi mail: " + ex.ToString());
             return false;
         }
 

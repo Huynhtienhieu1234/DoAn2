@@ -1,91 +1,109 @@
 @{
-    ViewBag.Title = "Duyệt Hoàn Thành Lao Động";
+    ViewBag.Title = "Xác nhận hoàn thành";
     Layout = "~/Areas/Admin/Views/Shared/ViewShare.cshtml";
 }
-<link href="~/Areas/Content/css/admonWwordRegister.css?v=@DateTime.Now.Ticks" rel="stylesheet" type="text/css" />
-<link href="~/Areas/Content/adminpage.css?v=@DateTime.Now.Ticks" rel="stylesheet" type="text/css" />
-<link href="~/Areas/Admin/Content/css/Adminsuscessword.css?v=@DateTime.Now.Ticks" rel="stylesheet" type="text/css" />
+@section Styles {
+    <link href="~/Areas/Content/css/admonWwordRegister.css?v=@DateTime.Now.Ticks" rel="stylesheet" type="text/css" />
+    <link href="~/Areas/Content/adminpage.css?v=@DateTime.Now.Ticks" rel="stylesheet" type="text/css" />
+    <link href="~/Areas/Admin/Content/css/Adminsuscessword.css?v=@DateTime.Now.Ticks" rel="stylesheet" type="text/css" />
+}
 
 @{
     var vaiTroId = Session["VaiTroId"] as int?;
 }
 
-<!-- THANH CÔNG CỤ (TOOLBAR) -->
-<nav class="navbar navbar-expand-lg toolbar shadow-sm mb-3">
-    <div class="container-fluid p-0">
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            <!-- Bên trái -->
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0 d-flex align-items-center">
-                <li class="nav-item">
-                    <span class="toolbar-page-title d-flex align-items-center me-3">
-                        <i class="fas fa-clipboard-check me-2"></i>
-                        <span>Hoàn thành lao động</span>
-                    </span>
-                </li>
-                @if (vaiTroId == 1 || vaiTroId == null)
-                {
-                    <li class="nav-item">
-                        <button class="btn btn-outline-danger btn-sm me-2 btn-delete-selected" id="btnDeleteSelectedDuyet" style="display:none;" title="Xóa các phiếu đã chọn">
-                            <i class="fas fa-trash-alt me-1"></i> Xóa đã chọn (<span class="selected-count">0</span>)
-                        </button>
-                    </li>
-                }
-            </ul>
-
-            <!-- Bên phải -->
-            <form class="toolbar-flex align-items-center" role="search">
-                <select id="khoaFilter" class="form-select form-select-sm me-2 shadow-sm" style="min-width: 220px;">
-                    <option value="">-- Tất cả khoa --</option>
-                    <option value="Công nghệ và kỹ thuật">Công nghệ và kỹ thuật</option>
-                    <option value="Khoa Ngoại ngữ">Khoa Ngoại ngữ</option>
-                    <option value="Khoa Kinh tế - Luật">Khoa Kinh tế - Luật</option>
-                    <option value="Nông nghiệp, Tài nguyên và Môi trường">Nông nghiệp, Tài nguyên và Môi trường</option>
-                    <option value="Văn hóa - Du lịch và Công tác xã hội">Văn hóa - Du lịch và Công tác xã hội</option>
-                    <option value="Sư phạm Toán - Tin">Sư phạm Toán - Tin</option>
-                    <option value="Sư phạm Khoa học tự nhiên">Sư phạm Khoa học tự nhiên</option>
-                    <option value="Sư phạm Khoa học xã hội">Sư phạm Khoa học xã hội</option>
-                    <option value="Giáo dục Tiểu học - Mầm non">Giáo dục Tiểu học - Mầm non</option>
-                    <option value="Giáo dục Thể chất - Sư phạm Nghệ thuật">Giáo dục Thể chất - Sư phạm Nghệ thuật</option>
-                </select>
-
-                <div class="input-group input-group-sm shadow-sm me-2" style="min-width: 260px;">
-                    <span class="input-group-text bg-white border-end-0">
-                        <i class="fa fa-search text-muted"></i>
-                    </span>
-                    <input type="text" id="searchBox" class="form-control border-start-0" placeholder="Tìm MSSV, họ tên, lớp, khoa...">
-                </div>
-
-                <div class="dropdown d-inline-block">
-                    <button class="btn btn-excel-manager dropdown-toggle" type="button" id="excelDropdownSusces" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="fa fa-file-excel me-1"></i> Quản lý Excel
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end shadow border-0" aria-labelledby="excelDropdownSusces">
-                        <li>
-                            <a class="dropdown-item py-2" href="@Url.Action("DownloadTemplate", "AdminSuscesWord", new { area = "Admin" })">
-                                <i class="fas fa-file-download text-primary me-2"></i> Xuất mẫu Import
-                            </a>
-                        </li>
-                        <li>
-                            <button class="dropdown-item py-2" type="button" data-bs-toggle="modal" data-bs-target="#modalImportSuscesExcel">
-                                <i class="fas fa-file-upload text-success me-2"></i> Nhập Excel
-                            </button>
-                        </li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li>
-                            <button class="dropdown-item py-2" type="button" id="btnExportSuscesData">
-                                <i class="fas fa-file-export text-info me-2"></i> Xuất dữ liệu
-                            </button>
-                        </li>
-                    </ul>
-                </div>
-            </form>
-        </div>
+<div class="admin-page-head">
+    <div class="admin-page-heading">
+        <nav class="admin-breadcrumb" aria-label="breadcrumb">
+            <a href="@Url.Action("Index", "Admin", new { area = "Admin" })">Quản trị</a>
+            <i class="fas fa-chevron-right"></i>
+            <span>Hoàn thành</span>
+        </nav>
+        <h1>Xác nhận hoàn thành</h1>
+        <p>Kiểm tra số ngày lao động, xác nhận hoàn thành nghĩa vụ và tra cứu sinh viên đã được xác nhận.</p>
     </div>
-</nav>
+    <div class="admin-page-actions">
+        <span class="admin-date-chip">
+            <i class="fas fa-clipboard-check"></i> Xét duyệt hoàn thành
+        </span>
+    </div>
+</div>
+
+<!-- TAB TRẠNG THÁI XÁC NHẬN -->
+<div class="account-role-tabs mb-3 d-flex flex-wrap gap-2 align-items-center" id="duyetTabs">
+    <button type="button" class="btn role-tab-btn active" data-status="pending">
+        <i class="fas fa-hourglass-half me-1"></i> Chờ xác nhận
+        <span class="tab-count" id="pendingCount">0</span>
+    </button>
+    <button type="button" class="btn role-tab-btn" data-status="completed">
+        <i class="fas fa-circle-check me-1"></i> Đã xác nhận
+        <span class="tab-count" id="completedCount">0</span>
+    </button>
+</div>
+
+<!-- THANH CÔNG CỤ (TOOLBAR) -->
+<div class="toolbar shadow-sm mb-3">
+    <form class="toolbar-flex align-items-center w-100" role="search">
+        <div class="toolbar-filter-group me-auto">
+            @if (vaiTroId == 1 || vaiTroId == null)
+            {
+                <button class="btn btn-outline-danger btn-sm btn-delete-selected" id="btnDeleteSelectedDuyet" style="display:none;" title="Xóa các phiếu đã chọn">
+                    <i class="fas fa-trash-alt me-1"></i> Xóa đã chọn (<span class="selected-count">0</span>)
+                </button>
+            }
+
+            <select id="khoaFilter" class="form-select" style="min-width: 220px;">
+                <option value="">-- Tất cả khoa --</option>
+                <option value="Công nghệ và kỹ thuật">Công nghệ và kỹ thuật</option>
+                <option value="Khoa Ngoại ngữ">Khoa Ngoại ngữ</option>
+                <option value="Khoa Kinh tế - Luật">Khoa Kinh tế - Luật</option>
+                <option value="Nông nghiệp, Tài nguyên và Môi trường">Nông nghiệp, Tài nguyên và Môi trường</option>
+                <option value="Văn hóa - Du lịch và Công tác xã hội">Văn hóa - Du lịch và Công tác xã hội</option>
+                <option value="Sư phạm Toán - Tin">Sư phạm Toán - Tin</option>
+                <option value="Sư phạm Khoa học tự nhiên">Sư phạm Khoa học tự nhiên</option>
+                <option value="Sư phạm Khoa học xã hội">Sư phạm Khoa học xã hội</option>
+                <option value="Giáo dục Tiểu học - Mầm non">Giáo dục Tiểu học - Mầm non</option>
+                <option value="Giáo dục Thể chất - Sư phạm Nghệ thuật">Giáo dục Thể chất - Sư phạm Nghệ thuật</option>
+            </select>
+
+            <div class="input-group" style="min-width: 260px; flex: 1 1 320px;">
+                <span class="input-group-text">
+                    <i class="fa fa-search text-muted"></i>
+                </span>
+                <input type="text" id="searchBox" class="form-control" placeholder="Tìm MSSV, họ tên, lớp, khoa...">
+            </div>
+        </div>
+
+        <div class="dropdown d-inline-block">
+            <button class="btn btn-excel-manager dropdown-toggle" type="button" id="excelDropdownSusces" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="fa fa-file-excel me-1"></i> Quản lý Excel
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end shadow border-0" aria-labelledby="excelDropdownSusces">
+                <li>
+                    <a class="dropdown-item py-2" href="@Url.Action("DownloadTemplate", "AdminSuscesWord", new { area = "Admin" })">
+                        <i class="fas fa-file-download text-primary me-2"></i> Xuất mẫu Import
+                    </a>
+                </li>
+                <li>
+                    <button class="dropdown-item py-2" type="button" data-bs-toggle="modal" data-bs-target="#modalImportSuscesExcel">
+                        <i class="fas fa-file-upload text-success me-2"></i> Nhập Excel
+                    </button>
+                </li>
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                    <button class="dropdown-item py-2" type="button" id="btnExportSuscesData">
+                        <i class="fas fa-file-export text-info me-2"></i> Xuất dữ liệu
+                    </button>
+                </li>
+            </ul>
+        </div>
+    </form>
+</div>
 
 <!-- BẢNG DỮ LIỆU -->
-<div class="table-wrapper shadow-sm rounded-3 bg-white p-2">
-    <table class="table table-bordered table-hover align-middle text-center mb-0" style="width:100%; table-layout: fixed;">
+<div class="admin-panel mb-4 p-2">
+    <div class="table-responsive">
+    <table class="table table-bordered table-hover align-middle text-center mb-0 duyet-table" style="width:100%; table-layout: fixed;">
         <thead class="table-light">
             <tr>
                 <th style="width: 38px;" class="text-center"><input type="checkbox" id="checkAllDuyet" class="form-check-input" title="Chọn tất cả"></th>
@@ -99,29 +117,42 @@
             </tr>
         </thead>
         <tbody id="duyetTableBody">
-            <tr>
-                <td colspan="8" class="text-center text-muted py-4">Đang tải dữ liệu...</td>
-            </tr>
+            @for (int s = 0; s < 6; s++)
+            {
+                <tr class="skeleton-table-row">
+                    <td class="text-center align-middle py-3"><span class="skeleton-box skeleton-checkbox"></span></td>
+                    <td class="text-center align-middle py-3"><span class="skeleton-box skeleton-text" style="width: 20px;"></span></td>
+                    <td class="text-center align-middle py-3"><span class="skeleton-box skeleton-text" style="width: 85px;"></span></td>
+                    <td class="align-middle py-3"><span class="skeleton-box skeleton-text" style="width: 75%;"></span></td>
+                    <td class="align-middle py-3"><span class="skeleton-box skeleton-text" style="width: 65%;"></span></td>
+                    <td class="align-middle py-3"><span class="skeleton-box skeleton-text" style="width: 70%;"></span></td>
+                    <td class="text-center align-middle py-3"><span class="skeleton-box skeleton-pill" style="width: 65px; height: 22px;"></span></td>
+                    <td class="text-center align-middle py-3">
+                        <span class="skeleton-box skeleton-btn" style="width: 32px; height: 32px; border-radius: 8px;"></span>
+                    </td>
+                </tr>
+            }
         </tbody>
     </table>
+    </div>
 </div>
 
 <!-- PHÂN TRANG -->
 <div class="d-flex justify-content-center align-items-center flex-wrap gap-3 mt-3 mb-4">
     <div id="pagination" class="pagination-container my-0">
-        <button id="prev" class="btn btn-outline-primary me-1">&lt;</button>
+        <button id="prev" class="btn btn-outline-primary me-1"><i class="fas fa-chevron-left"></i></button>
         <span id="pageNumbers"></span>
-        <button id="next" class="btn btn-outline-primary ms-1">&gt;</button>
+        <button id="next" class="btn btn-outline-primary ms-1"><i class="fas fa-chevron-right"></i></button>
     </div>
 
     <div class="page-size-wrapper">
         <span class="page-size-label"><i class="fas fa-list-ul me-1"></i> Hiển thị:</span>
-        <select id="pageSizeDuyet" class="form-select form-select-sm page-size-select" title="Số dòng mỗi trang">
-            <option value="5">5 dòng / trang</option>
-            <option value="10" selected>10 dòng / trang</option>
-            <option value="20">20 dòng / trang</option>
-            <option value="50">50 dòng / trang</option>
-            <option value="100">100 dòng / trang</option>
+        <select id="pageSizeDuyet" class="page-size-select" title="Số dòng mỗi trang">
+            <option value="5">5 / trang</option>
+            <option value="10" selected>10 / trang</option>
+            <option value="20">20 / trang</option>
+            <option value="50">50 / trang</option>
+            <option value="100">100 / trang</option>
             <option value="1000000">Tất cả</option>
         </select>
     </div>
@@ -174,8 +205,89 @@
     </div>
 </div>
 
+<!-- Modal Xác Nhận Phê Duyệt Hoàn Thành 18 Ngày -->
+<div class="modal fade" id="modalConfirmDuyetSusces" tabindex="-1" aria-labelledby="modalConfirmDuyetSuscesLabel" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow-lg border-0 rounded-4 overflow-hidden">
+            <div class="modal-header bg-success text-white py-3">
+                <h5 class="modal-title fw-bold" id="modalConfirmDuyetSuscesLabel">
+                    <i class="fas fa-clipboard-check me-2"></i> Xác Nhận Phê Duyệt Hoàn Thành
+                </h5>
+                <button type="button" class="btn-close btn-close-white shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="text-center mb-3">
+                    <div class="d-inline-flex align-items-center justify-content-center bg-success-subtle text-success rounded-circle shadow-sm" style="width: 64px; height: 64px; font-size: 1.85rem;">
+                        <i class="fas fa-user-graduate"></i>
+                    </div>
+                    <h5 class="fw-bold text-dark mt-2 mb-1">Xác nhận hoàn thành nghĩa vụ lao động</h5>
+                    <p class="text-muted small mb-0">Vui lòng kiểm tra kỹ thông tin sinh viên trước khi ký duyệt chính thức.</p>
+                </div>
+
+                <div class="bg-light p-3 rounded-3 border mb-3">
+                    <div class="row g-2 small">
+                        <div class="col-4 text-muted"><i class="fas fa-user me-1 text-secondary"></i> Họ và tên:</div>
+                        <div class="col-8 fw-bold text-dark fs-6" id="duyetModalHoTen">--</div>
+
+                        <div class="col-4 text-muted"><i class="fas fa-id-card me-1 text-secondary"></i> MSSV:</div>
+                        <div class="col-8 fw-bold text-primary" id="duyetModalMSSV">--</div>
+
+                        <div class="col-4 text-muted"><i class="fas fa-users-class me-1 text-secondary"></i> Lớp:</div>
+                        <div class="col-8 text-dark" id="duyetModalLop">--</div>
+
+                        <div class="col-4 text-muted"><i class="fas fa-university me-1 text-secondary"></i> Khoa:</div>
+                        <div class="col-8 text-dark" id="duyetModalKhoa">--</div>
+
+                        <div class="col-4 text-muted"><i class="fas fa-award me-1 text-warning"></i> Tiến độ:</div>
+                        <div class="col-8 text-success fw-bold" id="duyetModalSoNgay">--</div>
+                    </div>
+                </div>
+
+                <div class="alert alert-warning small d-flex align-items-start gap-2 mb-0 py-2 px-3 border-0 rounded-3">
+                    <i class="fas fa-exclamation-triangle text-warning fs-5 mt-1"></i>
+                    <div>
+                        <strong>Lưu ý hệ thống:</strong> Khi xác nhận duyệt hoàn thành:
+                        <ul class="mb-0 ps-3 mt-1 text-secondary">
+                            <li>Cấp chứng nhận hoàn thành 18 ngày cho sinh viên.</li>
+                            <li>Tự động <strong>khóa tài khoản</strong> sinh viên này (không đăng ký thêm ca).</li>
+                            <li>Tự động gửi <strong>email chúc mừng hoàn thành</strong> đến hòm thư sinh viên.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer bg-light border-0 py-3 px-4 justify-content-end gap-2">
+                <button type="button" class="btn btn-secondary px-3" data-bs-dismiss="modal">Hủy bỏ</button>
+                <button type="button" class="btn btn-success px-4 fw-bold" id="btnSubmitConfirmDuyet">
+                    <i class="fas fa-check-circle me-1"></i> Xác Nhận Phê Duyệt
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Thông Báo Duyệt Thành Công Riêng Biệt (Không dùng alert) -->
+<div class="modal fade" id="modalDuyetSuccessSusces" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 440px;">
+        <div class="modal-content shadow-lg border-0 rounded-4 overflow-hidden text-center p-2">
+            <div class="modal-body p-4">
+                <div id="duyetSuccessIconWrapper" class="d-inline-flex align-items-center justify-content-center bg-success text-white rounded-circle shadow-sm mb-3" style="width: 64px; height: 64px; font-size: 1.85rem;">
+                    <i id="duyetSuccessIcon" class="fas fa-check"></i>
+                </div>
+                <h5 class="fw-bold text-dark mb-2" id="duyetSuccessTitle">Phê Duyệt Thành Công!</h5>
+                <div class="p-3 bg-light rounded-3 text-start small mb-0" id="duyetSuccessMessageBox">
+                    <p class="text-secondary mb-0" id="duyetSuccessMessage">Đã xác nhận hoàn thành nghĩa vụ lao động cho sinh viên.</p>
+                </div>
+            </div>
+            <div class="modal-footer border-0 justify-content-center pt-0 pb-3">
+                <button type="button" class="btn btn-primary px-4 rounded-pill" data-bs-dismiss="modal">
+                    <i class="fas fa-check me-1"></i> Đóng
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="~/Areas/Admin/Content/js/Adminsuscessword.js?v=@DateTime.Now.Ticks"></script>
-<script src="~/Areas/Admin/Content/js/duyetHandler.js?v=@DateTime.Now.Ticks"></script>
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {
@@ -185,8 +297,10 @@
             btnExport.addEventListener("click", function () {
                 const keyword = document.getElementById("searchBox")?.value || "";
                 const khoa = document.getElementById("khoaFilter")?.value || "";
+                const activeTab = document.querySelector('#duyetTabs .role-tab-btn.active');
+                const status = activeTab?.dataset.status || "pending";
                 let url = '@Url.Action("ExportExcel", "AdminSuscesWord", new { area = "Admin" })';
-                url += `?khoa=${encodeURIComponent(khoa)}&keyword=${encodeURIComponent(keyword)}`;
+                url += `?khoa=${encodeURIComponent(khoa)}&keyword=${encodeURIComponent(keyword)}&status=${encodeURIComponent(status)}`;
                 window.location.href = url;
             });
         }
@@ -253,7 +367,7 @@
                             listHtml += `</ul></div>`;
 
                             notifyAlert('info', 'Nhập thành công một phần', data.message, listHtml).then(() => {
-                                if (typeof fetchList === "function") fetchList(1);
+                                if (typeof window.loadDanhSach === "function") window.loadDanhSach(1);
                                 else location.reload();
                             });
                         } else {
@@ -267,12 +381,12 @@
                                     confirmButtonText: 'Đóng',
                                     confirmButtonColor: '#198754'
                                 }).then(() => {
-                                    if (typeof fetchList === "function") fetchList(1);
+                                    if (typeof window.loadDanhSach === "function") window.loadDanhSach(1);
                                     else location.reload();
                                 });
                             } else {
                                 alert(data.message);
-                                if (typeof fetchList === "function") fetchList(1);
+                                if (typeof window.loadDanhSach === "function") window.loadDanhSach(1);
                                 else location.reload();
                             }
                             const modal = bootstrap.Modal.getInstance(document.getElementById('modalImportSuscesExcel'));

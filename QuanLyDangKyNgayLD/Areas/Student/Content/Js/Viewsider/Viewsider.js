@@ -29,23 +29,6 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     /* ===============================
-       DROPDOWN USER
-    =============================== */
-    const userMenu = document.getElementById('userMenu');
-    const dropdownMenu = document.getElementById('dropdownMenu');
-    if (userMenu && dropdownMenu) {
-        userMenu.addEventListener('click', function (e) {
-            e.stopPropagation();
-            dropdownMenu.classList.toggle('show');
-        });
-        document.addEventListener('click', function (e) {
-            if (!userMenu.contains(e.target)) {
-                dropdownMenu.classList.remove('show');
-            }
-        });
-    }
-
-    /* ===============================
        CHATBOT AI TRỢ LÝ LAO ĐỘNG
     =============================== */
     const chatBubble = document.getElementById("chatBubble");
@@ -80,7 +63,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (!chatMessages) return;
 
         const wrapper = document.createElement("div");
-        wrapper.className = sender === "user" ? "d-flex justify-content-end mb-2" : "d-flex justify-content-start mb-2";
+        wrapper.className = sender === "user" ? "chat-row is-user" : "chat-row is-bot";
 
         const bubble = document.createElement("div");
         bubble.className = `chat-message-bubble ${sender}`;
@@ -101,7 +84,7 @@ document.addEventListener("DOMContentLoaded", function () {
         hideTypingIndicator();
         const wrapper = document.createElement("div");
         wrapper.id = "botTypingIndicator";
-        wrapper.className = "d-flex justify-content-start mb-2";
+        wrapper.className = "chat-row is-bot";
         wrapper.innerHTML = `
             <div class="typing-indicator">
                 <span></span>
@@ -127,16 +110,16 @@ document.addEventListener("DOMContentLoaded", function () {
         chatMessages.innerHTML = "";
         const welcomeHtml = `
             <div>
-                <div class="fw-bold mb-1 text-primary"><i class="fas fa-robot me-1"></i> Xin chào bạn!</div>
-                <div class="text-secondary small mb-2">Tôi là <strong>Trợ Lý Lao Động AI</strong>. Tôi có thể hỗ trợ bạn tra cứu:</div>
-                <ul class="ps-3 mb-2 small text-dark" style="line-height: 1.6;">
-                    <li>📊 <strong>Tiến độ hoàn thành</strong> số ngày công</li>
-                    <li>📅 <strong>Lịch trực lao động</strong> sắp tới</li>
-                    <li>⏰ <strong>Quy định giờ giấc</strong> ca sáng & chiều</li>
-                    <li>📱 <strong>Hướng dẫn điểm danh</strong> mã QR / PIN</li>
-                    <li>📜 <strong>Điều kiện nhận giấy</strong> xác nhận</li>
+                <div class="chat-welcome-title">Xin chào bạn</div>
+                <p class="chat-welcome-text">Mình là trợ lý lao động. Mình có thể hỗ trợ bạn tra cứu:</p>
+                <ul class="chat-welcome-list">
+                    <li><strong>Tiến độ</strong> hoàn thành số ngày công</li>
+                    <li><strong>Lịch trực lao động</strong> sắp tới</li>
+                    <li><strong>Quy định giờ giấc</strong> ca sáng và chiều</li>
+                    <li><strong>Hướng dẫn điểm danh</strong> bằng QR hoặc PIN</li>
+                    <li><strong>Điều kiện nhận giấy</strong> xác nhận hoàn thành</li>
                 </ul>
-                <div class="text-muted small fst-italic">👉 Hãy bấm các nút bên dưới hoặc nhập câu hỏi của bạn nhé!</div>
+                <p class="chat-welcome-hint">Chọn một gợi ý bên dưới hoặc nhập câu hỏi của bạn.</p>
             </div>
         `;
         addChatMessage(welcomeHtml, "bot", true);
@@ -463,7 +446,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 <div class="d-flex flex-wrap gap-1">
                     <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2 small chat-fallback-btn" data-query="Tiến độ lao động của tôi" style="font-size: 11px;">📊 Xem tiến độ</button>
                     <button type="button" class="btn btn-sm btn-outline-success py-0 px-2 small chat-fallback-btn" data-query="Lịch lao động tôi đã đăng ký" style="font-size: 11px;">📅 Lịch sắp tới</button>
-                    <button type="button" class="btn btn-sm btn-outline-warning py-0 px-2 small text-dark chat-fallback-btn" data-query="Quy định ca trực và giờ giấc" style="font-size: 11px;">⏰ Quy định ca</button>
+                    <button type="button" class="btn btn-sm btn-outline-warning py-0 px-2 small text-dark chat-fallback-btn" data-query="Quy định giờ giấc ca lao động" style="font-size: 11px;">⏰ Quy định ca</button>
                     <button type="button" class="btn btn-sm btn-outline-info py-0 px-2 small chat-fallback-btn" data-query="Hướng dẫn cách điểm danh" style="font-size: 11px;">📱 Điểm danh</button>
                 </div>
             </div>
@@ -488,9 +471,16 @@ document.addEventListener("DOMContentLoaded", function () {
     // Khởi tạo Chatbot và sự kiện
     if (chatBubble && chatBox && closeChat && sendChat && chatInput && chatMessages) {
 
+        function closeChatBox() {
+            chatBox.classList.remove("is-open");
+            chatBubble.setAttribute("aria-expanded", "false");
+            chatBubble.focus();
+        }
+
         // Mở khung chat
         chatBubble.addEventListener("click", () => {
-            chatBox.style.display = "block";
+            chatBox.classList.add("is-open");
+            chatBubble.setAttribute("aria-expanded", "true");
             chatInput.focus();
 
             if (!chatMessages.hasChildNodes() || chatMessages.children.length === 0) {
@@ -499,8 +489,12 @@ document.addEventListener("DOMContentLoaded", function () {
         });
 
         // Đóng khung chat
-        closeChat.addEventListener("click", () => {
-            chatBox.style.display = "none";
+        closeChat.addEventListener("click", closeChatBox);
+
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "Escape" && chatBox.classList.contains("is-open")) {
+                closeChatBox();
+            }
         });
 
         // Nút reset làm mới cuộc trò chuyện
