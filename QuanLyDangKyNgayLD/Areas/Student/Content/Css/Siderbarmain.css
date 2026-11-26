@@ -23,7 +23,7 @@
 /* ===== GLOBAL RESET FOR LAYOUT ===== */
 body {
     background-color: #f1f5f9;
-    font-family: 'Be Vietnam Pro', system-ui, -apple-system, sans-serif !important;
+    font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     color: #1e293b;
     overflow-x: hidden;
     min-height: 100vh;

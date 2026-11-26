@@ -6,12 +6,12 @@
    ========================================================= */
 
 html, body, button, input, optgroup, select, textarea {
-    font-family: 'Be Vietnam Pro', system-ui, -apple-system, BlinkMacSystemFont, Roboto, sans-serif !important;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 :root {
-    --bs-body-font-family: 'Be Vietnam Pro', system-ui, -apple-system, BlinkMacSystemFont, Roboto, sans-serif !important;
-    --bs-font-sans-serif: 'Be Vietnam Pro', system-ui, -apple-system, BlinkMacSystemFont, Roboto, sans-serif !important;
+    --bs-body-font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    --bs-font-sans-serif: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 * {

@@ -40,7 +40,7 @@ html {
 body {
     background-color: var(--student-bg);
     color: var(--student-text);
-    font-family: 'Be Vietnam Pro', system-ui, -apple-system, sans-serif !important;
+    font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     line-height: 1.5;
     text-rendering: optimizeLegibility;
 }

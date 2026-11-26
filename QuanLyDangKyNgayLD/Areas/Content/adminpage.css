@@ -28,7 +28,7 @@
 /* ====================== CƠ BẢN ====================== */
 body {
     background: #f8fafc;
-    font-family: 'Be Vietnam Pro', system-ui, -apple-system, sans-serif !important;
+    font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     color: var(--text);
     margin: 0;
     padding: 0;
