@@ -33,18 +33,30 @@ namespace QuanLyDangKyNgayLD.AuditHelper
 
     public static class AuditLogHelper
     {
-        private static string ConnectionString
+        /// <summary>
+        /// Kiểm tra Audit Log có được bật và cấu hình connection string hợp lệ hay không.
+        /// Nếu đặt EnableAuditLog=false hoặc QuanLyAuditLogConnection là rỗng / DISABLED / NONE / OFF thì bỏ qua ngay, không chờ timeout SQL.
+        /// </summary>
+        private static bool TryGetConnectionString(out string connStr)
         {
-            get
+            connStr = null;
+            var enabledSetting = ConfigurationManager.AppSettings["EnableAuditLog"];
+            if (string.Equals(enabledSetting, "false", StringComparison.OrdinalIgnoreCase))
             {
-                var connStr = ConfigurationManager.ConnectionStrings["QuanLyAuditLogConnection"]?.ConnectionString;
-                if (string.IsNullOrWhiteSpace(connStr))
-                {
-                    // Fallback mặc định nếu chưa cấu hình
-                    connStr = "data source=.\\SQLEXPRESS;initial catalog=QuanLyAuditLog;integrated security=True;trustservercertificate=True;MultipleActiveResultSets=True;";
-                }
-                return connStr;
+                return false;
             }
+
+            connStr = ConfigurationManager.ConnectionStrings["QuanLyAuditLogConnection"]?.ConnectionString;
+            if (string.IsNullOrWhiteSpace(connStr) ||
+                string.Equals(connStr.Trim(), "DISABLED", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(connStr.Trim(), "NONE", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(connStr.Trim(), "OFF", StringComparison.OrdinalIgnoreCase))
+            {
+                connStr = null;
+                return false;
+            }
+
+            return true;
         }
 
         public static string LayDiaChiIP()
@@ -109,6 +121,11 @@ namespace QuanLyDangKyNgayLD.AuditHelper
         {
             try
             {
+                if (!TryGetConnectionString(out string connStr))
+                {
+                    return false;
+                }
+
                 if (string.IsNullOrWhiteSpace(nguoiThucHien))
                 {
                     nguoiThucHien = LayNguoiThucHienHienTai();
@@ -136,7 +153,7 @@ namespace QuanLyDangKyNgayLD.AuditHelper
                     }
                 }
 
-                using (var conn = new SqlConnection(ConnectionString))
+                using (var conn = new SqlConnection(connStr))
                 {
                     conn.Open();
                     string query = @"INSERT INTO NhatKyThaoTac 
@@ -176,7 +193,12 @@ namespace QuanLyDangKyNgayLD.AuditHelper
 
             try
             {
-                using (var conn = new SqlConnection(ConnectionString))
+                if (!TryGetConnectionString(out string connStr))
+                {
+                    return list;
+                }
+
+                using (var conn = new SqlConnection(connStr))
                 {
                     conn.Open();
 
@@ -270,7 +292,12 @@ namespace QuanLyDangKyNgayLD.AuditHelper
         {
             try
             {
-                using (var conn = new SqlConnection(ConnectionString))
+                if (!TryGetConnectionString(out string connStr))
+                {
+                    return null;
+                }
+
+                using (var conn = new SqlConnection(connStr))
                 {
                     conn.Open();
                     string query = @"SELECT Id, NguoiThucHien, HanhDong, TenBang, KhoaChinhBiXoa, DuLieuCu, DiaChiIP, ThoiGianThucHien
@@ -315,7 +342,12 @@ namespace QuanLyDangKyNgayLD.AuditHelper
             var thongKe = new ThongKeAuditLogModel();
             try
             {
-                using (var conn = new SqlConnection(ConnectionString))
+                if (!TryGetConnectionString(out string connStr))
+                {
+                    return thongKe;
+                }
+
+                using (var conn = new SqlConnection(connStr))
                 {
                     conn.Open();
                     string query = @"SELECT 
