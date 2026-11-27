@@ -430,51 +430,67 @@ document.addEventListener("DOMContentLoaded", function () {
                             #${(page - 1) * pageSize + index + 1}
                         </span>
                         <div class="action-buttons-group d-flex align-items-center gap-1">
-                            <!-- Nút Xem DS sinh viên tham gia -->
-                            <button class="btn btn-sm btn-outline-primary btn-view-participants"
-                                    data-id="${item.TaoDotLaoDong_id}"
-                                    data-loai="${item.LoaiLaoDong || ''}"
-                                    title="Xem danh sách sinh viên tham gia">
-                                <i class="fas fa-users"></i>
-                            </button>
-
-                            <!-- Nút Chi tiết -->
-                            <button class="btn btn-sm btn-info btn-detail-dot text-white"
-                                    data-id="${item.TaoDotLaoDong_id}"
-                                    data-loai="${item.LoaiLaoDong || ''}"
-                                    title="Xem chi tiết đợt">
-                                <i class="fas fa-info-circle"></i>
-                            </button>
-
-                            <!-- Nút Cấp mã điểm danh -->
-                            <button class="btn btn-sm ${item.DaDuyet ? 'btn-primary' : 'btn-outline-secondary'} btn-show-code"
-                                    data-id="${item.TaoDotLaoDong_id}"
-                                    data-daduyet="${item.DaDuyet ? '1' : '0'}"
-                                    title="${item.DaDuyet ? 'Hiển thị mã điểm danh' : 'Đợt chưa duyệt - Cần duyệt đợt để cấp mã'}">
-                                <i class="fas fa-key"></i>
-                            </button>
-
-                            <!-- Nút Giám sát điểm danh -->
-                            <button class="btn btn-sm ${item.DaDuyet ? 'btn-success' : 'btn-outline-secondary'} btn-view-attendance"
-                                    data-id="${item.TaoDotLaoDong_id}"
-                                    data-daduyet="${item.DaDuyet ? '1' : '0'}"
-                                    title="${item.DaDuyet ? 'Giám sát danh sách điểm danh' : 'Đợt chưa duyệt - Cần duyệt đợt để điểm danh'}">
-                                <i class="fas fa-list-check"></i>
-                            </button>
-
-                            <!-- Nút Tạm ngưng -->
-                            ${(item.TrangThaiDot !== 'Tạm ngưng' && item.TrangThaiDuyet !== 'Tạm ngưng' && item.TrangThaiDuyet !== 'Kết thúc') ? `
+                            ${(item.TrangThaiDot === 'Tạm ngưng' || item.TrangThaiDuyet === 'Tạm ngưng') ? `
+                                <button class="btn btn-sm btn-warning text-dark btn-toggle-tamngung fw-semibold px-2"
+                                        data-id="${item.TaoDotLaoDong_id}"
+                                        data-dotname="${item.DotLaoDong || ''}"
+                                        data-status="Tạm ngưng"
+                                        title="Mở lại đợt lao động">
+                                    <i class="fas fa-play me-1"></i>Mở lại
+                                </button>
+                                <button class="btn btn-sm btn-info btn-detail-dot text-white"
+                                        data-id="${item.TaoDotLaoDong_id}"
+                                        data-loai="${item.LoaiLaoDong || ''}"
+                                        title="Xem chi tiết đợt">
+                                    <i class="fas fa-info-circle"></i>
+                                </button>
+                                ${(!window.isManager) ? `
+                                <button class="btn btn-sm btn-danger btn-delete"
+                                        data-id="${item.TaoDotLaoDong_id}"
+                                        title="Xóa đợt">
+                                    <i class="fas fa-trash"></i>
+                                </button>` : ''}
+                            ` : (item.DaDuyet || item.TrangThaiDuyet === 'Đã duyệt') ? `
+                                <!-- ĐÃ DUYỆT -->
+                                <button class="btn btn-sm btn-primary btn-show-code"
+                                        data-id="${item.TaoDotLaoDong_id}"
+                                        data-daduyet="1"
+                                        title="Hiển thị mã điểm danh">
+                                    <i class="fas fa-key"></i>
+                                </button>
+                                <button class="btn btn-sm btn-success btn-view-attendance"
+                                        data-id="${item.TaoDotLaoDong_id}"
+                                        data-daduyet="1"
+                                        title="Giám sát danh sách điểm danh">
+                                    <i class="fas fa-list-check"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-primary btn-view-participants"
+                                        data-id="${item.TaoDotLaoDong_id}"
+                                        data-loai="${item.LoaiLaoDong || ''}"
+                                        title="Xem danh sách sinh viên tham gia">
+                                    <i class="fas fa-users"></i>
+                                </button>
+                                <button class="btn btn-sm btn-info btn-detail-dot text-white"
+                                        data-id="${item.TaoDotLaoDong_id}"
+                                        data-loai="${item.LoaiLaoDong || ''}"
+                                        title="Xem chi tiết đợt">
+                                    <i class="fas fa-info-circle"></i>
+                                </button>
+                                ${(item.TrangThaiDot !== 'Kết thúc' && item.TrangThaiDuyet !== 'Kết thúc') ? `
                                 <button class="btn btn-sm btn-warning text-dark btn-toggle-tamngung"
                                         data-id="${item.TaoDotLaoDong_id}"
                                         data-dotname="${item.DotLaoDong || ''}"
                                         data-status="Hoạt động"
                                         title="Tạm ngưng đợt lao động">
                                     <i class="fas fa-pause"></i>
+                                </button>` : ''}
+                            ` : `
+                                <!-- CHƯA DUYỆT: NÚT DUYỆT ĐỢT (Nổi bật nhất, đặt đầu tiên) -->
+                                <button class="btn btn-sm btn-success btn-approve px-2 py-1 fw-semibold shadow-sm"
+                                        data-id="${item.TaoDotLaoDong_id}"
+                                        title="Duyệt đợt lao động">
+                                    <i class="fas fa-check me-1"></i>Duyệt
                                 </button>
-                            ` : ''}
-
-                            <!-- Các nút khi CHƯA DUYỆT hoặc TẠM NGƯNG -->
-                            ${(item.TrangThaiDuyet === 'Chưa duyệt' || item.TrangThaiDuyet === 'Tạm ngưng') ? `
                                 <button class="btn btn-sm btn-warning btn-edit"
                                         data-id="${item.TaoDotLaoDong_id}"
                                         title="Chỉnh sửa đợt">
@@ -486,13 +502,19 @@ document.addEventListener("DOMContentLoaded", function () {
                                         title="Xóa đợt">
                                     <i class="fas fa-trash"></i>
                                 </button>` : ''}
-                                ${(item.TrangThaiDuyet === 'Chưa duyệt' && item.TrangThaiDot !== 'Tạm ngưng') ? `
-                                <button class="btn btn-sm btn-success btn-approve"
+                                <button class="btn btn-sm btn-info btn-detail-dot text-white"
                                         data-id="${item.TaoDotLaoDong_id}"
-                                        title="Duyệt đợt">
-                                    <i class="fas fa-check"></i>
-                                </button>` : ''}
-                            ` : ''}
+                                        data-loai="${item.LoaiLaoDong || ''}"
+                                        title="Xem chi tiết đợt">
+                                    <i class="fas fa-info-circle"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-primary btn-view-participants"
+                                        data-id="${item.TaoDotLaoDong_id}"
+                                        data-loai="${item.LoaiLaoDong || ''}"
+                                        title="Xem danh sách sinh viên tham gia">
+                                    <i class="fas fa-users"></i>
+                                </button>
+                            `}
                         </div>
                     </div>
 
@@ -763,49 +785,67 @@ document.addEventListener("DOMContentLoaded", function () {
                     </td>
                     <td class="action-cell">
                         <div class="d-flex justify-content-center align-items-center gap-1 flex-nowrap w-100">
-                            <!-- Nút Xem DS sinh viên tham gia -->
-                            <button class="btn btn-sm btn-outline-primary btn-view-participants"
-                                    data-id="${item.TaoDotLaoDong_id}"
-                                    data-loai="${item.LoaiLaoDong || ''}"
-                                    title="Xem danh sách sinh viên tham gia">
-                                <i class="fas fa-users"></i>
-                            </button>
-
-                            <!-- Nút Chi tiết đợt -->
-                            <button class="btn btn-sm btn-info btn-detail-dot text-white"
-                                    data-id="${item.TaoDotLaoDong_id}"
-                                    data-loai="${item.LoaiLaoDong || ''}"
-                                    title="Xem chi tiết đợt">
-                                <i class="fas fa-info-circle"></i>
-                            </button>
-
-                            <!-- Nút Cấp mã điểm danh -->
-                            <button class="btn btn-sm ${item.DaDuyet ? 'btn-primary' : 'btn-outline-secondary'} btn-show-code"
-                                    data-id="${item.TaoDotLaoDong_id}"
-                                    data-daduyet="${item.DaDuyet ? '1' : '0'}"
-                                    title="${item.DaDuyet ? 'Hiển thị mã điểm danh' : 'Đợt chưa duyệt - Cần duyệt để cấp mã'}">
-                                <i class="fas fa-key"></i>
-                            </button>
-
-                            <!-- Nút Giám sát điểm danh -->
-                            <button class="btn btn-sm ${item.DaDuyet ? 'btn-success' : 'btn-outline-secondary'} btn-view-attendance"
-                                    data-id="${item.TaoDotLaoDong_id}"
-                                    data-daduyet="${item.DaDuyet ? '1' : '0'}"
-                                    title="${item.DaDuyet ? 'Giám sát danh sách điểm danh' : 'Đợt chưa duyệt - Cần duyệt để điểm danh'}">
-                                <i class="fas fa-list-check"></i>
-                            </button>
-
-                            ${(item.TrangThaiDot !== 'Tạm ngưng' && item.TrangThaiDuyet !== 'Tạm ngưng' && item.TrangThaiDuyet !== 'Kết thúc') ? `
+                            ${(item.TrangThaiDot === 'Tạm ngưng' || item.TrangThaiDuyet === 'Tạm ngưng') ? `
+                                <button class="btn btn-sm btn-warning text-dark btn-toggle-tamngung fw-semibold px-2"
+                                        data-id="${item.TaoDotLaoDong_id}"
+                                        data-dotname="${item.DotLaoDong || ''}"
+                                        data-status="Tạm ngưng"
+                                        title="Mở lại đợt lao động">
+                                    <i class="fas fa-play me-1"></i>Mở lại
+                                </button>
+                                <button class="btn btn-sm btn-info btn-detail-dot text-white"
+                                        data-id="${item.TaoDotLaoDong_id}"
+                                        data-loai="${item.LoaiLaoDong || ''}"
+                                        title="Xem chi tiết đợt">
+                                    <i class="fas fa-info-circle"></i>
+                                </button>
+                                ${(!window.isManager) ? `
+                                <button class="btn btn-sm btn-danger btn-delete"
+                                        data-id="${item.TaoDotLaoDong_id}"
+                                        title="Xóa đợt">
+                                    <i class="fas fa-trash"></i>
+                                </button>` : ''}
+                            ` : (item.DaDuyet || item.TrangThaiDuyet === 'Đã duyệt') ? `
+                                <!-- ĐÃ DUYỆT -->
+                                <button class="btn btn-sm btn-primary btn-show-code"
+                                        data-id="${item.TaoDotLaoDong_id}"
+                                        data-daduyet="1"
+                                        title="Hiển thị mã điểm danh">
+                                    <i class="fas fa-key"></i>
+                                </button>
+                                <button class="btn btn-sm btn-success btn-view-attendance"
+                                        data-id="${item.TaoDotLaoDong_id}"
+                                        data-daduyet="1"
+                                        title="Giám sát danh sách điểm danh">
+                                    <i class="fas fa-list-check"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-primary btn-view-participants"
+                                        data-id="${item.TaoDotLaoDong_id}"
+                                        data-loai="${item.LoaiLaoDong || ''}"
+                                        title="Xem danh sách sinh viên tham gia">
+                                    <i class="fas fa-users"></i>
+                                </button>
+                                <button class="btn btn-sm btn-info btn-detail-dot text-white"
+                                        data-id="${item.TaoDotLaoDong_id}"
+                                        data-loai="${item.LoaiLaoDong || ''}"
+                                        title="Xem chi tiết đợt">
+                                    <i class="fas fa-info-circle"></i>
+                                </button>
+                                ${(item.TrangThaiDot !== 'Kết thúc' && item.TrangThaiDuyet !== 'Kết thúc') ? `
                                 <button class="btn btn-sm btn-warning text-dark btn-toggle-tamngung"
                                         data-id="${item.TaoDotLaoDong_id}"
                                         data-dotname="${item.DotLaoDong || ''}"
                                         data-status="Hoạt động"
                                         title="Tạm ngưng đợt lao động">
                                     <i class="fas fa-pause"></i>
+                                </button>` : ''}
+                            ` : `
+                                <!-- CHƯA DUYỆT: NÚT DUYỆT ĐỢT (Nổi bật nhất, đặt đầu tiên) -->
+                                <button class="btn btn-sm btn-success btn-approve px-2 py-1 fw-semibold shadow-sm"
+                                        data-id="${item.TaoDotLaoDong_id}"
+                                        title="Duyệt đợt lao động">
+                                    <i class="fas fa-check me-1"></i>Duyệt
                                 </button>
-                            ` : ''}
-
-                            ${(item.TrangThaiDuyet === 'Chưa duyệt' || item.TrangThaiDuyet === 'Tạm ngưng') ? `
                                 <button class="btn btn-sm btn-warning btn-edit"
                                         data-id="${item.TaoDotLaoDong_id}"
                                         title="Chỉnh sửa đợt">
@@ -817,13 +857,19 @@ document.addEventListener("DOMContentLoaded", function () {
                                         title="Xóa đợt">
                                     <i class="fas fa-trash"></i>
                                 </button>` : ''}
-                                ${(item.TrangThaiDuyet === 'Chưa duyệt' && item.TrangThaiDot !== 'Tạm ngưng') ? `
-                                <button class="btn btn-sm btn-success btn-approve"
+                                <button class="btn btn-sm btn-info btn-detail-dot text-white"
                                         data-id="${item.TaoDotLaoDong_id}"
-                                        title="Duyệt đợt">
-                                    <i class="fas fa-check"></i>
-                                </button>` : ''}
-                            ` : ''}
+                                        data-loai="${item.LoaiLaoDong || ''}"
+                                        title="Xem chi tiết đợt">
+                                    <i class="fas fa-info-circle"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-primary btn-view-participants"
+                                        data-id="${item.TaoDotLaoDong_id}"
+                                        data-loai="${item.LoaiLaoDong || ''}"
+                                        title="Xem danh sách sinh viên tham gia">
+                                    <i class="fas fa-users"></i>
+                                </button>
+                            `}
                         </div>
                     </td>
                 </tr>
@@ -1450,19 +1496,49 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        // Duyệt
+        // Duyệt đợt lao động
         if (approveBtn) {
             const id = approveBtn.dataset.id;
             if (!id) return;
-            fetch(`/Admin/AdminWordRegister/ApproveAjax?id=${encodeURIComponent(id)}`, { method: "POST" })
-                .then(res => res.json())
-                .then(data => {
-                    showToast(data.message || (data.success ? "Đã duyệt đợt lao động!" : "Duyệt thất bại"), data.success ? "success" : "error");
-                    loadDataToTable(currentPage);
-                })
-                .catch(() => {
-                    showToast("Lỗi kết nối đến máy chủ!", "error");
+
+            const executeApprove = () => {
+                approveBtn.disabled = true;
+                fetch(`/Admin/AdminWordRegister/ApproveAjax?id=${encodeURIComponent(id)}`, { method: "POST" })
+                    .then(res => res.json())
+                    .then(data => {
+                        showToast(data.message || (data.success ? "Đã duyệt đợt lao động thành công!" : "Duyệt thất bại"), data.success ? "success" : "error");
+                        if (typeof loadDataToTable === "function") {
+                            loadDataToTable(currentPage);
+                        } else {
+                            location.reload();
+                        }
+                    })
+                    .catch(() => {
+                        approveBtn.disabled = false;
+                        showToast("Lỗi kết nối đến máy chủ!", "error");
+                    });
+            };
+
+            if (typeof Swal !== "undefined") {
+                Swal.fire({
+                    title: "Duyệt đợt lao động?",
+                    text: "Bạn có chắc chắn muốn duyệt đợt này để mở điểm danh và cấp mã?",
+                    icon: "question",
+                    showCancelButton: true,
+                    confirmButtonColor: "#16a34a",
+                    cancelButtonColor: "#64748b",
+                    confirmButtonText: '<i class="fas fa-check me-1"></i> Đồng ý duyệt',
+                    cancelButtonText: "Hủy"
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        executeApprove();
+                    }
                 });
+            } else {
+                if (confirm("Bạn có chắc chắn muốn duyệt đợt lao động này?")) {
+                    executeApprove();
+                }
+            }
             return;
         }
 

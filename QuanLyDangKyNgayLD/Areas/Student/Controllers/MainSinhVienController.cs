@@ -13,32 +13,16 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
         // Trang thông tin sinh viên (render view)
         public ActionResult Index()
         {
-            // Lấy username từ session
-            string username = Session["Username"]?.ToString();
-            if (string.IsNullOrEmpty(username))
-                return RedirectToAction("Login", "Login", new { area = "" });
-
             using (var db = DbContextFactory.Create())
             {
-                // Tìm tài khoản theo username
-                var user = db.TaiKhoans.FirstOrDefault(t => t.Username == username);
-                if (user == null)
-                    return RedirectToAction("Login", "Login", new { area = "" });
-
-                // Tìm sinh viên theo tài khoản
-                var sv = db.SinhViens
-                           .Include("Anh")
-                           .Include("Lop.Khoa")
-                           .FirstOrDefault(s => s.TaiKhoan == user.TaiKhoan_id);
-
-                if (sv == null)
+                if (!SessionAuthHelper.ResolveCurrentStudent(HttpContext, db, out var user, out var sv, out _))
                     return RedirectToAction("Login", "Login", new { area = "" });
 
                 // ✅ Truyền avatar và tên lên ViewBag (Fallback UI-Avatars an toàn)
                 string fallbackAvatar = "https://ui-avatars.com/api/?name=" + HttpUtility.UrlEncode(sv.HoTen ?? "Sinh Vien") + "&background=2563eb&color=fff&size=150&bold=true";
                 ViewBag.AvatarUrl = (sv.Anh != null && !string.IsNullOrEmpty(sv.Anh.DuongDan)) ? sv.Anh.DuongDan : fallbackAvatar;
                 ViewBag.HoTen = sv.HoTen ?? "Sinh viên";
-                ViewBag.IsClassLeader = user.VaiTro_id == 4;
+                ViewBag.IsClassLeader = user?.VaiTro_id == 4;
 
                 return View("Index", sv);
             }
@@ -49,22 +33,15 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
         // Trang chi tiết để xem và chỉnh sửa
         public ActionResult Detail()
         {
-            var userId = Session["UserID"] as int?;
-            if (userId == null)
-                return RedirectToAction("Login", "Login", new { area = "" });
-
             using (var db = DbContextFactory.Create())
             {
-                var sv = db.SinhViens
-                           .Include(s => s.TaiKhoan1.VaiTro)
-                           .Include(s => s.Anh)
-                           .Include(s => s.Lop.Khoa)   // ✅ load luôn Khoa qua Lop
-                           .FirstOrDefault(s => s.TaiKhoan == userId);
+                if (!SessionAuthHelper.ResolveCurrentStudent(HttpContext, db, out var user, out var sv, out _) && user == null)
+                    return RedirectToAction("Login", "Login", new { area = "" });
 
                 if (sv == null)
-                    sv = new SinhVien { TaiKhoan = userId };
+                    sv = new SinhVien { TaiKhoan = user?.TaiKhoan_id };
 
-                ViewBag.IsClassLeader = sv.TaiKhoan1?.VaiTro_id == 4;
+                ViewBag.IsClassLeader = (sv.TaiKhoan1?.VaiTro_id ?? user?.VaiTro_id) == 4;
 
                 return View("Detail", sv);
             }
@@ -74,20 +51,10 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
         [HttpGet]
         public JsonResult GetStudentInfo()
         {
-            var userId = Session["UserID"] as int?;
-            if (userId == null)
-                return Json(new { success = false, message = "Bạn chưa đăng nhập!" }, JsonRequestBehavior.AllowGet);
-
             using (var db = DbContextFactory.Create())
             {
-                var sv = db.SinhViens
-                           .Include(s => s.TaiKhoan1.VaiTro)
-                           .Include(s => s.Anh)
-                           .Include(s => s.Lop.Khoa)
-                           .FirstOrDefault(s => s.TaiKhoan == userId);
-
-                if (sv == null)
-                    return Json(new { success = false, message = "Không tìm thấy thông tin sinh viên!" }, JsonRequestBehavior.AllowGet);
+                if (!SessionAuthHelper.ResolveCurrentStudent(HttpContext, db, out _, out var sv, out var authError))
+                    return Json(new { success = false, message = authError }, JsonRequestBehavior.AllowGet);
 
                 string fallbackAvatar = "https://ui-avatars.com/api/?name=" + HttpUtility.UrlEncode(sv.HoTen ?? "Sinh Vien") + "&background=2563eb&color=fff&size=150&bold=true";
                 string avatarUrl = (sv.Anh != null && !string.IsNullOrEmpty(sv.Anh.DuongDan)) ? sv.Anh.DuongDan : fallbackAvatar;
@@ -131,16 +98,14 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult UpdateInfo(SinhVien model, HttpPostedFileBase AvatarFile)
         {
-            var userId = Session["UserID"] as int?;
-            if (userId == null)
-                return RedirectToAction("Login", "Login", new { area = "" });
-
             try
             {
                 using (var db = DbContextFactory.Create())
                 {
-                    var sv = db.SinhViens.Include("TaiKhoan1")
-                                         .FirstOrDefault(s => s.TaiKhoan == userId);
+                    if (!SessionAuthHelper.ResolveCurrentStudent(HttpContext, db, out var user, out var sv, out _) && user == null)
+                        return RedirectToAction("Login", "Login", new { area = "" });
+
+                    int? userId = user?.TaiKhoan_id;
                     if (sv != null)
                     {
                         // cập nhật thông tin cá nhân
@@ -232,24 +197,20 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
         // Tài khoản
         public ActionResult TaiKhoanInfo()
         {
-            var userId = Session["UserID"] as int?;
-            if (userId == null)
-                return Json(new { success = false, message = "Bạn chưa đăng nhập!" }, JsonRequestBehavior.AllowGet);
-
             using (var db = DbContextFactory.Create())
             {
-                var sv = db.SinhViens
-                           .Include("TaiKhoan1.VaiTro")
-                           .FirstOrDefault(s => s.TaiKhoan == userId);
+                if (!SessionAuthHelper.ResolveCurrentStudent(HttpContext, db, out var user, out var sv, out var authError) && user == null)
+                    return Json(new { success = false, message = authError }, JsonRequestBehavior.AllowGet);
 
-                if (sv == null || sv.TaiKhoan1 == null)
+                var tk = sv?.TaiKhoan1 ?? user;
+                if (tk == null)
                     return Json(new { success = false, message = "Không tìm thấy thông tin tài khoản!" }, JsonRequestBehavior.AllowGet);
 
                 var taiKhoanModel = new
                 {
-                    TenTaiKhoan = sv.TaiKhoan1.Username,
-                    MatKhau = "********", 
-                    VaiTro = sv.TaiKhoan1.VaiTro?.TenVaiTro ?? "Chưa có"
+                    TenTaiKhoan = tk.Username,
+                    MatKhau = "********",
+                    VaiTro = tk.VaiTro?.TenVaiTro ?? "Sinh viên"
                 };
 
                 return Json(new { success = true, data = taiKhoanModel }, JsonRequestBehavior.AllowGet);
@@ -261,10 +222,6 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
         [ValidateAntiForgeryToken]
         public JsonResult DoiMatKhau(string MatKhauMoi)
         {
-            var userId = Session["UserID"] as int?;
-            if (userId == null)
-                return Json(new { success = false, message = "Bạn chưa đăng nhập!" });
-
             if (string.IsNullOrEmpty(MatKhauMoi))
                 return Json(new { success = false, message = "Vui lòng nhập mật khẩu mới!" });
 
@@ -273,20 +230,14 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
 
             using (var db = DbContextFactory.Create())
             {
-                var sv = db.SinhViens.Include("TaiKhoan1")
-                                     .FirstOrDefault(s => s.TaiKhoan == userId);
+                var user = SessionAuthHelper.ResolveAuthenticatedAccount(HttpContext, db);
+                if (user == null)
+                    return Json(new { success = false, message = "Bạn chưa đăng nhập!" });
 
-                if (sv != null && sv.TaiKhoan1 != null)
-                {
-                    sv.TaiKhoan1.Password = PasswordHelper.HashPassword(MatKhauMoi.Trim());
-                    db.SaveChanges();
+                user.Password = PasswordHelper.HashPassword(MatKhauMoi.Trim());
+                db.SaveChanges();
 
-                    return Json(new { success = true, message = "Đổi mật khẩu thành công!" });
-                }
-                else
-                {
-                    return Json(new { success = false, message = "Không tìm thấy tài khoản!" });
-                }
+                return Json(new { success = true, message = "Đổi mật khẩu thành công!" });
             }
         }
 

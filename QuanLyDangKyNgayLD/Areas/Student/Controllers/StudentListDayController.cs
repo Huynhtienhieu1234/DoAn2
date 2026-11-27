@@ -18,19 +18,10 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
         {
             try
             {
-                string username = Session["Username"]?.ToString();
-                if (string.IsNullOrEmpty(username))
-                    return Json(new { success = false, message = "Phiên đăng nhập hết hạn." }, JsonRequestBehavior.AllowGet);
-
                 using (var db = DbContextFactory.Create())
                 {
-                    var user = db.TaiKhoans.FirstOrDefault(t => t.Username == username);
-                    if (user == null)
-                        return Json(new { success = false, message = "Không tìm thấy tài khoản!" }, JsonRequestBehavior.AllowGet);
-
-                    var sv = db.SinhViens.FirstOrDefault(s => s.TaiKhoan == user.TaiKhoan_id);
-                    if (sv == null)
-                        return Json(new { success = false, message = "Không tìm thấy sinh viên!" }, JsonRequestBehavior.AllowGet);
+                    if (!SessionAuthHelper.ResolveCurrentStudent(HttpContext, db, out _, out var sv, out var authError))
+                        return Json(new { success = false, message = authError }, JsonRequestBehavior.AllowGet);
 
                     long mssv = sv.MSSV;
 
@@ -52,7 +43,7 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
                          from diemDanh in diemDanhGroup.DefaultIfEmpty()
 
                          where p.MSSV == mssv
-                               && p.TrangThai == "DangKy"
+                               && (p.TrangThai == "DangKy" || p.TrangThai == "DaDuyet" || p.TrangThai == null)
                                && d.Ngayxoa == null
                                && d.NgayLaoDong >= monday
                                && d.NgayLaoDong <= sunday
@@ -80,12 +71,17 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
 
                     var dotIds = rawList.Select(x => x.TaoDotLaoDong_id).Distinct().ToList();
                     var dangKyCounts = db.PhieuDangKies
-                        .Where(p => dotIds.Contains(p.TaoDotLaoDong_id.Value) && p.TrangThai == "DangKy")
+                        .Where(p => p.TaoDotLaoDong_id.HasValue
+                                    && dotIds.Contains(p.TaoDotLaoDong_id.Value)
+                                    && (p.TrangThai == "DangKy" || p.TrangThai == "DaDuyet" || p.TrangThai == null))
                         .GroupBy(p => p.TaoDotLaoDong_id.Value)
                         .ToDictionary(g => g.Key, g => g.Count());
 
                     var phieuLopList = db.PhieuDangKies
-                        .Where(p => p.TaoDotLaoDong_id.HasValue && dotIds.Contains(p.TaoDotLaoDong_id.Value) && p.LaoDongTheoLop == true)
+                        .Where(p => p.TaoDotLaoDong_id.HasValue
+                                    && dotIds.Contains(p.TaoDotLaoDong_id.Value)
+                                    && p.LaoDongTheoLop == true
+                                    && (p.TrangThai == "DangKy" || p.TrangThai == "DaDuyet" || p.TrangThai == null))
                         .Select(p => new { TaoDotLaoDong_id = p.TaoDotLaoDong_id.Value, p.MSSV })
                         .ToList();
 

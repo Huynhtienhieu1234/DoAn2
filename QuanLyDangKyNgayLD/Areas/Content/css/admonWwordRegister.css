@@ -117,6 +117,29 @@
 .action-cell .btn-approve {
     background: #16a34a !important;
     color: #ffffff !important;
+    width: auto !important;
+    min-width: unset !important;
+    max-width: none !important;
+    padding: 0 10px !important;
+    font-weight: 600 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    box-shadow: 0 2px 4px rgba(22, 163, 74, 0.25) !important;
+}
+
+.action-cell .btn-approve:hover {
+    background: #15803d !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 10px rgba(22, 163, 74, 0.35) !important;
+}
+
+.action-cell .btn-toggle-tamngung.px-2 {
+    width: auto !important;
+    min-width: unset !important;
+    max-width: none !important;
+    padding: 0 9px !important;
+    font-weight: 600 !important;
 }
 
 /* Badge trạng thái */

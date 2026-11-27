@@ -12,12 +12,53 @@ using System.IO;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
+using System.Web.Security;
 
 namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
 {
     public class AdminWordRegisterController : Controller
     {
         private const int ITEMS_PER_PAGE = 10;
+
+        /// <summary>
+        /// Đếm số lượng sinh viên và số lớp đã đăng ký (bao gồm phiếu chờ duyệt "DangKy", đã duyệt "DaDuyet" và dữ liệu cũ null).
+        /// </summary>
+        private static void GetRegistrationCounts(
+            DB_QLNLD4ROLEEntities1 db,
+            List<int> dotIds,
+            out Dictionary<int, int> soDangKyDict,
+            out Dictionary<int, int> lopDaDangKyDict)
+        {
+            if (dotIds == null || dotIds.Count == 0)
+            {
+                soDangKyDict = new Dictionary<int, int>();
+                lopDaDangKyDict = new Dictionary<int, int>();
+                return;
+            }
+
+            var activeRegistrations = db.PhieuDangKies
+                .AsNoTracking()
+                .Where(p => p.TaoDotLaoDong_id.HasValue
+                            && dotIds.Contains(p.TaoDotLaoDong_id.Value)
+                            && (p.TrangThai == "DangKy" || p.TrangThai == "DaDuyet" || p.TrangThai == null));
+
+            soDangKyDict = activeRegistrations
+                .GroupBy(p => p.TaoDotLaoDong_id.Value)
+                .ToDictionary(g => g.Key, g => g.Count());
+
+            var phieuLopList = activeRegistrations
+                .Where(p => p.LaoDongTheoLop == true)
+                .Select(p => new { TaoDotLaoDong_id = p.TaoDotLaoDong_id.Value, p.MSSV })
+                .ToList();
+
+            lopDaDangKyDict = phieuLopList
+                .Join(db.SinhViens.AsNoTracking(), p => p.MSSV, sv => sv.MSSV, (p, sv) => new { p.TaoDotLaoDong_id, LopId = sv.Lop_id })
+                .GroupBy(x => x.TaoDotLaoDong_id)
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.Select(x => x.LopId.GetValueOrDefault()).Distinct().Count()
+                );
+        }
 
         public ActionResult Index(int page = 1, string keyword = "", string buoi = "", string trangthai = "")
         {
@@ -53,18 +94,9 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                                  .ToList();
 
                 var dotIds = items.Select(x => x.TaoDotLaoDong_id).ToList();
-                ViewBag.SoLuongDangKyDict = db.PhieuDangKies
-                    .Where(p => p.TaoDotLaoDong_id.HasValue && dotIds.Contains(p.TaoDotLaoDong_id.Value) && p.TrangThai == "DangKy")
-                    .GroupBy(p => p.TaoDotLaoDong_id.Value)
-                    .ToDictionary(g => g.Key, g => g.Count());
-
-                ViewBag.LopDaDangKyDict = (from pd in db.PhieuDangKies
-                                           join sv in db.SinhViens on pd.MSSV equals sv.MSSV
-                                           where pd.TaoDotLaoDong_id.HasValue && dotIds.Contains(pd.TaoDotLaoDong_id.Value) 
-                                                 && pd.LaoDongTheoLop == true && pd.TrangThai == "DangKy"
-                                           group sv.Lop_id by pd.TaoDotLaoDong_id.Value into g
-                                           select new { DotId = g.Key, Count = g.Distinct().Count() })
-                                          .ToDictionary(x => x.DotId, x => x.Count);
+                GetRegistrationCounts(db, dotIds, out var soLuongDangKyDict, out var lopDaDangKyDict);
+                ViewBag.SoLuongDangKyDict = soLuongDangKyDict;
+                ViewBag.LopDaDangKyDict = lopDaDangKyDict;
 
                 ViewBag.CurrentPage = page;
                 ViewBag.TotalPages = totalPages;
@@ -177,27 +209,7 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
 
                 // === TÍNH SỐ LƯỢNG ĐÃ ĐĂNG KÝ VÀ SỐ LỚP ĐÃ ĐĂNG KÝ (TỐI ƯU TRÁNH N+1 QUERY) ===
                 var dotIds = rawItems.Select(x => x.TaoDotLaoDong_id).ToList();
-
-                // FIX N+1: Gom nhóm đếm số lượng đăng ký cá nhân trong 1 query duy nhất bằng GroupBy
-                var soDangKyDict = db.PhieuDangKies
-                    .AsNoTracking()
-                    .Where(p => p.TaoDotLaoDong_id.HasValue && dotIds.Contains(p.TaoDotLaoDong_id.Value) && p.TrangThai == "DangKy")
-                    .GroupBy(p => p.TaoDotLaoDong_id.Value)
-                    .ToDictionary(g => g.Key, g => g.Count());
-
-                var phieuLopList = db.PhieuDangKies
-                    .AsNoTracking()
-                    .Where(p => p.TaoDotLaoDong_id.HasValue && dotIds.Contains(p.TaoDotLaoDong_id.Value) && p.LaoDongTheoLop == true)
-                    .Select(p => new { TaoDotLaoDong_id = p.TaoDotLaoDong_id.Value, p.MSSV })
-                    .ToList();
-
-                var lopDaDangKyDict = phieuLopList
-                    .Join(db.SinhViens, p => p.MSSV, sv => sv.MSSV, (p, sv) => new { p.TaoDotLaoDong_id, LopId = sv.Lop_id })
-                    .GroupBy(x => x.TaoDotLaoDong_id)
-                    .ToDictionary(
-                        g => g.Key,
-                        g => g.Select(x => x.LopId.GetValueOrDefault()).Distinct().Count()
-                    );
+                GetRegistrationCounts(db, dotIds, out var soDangKyDict, out var lopDaDangKyDict);
 
                 var now = DateTime.Now;
                 var today = DateTime.Today;
@@ -297,17 +309,19 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
 
                 using (var db = DbContextFactory.Create())
                 {
-                    // Lấy user từ Session
-                    var userIdStr = Session["UserId"]?.ToString();
+                    // Lấy user từ Session hoặc khôi phục từ cookie đăng nhập nếu Session bị reset
+                    ResolveCurrentUserRole(db, out int? vaiTroId, out string roleName);
+
+                    var userIdStr = (Session["UserId"] ?? Session["UserID"])?.ToString();
                     if (!int.TryParse(userIdStr, out int userId))
-                        return Json(new { success = false, message = "Không xác định được người tạo." });
+                        return Json(new { success = false, message = "Không xác định được người tạo. Vui lòng đăng nhập lại!" });
 
                     var user = db.TaiKhoans.FirstOrDefault(u => u.TaiKhoan_id == userId);
                     if (user == null)
                         return Json(new { success = false, message = "Không tìm thấy tài khoản." });
 
                     // ✅ Cho phép Admin và Cán bộ quản lý tạo đợt
-                    if (user.VaiTro_id != 1 && user.VaiTro_id != 2)
+                    if (!IsAdminOrManagerRole(vaiTroId ?? user.VaiTro_id, roleName))
                         return Json(new { success = false, message = "Bạn không có quyền tạo đợt lao động." });
 
                     // Kiểm tra trùng lặp (ngày + buổi + khu vực + loại lao động)
@@ -469,9 +483,7 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                     return Json(new { success = false, message = "Không tìm thấy đợt lao động." });
 
                 // ✅ Kiểm tra quyền: chỉ Admin mới được xóa
-                var userId = Session["UserId"]?.ToString();
-                var user = db.TaiKhoans.FirstOrDefault(u => u.TaiKhoan_id.ToString() == userId);
-                if (user == null || user.VaiTro_id != 1) // 1 = Admin
+                if (!IsAdminUser(db))
                     return Json(new { success = false, message = "Chỉ tài khoản Admin mới được xóa." });
 
                 // 📝 Ghi nhận nhật ký xóa vào QuanLyAuditLog
@@ -500,30 +512,104 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
             }
         }
 
-        private bool IsAdminUser(DB_QLNLD4ROLEEntities1 db)
+        private string ExtractAuthenticatedUsername()
         {
-            var vaiTroId = Session["VaiTroId"] as int?;
-            if (vaiTroId.HasValue)
-            {
-                return vaiTroId.Value == 1;
-            }
+            var sessionUsername = Session["Username"]?.ToString()?.Trim();
+            if (!string.IsNullOrEmpty(sessionUsername))
+                return sessionUsername;
 
             if (User != null && User.Identity != null && User.Identity.IsAuthenticated && !string.IsNullOrEmpty(User.Identity.Name))
+                return User.Identity.Name.Trim();
+
+            var authCookie = Request?.Cookies[FormsAuthentication.FormsCookieName];
+            if (authCookie != null && !string.IsNullOrEmpty(authCookie.Value))
             {
-                string username = User.Identity.Name;
-                var tk = db.TaiKhoans.FirstOrDefault(t => t.Username == username && t.Deleted_at == null);
-                if (tk != null)
+                try
                 {
-                    Session["UserID"] = tk.TaiKhoan_id;
-                    Session["UserId"] = tk.TaiKhoan_id;
-                    Session["Username"] = tk.Username;
-                    Session["VaiTroId"] = tk.VaiTro_id;
-                    Session["Role"] = tk.VaiTro != null ? tk.VaiTro.TenVaiTro : "Admin";
-                    return tk.VaiTro_id == 1;
+                    var ticket = FormsAuthentication.Decrypt(authCookie.Value);
+                    if (ticket != null && !ticket.Expired && !string.IsNullOrWhiteSpace(ticket.Name))
+                        return ticket.Name.Trim();
+                }
+                catch
+                {
+                    // Bỏ qua cookie không hợp lệ
                 }
             }
 
-            return false;
+            return null;
+        }
+
+        private void ResolveCurrentUserRole(DB_QLNLD4ROLEEntities1 db, out int? vaiTroId, out string roleName)
+        {
+            vaiTroId = Session["VaiTroId"] as int?;
+            roleName = Session["Role"]?.ToString();
+
+            if (!vaiTroId.HasValue && Session["VaiTroId"] != null && int.TryParse(Session["VaiTroId"].ToString(), out int parsedSessionRole))
+                vaiTroId = parsedSessionRole;
+
+            if (vaiTroId.HasValue && !string.IsNullOrWhiteSpace(roleName))
+                return;
+
+            TaiKhoan tk = null;
+
+            if (Session["User"] is TaiKhoan sessionUser)
+            {
+                tk = db.TaiKhoans.Include("VaiTro").FirstOrDefault(t => t.TaiKhoan_id == sessionUser.TaiKhoan_id && t.Deleted_at == null);
+            }
+
+            if (tk == null)
+            {
+                var rawUserId = Session["UserId"] ?? Session["UserID"];
+                if (rawUserId != null && int.TryParse(rawUserId.ToString(), out int uid))
+                {
+                    tk = db.TaiKhoans.Include("VaiTro").FirstOrDefault(t => t.TaiKhoan_id == uid && t.Deleted_at == null);
+                }
+            }
+
+            if (tk == null)
+            {
+                string username = ExtractAuthenticatedUsername();
+                if (!string.IsNullOrEmpty(username))
+                {
+                    tk = db.TaiKhoans.Include("VaiTro").FirstOrDefault(t => t.Username == username && t.Deleted_at == null);
+                }
+            }
+
+            if (tk != null)
+            {
+                Session["UserID"] = tk.TaiKhoan_id;
+                Session["UserId"] = tk.TaiKhoan_id;
+                Session["Username"] = tk.Username;
+                Session["VaiTroId"] = tk.VaiTro_id;
+                Session["Role"] = tk.VaiTro != null ? tk.VaiTro.TenVaiTro : roleName;
+                Session["User"] = tk;
+
+                vaiTroId = tk.VaiTro_id;
+                roleName = tk.VaiTro?.TenVaiTro ?? roleName;
+            }
+        }
+
+        private static bool IsAdminRole(int? vaiTroId, string roleName)
+        {
+            if (vaiTroId == 1) return true;
+            if (string.IsNullOrWhiteSpace(roleName)) return false;
+            var lower = roleName.Trim().ToLowerInvariant();
+            return lower.Contains("admin") || lower.Contains("quản trị") || lower.Contains("quan tri");
+        }
+
+        private static bool IsAdminOrManagerRole(int? vaiTroId, string roleName)
+        {
+            if (vaiTroId == 1 || vaiTroId == 2) return true;
+            if (IsAdminRole(vaiTroId, roleName)) return true;
+            if (string.IsNullOrWhiteSpace(roleName)) return false;
+            var lower = roleName.Trim().ToLowerInvariant();
+            return lower.Contains("quản lý") || lower.Contains("quan ly") || lower.Contains("cán bộ") || lower.Contains("can bo");
+        }
+
+        private bool IsAdminUser(DB_QLNLD4ROLEEntities1 db)
+        {
+            ResolveCurrentUserRole(db, out int? vaiTroId, out string roleName);
+            return IsAdminRole(vaiTroId, roleName);
         }
 
         // AJAX: Xóa nhiều đợt đã chọn
@@ -650,10 +736,52 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                     // ✅ Cập nhật trạng thái đợt
                     dot.TrangThaiDuyet = true;
 
-                    int currentUserId = 1;
-                    if (Session["UserId"] != null && int.TryParse(Session["UserId"].ToString(), out int uid))
+                    // ✅ Lấy đúng Quanly_id của người duyệt (phù hợp khóa ngoại FK_PhieuDuyet_QuanLy)
+                    ResolveCurrentUserRole(db, out _, out _);
+                    int? nguoiDuyetId = null;
+                    var rawApproveUserId = Session["UserId"] ?? Session["UserID"];
+                    if (rawApproveUserId != null && int.TryParse(rawApproveUserId.ToString(), out int uid))
                     {
-                        currentUserId = uid;
+                        var ql = db.QuanLies.FirstOrDefault(q => q.TaiKhoan == uid);
+                        if (ql != null)
+                        {
+                            nguoiDuyetId = ql.Quanly_id;
+                        }
+                        else
+                        {
+                            // Tự động tạo bản ghi QuanLy tương ứng nếu tài khoản chưa có
+                            var tk = db.TaiKhoans.Find(uid);
+                            string hoTen = tk?.Username ?? "Quản trị viên";
+                            try
+                            {
+                                db.Database.ExecuteSqlCommand("INSERT INTO QuanLy (Hoten, TaiKhoan) VALUES (@p0, @p1)", hoTen, uid);
+                            }
+                            catch
+                            {
+                                db.Database.ExecuteSqlCommand("INSERT INTO QuanLy (Hoten) VALUES (@p0)", hoTen);
+                            }
+
+                            var createdQl = db.QuanLies.FirstOrDefault(q => q.TaiKhoan == uid) ?? db.QuanLies.OrderByDescending(q => q.Quanly_id).FirstOrDefault();
+                            if (createdQl != null)
+                            {
+                                nguoiDuyetId = createdQl.Quanly_id;
+                            }
+                        }
+                    }
+
+                    if (!nguoiDuyetId.HasValue)
+                    {
+                        var anyQl = db.QuanLies.FirstOrDefault();
+                        if (anyQl != null)
+                        {
+                            nguoiDuyetId = anyQl.Quanly_id;
+                        }
+                        else
+                        {
+                            db.Database.ExecuteSqlCommand("INSERT INTO QuanLy (Hoten) VALUES (@p0)", "Quản trị viên hệ thống");
+                            var defaultQl = db.QuanLies.OrderByDescending(q => q.Quanly_id).FirstOrDefault();
+                            nguoiDuyetId = defaultQl?.Quanly_id;
+                        }
                     }
 
                     // ✅ Duyệt từng phiếu đăng ký
@@ -670,14 +798,14 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
                             db.PhieuDuyets.Add(new PhieuDuyet
                             {
                                 PhieuDangKy = phieu.PhieuDangKy_id,
-                                Nguoiduyet = currentUserId,
+                                Nguoiduyet = nguoiDuyetId,
                                 ThoiGian = DateTime.Now,
                                 TrangThai = "Đã duyệt"
                             });
                         }
                         else
                         {
-                            existingDuyet.Nguoiduyet = currentUserId;
+                            existingDuyet.Nguoiduyet = nguoiDuyetId;
                             existingDuyet.ThoiGian = DateTime.Now;
                             existingDuyet.TrangThai = "Đã duyệt";
                         }
@@ -908,28 +1036,21 @@ namespace QuanLyDangKyNgayLD.Areas.Admin.Controllers
         {
             try
             {
-                var vaiTroId = Session["VaiTroId"] as int?;
-                if (!vaiTroId.HasValue && User != null && User.Identity != null && User.Identity.IsAuthenticated)
-                {
-                    using (var dbAuth = DbContextFactory.Create())
-                    {
-                        var tk = dbAuth.TaiKhoans.FirstOrDefault(t => t.Username == User.Identity.Name && t.Deleted_at == null);
-                        if (tk != null)
-                        {
-                            vaiTroId = tk.VaiTro_id;
-                            Session["VaiTroId"] = tk.VaiTro_id;
-                        }
-                    }
-                }
-
-                // Chỉ Admin (VaiTro_id = 1) hoặc Quản lý (VaiTro_id = 2) mới được phép hiển thị mã điểm danh
-                if (!vaiTroId.HasValue || (vaiTroId.Value != 1 && vaiTroId.Value != 2))
-                {
-                    return Json(new { success = false, message = "Bạn không có quyền xem mã điểm danh của đợt này!" });
-                }
-
                 using (var db = DbContextFactory.Create())
                 {
+                    ResolveCurrentUserRole(db, out int? vaiTroId, out string roleName);
+
+                    if (!vaiTroId.HasValue && string.IsNullOrWhiteSpace(roleName))
+                    {
+                        return Json(new { success = false, message = "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại bằng tài khoản Admin hoặc Quản lý!" });
+                    }
+
+                    // Chỉ Admin hoặc Quản lý mới được phép hiển thị mã điểm danh
+                    if (!IsAdminOrManagerRole(vaiTroId, roleName))
+                    {
+                        return Json(new { success = false, message = "Bạn không có quyền xem mã điểm danh của đợt này!" });
+                    }
+
                     var dot = db.TaoDotNgayLaoDongs.Find(dotId);
                     if (dot == null || dot.Ngayxoa != null)
                         return Json(new { success = false, message = "Không tìm thấy đợt lao động." });

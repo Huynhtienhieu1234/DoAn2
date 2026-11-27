@@ -1246,25 +1246,55 @@
             box-shadow: 0 4px 10px rgba(51, 65, 85, 0.28) !important;
         }
 
-        /* Nút Duyệt / Hoàn thành (Success/Approve) - Xanh lục nhạt (Emerald) */
+        /* Nút Duyệt / Hoàn thành (Success/Approve) - Nổi bật có chữ & icon */
         .action-cell .btn-success, 
-        .action-cell .btn-duyet, 
-        .action-cell .btn-approve,
-        .btn-approve {
+        .action-cell .btn-duyet {
             background: #ecfdf5 !important;
             background-color: #ecfdf5 !important;
             border: 1px solid #a7f3d0 !important;
             color: #16a34a !important;
         }
         .action-cell .btn-success:hover, 
-        .action-cell .btn-duyet:hover, 
-        .action-cell .btn-approve:hover,
-        .btn-approve:hover {
+        .action-cell .btn-duyet:hover {
             background: #16a34a !important;
             background-color: #16a34a !important;
             border-color: #16a34a !important;
             color: #ffffff !important;
             box-shadow: 0 4px 10px rgba(22, 163, 74, 0.28) !important;
+        }
+        .action-cell .btn-approve,
+        .btn-approve {
+            width: auto !important;
+            min-width: unset !important;
+            max-width: none !important;
+            padding: 0 10px !important;
+            height: 32px !important;
+            background: #16a34a !important;
+            background-color: #16a34a !important;
+            border: 1px solid #16a34a !important;
+            color: #ffffff !important;
+            font-weight: 600 !important;
+            font-size: 0.82rem !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 4px !important;
+            box-shadow: 0 2px 4px rgba(22, 163, 74, 0.25) !important;
+        }
+        .action-cell .btn-approve:hover,
+        .btn-approve:hover {
+            background: #15803d !important;
+            background-color: #15803d !important;
+            border-color: #15803d !important;
+            color: #ffffff !important;
+            box-shadow: 0 4px 10px rgba(22, 163, 74, 0.35) !important;
+        }
+        .action-cell .btn-toggle-tamngung.px-2 {
+            width: auto !important;
+            min-width: unset !important;
+            max-width: none !important;
+            padding: 0 9px !important;
+            font-weight: 600 !important;
+            font-size: 0.82rem !important;
         }
 
         /* Nút Toggle Tạm ngưng (AdminWordRegister) */

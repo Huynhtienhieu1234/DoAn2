@@ -77,7 +77,7 @@
           <Key>
             <PropertyRef Name="Quanly_id" />
           </Key>
-          <Property Name="Quanly_id" Type="int" Nullable="false" />
+          <Property Name="Quanly_id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="Hoten" Type="nvarchar" MaxLength="255" />
           <Property Name="Gioitinh" Type="bit" />
           <Property Name="Diachi" Type="nvarchar" MaxLength="255" />
@@ -104,7 +104,7 @@
           <Key>
             <PropertyRef Name="SoNgayLaoDong_id" />
           </Key>
-          <Property Name="SoNgayLaoDong_id" Type="int" Nullable="false" />
+          <Property Name="SoNgayLaoDong_id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="MSSV" Type="bigint" Nullable="false" />
           <Property Name="TongSoNgay" Type="int" />
           <Property Name="Ma_phieu_xac_nhan" Type="int" />
@@ -490,7 +490,7 @@
           <Key>
             <PropertyRef Name="Quanly_id" />
           </Key>
-          <Property Name="Quanly_id" Type="Int32" Nullable="false" />
+          <Property Name="Quanly_id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
           <Property Name="Hoten" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
           <Property Name="Gioitinh" Type="Boolean" />
           <Property Name="Diachi" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
@@ -523,7 +523,7 @@
           <Key>
             <PropertyRef Name="SoNgayLaoDong_id" />
           </Key>
-          <Property Name="SoNgayLaoDong_id" Type="Int32" Nullable="false" />
+          <Property Name="SoNgayLaoDong_id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
           <Property Name="MSSV" Type="Int64" Nullable="false" />
           <Property Name="TongSoNgay" Type="Int32" />
           <Property Name="Ma_phieu_xac_nhan" Type="Int32" />

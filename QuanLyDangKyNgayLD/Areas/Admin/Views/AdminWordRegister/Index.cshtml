@@ -265,14 +265,14 @@
                 <th style="width: 38px;" class="text-center"><input type="checkbox" id="checkAllDot" class="form-check-input" title="Chọn tất cả"></th>
                 <th style="width: 45px;">STT</th>
                 <th style="width: 14%;">Tên Đợt</th>
-                <th style="width: 12%;">Buổi</th>
-                <th style="width: 9%;">Loại LĐ</th>
+                <th style="width: 8%;">Buổi</th>
+                <th style="width: 8%;">Loại LĐ</th>
                 <th style="width: 7%;">Giá Trị</th>
                 <th style="width: 10%;">Ngày LĐ</th>
                 <th style="width: 9%;">Khu Vực</th>
-                <th style="width: 13%;">Đăng ký/Quy định</th>
+                <th style="width: 12%;">Đăng ký/Quy định</th>
                 <th style="width: 10%;">Trạng Thái</th>
-                <th style="width: 16%; min-width: 155px;" class="action-header">Tác vụ</th>
+                <th style="width: 22%; min-width: 195px;" class="action-header">Tác vụ</th>
             </tr>
         </thead>
         <tbody id="dotLaoDongTableBody">
@@ -377,52 +377,21 @@
                         </td>
                         <td class="action-cell">
                             <div class="d-flex justify-content-center align-items-center gap-1 flex-nowrap w-100">
-                                <!-- Nút Xem DS sinh viên đăng ký tham gia -->
-                                <button class="btn btn-sm btn-outline-primary btn-view-participants"
-                                        data-id="@item.TaoDotLaoDong_id"
-                                        data-loai="@item.LoaiLaoDong"
-                                        title="Xem danh sách sinh viên tham gia">
-                                    <i class="fas fa-users"></i>
-                                </button>
-
-                                <!-- Nút Chi tiết đợt -->
-                                <button class="btn btn-sm btn-info btn-detail text-white" title="Chi tiết"
-                                        data-id="@item.TaoDotLaoDong_id"
-                                        data-loai="@item.LoaiLaoDong">
-                                    <i class="fas fa-info-circle"></i>
-                                </button>
-
-                                <!-- Nút Cấp mã điểm danh -->
-                                <button class="btn btn-sm @(item.TrangThaiDuyet == true ? "btn-primary" : "btn-outline-secondary") btn-show-code"
-                                        data-id="@item.TaoDotLaoDong_id"
-                                        data-daduyet="@(item.TrangThaiDuyet == true ? "1" : "0")"
-                                        title="@(item.TrangThaiDuyet == true ? "Hiển thị mã điểm danh" : "Đợt chưa duyệt - Cần duyệt để cấp mã điểm danh")">
-                                    <i class="fas fa-key"></i>
-                                </button>
-
-                                <!-- Nút Giám sát điểm danh -->
-                                <button class="btn btn-sm @(item.TrangThaiDuyet == true ? "btn-success" : "btn-outline-secondary") btn-view-attendance"
-                                        data-id="@item.TaoDotLaoDong_id"
-                                        data-daduyet="@(item.TrangThaiDuyet == true ? "1" : "0")"
-                                        title="@(item.TrangThaiDuyet == true ? "Giám sát danh sách sinh viên đã điểm danh" : "Đợt chưa duyệt - Cần duyệt để giám sát điểm danh")">
-                                    <i class="fas fa-list-check"></i>
-                                </button>
-
-                                @if (item.TrangThaiDot != "Tạm ngưng" && !isPast)
+                                @if (item.TrangThaiDot == "Tạm ngưng")
                                 {
-                                    <button class="btn btn-sm btn-warning text-dark btn-toggle-tamngung" 
-                                            title="Tạm ngưng đợt lao động"
+                                    <!-- Nút Mở lại đợt -->
+                                    <button class="btn btn-sm btn-warning text-dark btn-toggle-tamngung fw-semibold px-2" 
+                                            title="Mở lại đợt lao động"
                                             data-id="@item.TaoDotLaoDong_id"
                                             data-status="@item.TrangThaiDot">
-                                        <i class="fas fa-pause"></i>
+                                        <i class="fas fa-play me-1"></i>Mở lại
                                     </button>
-                                }
 
-                                @if (item.TrangThaiDuyet == false && !isPast && item.TrangThaiDot != "Tạm ngưng")
-                                {
-                                    <button class="btn btn-sm btn-warning btn-edit" title="Sửa"
-                                            data-id="@item.TaoDotLaoDong_id">
-                                        <i class="fas fa-edit"></i>
+                                    <!-- Nút Chi tiết -->
+                                    <button class="btn btn-sm btn-info btn-detail text-white" title="Chi tiết"
+                                            data-id="@item.TaoDotLaoDong_id"
+                                            data-loai="@item.LoaiLaoDong">
+                                        <i class="fas fa-info-circle"></i>
                                     </button>
 
                                     if (vaiTroId == 1 || vaiTroId == null)
@@ -432,10 +401,88 @@
                                             <i class="fas fa-trash"></i>
                                         </button>
                                     }
+                                }
+                                else if (item.TrangThaiDuyet == true)
+                                {
+                                    <!-- ĐỢT ĐÃ DUYỆT -->
+                                    <!-- Nút Cấp mã điểm danh -->
+                                    <button class="btn btn-sm btn-primary btn-show-code"
+                                            data-id="@item.TaoDotLaoDong_id"
+                                            data-daduyet="1"
+                                            title="Hiển thị mã điểm danh">
+                                        <i class="fas fa-key"></i>
+                                    </button>
 
-                                    <button class="btn btn-sm btn-success btn-approve" title="Duyệt ngay"
+                                    <!-- Nút Giám sát điểm danh -->
+                                    <button class="btn btn-sm btn-success btn-view-attendance"
+                                            data-id="@item.TaoDotLaoDong_id"
+                                            data-daduyet="1"
+                                            title="Giám sát điểm danh">
+                                        <i class="fas fa-list-check"></i>
+                                    </button>
+
+                                    <!-- Nút Xem DS sinh viên đăng ký tham gia -->
+                                    <button class="btn btn-sm btn-outline-primary btn-view-participants"
+                                            data-id="@item.TaoDotLaoDong_id"
+                                            data-loai="@item.LoaiLaoDong"
+                                            title="Xem danh sách sinh viên tham gia">
+                                        <i class="fas fa-users"></i>
+                                    </button>
+
+                                    <!-- Nút Chi tiết đợt -->
+                                    <button class="btn btn-sm btn-info btn-detail text-white" title="Chi tiết"
+                                            data-id="@item.TaoDotLaoDong_id"
+                                            data-loai="@item.LoaiLaoDong">
+                                        <i class="fas fa-info-circle"></i>
+                                    </button>
+
+                                    if (!isPast && item.TrangThaiDot != "Tạm ngưng")
+                                    {
+                                        <button class="btn btn-sm btn-warning text-dark btn-toggle-tamngung" 
+                                                title="Tạm ngưng đợt lao động"
+                                                data-id="@item.TaoDotLaoDong_id"
+                                                data-status="@item.TrangThaiDot">
+                                            <i class="fas fa-pause"></i>
+                                        </button>
+                                    }
+                                }
+                                else
+                                {
+                                    <!-- ĐỢT CHƯA DUYỆT (Nổi bật nhất: Nút Duyệt đặt đầu tiên) -->
+                                    <button class="btn btn-sm btn-success btn-approve px-2 py-1 fw-semibold shadow-sm"
+                                            data-id="@item.TaoDotLaoDong_id"
+                                            title="Duyệt đợt lao động">
+                                        <i class="fas fa-check me-1"></i>Duyệt
+                                    </button>
+
+                                    <!-- Nút Sửa -->
+                                    <button class="btn btn-sm btn-warning btn-edit" title="Sửa"
                                             data-id="@item.TaoDotLaoDong_id">
-                                        <i class="fas fa-check"></i>
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+
+                                    if (vaiTroId == 1 || vaiTroId == null)
+                                    {
+                                        <!-- Nút Xóa -->
+                                        <button class="btn btn-sm btn-danger btn-delete" title="Xóa"
+                                                data-id="@item.TaoDotLaoDong_id">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    }
+
+                                    <!-- Nút Chi tiết đợt -->
+                                    <button class="btn btn-sm btn-info btn-detail text-white" title="Chi tiết"
+                                            data-id="@item.TaoDotLaoDong_id"
+                                            data-loai="@item.LoaiLaoDong">
+                                        <i class="fas fa-info-circle"></i>
+                                    </button>
+
+                                    <!-- Nút Xem DS sinh viên đăng ký tham gia -->
+                                    <button class="btn btn-sm btn-outline-primary btn-view-participants"
+                                            data-id="@item.TaoDotLaoDong_id"
+                                            data-loai="@item.LoaiLaoDong"
+                                            title="Xem danh sách sinh viên tham gia">
+                                        <i class="fas fa-users"></i>
                                     </button>
                                 }
                             </div>

@@ -14,6 +14,14 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
     {
         private const int ITEMS_PER_PAGE = 5;
 
+        /// <summary>
+        /// Truy vấn các phiếu đăng ký đang hiệu lực (chờ duyệt "DangKy", đã duyệt "DaDuyet" và dữ liệu cũ null).
+        /// </summary>
+        private static IQueryable<PhieuDangKy> ActiveRegistrations(DB_QLNLD4ROLEEntities1 db)
+        {
+            return db.PhieuDangKies.Where(p => p.TrangThai == "DangKy" || p.TrangThai == "DaDuyet" || p.TrangThai == null);
+        }
+
         private const string ROLE_SINH_VIEN = "SinhVien";
         private const string ROLE_LOP_TRUONG = "LopTruong";
 
@@ -82,7 +90,7 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
         {
             using (var db = DbContextFactory.Create())
             {
-                var user = Session["User"] as TaiKhoan;
+                var user = SessionAuthHelper.ResolveAuthenticatedAccount(HttpContext, db);
                 var userRole = GetUserRoleFromSession();
                 bool isClassLeader = IsClassLeader();
 
@@ -142,42 +150,8 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
         // Helper lấy sinh viên hiện tại một cách an toàn và chính xác
         private SinhVien GetCurrentSinhVien(DB_QLNLD4ROLEEntities1 db)
         {
-            // 1. Thử lấy từ Session["MSSV"]
-            if (Session["MSSV"] != null && long.TryParse(Session["MSSV"].ToString(), out long mssvSession))
-            {
-                var sv = db.SinhViens.FirstOrDefault(s => s.MSSV == mssvSession && s.Deleted_at == null);
-                if (sv != null) return sv;
-            }
-
-            // 2. Thử lấy từ Session["UserID"] / Session["UserId"]
-            int userId = 0;
-            if (Session["UserID"] != null && int.TryParse(Session["UserID"].ToString(), out userId))
-            {
-                var sv = db.SinhViens.FirstOrDefault(s => s.TaiKhoan == userId && s.Deleted_at == null);
-                if (sv != null) return sv;
-            }
-
-            // 3. Thử lấy từ Session["Username"]
-            string username = Session["Username"]?.ToString()?.Trim();
-            if (!string.IsNullOrEmpty(username))
-            {
-                string trimmedZero = username.TrimStart('0');
-                string withZero = "0" + username;
-                var user = db.TaiKhoans.FirstOrDefault(tk => tk.Username == username || (trimmedZero.Length > 0 && tk.Username == trimmedZero) || tk.Username == withZero);
-                if (user != null)
-                {
-                    var sv = db.SinhViens.FirstOrDefault(s => s.TaiKhoan == user.TaiKhoan_id && s.Deleted_at == null);
-                    if (sv != null) return sv;
-                }
-
-                if (long.TryParse(username, out long mssvFromUser))
-                {
-                    var sv = db.SinhViens.FirstOrDefault(s => s.MSSV == mssvFromUser && s.Deleted_at == null);
-                    if (sv != null) return sv;
-                }
-            }
-
-            return null;
+            SessionAuthHelper.ResolveCurrentStudent(HttpContext, db, out _, out var sv, out _);
+            return sv;
         }
 
         [HttpGet]
@@ -187,6 +161,7 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
             {
                 using (var db = DbContextFactory.Create())
                 {
+                    SessionAuthHelper.ResolveAuthenticatedAccount(HttpContext, db);
                     var userRole = GetUserRoleFromSession();
                     bool isClassLeader = IsClassLeader();
                     var today = DateTime.Today;
@@ -236,14 +211,14 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
 
                     // Đếm số lượng đã đăng ký toàn bộ
                     var dotIds = rawItems.Select(x => x.TaoDotLaoDong_id).ToList();
-                    var dangKyCount = db.PhieuDangKies
-                        .Where(p => dotIds.Contains(p.TaoDotLaoDong_id ?? 0) && p.TrangThai == "DangKy")
+                    var dangKyCount = ActiveRegistrations(db)
+                        .Where(p => dotIds.Contains(p.TaoDotLaoDong_id ?? 0))
                         .GroupBy(p => p.TaoDotLaoDong_id)
                         .ToDictionary(g => g.Key ?? 0, g => g.Count());
 
-                    var lopDangKyCount = (from pd in db.PhieuDangKies
+                    var lopDangKyCount = (from pd in ActiveRegistrations(db)
                                           join sv in db.SinhViens on pd.MSSV equals sv.MSSV
-                                          where dotIds.Contains(pd.TaoDotLaoDong_id ?? 0) && pd.LaoDongTheoLop == true && pd.TrangThai == "DangKy"
+                                          where dotIds.Contains(pd.TaoDotLaoDong_id ?? 0) && pd.LaoDongTheoLop == true
                                           group sv.Lop_id by pd.TaoDotLaoDong_id.Value into g
                                           select new { DotId = g.Key, Count = g.Distinct().Count() })
                                          .ToDictionary(x => x.DotId, x => x.Count);
@@ -252,10 +227,10 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
                     var currentSv = GetCurrentSinhVien(db);
                     long? currentMSSV = currentSv?.MSSV;
 
-                    // Danh sách đợt sinh viên đã đăng ký (trạng thái DangKy)
+                    // Danh sách đợt sinh viên đã đăng ký (bao gồm chờ duyệt "DangKy" và đã duyệt "DaDuyet")
                     var registeredDotIds = currentMSSV.HasValue
-                        ? db.PhieuDangKies
-                            .Where(p => p.MSSV == currentMSSV.Value && p.TrangThai == "DangKy")
+                        ? ActiveRegistrations(db)
+                            .Where(p => p.MSSV == currentMSSV.Value)
                             .Select(p => p.TaoDotLaoDong_id ?? 0)
                             .ToList()
                         : new List<int>();
@@ -373,12 +348,17 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
                         }
                     }
 
+                    var alreadyRegistered = ActiveRegistrations(db).Any(p => p.TaoDotLaoDong_id == id && p.MSSV == sv.MSSV);
+                    if (alreadyRegistered)
+                    {
+                        return Json(new { success = false, message = "Bạn đã đăng ký đợt lao động này rồi!", type = "warning" });
+                    }
+
                     // Kiểm tra số lượng tối đa nếu có
                     if (dot.SoLuongSinhVien.HasValue && dot.SoLuongSinhVien.Value > 0)
                     {
-                        int currentCount = db.PhieuDangKies.Count(p => p.TaoDotLaoDong_id == id && p.TrangThai == "DangKy");
-                        var alreadyRegistered = db.PhieuDangKies.Any(p => p.TaoDotLaoDong_id == id && p.MSSV == sv.MSSV && p.TrangThai == "DangKy");
-                        if (!alreadyRegistered && currentCount >= dot.SoLuongSinhVien.Value)
+                        int currentCount = ActiveRegistrations(db).Count(p => p.TaoDotLaoDong_id == id);
+                        if (currentCount >= dot.SoLuongSinhVien.Value)
                         {
                             return Json(new { success = false, message = "Đợt lao động này đã đủ số lượng sinh viên đăng ký!", type = "error" });
                         }
@@ -386,8 +366,8 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
 
                     // ✅ Lấy tất cả phiếu đăng ký đang hoạt động của sinh viên trong cùng ngày
                     DateTime? dotDateVal = dot.NgayLaoDong.HasValue ? dot.NgayLaoDong.Value.Date : (DateTime?)null;
-                    var phieuTrongNgay = db.PhieuDangKies
-                        .Where(p => p.MSSV == sv.MSSV && p.TrangThai == "DangKy" && p.TaoDotLaoDong_id != id)
+                    var phieuTrongNgay = ActiveRegistrations(db)
+                        .Where(p => p.MSSV == sv.MSSV && p.TaoDotLaoDong_id != id)
                         .ToList();
 
                     if (dotDateVal.HasValue)
@@ -433,7 +413,7 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
                     }
 
                     db.SaveChanges();
-                    var soDangKyMoi = db.PhieuDangKies.Count(p => p.TaoDotLaoDong_id == id && p.TrangThai == "DangKy");
+                    var soDangKyMoi = ActiveRegistrations(db).Count(p => p.TaoDotLaoDong_id == id);
                     return Json(new { 
                         success = true, 
                         message = "Đăng ký thành công!", 
@@ -506,7 +486,7 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
                         .Where(p => p.TaoDotLaoDong_id == id && p.MSSV == sv.MSSV)
                         .ToList();
 
-                    if (!phieuList.Any(p => p.TrangThai == "DangKy"))
+                    if (!phieuList.Any(p => p.TrangThai == "DangKy" || p.TrangThai == "DaDuyet" || p.TrangThai == null))
                     {
                         return Json(new { success = false, message = "Bạn chưa đăng ký đợt này hoặc đã hủy trước đó!", type = "error" });
                     }
@@ -522,7 +502,7 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
                     // 5. Xóa các phiếu đăng ký
                     db.PhieuDangKies.RemoveRange(phieuList);
                     db.SaveChanges();
-                    var soDangKyMoi = db.PhieuDangKies.Count(p => p.TaoDotLaoDong_id == id && p.TrangThai == "DangKy");
+                    var soDangKyMoi = ActiveRegistrations(db).Count(p => p.TaoDotLaoDong_id == id);
                     return Json(new { 
                         success = true, 
                         message = "Hủy đăng ký thành công!", 
@@ -546,17 +526,8 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
         {
             using (var db = DbContextFactory.Create())
             {
-                string username = Session["Username"]?.ToString();
-                if (string.IsNullOrEmpty(username))
-                    return Json(new { success = false, message = "Chưa đăng nhập" }, JsonRequestBehavior.AllowGet);
-
-                var user = db.TaiKhoans.FirstOrDefault(t => t.Username == username);
-                if (user == null)
-                    return Json(new { success = false, message = "Không tìm thấy tài khoản" }, JsonRequestBehavior.AllowGet);
-
-                var svHienTai = db.SinhViens.FirstOrDefault(s => s.TaiKhoan == user.TaiKhoan_id);
-                if (svHienTai == null)
-                    return Json(new { success = false, message = "Không tìm thấy sinh viên" }, JsonRequestBehavior.AllowGet);
+                if (!SessionAuthHelper.ResolveCurrentStudent(HttpContext, db, out _, out var svHienTai, out var authError))
+                    return Json(new { success = false, message = authError }, JsonRequestBehavior.AllowGet);
 
                 if (!svHienTai.Lop_id.HasValue)
                     return Json(new { success = false, message = "Sinh viên chưa được gán lớp" }, JsonRequestBehavior.AllowGet);
@@ -622,17 +593,17 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
                     int myLopId = currentSv.Lop_id.Value;
 
                     // Kiểm tra lớp đã từng đăng ký đợt này chưa
-                    bool lopDaDangKy = (from pd in db.PhieuDangKies
+                    bool lopDaDangKy = (from pd in ActiveRegistrations(db)
                                         join sv in db.SinhViens on pd.MSSV equals sv.MSSV
-                                        where pd.TaoDotLaoDong_id == dotId && pd.LaoDongTheoLop == true && sv.Lop_id == myLopId && pd.TrangThai == "DangKy"
+                                        where pd.TaoDotLaoDong_id == dotId && pd.LaoDongTheoLop == true && sv.Lop_id == myLopId
                                         select pd).Any();
 
                     if (!lopDaDangKy)
                     {
                         // Kiểm tra tổng số lớp đã đăng ký
-                        int soLopDaDangKy = (from pd in db.PhieuDangKies
+                        int soLopDaDangKy = (from pd in ActiveRegistrations(db)
                                              join sv in db.SinhViens on pd.MSSV equals sv.MSSV
-                                             where pd.TaoDotLaoDong_id == dotId && pd.LaoDongTheoLop == true && pd.TrangThai == "DangKy"
+                                             where pd.TaoDotLaoDong_id == dotId && pd.LaoDongTheoLop == true
                                              select sv.Lop_id).Distinct().Count();
 
                         if (soLopDaDangKy >= soLuongLopToiDa)
@@ -814,9 +785,9 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
                 if (dot.LoaiLaoDong == "Lớp")
                 {
                     int soLuongLopToiDa = dot.SoLuongLop.GetValueOrDefault(1);
-                    int soLopDaDangKy = (from pd in db.PhieuDangKies
+                    int soLopDaDangKy = (from pd in ActiveRegistrations(db)
                                          join sv in db.SinhViens on pd.MSSV equals sv.MSSV
-                                         where pd.TaoDotLaoDong_id == dotId && pd.LaoDongTheoLop == true && pd.TrangThai == "DangKy"
+                                         where pd.TaoDotLaoDong_id == dotId && pd.LaoDongTheoLop == true
                                          select sv.Lop_id).Distinct().Count();
 
                     return Json(new

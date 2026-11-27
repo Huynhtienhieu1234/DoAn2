@@ -15,25 +15,20 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
         // GET: Student/StudentTK
         public ActionResult Index()
         {
-            string username = Session["Username"]?.ToString();
             bool isLeader = false;
             string tenLop = "";
             int lopId = 0;
 
-            if (!string.IsNullOrEmpty(username))
+            using (var db = DbContextFactory.Create())
             {
-                using (var db = DbContextFactory.Create())
+                SessionAuthHelper.ResolveCurrentStudent(HttpContext, db, out var user, out var sv, out _);
+                if (user != null)
                 {
-                    var user = db.TaiKhoans.FirstOrDefault(t => t.Username == username);
-                    if (user != null)
+                    isLeader = (user.VaiTro_id == 4);
+                    if (sv != null && sv.Lop != null)
                     {
-                        var sv = db.SinhViens.Include("Lop").FirstOrDefault(s => s.TaiKhoan == user.TaiKhoan_id);
-                        isLeader = (user.VaiTro_id == 4);
-                        if (sv != null && sv.Lop != null)
-                        {
-                            tenLop = sv.Lop.TenLop ?? "";
-                            lopId = sv.Lop_id ?? 0;
-                        }
+                        tenLop = sv.Lop.TenLop ?? "";
+                        lopId = sv.Lop_id ?? 0;
                     }
                 }
             }
@@ -51,19 +46,10 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
         {
             try
             {
-                string username = Session["Username"]?.ToString();
-                if (string.IsNullOrEmpty(username))
-                    return Json(new { success = false, message = "Phiên đăng nhập hết hạn." }, JsonRequestBehavior.AllowGet);
-
                 using (var db = DbContextFactory.Create())
                 {
-                    var user = db.TaiKhoans.FirstOrDefault(t => t.Username == username);
-                    if (user == null)
-                        return Json(new { success = false, message = "Không tìm thấy tài khoản!" }, JsonRequestBehavior.AllowGet);
-
-                    var sv = db.SinhViens.FirstOrDefault(s => s.TaiKhoan == user.TaiKhoan_id);
-                    if (sv == null)
-                        return Json(new { success = false, message = "Không tìm thấy sinh viên!" }, JsonRequestBehavior.AllowGet);
+                    if (!SessionAuthHelper.ResolveCurrentStudent(HttpContext, db, out _, out var sv, out var authError))
+                        return Json(new { success = false, message = authError }, JsonRequestBehavior.AllowGet);
 
                     long mssv = sv.MSSV;
 
@@ -103,19 +89,10 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
         {
             try
             {
-                string username = Session["Username"]?.ToString();
-                if (string.IsNullOrEmpty(username))
-                    return Json(new { success = false, message = "Phiên đăng nhập hết hạn." }, JsonRequestBehavior.AllowGet);
-
                 using (var db = DbContextFactory.Create())
                 {
-                    var user = db.TaiKhoans.FirstOrDefault(t => t.Username == username);
-                    if (user == null)
-                        return Json(new { success = false, message = "Không tìm thấy tài khoản!" }, JsonRequestBehavior.AllowGet);
-
-                    var sv = db.SinhViens.FirstOrDefault(s => s.TaiKhoan == user.TaiKhoan_id);
-                    if (sv == null)
-                        return Json(new { success = false, message = "Không tìm thấy sinh viên!" }, JsonRequestBehavior.AllowGet);
+                    if (!SessionAuthHelper.ResolveCurrentStudent(HttpContext, db, out _, out var sv, out var authError))
+                        return Json(new { success = false, message = authError }, JsonRequestBehavior.AllowGet);
 
                     long mssv = sv.MSSV;
 
@@ -158,14 +135,11 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
         {
             try
             {
-                string username = Session["Username"]?.ToString();
-                if (string.IsNullOrEmpty(username))
-                    return Json(new { success = false, message = "Phiên đăng nhập hết hạn." }, JsonRequestBehavior.AllowGet);
-
                 using (var db = DbContextFactory.Create())
                 {
-                    var user = db.TaiKhoans.FirstOrDefault(t => t.Username == username);
-                    var sv = db.SinhViens.FirstOrDefault(s => s.TaiKhoan == user.TaiKhoan_id);
+                    if (!SessionAuthHelper.ResolveCurrentStudent(HttpContext, db, out _, out var sv, out var authError))
+                        return Json(new { success = false, message = authError }, JsonRequestBehavior.AllowGet);
+
                     long mssv = sv.MSSV;
 
                     var rawList = (from p in db.PhieuDangKies
@@ -216,18 +190,12 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
         {
             try
             {
-                string username = Session["Username"]?.ToString();
-                if (string.IsNullOrEmpty(username))
-                    return Json(new { success = false, message = "Phiên đăng nhập hết hạn." }, JsonRequestBehavior.AllowGet);
-
                 using (var db = DbContextFactory.Create())
                 {
-                    var user = db.TaiKhoans.FirstOrDefault(t => t.Username == username);
-                    if (user == null)
-                        return Json(new { success = false, message = "Không tìm thấy tài khoản!" }, JsonRequestBehavior.AllowGet);
+                    if (!SessionAuthHelper.ResolveCurrentStudent(HttpContext, db, out var user, out var svHienTai, out var authError))
+                        return Json(new { success = false, message = authError }, JsonRequestBehavior.AllowGet);
 
-                    var svHienTai = db.SinhViens.Include("Lop").FirstOrDefault(s => s.TaiKhoan == user.TaiKhoan_id);
-                    if (svHienTai == null || !svHienTai.Lop_id.HasValue)
+                    if (!svHienTai.Lop_id.HasValue)
                         return Json(new { success = false, message = "Sinh viên chưa được phân lớp!" }, JsonRequestBehavior.AllowGet);
 
                     if (user.VaiTro_id != 4 && user.VaiTro_id != 1 && user.VaiTro_id != 2)
@@ -257,7 +225,7 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
 
                     // Lấy số ca đã đăng ký
                     var dangKyDict = db.PhieuDangKies
-                                       .Where(x => mssvList.Contains(x.MSSV) && x.TrangThai == "DangKy")
+                                       .Where(x => mssvList.Contains(x.MSSV) && (x.TrangThai == "DangKy" || x.TrangThai == "DaDuyet" || x.TrangThai == null))
                                        .GroupBy(x => x.MSSV)
                                        .ToDictionary(g => g.Key, g => g.Count());
 
@@ -343,15 +311,12 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
         {
             try
             {
-                string username = Session["Username"]?.ToString();
-                if (string.IsNullOrEmpty(username))
-                    return Json(new { success = false, message = "Phiên đăng nhập hết hạn." }, JsonRequestBehavior.AllowGet);
-
                 using (var db = DbContextFactory.Create())
                 {
-                    var user = db.TaiKhoans.FirstOrDefault(t => t.Username == username);
-                    var svHienTai = db.SinhViens.FirstOrDefault(s => s.TaiKhoan == user.TaiKhoan_id);
-                    if (svHienTai == null || !svHienTai.Lop_id.HasValue)
+                    if (!SessionAuthHelper.ResolveCurrentStudent(HttpContext, db, out _, out var svHienTai, out var authError))
+                        return Json(new { success = false, message = authError }, JsonRequestBehavior.AllowGet);
+
+                    if (!svHienTai.Lop_id.HasValue)
                         return Json(new { success = false, message = "Không có quyền!" }, JsonRequestBehavior.AllowGet);
 
                     // Kiểm tra sinh viên cần xem có cùng lớp với Lớp trưởng không
@@ -410,15 +375,12 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
         {
             try
             {
-                string username = Session["Username"]?.ToString();
-                if (string.IsNullOrEmpty(username))
-                    return RedirectToAction("Login", "Login", new { area = "" });
-
                 using (var db = DbContextFactory.Create())
                 {
-                    var user = db.TaiKhoans.FirstOrDefault(t => t.Username == username);
-                    var svHienTai = db.SinhViens.Include("Lop").FirstOrDefault(s => s.TaiKhoan == user.TaiKhoan_id);
-                    if (svHienTai == null || !svHienTai.Lop_id.HasValue)
+                    if (!SessionAuthHelper.ResolveCurrentStudent(HttpContext, db, out var user, out var svHienTai, out _))
+                        return RedirectToAction("Login", "Login", new { area = "" });
+
+                    if (!svHienTai.Lop_id.HasValue)
                         return Content("Không có quyền truy cập.");
 
                     if (user.VaiTro_id != 4 && user.VaiTro_id != 1 && user.VaiTro_id != 2)

@@ -1,4 +1,4 @@
-﻿// StudentCheckDay.js - Điểm danh cho sinh viên (2 bảng riêng)
+// StudentCheckDay.js - Điểm danh cho sinh viên (2 bảng riêng)
 document.addEventListener("DOMContentLoaded", function () {
     const choDuyetBody = document.getElementById("choDuyetBody");
     const daDuyetBody = document.getElementById("daDuyetBody");
@@ -15,20 +15,20 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Hàm load dữ liệu
     function loadDotDaDangKy() {
-        // Hiển thị loading
-        loadingChoDuyet.style.display = "table-row";
-        loadingDaDuyet.style.display = "table-row";
-        loadingHoanThanh.style.display = "table-row";
+        // Hiển thị loading (an toàn nếu DOM đã cập nhật ở lần tải trước)
+        if (loadingChoDuyet && loadingChoDuyet.parentNode) loadingChoDuyet.style.display = "table-row";
+        if (loadingDaDuyet && loadingDaDuyet.parentNode) loadingDaDuyet.style.display = "table-row";
+        if (loadingHoanThanh && loadingHoanThanh.parentNode) loadingHoanThanh.style.display = "table-row";
 
-        fetch("/Student/StudentCheckDay/GetDotDaDangKy")
+        fetch("/Student/StudentCheckDay/GetDotDaDangKy?_t=" + Date.now(), { cache: "no-store" })
             .then(res => {
                 if (!res.ok) throw new Error("Server error");
                 return res.json();
             })
             .then(data => {
-                loadingChoDuyet.style.display = "none";
-                loadingDaDuyet.style.display = "none";
-                loadingHoanThanh.style.display = "none";
+                if (loadingChoDuyet && loadingChoDuyet.parentNode) loadingChoDuyet.style.display = "none";
+                if (loadingDaDuyet && loadingDaDuyet.parentNode) loadingDaDuyet.style.display = "none";
+                if (loadingHoanThanh && loadingHoanThanh.parentNode) loadingHoanThanh.style.display = "none";
 
                 const setTabCount = function (id, value) {
                     const el = document.getElementById(id);
@@ -196,11 +196,12 @@ document.addEventListener("DOMContentLoaded", function () {
             .then(data => {
                 if (data.success) {
                     statusDiv.innerHTML = `<span class="text-success fw-bold"><i class="fas fa-check-circle me-1"></i> ${data.message}</span>`;
-                    // Thay form bằng badge "Đã điểm danh"
+                    // Thay form bằng badge "Đã điểm danh" rồi đồng bộ lại số đếm tab
                     form.outerHTML = `
                     <span class="badge bg-success fs-6">
                         <i class="fas fa-check-circle me-1"></i> Đã điểm danh
                     </span>`;
+                    setTimeout(loadDotDaDangKy, 1000);
                 } else {
                     statusDiv.innerHTML = `<span class="text-danger"><i class="fas fa-times-circle me-1"></i> ${data.message}</span>`;
                 }

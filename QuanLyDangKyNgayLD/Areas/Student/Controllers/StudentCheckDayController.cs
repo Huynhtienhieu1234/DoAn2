@@ -1,4 +1,4 @@
-﻿using QuanLyDangKyNgayLD.Factories;
+using QuanLyDangKyNgayLD.Factories;
 using QuanLyDangKyNgayLD.Models;
 using System;
 using System.Linq;
@@ -11,19 +11,15 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
         // GET: Student/StudentCheckDay
         public ActionResult Index()
         {
-            // Kiểm tra đăng nhập
-            if (Session["User"] == null)
+            using (var db = DbContextFactory.Create())
             {
-                return RedirectToAction("Login", "Login", new { area = "" });
+                if (!SessionAuthHelper.ResolveCurrentStudent(HttpContext, db, out _, out _, out _))
+                {
+                    return RedirectToAction("Login", "Login", new { area = "" });
+                }
             }
 
             return View();
-        }
-
-        // Helper: Lấy TaiKhoan từ Session (tái sử dụng logic từ controller khác)
-        private TaiKhoan GetCurrentUser()
-        {
-            return Session["User"] as TaiKhoan;
         }
 
         // GET: Lấy danh sách đợt đã đăng ký
@@ -32,25 +28,20 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
         {
             try
             {
-                string username = Session["Username"]?.ToString();
-                if (string.IsNullOrEmpty(username))
-                    return Json(new { success = false, message = "Phiên đăng nhập hết hạn." }, JsonRequestBehavior.AllowGet);
-
                 using (var db = DbContextFactory.Create())
                 {
-                    var user = db.TaiKhoans.FirstOrDefault(t => t.Username == username);
-                    if (user == null)
-                        return Json(new { success = false, message = "Không tìm thấy tài khoản!" }, JsonRequestBehavior.AllowGet);
-
-                    var sv = db.SinhViens.FirstOrDefault(s => s.TaiKhoan == user.TaiKhoan_id);
-                    if (sv == null)
-                        return Json(new { success = false, message = "Không tìm thấy sinh viên!" }, JsonRequestBehavior.AllowGet);
+                    if (!SessionAuthHelper.ResolveCurrentStudent(HttpContext, db, out _, out var sv, out var authError))
+                    {
+                        return Json(new { success = false, message = authError }, JsonRequestBehavior.AllowGet);
+                    }
 
                     long mssv = sv.MSSV;
 
                     var rawList = (from p in db.PhieuDangKies
                                    join d in db.TaoDotNgayLaoDongs on p.TaoDotLaoDong_id equals d.TaoDotLaoDong_id
-                                   where p.MSSV == mssv && d.Ngayxoa == null
+                                   where p.MSSV == mssv
+                                         && d.Ngayxoa == null
+                                         && (p.TrangThai == "DangKy" || p.TrangThai == "DaDuyet" || p.TrangThai == null)
                                    select new
                                    {
                                        d.TaoDotLaoDong_id,
@@ -61,7 +52,10 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
                                        d.LoaiLaoDong,
                                        DaDuyet = d.TrangThaiDuyet == true,
                                        DaDiemDanh = db.DanhSachDiemDanhs.Any(dd => dd.Dot_id == d.TaoDotLaoDong_id && dd.MSSV == mssv)
-                                   }).ToList();
+                                   })
+                                   .OrderByDescending(x => x.NgayLaoDong)
+                                   .ThenByDescending(x => x.TaoDotLaoDong_id)
+                                   .ToList();
 
                     var dotList = rawList.Select(x => new
                     {
@@ -73,7 +67,7 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
                         x.LoaiLaoDong,
                         x.DaDuyet,
                         x.DaDiemDanh
-                    }).OrderByDescending(x => x.NgayLaoDong).ToList();
+                    }).ToList();
 
                     var choDuyet = dotList.Where(x => !x.DaDuyet).ToList();
                     var daDuyet = dotList.Where(x => x.DaDuyet && !x.DaDiemDanh).ToList();
@@ -94,31 +88,28 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
             }
         }
 
-
-        // điểm Danh AJAX
         // POST: Điểm danh
-        [HttpPost] // ❌ bỏ ValidateAntiForgeryToken
+        [HttpPost]
         public JsonResult DiemDanhAjax(int dotId, string maDiemDanh)
         {
             try
             {
-                string username = Session["Username"]?.ToString();
-                if (string.IsNullOrEmpty(username))
-                    return Json(new { success = false, message = "Phiên đăng nhập hết hạn!" });
+                if (string.IsNullOrWhiteSpace(maDiemDanh))
+                    return Json(new { success = false, message = "Vui lòng nhập mã điểm danh." });
 
                 using (var db = DbContextFactory.Create())
                 {
-                    var taiKhoan = db.TaiKhoans.FirstOrDefault(t => t.Username == username);
-                    if (taiKhoan == null)
-                        return Json(new { success = false, message = "Không tìm thấy tài khoản!" });
-
-                    var sinhVien = db.SinhViens.FirstOrDefault(sv => sv.TaiKhoan == taiKhoan.TaiKhoan_id);
-                    if (sinhVien == null)
-                        return Json(new { success = false, message = "Không tìm thấy sinh viên!" });
+                    if (!SessionAuthHelper.ResolveCurrentStudent(HttpContext, db, out _, out var sinhVien, out var authError))
+                    {
+                        return Json(new { success = false, message = authError });
+                    }
 
                     long mssv = sinhVien.MSSV;
 
-                    var phieu = db.PhieuDangKies.FirstOrDefault(p => p.TaoDotLaoDong_id == dotId && p.MSSV == mssv);
+                    var phieu = db.PhieuDangKies.FirstOrDefault(p =>
+                        p.TaoDotLaoDong_id == dotId
+                        && p.MSSV == mssv
+                        && (p.TrangThai == "DangKy" || p.TrangThai == "DaDuyet" || p.TrangThai == null));
                     if (phieu == null)
                         return Json(new { success = false, message = "Bạn chưa đăng ký đợt này." });
 
@@ -126,33 +117,55 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
                     if (dot == null || dot.Ngayxoa != null)
                         return Json(new { success = false, message = "Đợt không tồn tại." });
 
+                    if (dot.TrangThaiDuyet != true)
+                        return Json(new { success = false, message = "Đợt lao động này chưa được duyệt, chưa thể điểm danh." });
+
+                    if (dot.TrangThaiDot == "Tạm ngưng")
+                        return Json(new { success = false, message = "Đợt lao động này đang tạm ngưng." });
+
+                    string cleanCode = maDiemDanh.Trim().ToUpperInvariant();
                     if (string.IsNullOrWhiteSpace(dot.MaDiemDanh) ||
-                        dot.MaDiemDanh.Trim().ToUpper() != maDiemDanh.Trim().ToUpper())
+                        dot.MaDiemDanh.Trim().ToUpperInvariant() != cleanCode)
                         return Json(new { success = false, message = "Mã điểm danh không đúng." });
 
                     if (db.DanhSachDiemDanhs.Any(d => d.Dot_id == dotId && d.MSSV == mssv))
                         return Json(new { success = false, message = "Bạn đã điểm danh rồi!" });
 
-                    // ✅ Chỉ thêm bản ghi điểm danh, trigger trong DB sẽ tự cộng ngày
+                    // Lưu bản ghi điểm danh
                     db.DanhSachDiemDanhs.Add(new DanhSachDiemDanh
                     {
                         MSSV = mssv,
                         Dot_id = dotId,
-                        MaDiemDanh = maDiemDanh.Trim().ToUpper(),
+                        MaDiemDanh = cleanCode,
                         ThoiGian = DateTime.Now
                     });
 
+                    // Cộng trực tiếp vào bảng SoNgayLaoDong (do DB không có trigger tự cộng)
+                    int diemCong = (dot.GiaTri.HasValue && dot.GiaTri.Value > 0) ? dot.GiaTri.Value : 1;
+                    var soNgayRow = db.SoNgayLaoDongs.FirstOrDefault(s => s.MSSV == mssv);
+                    if (soNgayRow != null)
+                    {
+                        soNgayRow.TongSoNgay = (soNgayRow.TongSoNgay ?? 0) + diemCong;
+                    }
+                    else
+                    {
+                        db.SoNgayLaoDongs.Add(new SoNgayLaoDong
+                        {
+                            MSSV = mssv,
+                            TongSoNgay = diemCong
+                        });
+                    }
+
                     db.SaveChanges();
 
-                    return Json(new { success = true, message = "Điểm danh thành công! Ngày lao động sẽ được cập nhật tự động." });
+                    return Json(new { success = true, message = $"Điểm danh thành công! (+{diemCong} ngày lao động)" });
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return Json(new { success = false, message = "Lỗi hệ thống." });
+                var detail = ex.InnerException?.InnerException?.Message ?? ex.InnerException?.Message ?? ex.Message;
+                return Json(new { success = false, message = "Lỗi hệ thống: " + detail });
             }
         }
-
-
     }
 }

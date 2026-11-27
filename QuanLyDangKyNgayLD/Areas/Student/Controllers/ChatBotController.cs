@@ -10,42 +10,11 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
 {
     public class ChatBotController : Controller
     {
-        // Helper lấy sinh viên hiện tại an toàn
+        // Helper lấy sinh viên hiện tại an toàn (tự khôi phục Session nếu cần)
         private SinhVien GetCurrentSinhVien(DB_QLNLD4ROLEEntities1 db)
         {
-            if (Session["MSSV"] != null && long.TryParse(Session["MSSV"].ToString(), out long mssvSession))
-            {
-                var sv = db.SinhViens.Include(s => s.Lop.Khoa).Include(s => s.TaiKhoan1).FirstOrDefault(s => s.MSSV == mssvSession && s.Deleted_at == null);
-                if (sv != null) return sv;
-            }
-
-            int userId = 0;
-            if (Session["UserID"] != null && int.TryParse(Session["UserID"].ToString(), out userId))
-            {
-                var sv = db.SinhViens.Include(s => s.Lop.Khoa).Include(s => s.TaiKhoan1).FirstOrDefault(s => s.TaiKhoan == userId && s.Deleted_at == null);
-                if (sv != null) return sv;
-            }
-
-            string username = Session["Username"]?.ToString()?.Trim();
-            if (!string.IsNullOrEmpty(username))
-            {
-                string trimmedZero = username.TrimStart('0');
-                string withZero = "0" + username;
-                var user = db.TaiKhoans.FirstOrDefault(tk => tk.Username == username || (trimmedZero.Length > 0 && tk.Username == trimmedZero) || tk.Username == withZero);
-                if (user != null)
-                {
-                    var sv = db.SinhViens.Include(s => s.Lop.Khoa).Include(s => s.TaiKhoan1).FirstOrDefault(s => s.TaiKhoan == user.TaiKhoan_id && s.Deleted_at == null);
-                    if (sv != null) return sv;
-                }
-
-                if (long.TryParse(username, out long mssvFromUser))
-                {
-                    var sv = db.SinhViens.Include(s => s.Lop.Khoa).Include(s => s.TaiKhoan1).FirstOrDefault(s => s.MSSV == mssvFromUser && s.Deleted_at == null);
-                    if (sv != null) return sv;
-                }
-            }
-
-            return null;
+            SessionAuthHelper.ResolveCurrentStudent(HttpContext, db, out _, out var sv, out _);
+            return sv;
         }
 
         // 1. API Lấy tiến độ số ngày công đã hoàn thành
@@ -137,7 +106,10 @@ namespace QuanLyDangKyNgayLD.Areas.Student.Controllers
 
                     var schedules = db.PhieuDangKies
                         .Include(p => p.TaoDotNgayLaoDong)
-                        .Where(p => p.MSSV == sv.MSSV && p.TrangThai == "DangKy" && p.TaoDotNgayLaoDong != null && p.TaoDotNgayLaoDong.Ngayxoa == null)
+                        .Where(p => p.MSSV == sv.MSSV
+                                    && (p.TrangThai == "DangKy" || p.TrangThai == "DaDuyet" || p.TrangThai == null)
+                                    && p.TaoDotNgayLaoDong != null
+                                    && p.TaoDotNgayLaoDong.Ngayxoa == null)
                         .OrderBy(p => p.TaoDotNgayLaoDong.NgayLaoDong)
                         .ToList()
                         .Select(p => new
